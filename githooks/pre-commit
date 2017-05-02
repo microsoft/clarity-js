@@ -1,0 +1,37 @@
+#!/bin/sh
+
+TSLINT=$(git rev-parse --show-toplevel)/node_modules/.bin/tslint
+STAGED_FILES=$(git diff --staged --name-only --diff-filter=ACM | grep ".ts$")
+FORMATTED=true
+
+COMMIT_SUCCEEDED_MSG="\033[42mCOMMIT SUCCEEDED\033[0m"
+COMMIT_FAILED_MSG="\033[41mCOMMIT FAILED:\033[0m"
+TSLINT_ERRORS_MSG="\033[41mTSLint errors in:\033[0m";
+
+if [ "$STAGED_FILES" = "" ]; then
+  exit 0
+fi
+
+printf "\nChecking your changes with TSLint...\n"
+if [ ! -f "$TSLINT" ]; then
+  printf "\n$COMMIT_FAILED_MSG TSLint module not found. Please run 'npm install'.\033[0m"
+  exit 1
+fi
+
+for FILE in $STAGED_FILES
+do
+  "$TSLINT" "$FILE"
+  if ! [ "$?" == 0 ]; then
+    printf "\t$TSLINT_ERRORS_MSG $FILE\n"
+    FORMATTED=false
+  fi
+done
+
+if ! $FORMATTED; then
+  printf "\n$COMMIT_FAILED_MSG Please format your changes to comply with Clarity TSLint rules\n"
+  exit 1
+else
+  printf "\n$COMMIT_SUCCEEDED_MSG\n"
+fi
+
+exit 0
