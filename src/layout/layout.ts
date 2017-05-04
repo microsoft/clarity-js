@@ -1,6 +1,6 @@
 import { config } from "./../config";
 import { addEvent, bind, getPageContextBasedTimestamp, register } from "./../core";
-import { assert, debug, getUnixTimestamp, isNumber, TraverseNodeTree } from "./../utils";
+import { assert, debug, getUnixTimestamp, isNumber, traverseNodeTree } from "./../utils";
 import * as LayoutStateProvider from "./layoutstateprovider";
 import { getNodeIndex, NodeIndex } from "./layoutstateprovider";
 import { ShadowDom } from "./shadowdom";
@@ -69,7 +69,7 @@ class Layout implements IComponent {
   // and returning to it later through a set timeout
   private discoverDom() {
     let discoverTime = getPageContextBasedTimestamp();
-    TraverseNodeTree(document, this.discoverNode.bind(this));
+    traverseNodeTree(document, this.discoverNode.bind(this));
     this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
     this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
   }
@@ -270,7 +270,7 @@ class Layout implements IComponent {
   }
 
   private watch(element: Element, layoutState: IElementLayoutState, styles) {
-    // We only wish to elements once and then wait on the events to push changes
+    // We only wish to watch elements once and then wait on the events to push changes
     if (this.watchList[layoutState.index]) {
       return;
     }
@@ -406,7 +406,7 @@ class Layout implements IComponent {
         action: Action.Remove,
         time
       });
-      TraverseNodeTree(shadowNode, (removedShadowNode: IShadowDomNode) => {
+      traverseNodeTree(shadowNode, (removedShadowNode: IShadowDomNode) => {
         delete removedShadowNode.node[NodeIndex];
       });
     }

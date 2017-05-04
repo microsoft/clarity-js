@@ -20,9 +20,9 @@ On Mac and Linux, it's pre-installed.
 
 ### Node.js
 
-On Windows, grab an installer from here: https://nodejs.org/en/download/ and go with the default options:
+On Windows, grab an installer from nodejs.org and go with the default options:
 ```
-https://nodejs.org/dist/v4.4.7/node-v4.4.7-x64.msi
+https://nodejs.org/en/download/
 ```
 
 On Mac, setup Homebrew and then proceed to install node
@@ -75,7 +75,7 @@ To check code format:
 npm run tslint
 ```
 
-On Ubuntu, if you run into errors, it may be because you are missing libfontconfig package
+On Ubuntu, if you run into errors, it may be because you are missing the libfontconfig package
 ```
 sudo apt-get install libfontconfig
 ```
@@ -99,7 +99,9 @@ Go to 'File -> Open Folder' and select the 'clarity-js' folder that you cloned
 TSLint plugin will read Clarity's TSLint configuration and highlight any TSLint errors immediately as you edit your code.
 
 For Visual Studio Code, you can install the TSLint plugin from the Visual Studio Marketplace:
+```
 https://marketplace.visualstudio.com/items?itemName=eg2.tslint
+```
 
 Note: You might have to install tslint globally in order for it to work with the Visual Studio Code plugin:
 ```

@@ -1,7 +1,7 @@
 # Welcome to the Clarity project!
 
 ## About the project
-* Clarity is a client-side JavaScript library
+Clarity is a client-side JavaScript library that:
 * Observes page layout and user's interactions with the page
 * Inspects network requests on the page
 * Logs obtained information by sending JSON objects to a specified endpoint

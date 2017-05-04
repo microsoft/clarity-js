@@ -1,4 +1,4 @@
-import { assert, isNumber, TraverseNodeTree } from "./../utils";
+import { assert, isNumber, traverseNodeTree } from "./../utils";
 import { getNodeIndex, IgnoreTag, NodeIndex } from "./layoutstateprovider";
 
 // Class names for child list mutation classifications
@@ -163,11 +163,11 @@ export class ShadowDom {
 
     assert (shadowDomRoot.node === domRoot, "mirrorsRealDom");
 
-    TraverseNodeTree(domRoot, (node: Node) => {
+    traverseNodeTree(domRoot, (node: Node) => {
       domIndices.push(node[NodeIndex]);
     });
 
-    TraverseNodeTree(shadowDomRoot, (shadowNode: IShadowDomNode) => {
+    traverseNodeTree(shadowDomRoot, (shadowNode: IShadowDomNode) => {
       assert(parseInt(shadowNode.id, 10) === shadowNode.node[NodeIndex], "mirrorsRealDom");
       shadowDomIndices.push(shadowNode.node[NodeIndex]);
     });
