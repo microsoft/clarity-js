@@ -68,7 +68,7 @@ class Layout implements IComponent {
   // them with real data asynchronously (if it takes too long to do at once) by yielding a thread
   // and returning to it later through a set timeout
   private discoverDom() {
-    let discoverTime = getPageContextBasedTimestamp();
+    let discoverTime = Math.round(getPageContextBasedTimestamp());
     traverseNodeTree(document, this.discoverNode.bind(this));
     this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
     this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
@@ -337,7 +337,7 @@ class Layout implements IComponent {
   }
 
   private mutationCallback(mutations: MutationRecord[]) {
-    let time = getPageContextBasedTimestamp();
+    let time = Math.round(getPageContextBasedTimestamp());
     if (this.domDiscoverComplete) {
       this.mutation(mutations, time);
     } else {
