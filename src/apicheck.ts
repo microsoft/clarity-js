@@ -18,7 +18,7 @@ let apiContainer = {
 export function checkApi(): boolean {
   let missingApis = checkArrayOfApiStrings(apiContainer.required);
   let criticalApiMissing = missingApis.length > 0;
-  missingApis = missingApis.concat(checkArrayOfApiStrings((apiContainer.optional)));
+  missingApis = missingApis.concat(checkArrayOfApiStrings(apiContainer.optional));
   if (missingApis.length > 0) {
     let apiMissingEventState: IApiMissingEventState = {
       type: Instrumentation.ApiMissing,

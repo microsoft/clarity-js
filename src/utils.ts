@@ -61,7 +61,7 @@ export function mapProperties(target: any, mapFunction: (name: string, value) =>
   return map;
 }
 
-export function TraverseNodeTree(node: Node, processingFunc: (node: Node) => void) {
+export function traverseNodeTree(node: Node, processingFunc: (node: Node) => void) {
   let queue = [node];
   while (queue.length > 0) {
     let next = queue.shift();
