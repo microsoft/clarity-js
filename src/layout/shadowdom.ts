@@ -115,8 +115,10 @@ export class ShadowDom {
         case "childList":
 
           // Process inserts
+          // We use insertBefore to insert nodes into the shadowDom, so the right sibling needs to be inserted
+          // before the left sibling. For that reason we process elements from last to first (right to left)
           let addedLength = mutation.addedNodes.length;
-          for (let j = 0; j < addedLength; j++) {
+          for (let j = addedLength - 1; j >= 0; j--) {
             let previous = mutation.previousSibling;
             let next = mutation.nextSibling;
             if (j > 0) {
@@ -141,15 +143,17 @@ export class ShadowDom {
 
     // Detach removed nodes
     this.removedNodes.parentElement.removeChild(this.removedNodes);
-    let summary = this.getMutationSummary();
-    this.removedNodes.innerHTML = "";
-    this.classifyNodes = false;
 
-    // Remove 'Final' tags from all remaining nodes
+    // Process the new state of the ShadowDom and extract the summary
+    let summary = this.getMutationSummary();
+
+    // Clean up the state to be ready for next mutation batch processing
     let finalNodes = this.doc.getElementsByClassName(FinalClassName);
     while (finalNodes.length > 0) {
       this.removeClass(finalNodes[0] as IShadowDomNode, FinalClassName);
     }
+    this.removedNodes.innerHTML = "";
+    this.classifyNodes = false;
 
     return summary;
   }
