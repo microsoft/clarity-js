@@ -148,11 +148,13 @@ class Layout implements IComponent {
   private onDomDiscoverComplete() {
     this.domDiscoverComplete = true;
 
-    let allMutationRecords: MutationRecord[] = [];
-    for (let i = 0; i < this.domPreDiscoverMutations.length; i++) {
-      allMutationRecords = allMutationRecords.concat(this.domPreDiscoverMutations[i].mutations);
+    if (this.domPreDiscoverMutations.length > 0) {
+      let allMutationRecords: MutationRecord[] = [];
+      for (let i = 0; i < this.domPreDiscoverMutations.length; i++) {
+        allMutationRecords = allMutationRecords.concat(this.domPreDiscoverMutations[i].mutations);
+      }
+      this.mutation(allMutationRecords, Math.round(getPageContextBasedTimestamp()));
     }
-    this.mutation(allMutationRecords, getUnixTimestamp());
 
     this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
     assert(this.shadowDomConsistent, "onDomDiscoverComplete");
