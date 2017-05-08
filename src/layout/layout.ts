@@ -17,7 +17,7 @@ class Layout implements IComponent {
   private mutationSequence: number;
   private domDiscoverComplete: boolean;
   private domDiscoverQueue: number[];
-  private domPreDiscoverMutations: IMutationBatch[];
+  private domPreDiscoverMutations: MutationRecord[][];
   private originalProperties: INodePreUpdateInfo[];
 
   public reset(): void {
@@ -149,10 +149,7 @@ class Layout implements IComponent {
     this.domDiscoverComplete = true;
 
     if (this.domPreDiscoverMutations.length > 0) {
-      let allMutationRecords: MutationRecord[] = [];
-      for (let i = 0; i < this.domPreDiscoverMutations.length; i++) {
-        allMutationRecords = allMutationRecords.concat(this.domPreDiscoverMutations[i].mutations);
-      }
+      let allMutationRecords = Array.prototype.concat.apply([], this.domPreDiscoverMutations);
       this.mutation(allMutationRecords, Math.round(getPageContextBasedTimestamp()));
     }
 
@@ -174,10 +171,7 @@ class Layout implements IComponent {
           break;
       }
     }
-    this.domPreDiscoverMutations.push({
-      time,
-      mutations
-    });
+    this.domPreDiscoverMutations.push(mutations);
   }
 
   // Looks at whether some node's attributes/characterData have mutated for the first time
