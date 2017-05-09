@@ -142,11 +142,11 @@ describe("Layout Tests", () => {
     let stopObserving = observeEvents(LayoutEventName);
     let dom = document.getElementById("clarity");
     let backup = document.getElementById("backup");
-    let div = document.createElement("div");
+    let span = document.createElement("span");
 
-    dom.parentElement.appendChild(div);
-    div.appendChild(dom);
-    div.appendChild(backup);
+    dom.parentElement.appendChild(span);
+    span.appendChild(dom);
+    span.appendChild(backup);
 
     function callback() {
       observer.disconnect();
@@ -158,6 +158,17 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 3);
+
+      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.tag, "SPAN");
+
+      assert.equal(events[1].state.action, 3);
+      assert.equal(events[1].state.index, dom[NodeIndex]);
+      assert.equal(events[1].state.next, backup[NodeIndex]);
+
+      assert.equal(events[2].state.action, 3);
+      assert.equal(events[2].state.index, backup[NodeIndex]);
+      assert.equal(events[2].state.next, null);
 
       // Explicitly signal that we are done here
       done();
