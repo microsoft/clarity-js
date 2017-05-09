@@ -265,10 +265,12 @@ export class ShadowDom {
         this.setClass(shadowNode, FinalClassName);
 
         // Process children
-        let nextChild = addedNode.firstChild;
+        // We use insertBefore to insert nodes into the shadowDom, so the right sibling needs to be inserted
+        // before the left sibling. For that reason we process children from last to first (right to left)
+        let nextChild = addedNode.lastChild;
         while (nextChild) {
           this.applyInsert(nextChild, addedNode, nextChild.previousSibling, nextChild.nextSibling, true);
-          nextChild = nextChild.nextSibling;
+          nextChild = nextChild.previousSibling;
         }
       } else {
         this.moveShadowNode(addedNodeIndex, parentIndex, getNodeIndex(nextSibling));
