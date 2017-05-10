@@ -134,6 +134,47 @@ describe("Layout Tests", () => {
     }
   });
 
+  it("checks that moving two known nodes to a new location such that they are siblings works correctly", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Move multiple nodes from one parent to another and observe Clarity events
+    let stopObserving = observeEvents(LayoutEventName);
+    let dom = document.getElementById("clarity");
+    let backup = document.getElementById("backup");
+    let span = document.createElement("span");
+
+    dom.parentElement.appendChild(span);
+    span.appendChild(dom);
+    span.appendChild(backup);
+
+    function callback() {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 3);
+
+      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.tag, "SPAN");
+
+      assert.equal(events[1].state.action, 3);
+      assert.equal(events[1].state.index, dom[NodeIndex]);
+      assert.equal(events[1].state.next, backup[NodeIndex]);
+
+      assert.equal(events[2].state.action, 3);
+      assert.equal(events[2].state.index, backup[NodeIndex]);
+      assert.equal(events[2].state.next, null);
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
   //  Currently we stopped capturing CSS rule modifications, so disabling this test
   //  Keeping it in code to use it again, once CSS rule modification capturing is restored
   //
