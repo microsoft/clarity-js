@@ -5,7 +5,7 @@ import { instrument } from "./instrumentation";
 // Excluding 3rd party code from tslint
 // tslint:disable
 export function guid() {
-  let d = getUnixTimestamp();
+  let d = new Date().getTime();
   if (window.performance && typeof window.performance.now === "function") {
     d += performance.now(); //use high-precision timer if available
   }
@@ -17,12 +17,6 @@ export function guid() {
   return uuid;
 }
 // tslint:enable
-
-export function getUnixTimestamp(): number {
-  return (window.performance && typeof performance.now === "function")
-    ? performance.now() + performance.timing.navigationStart
-    : new Date().getTime();
-}
 
 export function setCookie(cookieName: string, value: string, expDays?: number): void {
   let expDate = null;

@@ -2,7 +2,7 @@ import { checkApi } from "./apicheck";
 import compress from "./compress";
 import { config, script } from "./config";
 import { instrument } from "./instrumentation";
-import { debug, getCookie, getUnixTimestamp, guid, mapProperties, setCookie } from "./utils";
+import { debug, getCookie, guid, mapProperties, setCookie } from "./utils";
 
 // Constants
 const ImpressionAttribute = "data-iid";
@@ -82,7 +82,7 @@ export function bind(target: EventTarget, event: string, listener: EventListener
 export function addEvent(type: string, eventState: any, time?: number) {
   let evt: IEvent = {
     id: eventCount++,
-    time: typeof time === "number" ? time : Math.round(getPageContextBasedTimestamp()),
+    time: typeof time === "number" ? time : getTimestamp(),
     type,
     state: eventState
   };
@@ -98,11 +98,22 @@ export function addEvent(type: string, eventState: any, time?: number) {
   timeout = setTimeout(uploadNextPayload, config.delay);
 }
 
+export function getTimestamp(unix?: boolean, raw?: boolean) {
+  let time = unix ? getUnixTimestamp() : getPageContextBasedTimestamp();
+  return (raw ? time : Math.round(time));
+}
+
+function getUnixTimestamp(): number {
+  return (window.performance && typeof performance.now === "function")
+    ? performance.now() + performance.timing.navigationStart
+    : new Date().getTime();
+}
+
 // If performance.now function is not available, we do our best to approximate the time since page start
 // by using the timestamp from when Clarity script got invoked as a starting point.
 // In such case this number may not reflect the 'time since page start' accurately,
 // especially if Clarity script is post-loaded or injected after page load.
-export function getPageContextBasedTimestamp(): number {
+function getPageContextBasedTimestamp(): number {
   return (window.performance && typeof performance.now === "function")
     ? performance.now()
     : new Date().getTime() - startTime;

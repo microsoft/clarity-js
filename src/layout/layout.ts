@@ -1,6 +1,6 @@
 import { config } from "./../config";
-import { addEvent, bind, getPageContextBasedTimestamp, register } from "./../core";
-import { assert, debug, getUnixTimestamp, isNumber, traverseNodeTree } from "./../utils";
+import { addEvent, bind, getTimestamp, register } from "./../core";
+import { assert, debug, isNumber, traverseNodeTree } from "./../utils";
 import * as LayoutStateProvider from "./layoutstateprovider";
 import { getNodeIndex, NodeIndex } from "./layoutstateprovider";
 import { ShadowDom } from "./shadowdom";
@@ -17,7 +17,7 @@ class Layout implements IComponent {
   private mutationSequence: number;
   private domDiscoverComplete: boolean;
   private domDiscoverQueue: number[];
-  private domPreDiscoverMutations: IMutationBatch[];
+  private domPreDiscoverMutations: MutationRecord[][];
   private originalProperties: INodePreUpdateInfo[];
 
   public reset(): void {
@@ -68,7 +68,7 @@ class Layout implements IComponent {
   // them with real data asynchronously (if it takes too long to do at once) by yielding a thread
   // and returning to it later through a set timeout
   private discoverDom() {
-    let discoverTime = getPageContextBasedTimestamp();
+    let discoverTime = getTimestamp();
     traverseNodeTree(document, this.discoverNode.bind(this));
     this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
     this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
@@ -94,8 +94,8 @@ class Layout implements IComponent {
   // if it does, store original values. Then, when we record the layout of the mutated node,
   // we can adjust the current layout JSON with the original values to mimic its initial state.
   private backfillLayoutsAsync(time: number, onDomDiscoverComplete: () => void) {
-    let yieldTime = getUnixTimestamp() + config.timeToYield;
-    while (this.domDiscoverQueue.length > 0 && getUnixTimestamp() < yieldTime) {
+    let yieldTime = getTimestamp(true) + config.timeToYield;
+    while (this.domDiscoverQueue.length > 0 && getTimestamp(true) < yieldTime) {
       let index = this.domDiscoverQueue.shift();
       let shadowNode = this.shadowDom.getShadowNode(index);
       let oldLayoutState = shadowNode.layout;
@@ -148,11 +148,10 @@ class Layout implements IComponent {
   private onDomDiscoverComplete() {
     this.domDiscoverComplete = true;
 
-    let allMutationRecords: MutationRecord[] = [];
-    for (let i = 0; i < this.domPreDiscoverMutations.length; i++) {
-      allMutationRecords = allMutationRecords.concat(this.domPreDiscoverMutations[i].mutations);
+    if (this.domPreDiscoverMutations.length > 0) {
+      let allMutationRecords = Array.prototype.concat.apply([], this.domPreDiscoverMutations);
+      this.mutation(allMutationRecords, getTimestamp());
     }
-    this.mutation(allMutationRecords, getUnixTimestamp());
 
     this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
     assert(this.shadowDomConsistent, "onDomDiscoverComplete");
@@ -172,10 +171,7 @@ class Layout implements IComponent {
           break;
       }
     }
-    this.domPreDiscoverMutations.push({
-      time,
-      mutations
-    });
+    this.domPreDiscoverMutations.push(mutations);
   }
 
   // Looks at whether some node's attributes/characterData have mutated for the first time
@@ -299,7 +295,7 @@ class Layout implements IComponent {
     let index = getNodeIndex(element);
     let recordEvent = true;
     if (index !== null) {
-      let time = Math.round(getPageContextBasedTimestamp());
+      let time = getTimestamp();
       let lastLayoutState = this.shadowDom.getShadowNode(index).layout;
 
       // Deep-copy an existing layout JSON
@@ -337,7 +333,7 @@ class Layout implements IComponent {
   }
 
   private mutationCallback(mutations: MutationRecord[]) {
-    let time = getPageContextBasedTimestamp();
+    let time = getTimestamp();
     if (this.domDiscoverComplete) {
       this.mutation(mutations, time);
     } else {

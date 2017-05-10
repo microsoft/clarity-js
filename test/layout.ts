@@ -204,6 +204,87 @@ describe("Layout Tests", () => {
     }
   });
 
+  it("checks that insertion of multiple nodes in the same mutation record is handled correctly", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+    let stopObserving = observeEvents(LayoutEventName);
+
+    let df = document.createDocumentFragment();
+    let n1 = document.createElement("div");
+    let n2 = document.createElement("span");
+    let n3 = document.createElement("a");
+    let backup = document.getElementById("backup");
+    let backupPrevious = backup.previousSibling;
+
+    df.appendChild(n1);
+    df.appendChild(n2);
+    df.appendChild(n3);
+    backup.parentElement.insertBefore(df, backup);
+
+    function callback() {
+      observer.disconnect();
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 3);
+
+      // Check DIV insert event
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.tag, "DIV");
+      assert.equal(events[0].state.previous, backupPrevious[NodeIndex]);
+      assert.equal(events[0].state.next, n2[NodeIndex]);
+
+      // Check SPAN insert event
+      assert.equal(events[1].state.action, Action.Insert);
+      assert.equal(events[1].state.tag, "SPAN");
+      assert.equal(events[1].state.next, n3[NodeIndex]);
+
+      // Check A insert event
+      assert.equal(events[2].state.action, Action.Insert);
+      assert.equal(events[2].state.tag, "A");
+      assert.equal(events[2].state.next, backup[NodeIndex]);
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
+  it("checks that removal of multiple nodes in the same mutation record is handled correctly", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+    let stopObserving = observeEvents(LayoutEventName);
+
+    let dom = document.getElementById("clarity");
+    let children = dom.childNodes;
+    let childIndices = [];
+    for (let i = 0; i < children.length; i++) {
+      childIndices.push(children[i][NodeIndex]);
+    }
+
+    // Remove all children
+    dom.innerHTML = "";
+
+    function callback() {
+      observer.disconnect();
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      // Make sure that there is a remove event for every child
+      assert.equal(events.length, childIndices.length);
+      for (let i = 0; i < childIndices.length; i++) {
+        assert.equal(events[i].state.action, Action.Remove);
+        assert.equal(events[i].state.index, childIndices[i]);
+      }
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
   it("checks that dom additions with immediate attribute change are handled by clarity", (done) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });

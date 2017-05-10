@@ -2,7 +2,6 @@ import { config } from "../src/config";
 import * as core from "../src/core";
 import { DistanceThreshold, PointerEventName, TimeThreshold } from "../src/pointer";
 import uncompress from "../src/uncompress";
-import { getUnixTimestamp } from "../src/utils";
 import { cleanupFixture, observeEvents, setupFixture, triggerSend } from "./utils";
 
 import * as chai from "chai";
@@ -92,8 +91,8 @@ describe("Pointer Tests", () => {
     let x = 250;
     triggerMouseEvent(dom, "mousemove", x, 100);
 
-    let thresholdTs = getUnixTimestamp() + TimeThreshold + 1;
-    while (getUnixTimestamp() < thresholdTs) {
+    let thresholdTs = core.getTimestamp(true) + TimeThreshold + 1;
+    while (core.getTimestamp(true) < thresholdTs) {
       // Wait for time threadhold to expire
     }
 

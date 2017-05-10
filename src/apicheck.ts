@@ -5,6 +5,7 @@ let apiContainer = {
   // Without these Clarity won't work properly
   required: [
     "document.implementation.createHTMLDocument",
+    "document.documentElement.classList",
     "Function.prototype.bind"
   ],
 

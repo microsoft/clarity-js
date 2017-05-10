@@ -169,11 +169,6 @@ interface IMutationEntry {
   next?: Node;
 }
 
-interface IMutationBatch {
-  time: number;
-  mutations: MutationRecord[];
-}
-
 // Interface to store some information about the initial state of the node
 // in cases where mutation happens before we process the node for the first time.
 // Stroring original values of the properties that can were mutated allows us to
