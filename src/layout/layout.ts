@@ -342,19 +342,23 @@ class Layout implements IComponent {
   }
 
   private mutation(mutations: MutationRecord[], time: number) {
-    let shadowDomConsistentBeforeMutations = this.shadowDomConsistent;
-    let summary = this.shadowDom.applyMutationBatch(mutations);
+    // Don't process mutations on top of the inconsistent state.
+    // ShadowDom mutation processing logic requires consistent state as a prerequisite.
+    // If we end up in the inconsistent state, that means that something went wrong already,
+    // so we can give up on the following mutations and should investigate the cause of the error.
+    // Continuing to process mutations can result in javascript errors and lead to even more inconsistencies.
+    if (this.shadowDomConsistent) {
+      let summary = this.shadowDom.applyMutationBatch(mutations);
 
-    // Make sure ShadowDom arrived to the consistent state
-    if (shadowDomConsistentBeforeMutations) {
+      // Make sure ShadowDom arrived to the consistent state
       this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
-      assert(this.shadowDomConsistent, "discoverDom");
+      assert(this.shadowDomConsistent, "mutation");
       if (!this.shadowDomConsistent) {
         debug(`>>> ShadowDom doesn't match PageDOM after mutation batch #${this.mutationSequence}!`);
       }
-    }
 
-    this.processMutations(summary, time);
+      this.processMutations(summary, time);
+    }
     this.mutationSequence++;
   }
 
