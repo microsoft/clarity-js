@@ -324,7 +324,9 @@ export class ShadowDom {
     if (childNodeIndex === null) {
       parentShadowNode = this.getShadowNode(parentIndex);
     } else {
-      parentShadowNode = this.getShadowNode(childNodeIndex).parentNode;
+      let childShadowNode = this.getShadowNode(childNodeIndex);
+      assert(!!childShadowNode, "shouldProcessChildListMutation");
+      parentShadowNode = childShadowNode && childShadowNode.parentNode;
     }
     return parentShadowNode && !this.hasClass(parentShadowNode, FinalClassName);
   }
