@@ -13,8 +13,9 @@ export class ShadowDom {
 
   private nextIndex = 0;
   private removedNodes = this.doc.createElement("div");
-  private classifyNodes = false;
   private shadowDomRoot = this.doc.createElement("div");
+  private shadowDocument: IShadowDomNode = null;
+  private classifyNodes = false;
 
   constructor() {
     this.doc.documentElement.appendChild(this.shadowDomRoot);
@@ -26,19 +27,24 @@ export class ShadowDom {
   }
 
   public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number, layout?: ILayoutState): IShadowDomNode {
+    let isDocument = (node === document);
     let index = this.setNodeIndex(node);
-    let parent = (node === document) ? this.shadowDomRoot : this.getShadowNode(parentIndex);
+    let parent = (isDocument ? this.shadowDomRoot : this.getShadowNode(parentIndex)) as IShadowDomNode;
     let nextSibling = this.getShadowNode(nextSiblingIndex);
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
-    let ignore = (node === document) ? false : (parent as IShadowDomNode).ignore;
+    let ignore = (node === document) ? false : parent.ignore;
     shadowNode.id = "" + index;
     shadowNode.node = node;
     shadowNode.layout = layout;
     shadowNode.ignore = (layout && layout.tag === IgnoreTag) || ignore;
 
+    if (isDocument) {
+      this.shadowDocument = shadowNode;
+    }
+
     if (this.classifyNodes) {
       this.setClass(shadowNode, NewNodeClassName);
-      if (!this.hasClass(parent as IShadowDomNode, NewNodeClassName)) {
+      if (!this.hasClass(parent, NewNodeClassName)) {
         this.setClass(shadowNode, TopNewNodeClassName);
       }
     }
@@ -159,21 +165,24 @@ export class ShadowDom {
   }
 
   public mirrorsRealDom(): boolean {
-    let domRoot = document;
-    let shadowDomRoot = this.getShadowNode(document[NodeIndex]);
     let domIndices: number[] = [];
     let shadowDomIndices: number[] = [];
     let mirrors = true;
 
-    assert (shadowDomRoot.node === domRoot, "mirrorsRealDom");
+    if (this.shadowDocument === null) {
+      assert(this.shadowDocument !== null, "shadowDocumentIsNull");
+      return false;
+    }
 
-    traverseNodeTree(domRoot, (node: Node) => {
-      domIndices.push(node[NodeIndex]);
+    assert(this.shadowDocument.node === document, "mirrorsRealDom");
+
+    traverseNodeTree(document, (node: Node) => {
+      domIndices.push(getNodeIndex(node));
     });
 
-    traverseNodeTree(shadowDomRoot, (shadowNode: IShadowDomNode) => {
-      assert(parseInt(shadowNode.id, 10) === shadowNode.node[NodeIndex], "mirrorsRealDom");
-      shadowDomIndices.push(shadowNode.node[NodeIndex]);
+    traverseNodeTree(this.shadowDocument, (shadowNode: IShadowDomNode) => {
+      assert(parseInt(shadowNode.id, 10) === getNodeIndex(shadowNode.node), "mirrorsRealDom");
+      shadowDomIndices.push(getNodeIndex(shadowNode.node));
     });
 
     if (domIndices.length === shadowDomIndices.length) {
