@@ -32,7 +32,7 @@ export class ShadowDom {
     let parent = (isDocument ? this.shadowDomRoot : this.getShadowNode(parentIndex)) as IShadowDomNode;
     let nextSibling = this.getShadowNode(nextSiblingIndex);
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
-    let ignore = (node === document) ? false : parent.ignore;
+    let ignore = (node === document) ? false : parent && parent.ignore;
     shadowNode.id = "" + index;
     shadowNode.node = node;
     shadowNode.layout = layout;
@@ -89,13 +89,16 @@ export class ShadowDom {
   public updateShadowNode(index: number, newLayout?: ILayoutState) {
     let shadowNode = this.getShadowNode(index);
     assert(!!shadowNode, "updateShadowNode");
-    if (newLayout) {
-      shadowNode.layout = newLayout;
-      shadowNode.ignore = (newLayout.tag === IgnoreTag);
-    }
 
-    if (this.classifyNodes) {
-      this.setClass(shadowNode, UpdatedNodeClassName);
+    if (shadowNode) {
+      if (newLayout) {
+        shadowNode.layout = newLayout;
+        shadowNode.ignore = (newLayout.tag === IgnoreTag);
+      }
+
+      if (this.classifyNodes) {
+        this.setClass(shadowNode, UpdatedNodeClassName);
+      }
     }
   }
 
