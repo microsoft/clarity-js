@@ -353,11 +353,11 @@ class Layout implements IComponent {
       // Make sure ShadowDom arrived to the consistent state
       this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
       assert(this.shadowDomConsistent, "mutation");
-      if (!this.shadowDomConsistent) {
+      if (this.shadowDomConsistent) {
+        this.processMutations(summary, time);
+      } else {
         debug(`>>> ShadowDom doesn't match PageDOM after mutation batch #${this.mutationSequence}!`);
       }
-
-      this.processMutations(summary, time);
     }
     this.mutationSequence++;
   }
