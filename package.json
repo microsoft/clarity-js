@@ -4,6 +4,7 @@
   "description": "An analytics library that uses web page interactions to generate aggregated insights",
   "author": "Clarity Team",
   "license": "MIT",
+  "main": "build/src/wireup.js",
   "devDependencies": {
     "@types/chai": "^3.4.34",
     "@types/jasmine": "^2.5.37",

@@ -1,6 +1,6 @@
 import { checkApi } from "./apicheck";
 import compress from "./compress";
-import { config, script } from "./config";
+import { config } from "./config";
 import { instrument } from "./instrumentation";
 import { debug, getCookie, guid, mapProperties, setCookie } from "./utils";
 
@@ -247,12 +247,6 @@ function init() {
   if (!cid) {
     cid = guid();
     setCookie(Cookie, cid);
-  }
-
-  // Update identifiers on the script tag to allow for other resources to access it, if required.
-  if (script) {
-    script.setAttribute(ImpressionAttribute, impressionId);
-    script.setAttribute(UserAttribute, cid);
   }
 
   // Check that no other instance of Clarity is already running on the page
