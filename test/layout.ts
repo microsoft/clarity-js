@@ -301,7 +301,8 @@ describe("Layout Tests", () => {
     let children = dom.childNodes;
     let childIndices = [];
     for (let i = 0; i < children.length; i++) {
-      childIndices.push(children[i][NodeIndex]);
+      let index = children[i][NodeIndex];
+      childIndices[index] = true;
     }
 
     // Remove all children
@@ -315,10 +316,11 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       // Make sure that there is a remove event for every child
-      assert.equal(events.length, childIndices.length);
-      for (let i = 0; i < childIndices.length; i++) {
+      for (let i = 0; i < events.length; i++) {
+        let index = events[i].state.index;
         assert.equal(events[i].state.action, Action.Remove);
-        assert.equal(events[i].state.index, childIndices[i]);
+        assert.equal(childIndices[index], true);
+        delete childIndices[index];
       }
 
       // Explicitly signal that we are done here
