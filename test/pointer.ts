@@ -90,8 +90,9 @@ describe("Pointer Tests", () => {
     // Trigger mousemove events followed by a click event
     let x = 250;
     triggerMouseEvent(dom, "mousemove", x, 100);
+    triggerMouseEvent(dom, "mousemove", x, 100);
 
-    let thresholdTs = core.getTimestamp(true) + TimeThreshold + 1;
+    let thresholdTs = core.getTimestamp(true) + (TimeThreshold * 2);
     while (core.getTimestamp(true) < thresholdTs) {
       // Wait for time threadhold to expire
     }
