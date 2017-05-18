@@ -20,8 +20,7 @@ const sources = [
   "build/src/viewport.js",
   "build/src/layout/layout.js",
   "build/src/pointer.js",
-  "build/src/performance.js",
-  "build/src/wireup.js"
+  "build/src/performance.js"
 ];
 
 gulp.task("build", () => {
@@ -43,8 +42,12 @@ gulp.task("uglify", () => {
 
 gulp.task("browserify", () => {
   return browserify({
-    entries: sources
-  }).bundle()
+      entries: sources
+    })
+    .require("./build/src/wireup.js", {
+      expose : "clarity"
+    })
+    .bundle()
     .pipe(source(clarityUncrunched))
     .pipe(gulp.dest("build"));
 });

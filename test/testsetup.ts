@@ -1,5 +1,5 @@
 import { config } from "../src/config";
-import * as clarity from "../src/wireup";
+import { start } from "../src/wireup";
 
 let sentBytes: string[] = [];
 
@@ -24,4 +24,4 @@ XMLHttpRequest.prototype.send = (data: any) => {
   sentBytes.push(data);
 };
 
-clarity.start();
+start();
