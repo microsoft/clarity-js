@@ -1,4 +1,4 @@
-// Get a reference to script tag responsible for executing clarity script
+// Default configurations
 export let config: IConfig = {
   delay: 500,
   batchLimit: 100 * 1024, // 100 kilobytes
@@ -7,6 +7,5 @@ export let config: IConfig = {
   showText: false,
   instrument: false,
   timeToYield: 50,
-  activateEvent: "",
   debug: false
 };

@@ -25,9 +25,6 @@ interface IConfig {
   // Send back instrumentation data, if set to true
   instrument: boolean;
 
-  // Event, to which Clarity will bind its 'activate' function
-  activateEvent: string;
-
   // Setting to enable debug features (e.g. console.log statements)
   debug: boolean;
 }
