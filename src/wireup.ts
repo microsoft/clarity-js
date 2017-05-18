@@ -1,8 +1,14 @@
 import { config } from "./config";
-import { activate, bind, teardown } from "./core";
+import { activate, bind, state, teardown } from "./core";
+import { mapProperties } from "./utils";
 
-if (config.activateEvent) {
-  bind(window, config.activateEvent, activate);
-} else {
-  setTimeout(activate, 0);
+export function start(customConfig?: IConfig) {
+  if (state !== State.Activated) {
+    mapProperties(customConfig, null, true, config);
+    activate();
+  }
+}
+
+export function stop() {
+  teardown();
 }

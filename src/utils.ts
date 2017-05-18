@@ -42,17 +42,21 @@ export function getCookie(cookieName: string): string {
   return null;
 }
 
-export function mapProperties(target: any, mapFunction: (name: string, value) => any, ownProperties: boolean): object {
-  let map = target ? {} : target;
-  for (let property in target) {
-    if (!ownProperties || target.hasOwnProperty(property)) {
-      let mapValue = mapFunction(property, target[property]);
-      if (typeof mapValue !== "undefined") {
-        map[property] = mapValue;
+export function mapProperties(sourceObj: object,
+                              mapFunction: (name: string, value: any) => any,
+                              ownPropertiesOnly: boolean,
+                              outObj?: object): object {
+  outObj = outObj || {};
+  for (let property in sourceObj) {
+    if (!ownPropertiesOnly || sourceObj.hasOwnProperty(property)) {
+      let sourceValue = sourceObj[property];
+      let outValue = mapFunction ? mapFunction(property, sourceValue) : sourceValue;
+      if (typeof outValue !== "undefined") {
+        outObj[property] = outValue;
       }
     }
   }
-  return map;
+  return outObj;
 }
 
 export function traverseNodeTree(node: Node, processingFunc: (node: Node) => void) {
