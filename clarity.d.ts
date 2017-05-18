@@ -4,29 +4,29 @@
 
 interface IConfig {
   // Endpoint, to which data will be uploaded
-  uploadUrl: string;
+  uploadUrl?: string;
 
   // Each new event is going to delay data upload to server by this number of milliseconds
-  delay: number;
+  delay?: number;
 
   // Maximum number of event bytes that Clarity can send in a single upload
-  batchLimit: number;
+  batchLimit?: number;
 
   // Maximum number of bytes that Clarity can send per page overall
-  totalLimit: number;
+  totalLimit?: number;
 
   // If set to false, text on the page will be masked with asterisks
-  showText: boolean;
+  showText?: boolean;
 
   // Maximum number of milliseconds, after which Clarity should yield the thread
   // It is used to avoid freezing the page during large object serialization
-  timeToYield: number;
+  timeToYield?: number;
 
   // Send back instrumentation data, if set to true
-  instrument: boolean;
+  instrument?: boolean;
 
   // Setting to enable debug features (e.g. console.log statements)
-  debug: boolean;
+  debug?: boolean;
 }
 
 /* ##################################### */

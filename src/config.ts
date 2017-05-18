@@ -1,4 +1,4 @@
-// Default configurations
+// Default configuration
 export let config: IConfig = {
   delay: 500,
   batchLimit: 100 * 1024, // 100 kilobytes

@@ -154,14 +154,15 @@ class PerformanceProfiler implements IComponent {
         if ("decodedBodySize" in entry) {
           networkData.decodedBodySize = entry.decodedBodySize;
         }
+
+        networkData = mapProperties(networkData, (name: string, value) => {
+          return (typeof value === "number") ? Math.round(value) : value;
+        }, true) as IPerformanceResourceTiming;
       }
     } else {
       this.incompleteEntryIndices.push(entryIndex);
     }
 
-    networkData = mapProperties(networkData, (name: string, value) => {
-      return (typeof value === "number") ? Math.round(value) : value;
-    }, true) as IPerformanceResourceTiming;
     return networkData;
   }
 }
