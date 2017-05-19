@@ -18,9 +18,23 @@ describe("Functional Tests", () => {
   beforeEach(setupFixture);
   afterEach(cleanupFixture);
 
-  it("should validate that modules work fine together", (done) => {
+  it("validates that modules work fine together", (done) => {
     let events = getAllSentEvents();
     assert.equal(events.length >= 10, true);
+    done();
+  });
+
+  it("validates that custom sendCallback is invoked when passed through config", (done) => {
+    let sendCount = 0;
+    config.sendCallback = () => {
+      sendCount++;
+    };
+
+    let eventName = "Send Callback Test";
+    core.addEvent(eventName, null);
+    triggerSend();
+
+    assert.equal(sendCount, 1);
     done();
   });
 

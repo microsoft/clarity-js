@@ -169,8 +169,9 @@ function uploadDroppedPayloadsMappingFunction(sequenceNumber: string, droppedPay
 }
 
 function upload(payload: string, onSuccess?: (status: number) => void, onFailure?: (status: number) => void) {
-  // Send to the backend
-  if (config.uploadUrl.length > 0) {
+  if (config.sendCallback) {
+    config.sendCallback(payload, onSuccess, onFailure);
+  } else if (config.uploadUrl.length > 0) {
     let xhr = new XMLHttpRequest();
     xhr.open("POST", config.uploadUrl);
     xhr.setRequestHeader("Content-Type", "application/json");
