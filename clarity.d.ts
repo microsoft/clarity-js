@@ -27,7 +27,7 @@ interface IConfig {
 
   // Pointer to the function which would be responsible for sending the data
   // If left unspecified, raw payloads will be uploaded to the uploadUrl endpoint
-  sendCallback?: (payload: string, onSuccess?: (status: number) => void, onFailure?: (status: number) => void) => void;
+  uploadHandler?: (payload: string, onSuccess?: (status: number) => void, onFailure?: (status: number) => void) => void;
 
   // Setting to enable debug features (e.g. console.log statements)
   debug?: boolean;

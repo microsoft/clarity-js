@@ -137,6 +137,9 @@ function uploadNextPayload() {
     let payload = JSON.stringify(compressed);
     let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
     let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uncompressed, compressed); };
+
+    nextPayload = [];
+    nextPayloadLength = 0;
     upload(payload, onSuccess, onFailure);
 
     if (config.debug && localStorage) {
@@ -147,9 +150,6 @@ function uploadNextPayload() {
       debug(`** Clarity #${sequence}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
       localStorage.setItem("clarity", JSON.stringify(bytes));
     }
-
-    nextPayload = [];
-    nextPayloadLength = 0;
 
     if (state === State.Activated && sentBytesCount > config.totalLimit) {
       let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
@@ -169,16 +169,20 @@ function uploadDroppedPayloadsMappingFunction(sequenceNumber: string, droppedPay
 }
 
 function upload(payload: string, onSuccess?: (status: number) => void, onFailure?: (status: number) => void) {
-  if (config.sendCallback) {
-    config.sendCallback(payload, onSuccess, onFailure);
+  if (config.uploadHandler) {
+    config.uploadHandler(payload, onSuccess, onFailure);
   } else if (config.uploadUrl.length > 0) {
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", config.uploadUrl);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, payload.length, onSuccess, onFailure); };
-    xhr.send(payload);
+    defaultUpload(payload, onSuccess, onFailure);
   }
   sentBytesCount += payload.length;
+}
+
+function defaultUpload(payload: string, onSuccess?: (status: number) => void, onFailure?: (status: number) => void) {
+  let xhr = new XMLHttpRequest();
+  xhr.open("POST", config.uploadUrl);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, payload.length, onSuccess, onFailure); };
+  xhr.send(payload);
 }
 
 function onXhrReadyStatusChange(xhr: XMLHttpRequest,
@@ -213,7 +217,7 @@ function onFirstSendDeliveryFailure(status: number, rawPayload: string, compress
     attemptNumber: 0
   };
   droppedPayloads[xhrErrorEventState.sequenceNumber] = {
-    payload: compressedPayload,
+    payload: JSON.stringify(compressedPayload),
     xhrErrorState: xhrErrorEventState
   };
   instrument(xhrErrorEventState);

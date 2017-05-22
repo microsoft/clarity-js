@@ -4,7 +4,15 @@ import uncompress from "../src/uncompress";
 import { mapProperties } from "../src/utils";
 import { clearSentBytes, getSentBytes } from "./testsetup";
 
+export const MockEventName = "ClarityTestMockEvent";
+
 let originalConfig: IConfig = config;
+
+export function triggerMockEvent(eventName?: string) {
+  eventName = eventName || MockEventName;
+  core.addEvent(eventName, {});
+  triggerSend();
+}
 
 export function observeEvents(eventType?: string): () => IEvent[] {
   triggerSend();

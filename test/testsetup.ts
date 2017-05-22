@@ -11,10 +11,7 @@ export function clearSentBytes(): void {
   sentBytes = [];
 }
 
-// Set up page environment for testing purposes
-// Make config uri non-empty, so that Clarity executes send
-
-// Allow instrumentation events
+// Set up page environment for testing
 
 // Override send function to store bytes for test verification,
 // instead of actually sending it to the backend
@@ -22,6 +19,8 @@ XMLHttpRequest.prototype.send = (data: any) => {
   sentBytes.push(data);
 };
 
+// Make config uri non-empty, so that Clarity executes send
+// Allow instrumentation events
 let customConfig: IConfig = {
   uploadUrl: "https://www.claritytest.com/test",
   instrument: true

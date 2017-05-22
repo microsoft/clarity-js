@@ -7,6 +7,6 @@ export let config: IConfig = {
   showText: false,
   timeToYield: 50,
   instrument: false,
-  sendCallback: null,
+  uploadHandler: null,
   debug: false
 };
