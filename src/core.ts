@@ -176,26 +176,28 @@ function uploadDroppedPayloadsMappingFunction(sequenceNumber: string, droppedPay
   upload(droppedPayloadInfo.payload, onSuccess, onFailure);
 }
 
-function upload(payload: string, onSuccess?: (status: number) => void, onFailure?: (status: number) => void) {
+function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
   if (config.uploadHandler) {
     config.uploadHandler(payload, onSuccess, onFailure);
-  } else if (config.uploadUrl.length > 0) {
+  } else {
     defaultUpload(payload, onSuccess, onFailure);
   }
   sentBytesCount += payload.length;
 }
 
-function defaultUpload(payload: string, onSuccess?: (status: number) => void, onFailure?: (status: number) => void) {
-  let xhr = new XMLHttpRequest();
-  xhr.open("POST", config.uploadUrl);
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, payload.length, onSuccess, onFailure); };
-  xhr.send(payload);
+function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
+  if (config.uploadUrl.length > 0) {
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", config.uploadUrl);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, payload.length, onSuccess, onFailure); };
+    xhr.send(payload);
+  }
 }
 
 function onXhrReadyStatusChange(xhr: XMLHttpRequest,
-                                bytesSent: number, onSuccess?: (status: number) => void,
-                                onFailure?: (status: number) => void) {
+                                bytesSent: number, onSuccess?: UploadCallback,
+                                onFailure?: UploadCallback) {
   if (xhr.readyState === XMLHttpRequest.DONE) {
     // HTTP response status documentation:
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status

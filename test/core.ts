@@ -27,7 +27,7 @@ describe("Functional Tests", () => {
 
   it("validates that custom sendCallback is invoked when passed through config", (done) => {
     let sendCount = 0;
-    config.uploadHandler = (payload: string, onSuccess: (status: number) => void, onFailure?: (status: number) => void) => {
+    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
       mockUploadHandler(payload);
       sendCount++;
     };
@@ -42,7 +42,7 @@ describe("Functional Tests", () => {
     let mockFailure = true;
 
     // Mock 1 failed request
-    config.uploadHandler = (payload: string, onSuccess: (status: number) => void, onFailure?: (status: number) => void) => {
+    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
       if (mockFailure) {
         onFailure(400);
         mockFailure = false;
@@ -83,7 +83,7 @@ describe("Functional Tests", () => {
     let uploadInvocationCount = 0;
 
     // Mock 1 failed request
-    config.uploadHandler = (payload: string, onSuccess: (status: number) => void, onFailure?: (status: number) => void) => {
+    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
       if (mockFailure) {
         onFailure(400);
         mockFailure = false;
@@ -123,7 +123,7 @@ describe("Functional Tests", () => {
     let uploadInvocationCount = 0;
 
     // Mock fail all requests (e.g. dropped internet connection)
-    config.uploadHandler = (payload: string, onSuccess: (status: number) => void, onFailure?: (status: number) => void) => {
+    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
       onFailure(400);
       uploadInvocationCount++;
     };
