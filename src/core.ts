@@ -2,7 +2,7 @@ import { checkApi } from "./apicheck";
 import compress from "./compress";
 import { config } from "./config";
 import { instrument } from "./instrumentation";
-import { debug, getCookie, guid, mapProperties, setCookie } from "./utils";
+import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
 const ImpressionAttribute = "data-iid";
@@ -82,7 +82,7 @@ export function bind(target: EventTarget, event: string, listener: EventListener
 export function addEvent(type: string, eventState: any, time?: number) {
   let evt: IEvent = {
     id: eventCount++,
-    time: typeof time === "number" ? time : getTimestamp(),
+    time: isNumber(time) ? time : getTimestamp(),
     type,
     state: eventState
   };
@@ -92,10 +92,18 @@ export function addEvent(type: string, eventState: any, time?: number) {
   }
   nextPayload.push(eventStr);
   nextPayloadLength += eventStr.length;
-  if (timeout) {
-    clearTimeout(timeout);
+
+  // Edge case:
+  // Don't reschedule upload when next payload consists of exactly one XhrError instrumentation event.
+  // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
+  // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
+  let rescheduleUpload = !(eventState && eventState.type === Instrumentation.XhrError && nextPayload.length === 1);
+  if (rescheduleUpload) {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(uploadNextPayload, config.delay);
   }
-  timeout = setTimeout(uploadNextPayload, config.delay);
 }
 
 export function getTimestamp(unix?: boolean, raw?: boolean) {

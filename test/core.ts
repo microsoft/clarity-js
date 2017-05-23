@@ -37,10 +37,9 @@ describe("Functional Tests", () => {
     done();
   });
 
-  it("validates that onFailure and onSuccess upload callbacks work properly", (done) => {
+  it("validates that XhrError is logged for failed requests through the 'onFailure' upload callback ", (done) => {
     let stopObserving = observeEvents();
     let mockFailure = true;
-    let uploadInvocationCount = 0;
 
     // Mock 1 failed request
     config.uploadHandler = (payload: string, onSuccess: (status: number) => void, onFailure?: (status: number) => void) => {
@@ -49,23 +48,52 @@ describe("Functional Tests", () => {
         mockFailure = false;
       } else {
         mockUploadHandler(payload);
-        onSuccess(200);
+
+        // Explicitly skipping the reporting of successful delivery to avoid re-sending dropped event
+        // and keep the focus on testing the 'onFailure' logging, rather than the 'onSuccess' re-delivery
+        // onSuccess(200);
       }
-      uploadInvocationCount++;
     };
     triggerMockEvent();
 
     let events = stopObserving();
 
-    // Failed mock event + delivery failure instrumentation + mock event re-send
-    assert.equal(uploadInvocationCount, 3);
+    // Not expecting any events to be sent quite yet at this point, because request with mock event failed
+    // and generated XhrError instrumentation event doesn't get sent out on its own (edge case exception)
+    assert.equal(events.length, 0);
+
+    // Generate one more event to trigger proper upload
+    let secondMockEventName = "SecondMockEvent";
+    stopObserving = observeEvents();
+    triggerMockEvent(secondMockEventName);
+    events = stopObserving();
+
     assert.equal(events.length, 2);
     assert.equal(events[0].type, InstrumentationEventName);
     assert.equal(events[0].state.type, Instrumentation.XhrError);
     assert.equal(events[0].state.requestStatus, 400);
+    assert.equal(events[1].type, secondMockEventName);
 
-    // Make sure mock event was re-sent
-    assert.equal(events[1].type, MockEventName);
+    done();
+  });
+
+  it("validates that re-send cycle doesn't enter an infinite loop when all requests fail", (done) => {
+    let uploadInvocationCount = 0;
+
+    // Mock fail all requests (e.g. dropped internet connection)
+    config.uploadHandler = (payload: string, onSuccess: (status: number) => void, onFailure?: (status: number) => void) => {
+      onFailure(400);
+      uploadInvocationCount++;
+    };
+    triggerMockEvent();
+    triggerSend();
+
+    let settledUploadInvocationCount = uploadInvocationCount;
+    // Ensure that no new events are generated through 'try to report failure --> fail to deliver --> try to report failure' cycle
+    for (let i = 0; i < 5; i++) {
+      triggerSend();
+      assert.equal(uploadInvocationCount, settledUploadInvocationCount);
+    }
 
     done();
   });
