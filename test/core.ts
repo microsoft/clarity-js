@@ -54,8 +54,8 @@ describe("Functional Tests", () => {
         // onSuccess(200);
       }
     };
-    triggerMockEvent();
 
+    triggerMockEvent();
     let events = stopObserving();
 
     // Not expecting any events to be sent quite yet at this point, because request with mock event failed
@@ -73,6 +73,48 @@ describe("Functional Tests", () => {
     assert.equal(events[0].state.type, Instrumentation.XhrError);
     assert.equal(events[0].state.requestStatus, 400);
     assert.equal(events[1].type, secondMockEventName);
+
+    done();
+  });
+
+  it("validates that dropped payloads are re-sent through the next request's 'onSucess' callback", (done) => {
+    let stopObserving = observeEvents();
+    let mockFailure = true;
+    let uploadInvocationCount = 0;
+
+    // Mock 1 failed request
+    config.uploadHandler = (payload: string, onSuccess: (status: number) => void, onFailure?: (status: number) => void) => {
+      if (mockFailure) {
+        onFailure(400);
+        mockFailure = false;
+      } else {
+        mockUploadHandler(payload);
+        onSuccess(200);
+      }
+      uploadInvocationCount++;
+    };
+
+    triggerMockEvent();
+    let events = stopObserving();
+
+    // Not expecting any events to be sent quite yet at this point, because request with mock event failed
+    // and generated XhrError instrumentation event doesn't get sent out on its own (edge case exception)
+    assert.equal(events.length, 0);
+
+    // Generate one more event to trigger proper upload
+    let secondMockEventName = "SecondMockEvent";
+    stopObserving = observeEvents();
+    triggerMockEvent(secondMockEventName);
+    events = stopObserving();
+
+    // Upload invocations: First mock event, second mock event, first mock event re-upload
+    assert.equal(uploadInvocationCount, 3);
+    assert.equal(events.length, 3);
+    assert.equal(events[0].type, InstrumentationEventName);
+    assert.equal(events[0].state.type, Instrumentation.XhrError);
+    assert.equal(events[0].state.requestStatus, 400);
+    assert.equal(events[1].type, secondMockEventName);
+    assert.equal(events[2].type, MockEventName);
 
     done();
   });
