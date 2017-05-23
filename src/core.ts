@@ -2,7 +2,7 @@ import { checkApi } from "./apicheck";
 import compress from "./compress";
 import { config } from "./config";
 import { instrument } from "./instrumentation";
-import { debug, getCookie, guid, mapProperties, setCookie } from "./utils";
+import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
 const ImpressionAttribute = "data-iid";
@@ -82,7 +82,7 @@ export function bind(target: EventTarget, event: string, listener: EventListener
 export function addEvent(type: string, eventState: any, time?: number) {
   let evt: IEvent = {
     id: eventCount++,
-    time: typeof time === "number" ? time : getTimestamp(),
+    time: isNumber(time) ? time : getTimestamp(),
     type,
     state: eventState
   };
@@ -92,10 +92,18 @@ export function addEvent(type: string, eventState: any, time?: number) {
   }
   nextPayload.push(eventStr);
   nextPayloadLength += eventStr.length;
-  if (timeout) {
-    clearTimeout(timeout);
+
+  // Edge case:
+  // Don't reschedule upload when next payload consists of exactly one XhrError instrumentation event.
+  // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
+  // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
+  let rescheduleUpload = !(eventState && eventState.type === Instrumentation.XhrError && nextPayload.length === 1);
+  if (rescheduleUpload) {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(uploadNextPayload, config.delay);
   }
-  timeout = setTimeout(uploadNextPayload, config.delay);
 }
 
 export function getTimestamp(unix?: boolean, raw?: boolean) {
@@ -137,6 +145,9 @@ function uploadNextPayload() {
     let payload = JSON.stringify(compressed);
     let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
     let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uncompressed, compressed); };
+
+    nextPayload = [];
+    nextPayloadLength = 0;
     upload(payload, onSuccess, onFailure);
 
     if (config.debug && localStorage) {
@@ -147,9 +158,6 @@ function uploadNextPayload() {
       debug(`** Clarity #${sequence}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
       localStorage.setItem("clarity", JSON.stringify(bytes));
     }
-
-    nextPayload = [];
-    nextPayloadLength = 0;
 
     if (state === State.Activated && sentBytesCount > config.totalLimit) {
       let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
@@ -168,8 +176,16 @@ function uploadDroppedPayloadsMappingFunction(sequenceNumber: string, droppedPay
   upload(droppedPayloadInfo.payload, onSuccess, onFailure);
 }
 
-function upload(payload: string, onSuccess?: (status: number) => void, onFailure?: (status: number) => void) {
-  // Send to the backend
+function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
+  if (config.uploadHandler) {
+    config.uploadHandler(payload, onSuccess, onFailure);
+  } else {
+    defaultUpload(payload, onSuccess, onFailure);
+  }
+  sentBytesCount += payload.length;
+}
+
+function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
   if (config.uploadUrl.length > 0) {
     let xhr = new XMLHttpRequest();
     xhr.open("POST", config.uploadUrl);
@@ -177,12 +193,11 @@ function upload(payload: string, onSuccess?: (status: number) => void, onFailure
     xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, payload.length, onSuccess, onFailure); };
     xhr.send(payload);
   }
-  sentBytesCount += payload.length;
 }
 
 function onXhrReadyStatusChange(xhr: XMLHttpRequest,
-                                bytesSent: number, onSuccess?: (status: number) => void,
-                                onFailure?: (status: number) => void) {
+                                bytesSent: number, onSuccess?: UploadCallback,
+                                onFailure?: UploadCallback) {
   if (xhr.readyState === XMLHttpRequest.DONE) {
     // HTTP response status documentation:
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
@@ -212,7 +227,7 @@ function onFirstSendDeliveryFailure(status: number, rawPayload: string, compress
     attemptNumber: 0
   };
   droppedPayloads[xhrErrorEventState.sequenceNumber] = {
-    payload: compressedPayload,
+    payload: JSON.stringify(compressedPayload),
     xhrErrorState: xhrErrorEventState
   };
   instrument(xhrErrorEventState);

@@ -11,16 +11,8 @@ import "../src/viewport";
 let assert = chai.assert;
 
 describe("ApiCheck Tests", () => {
-
-  // Deep copy original config to return it to its initial state after each test
-  let originalConfig: IConfig = JSON.parse(JSON.stringify(config));
-
   beforeEach(setupFixture);
-  afterEach(() => {
-    // Config object persists between different tests, so we want to return it to its original state
-    config.instrument = originalConfig.instrument;
-    cleanupFixture();
-  });
+  afterEach(cleanupFixture);
 
   it("validates that missing api event is sent when required api is missing", (done) => {
     core.teardown();
