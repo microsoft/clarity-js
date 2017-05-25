@@ -1,6 +1,7 @@
-import { activateCore, getAllSentEvents, setupFixture, cleanupFixture } from "./utils";
-import * as chai from "chai";
 import { InstrumentationEventName } from "../src/instrumentation";
+import { activateCore, cleanupFixture, getAllSentEvents, setupFixture  } from "./utils";
+
+import * as chai from "chai";
 
 let assert = chai.assert;
 
@@ -10,8 +11,8 @@ describe("Error Tests", () => {
 
     it("checks that unhandled exceptions are logged", (done) => {
         activateCore();
-        
-        var syntheticEvent = document.createEvent("Event");
+
+        let syntheticEvent = document.createEvent("Event");
         syntheticEvent.initEvent("error", true, true);
         syntheticEvent["message"] = "sample error text";
         document.dispatchEvent(syntheticEvent);
