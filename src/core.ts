@@ -142,13 +142,12 @@ function uploadNextPayload() {
   if (nextPayloadLength > 0) {
     let uncompressed = `{"envelope":${JSON.stringify(envelope())},"events":[${nextPayload.join()}]}`;
     let compressed = compress(uncompressed);
-    let payload = JSON.stringify(compressed);
     let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
     let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uncompressed, compressed); };
 
     nextPayload = [];
     nextPayloadLength = 0;
-    upload(payload, onSuccess, onFailure);
+    upload(compressed, onSuccess, onFailure);
 
     if (config.debug && localStorage) {
       // Debug Information
@@ -187,29 +186,23 @@ function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadC
 
 function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
   if (config.uploadUrl.length > 0) {
+    payload = JSON.stringify(payload);
     let xhr = new XMLHttpRequest();
     xhr.open("POST", config.uploadUrl);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, payload.length, onSuccess, onFailure); };
+    xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, onSuccess, onFailure); };
     xhr.send(payload);
   }
 }
 
-function onXhrReadyStatusChange(xhr: XMLHttpRequest,
-                                bytesSent: number, onSuccess?: UploadCallback,
-                                onFailure?: UploadCallback) {
+function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, onFailure: UploadCallback) {
   if (xhr.readyState === XMLHttpRequest.DONE) {
     // HTTP response status documentation:
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
     if (xhr.status < 200 || xhr.status > 208) {
-      sentBytesCount -= bytesSent;
-      if (onFailure) {
-        onFailure(xhr.status);
-      }
+      onFailure(xhr.status);
     } else {
-      if (onSuccess) {
-        onSuccess(xhr.status);
-      }
+      onSuccess(xhr.status);
     }
   }
 }
@@ -227,10 +220,11 @@ function onFirstSendDeliveryFailure(status: number, rawPayload: string, compress
     attemptNumber: 0
   };
   droppedPayloads[xhrErrorEventState.sequenceNumber] = {
-    payload: JSON.stringify(compressedPayload),
+    payload: compressedPayload,
     xhrErrorState: xhrErrorEventState
   };
   instrument(xhrErrorEventState);
+  sentBytesCount -= compressedPayload.length;
 }
 
 function onResendDeliveryFailure(status: number, droppedPayloadInfo: IDroppedPayloadInfo) {
