@@ -259,6 +259,9 @@ interface IInstrumentationEventState {
 interface IJsErrorEventState extends IInstrumentationEventState {
   source: string;
   message: string;
+  stack: string;
+  lineno: number;
+  colno: number;
 }
 
 interface IApiMissingEventState extends IInstrumentationEventState {

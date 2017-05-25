@@ -13,6 +13,7 @@ let apiContainer = {
   optional: [
     "performance",
     "performance.getEntriesByType",
+    "window.addEventListener"
   ]
 };
 

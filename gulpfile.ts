@@ -20,7 +20,8 @@ const sources = [
   "build/src/viewport.js",
   "build/src/layout/layout.js",
   "build/src/pointer.js",
-  "build/src/performance.js"
+  "build/src/performance.js",
+  "build/src/errors.js"
 ];
 
 gulp.task("build", () => {
