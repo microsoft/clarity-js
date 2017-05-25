@@ -1,7 +1,18 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
 import uncompress from "../src/uncompress";
+import { mapProperties } from "../src/utils";
 import { clearSentBytes, getSentBytes } from "./testsetup";
+
+export const MockEventName = "ClarityTestMockEvent";
+
+let originalConfig: IConfig = config;
+
+export function triggerMockEvent(eventName?: string) {
+  eventName = eventName || MockEventName;
+  core.addEvent(eventName, {});
+  triggerSend();
+}
 
 export function observeEvents(eventType?: string): () => IEvent[] {
   triggerSend();
@@ -41,8 +52,9 @@ export function getAllSentBytes() {
 
 export function setupFixture() {
   fixture.setBase("test");
-  this.result = fixture.load("clarity.fixture.html");
+  fixture.load("clarity.fixture.html");
   jasmine.clock().install();
+  originalConfig = mapProperties(config, null, true);
   activateCore();
 }
 
@@ -50,6 +62,7 @@ export function cleanupFixture() {
   fixture.cleanup();
   core.teardown();
   jasmine.clock().uninstall();
+  resetConfig();
 }
 
 export function triggerSend() {
@@ -60,6 +73,10 @@ export function activateCore() {
   clearSentBytes();
   core.activate();
   triggerSend();
+}
+
+export function resetConfig() {
+  mapProperties(originalConfig, null, true, config);
 }
 
 function getEventsFromSentBytes(sentBytes: string[]): IEvent[] {

@@ -25,6 +25,10 @@ interface IConfig {
   // Send back instrumentation data, if set to true
   instrument?: boolean;
 
+  // Pointer to the function which would be responsible for sending the data
+  // If left unspecified, raw payloads will be uploaded to the uploadUrl endpoint
+  uploadHandler?: UploadHandler;
+
   // Setting to enable debug features (e.g. console.log statements)
   debug?: boolean;
 }
@@ -79,6 +83,9 @@ interface IEventBindingPair {
 interface IBindingContainer {
   [key: string]: IEventBindingPair[];
 }
+
+type UploadCallback = (status: number) => void;
+type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) => void;
 
 /* ##################################### */
 /* ############   LAYOUT   ############# */

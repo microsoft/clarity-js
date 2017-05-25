@@ -2,7 +2,8 @@ import { config } from "../src/config";
 import * as core from "../src/core";
 import { InstrumentationEventName } from "../src/instrumentation";
 import uncompress from "../src/uncompress";
-import { activateCore, cleanupFixture, getAllSentBytes, getAllSentEvents, setupFixture, triggerSend } from "./utils";
+import { activateCore, cleanupFixture, setupFixture } from "./utils";
+import { getAllSentBytes, getAllSentEvents, MockEventName, observeEvents, triggerMockEvent, triggerSend } from "./utils";
 
 import * as chai from "chai";
 import "../src/layout/layout";
@@ -18,9 +19,124 @@ describe("Functional Tests", () => {
   beforeEach(setupFixture);
   afterEach(cleanupFixture);
 
-  it("should validate that modules work fine together", (done) => {
+  it("validates that modules work fine together", (done) => {
     let events = getAllSentEvents();
     assert.equal(events.length >= 10, true);
+    done();
+  });
+
+  it("validates that custom sendCallback is invoked when passed through config", (done) => {
+    let sendCount = 0;
+    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
+      mockUploadHandler(payload);
+      sendCount++;
+    };
+    triggerMockEvent();
+
+    assert.equal(sendCount, 1);
+    done();
+  });
+
+  it("validates that XhrError is logged for failed requests through the 'onFailure' upload callback ", (done) => {
+    let stopObserving = observeEvents();
+    let mockFailure = true;
+
+    // Mock 1 failed request
+    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
+      if (mockFailure) {
+        onFailure(400);
+        mockFailure = false;
+      } else {
+        mockUploadHandler(payload);
+
+        // Explicitly skipping the reporting of successful delivery to avoid re-sending dropped event
+        // and keep the focus on testing the 'onFailure' logging, rather than the 'onSuccess' re-delivery
+        // onSuccess(200);
+      }
+    };
+
+    triggerMockEvent();
+    let events = stopObserving();
+
+    // Not expecting any events to be sent quite yet at this point, because request with mock event failed
+    // and generated XhrError instrumentation event doesn't get sent out on its own (edge case exception)
+    assert.equal(events.length, 0);
+
+    // Generate one more event to trigger proper upload
+    let secondMockEventName = "SecondMockEvent";
+    stopObserving = observeEvents();
+    triggerMockEvent(secondMockEventName);
+    events = stopObserving();
+
+    assert.equal(events.length, 2);
+    assert.equal(events[0].type, InstrumentationEventName);
+    assert.equal(events[0].state.type, Instrumentation.XhrError);
+    assert.equal(events[0].state.requestStatus, 400);
+    assert.equal(events[1].type, secondMockEventName);
+
+    done();
+  });
+
+  it("validates that dropped payloads are re-sent through the next request's 'onSuccess' callback", (done) => {
+    let stopObserving = observeEvents();
+    let mockFailure = true;
+    let uploadInvocationCount = 0;
+
+    // Mock 1 failed request
+    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
+      if (mockFailure) {
+        onFailure(400);
+        mockFailure = false;
+      } else {
+        mockUploadHandler(payload);
+        onSuccess(200);
+      }
+      uploadInvocationCount++;
+    };
+
+    triggerMockEvent();
+    let events = stopObserving();
+
+    // Not expecting any events to be sent quite yet at this point, because request with mock event failed
+    // and generated XhrError instrumentation event doesn't get sent out on its own (edge case exception)
+    assert.equal(events.length, 0);
+
+    // Generate one more event to trigger proper upload
+    let secondMockEventName = "SecondMockEvent";
+    stopObserving = observeEvents();
+    triggerMockEvent(secondMockEventName);
+    events = stopObserving();
+
+    // Upload invocations: First mock event, second mock event, first mock event re-upload
+    assert.equal(uploadInvocationCount, 3);
+    assert.equal(events.length, 3);
+    assert.equal(events[0].type, InstrumentationEventName);
+    assert.equal(events[0].state.type, Instrumentation.XhrError);
+    assert.equal(events[0].state.requestStatus, 400);
+    assert.equal(events[1].type, secondMockEventName);
+    assert.equal(events[2].type, MockEventName);
+
+    done();
+  });
+
+  it("validates that re-send cycle doesn't enter an infinite loop when all requests fail", (done) => {
+    let uploadInvocationCount = 0;
+
+    // Mock fail all requests (e.g. dropped internet connection)
+    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
+      onFailure(400);
+      uploadInvocationCount++;
+    };
+    triggerMockEvent();
+    triggerSend();
+
+    let settledUploadInvocationCount = uploadInvocationCount;
+    // Ensure that no new events are generated through 'try to report failure --> fail to deliver --> try to report failure' cycle
+    for (let i = 0; i < 5; i++) {
+      triggerSend();
+      assert.equal(uploadInvocationCount, settledUploadInvocationCount);
+    }
+
     done();
   });
 
@@ -191,4 +307,12 @@ describe("Functional Tests", () => {
     assert.equal(events[1].state.type, Instrumentation.Teardown);
     done();
   });
+
+  function mockUploadHandler(payload: string) {
+    payload = JSON.stringify(payload);
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", config.uploadUrl);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(payload);
+  }
 });
