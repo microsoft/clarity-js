@@ -77,7 +77,7 @@ describe("Functional Tests", () => {
     done();
   });
 
-  it("validates that dropped payloads are re-sent through the next request's 'onSucess' callback", (done) => {
+  it("validates that dropped payloads are re-sent through the next request's 'onSuccess' callback", (done) => {
     let stopObserving = observeEvents();
     let mockFailure = true;
     let uploadInvocationCount = 0;
@@ -309,6 +309,7 @@ describe("Functional Tests", () => {
   });
 
   function mockUploadHandler(payload: string) {
+    payload = JSON.stringify(payload);
     let xhr = new XMLHttpRequest();
     xhr.open("POST", config.uploadUrl);
     xhr.setRequestHeader("Content-Type", "application/json");
