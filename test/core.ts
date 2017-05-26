@@ -1,7 +1,7 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { InstrumentationEventName } from "../src/instrumentation";
-import uncompress from "../src/uncompress";
+import uncompress from "./uncompress";
 import { activateCore, cleanupFixture, setupFixture } from "./utils";
 import { getAllSentBytes, getAllSentEvents, MockEventName, observeEvents, triggerMockEvent, triggerSend } from "./utils";
 

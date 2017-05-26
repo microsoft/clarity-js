@@ -18,8 +18,7 @@ let impressionId: string;
 let sequence: number;
 let eventCount: number;
 let startTime: number;
-let components: IComponent[];
-let registeredComponents: IComponent[];
+let plugins: IPlugin[];
 let bindings: IBindingContainer;
 let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
 let timeout: number;
@@ -27,17 +26,13 @@ let nextPayload: string[];
 let nextPayloadLength: number;
 export let state: State = State.Loaded;
 
-export function register(component: IComponent) {
-  registeredComponents.push(component);
-}
-
 export function activate() {
   if (init()) {
     document[ClarityAttribute] = impressionId;
-    for (let component of registeredComponents) {
-      component.reset();
-      component.activate();
-      components.push(component);
+    for (let plugin of config.plugins) {
+      plugin.reset();
+      plugin.activate();
+      plugins.push(plugin);
     }
 
     bind(window, "beforeunload", teardown);
@@ -47,8 +42,8 @@ export function activate() {
 }
 
 export function teardown() {
-  for (let component of components) {
-    component.teardown();
+  for (let plugin of plugins) {
+    plugin.teardown();
   }
 
   // Walk through existing list of bindings and remove them all
@@ -245,7 +240,7 @@ function init() {
   sequence = 0;
   eventCount = 0;
   startTime = getUnixTimestamp();
-  components = [];
+  plugins = [];
   bindings = {};
   nextPayload = [];
   droppedPayloads = {};
@@ -278,6 +273,5 @@ function init() {
   return true;
 }
 
-// Initialize registeredComponents and bindings early, so that registering and wiring up can be done properly
-registeredComponents = [];
+// Initialize bindings early, so that registering and wiring up can be done properly
 bindings = {};

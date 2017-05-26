@@ -1,8 +1,8 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
-import uncompress from "../src/uncompress";
 import { mapProperties } from "../src/utils";
 import { clearSentBytes, getSentBytes } from "./testsetup";
+import uncompress from "./uncompress";
 
 export const MockEventName = "ClarityTestMockEvent";
 

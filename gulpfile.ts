@@ -17,10 +17,10 @@ const karmaServer = karma.Server;
 const sources = [
   "build/src/core.js",
   "build/src/apicheck.js",
-  "build/src/viewport.js",
-  "build/src/layout/layout.js",
-  "build/src/pointer.js",
-  "build/src/performance.js"
+  "build/src/plugins/viewport.js",
+  "build/src/plugins/layout.js",
+  "build/src/plugins/pointer.js",
+  "build/src/plugins/performance.js"
 ];
 
 gulp.task("build", () => {

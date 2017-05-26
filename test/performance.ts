@@ -1,12 +1,14 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
-import { ResourceTimingEventType, StateErrorEventType, TimingEventType } from "../src/performance";
 import { cleanupFixture, getAllSentEvents, getEventsByType, observeEvents, setupFixture, triggerSend } from "./utils";
 
 import * as chai from "chai";
 import "../src/performance";
 
 let assert = chai.assert;
+let resourceTimingEventName = "ResourceTiming";
+let stateErrorEventName = "PerformanceStateError";
+let navigationTimingEventName = "NavigationTiming";
 
 describe("Performance Tests", () => {
   let originalPerformance: Performance;
@@ -28,7 +30,7 @@ describe("Performance Tests", () => {
   it("checks that w3c performance timing is logged by clarity", (done) => {
     // Timings are checked in an interval, so it needs additional time to re-invoke the check
     triggerSend();
-    let events = getEventsByType(getAllSentEvents(), TimingEventType);
+    let events = getEventsByType(getAllSentEvents(), navigationTimingEventName);
     assert.equal(events.length, 1);
 
     let timing = events[0].state && events[0].state.timing;
@@ -39,7 +41,7 @@ describe("Performance Tests", () => {
   });
 
   it("checks that network resource timings are logged by clarity", (done) => {
-    let stopObserving = observeEvents(ResourceTimingEventType);
+    let stopObserving = observeEvents(resourceTimingEventName);
     let dummyEntry = { initiatorType: "dummy", responseEnd: 1 };
     dummyResourceTimings.push(dummyEntry);
     triggerSend();
@@ -56,7 +58,7 @@ describe("Performance Tests", () => {
   });
 
   it("checks that multiple network resource timings are logged together", (done) => {
-    let stopObserving = observeEvents(ResourceTimingEventType);
+    let stopObserving = observeEvents(resourceTimingEventName);
     dummyResourceTimings.push({ responseEnd: 1 });
     dummyResourceTimings.push({ responseEnd: 1 });
 
@@ -72,14 +74,14 @@ describe("Performance Tests", () => {
   });
 
   it("checks that error is logged when entries are cleared", (done) => {
-    let stopObserving = observeEvents(ResourceTimingEventType);
+    let stopObserving = observeEvents(resourceTimingEventName);
     dummyResourceTimings.push({ responseEnd: 1 });
     triggerSend();
 
     let events = stopObserving();
     assert.equal(events.length, 1);
 
-    stopObserving = observeEvents(StateErrorEventType);
+    stopObserving = observeEvents(stateErrorEventName);
     dummyResourceTimings = [];
     triggerSend();
 
@@ -92,7 +94,7 @@ describe("Performance Tests", () => {
   it("checks that incomplete entries are not logged initially, but then revisited", (done) => {
     let completeEntry = { responseEnd: 1, initiatorType: "completeEntry" };
     let incompleteEntry = { responseEnd: 0, initiatorType: "incompleteEntry" };
-    let stopObserving = observeEvents(ResourceTimingEventType);
+    let stopObserving = observeEvents(resourceTimingEventName);
     dummyResourceTimings.push(completeEntry);
     dummyResourceTimings.push(incompleteEntry);
     triggerSend();
@@ -105,7 +107,7 @@ describe("Performance Tests", () => {
     assert.equal(entries[0].initiatorType, "completeEntry");
 
     // Adjust the entry to have a valid response end time and wait for snapshot to propagate
-    stopObserving = observeEvents(ResourceTimingEventType);
+    stopObserving = observeEvents(resourceTimingEventName);
     incompleteEntry.responseEnd = 1;
     triggerSend();
 

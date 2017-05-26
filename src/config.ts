@@ -8,5 +8,6 @@ export let config: IConfig = {
   timeToYield: 50,
   instrument: false,
   uploadHandler: null,
-  debug: false
+  debug: false,
+  plugins: []
 };

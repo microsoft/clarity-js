@@ -31,6 +31,9 @@ interface IConfig {
 
   // Setting to enable debug features (e.g. console.log statements)
   debug?: boolean;
+
+  // Activate plugins
+  plugins?: IPlugin[];
 }
 
 /* ##################################### */
@@ -69,7 +72,7 @@ interface IDroppedPayloadInfo {
   xhrErrorState: IXhrErrorEventState;
 }
 
-interface IComponent {
+interface IPlugin {
   activate(): void;
   teardown(): void;
   reset(): void;
