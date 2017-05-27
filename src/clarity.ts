@@ -1,5 +1,5 @@
 import { config } from "./config";
-import { activate, bind, state, teardown } from "./core";
+import { activate, state, teardown } from "./core";
 import { mapProperties } from "./utils";
 
 export function start(customConfig?: IConfig) {

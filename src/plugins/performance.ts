@@ -1,6 +1,5 @@
 import { config } from "../config";
-import { addEvent } from "../core";
-import { instrument } from "../instrumentation";
+import { addEvent, instrument } from "../core";
 import { mapProperties } from "../utils";
 
 export default class PerformanceProfiler implements IPlugin {
@@ -10,7 +9,7 @@ export default class PerformanceProfiler implements IPlugin {
   private clarityHostName: string;
   private logTimingTimeout: number;
   private logResourceTimingTimeout: number;
-  
+
   // For performance reasons this module relies on the fact that array returned from the
   // getEntries function is a superset of the array returned from that function on previous inspection.
   // If that is not the case (e.g. performance.clearResourceTimings() was used), then

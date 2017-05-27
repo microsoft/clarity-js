@@ -1,7 +1,7 @@
 import { checkApi } from "./apicheck";
 import compress from "./compress";
 import { config } from "./config";
-import { instrument } from "./instrumentation";
+import { plugins } from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
@@ -18,7 +18,7 @@ let impressionId: string;
 let sequence: number;
 let eventCount: number;
 let startTime: number;
-let plugins: IPlugin[];
+let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
 let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
 let timeout: number;
@@ -30,9 +30,12 @@ export function activate() {
   if (init()) {
     document[ClarityAttribute] = impressionId;
     for (let plugin of config.plugins) {
-      plugin.reset();
-      plugin.activate();
-      plugins.push(plugin);
+      if (plugins(plugin)) {
+        let instance = new (plugins(plugin))();
+        instance.reset();
+        instance.activate();
+        activePlugins.push(instance);
+      }
     }
 
     bind(window, "beforeunload", teardown);
@@ -42,7 +45,7 @@ export function activate() {
 }
 
 export function teardown() {
-  for (let plugin of plugins) {
+  for (let plugin of activePlugins) {
     plugin.teardown();
   }
 
@@ -104,6 +107,12 @@ export function addEvent(type: string, eventState: any, time?: number) {
 export function getTimestamp(unix?: boolean, raw?: boolean) {
   let time = unix ? getUnixTimestamp() : getPageContextBasedTimestamp();
   return (raw ? time : Math.round(time));
+}
+
+export function instrument(eventState: IInstrumentationEventState) {
+  if (config.instrument) {
+    addEvent("Instrumentation", eventState);
+  }
 }
 
 function getUnixTimestamp(): number {
@@ -240,7 +249,7 @@ function init() {
   sequence = 0;
   eventCount = 0;
   startTime = getUnixTimestamp();
-  plugins = [];
+  activePlugins = [];
   bindings = {};
   nextPayload = [];
   droppedPayloads = {};

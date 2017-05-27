@@ -1,4 +1,4 @@
-import { instrument } from "./instrumentation";
+import { instrument } from "./core";
 
 let apiContainer = {
   // APIs that are critical to Clarity core functions

@@ -14,15 +14,6 @@ const clarityUncrunched = "clarity.uncrunched.js";
 const clarity = "clarity.js";
 const karmaServer = karma.Server;
 
-const sources = [
-  "build/src/core.js",
-  "build/src/apicheck.js",
-  "build/src/plugins/viewport.js",
-  "build/src/plugins/layout.js",
-  "build/src/plugins/pointer.js",
-  "build/src/plugins/performance.js"
-];
-
 gulp.task("build", () => {
   runSequence(
     "clean",
@@ -41,10 +32,8 @@ gulp.task("uglify", () => {
 });
 
 gulp.task("browserify", () => {
-  return browserify({
-      entries: sources
-    })
-    .require("./build/src/wireup.js", {
+  return browserify()
+    .require("./build/src/clarity.js", {
       expose : "clarity"
     })
     .bundle()

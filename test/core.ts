@@ -1,6 +1,5 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
-import { InstrumentationEventName } from "../src/instrumentation";
 import uncompress from "./uncompress";
 import { activateCore, cleanupFixture, setupFixture } from "./utils";
 import { getAllSentBytes, getAllSentEvents, MockEventName, observeEvents, triggerMockEvent, triggerSend } from "./utils";
@@ -11,6 +10,7 @@ import "../src/pointer";
 import "../src/viewport";
 
 let assert = chai.assert;
+let instrumentationEventName = "Instrumentation";
 
 describe("Functional Tests", () => {
   let limit = config.batchLimit;
@@ -69,7 +69,7 @@ describe("Functional Tests", () => {
     events = stopObserving();
 
     assert.equal(events.length, 2);
-    assert.equal(events[0].type, InstrumentationEventName);
+    assert.equal(events[0].type, instrumentationEventName);
     assert.equal(events[0].state.type, Instrumentation.XhrError);
     assert.equal(events[0].state.requestStatus, 400);
     assert.equal(events[1].type, secondMockEventName);
@@ -110,7 +110,7 @@ describe("Functional Tests", () => {
     // Upload invocations: First mock event, second mock event, first mock event re-upload
     assert.equal(uploadInvocationCount, 3);
     assert.equal(events.length, 3);
-    assert.equal(events[0].type, InstrumentationEventName);
+    assert.equal(events[0].type, instrumentationEventName);
     assert.equal(events[0].state.type, Instrumentation.XhrError);
     assert.equal(events[0].state.requestStatus, 400);
     assert.equal(events[1].type, secondMockEventName);
@@ -300,10 +300,10 @@ describe("Functional Tests", () => {
 
     let events = getAllSentEvents();
     assert.equal(events.length, 2);
-    assert.equal(events[0].type, InstrumentationEventName);
+    assert.equal(events[0].type, instrumentationEventName);
     assert.equal(events[0].state.type, Instrumentation.ClarityDuplicated);
     assert.equal(events[0].state.currentImpressionId, mockExistingImpressionId);
-    assert.equal(events[1].type, InstrumentationEventName);
+    assert.equal(events[1].type, instrumentationEventName);
     assert.equal(events[1].state.type, Instrumentation.Teardown);
     done();
   });
