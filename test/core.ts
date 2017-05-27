@@ -5,9 +5,6 @@ import { activateCore, cleanupFixture, setupFixture } from "./utils";
 import { getAllSentBytes, getAllSentEvents, MockEventName, observeEvents, triggerMockEvent, triggerSend } from "./utils";
 
 import * as chai from "chai";
-import "../src/layout/layout";
-import "../src/pointer";
-import "../src/viewport";
 
 let assert = chai.assert;
 let instrumentationEventName = "Instrumentation";

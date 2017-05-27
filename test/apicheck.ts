@@ -1,14 +1,11 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
-import { InstrumentationEventName } from "../src/instrumentation";
 import { activateCore, cleanupFixture, getAllSentEvents, getEventsByType, observeEvents, setupFixture } from "./utils";
 
 import * as chai from "chai";
-import "../src/layout/layout";
-import "../src/pointer";
-import "../src/viewport";
 
 let assert = chai.assert;
+let instrumentationEventName = "Instrumentation";
 
 describe("ApiCheck Tests", () => {
   beforeEach(setupFixture);
@@ -26,9 +23,9 @@ describe("ApiCheck Tests", () => {
 
     let events = getAllSentEvents();
     assert.equal(events.length, 2);
-    assert.equal(events[0].type, InstrumentationEventName);
+    assert.equal(events[0].type, instrumentationEventName);
     assert.equal(events[0].state.type, Instrumentation.ApiMissing);
-    assert.equal(events[1].type, InstrumentationEventName);
+    assert.equal(events[1].type, instrumentationEventName);
     assert.equal(events[1].state.type, Instrumentation.Teardown);
 
     done();
@@ -49,7 +46,7 @@ describe("ApiCheck Tests", () => {
 
     assert.isAbove(getAllSentEvents().length, 1);
 
-    let instrumentationEvents = getEventsByType(getAllSentEvents(), InstrumentationEventName);
+    let instrumentationEvents = getEventsByType(getAllSentEvents(), instrumentationEventName);
     assert.isAtLeast(instrumentationEvents.length, 1);
     assert.equal(instrumentationEvents[0].state.type, Instrumentation.ApiMissing);
 

@@ -3,7 +3,6 @@ import * as core from "../src/core";
 import { cleanupFixture, getAllSentEvents, getEventsByType, observeEvents, setupFixture, triggerSend } from "./utils";
 
 import * as chai from "chai";
-import "../src/performance";
 
 let assert = chai.assert;
 let resourceTimingEventName = "ResourceTiming";

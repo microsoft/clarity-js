@@ -5,9 +5,6 @@ import uncompress from "./uncompress";
 import { cleanupFixture, getEventsByType, observeEvents, setupFixture, triggerSend } from "./utils";
 
 import * as chai from "chai";
-import "../src/layout/layout";
-import "../src/pointer";
-import "../src/viewport";
 
 let eventName = "Layout";
 let assert = chai.assert;

@@ -33,7 +33,7 @@ interface IConfig {
   debug?: boolean;
 
   // Activate plugins
-  plugins?: IPlugin[];
+  plugins?: string[];
 }
 
 /* ##################################### */

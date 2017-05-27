@@ -9,5 +9,5 @@ export let config: IConfig = {
   instrument: false,
   uploadHandler: null,
   debug: false,
-  plugins: []
+  plugins: ["viewport", "layout", "pointer", "performance"]
 };

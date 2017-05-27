@@ -4,9 +4,6 @@ import uncompress from "./uncompress";
 import { cleanupFixture, observeEvents, setupFixture, triggerSend } from "./utils";
 
 import * as chai from "chai";
-import "../src/layout/layout";
-import "../src/pointer";
-import "../src/viewport";
 
 let distanceThreshold = 20;
 let eventName = "Pointer";
