@@ -1,4 +1,3 @@
-import { checkApi } from "./apicheck";
 import compress from "./compress";
 import { config } from "./config";
 import { plugins } from "./plugins";
@@ -274,8 +273,39 @@ function init() {
   }
 
   // If critical API is missing, don't activate Clarity
-  if (!checkApi()) {
+  if (!checkFeatures()) {
     teardown();
+    return false;
+  }
+
+  return true;
+}
+
+function checkFeatures() {
+  let missingFeatures = [];
+  let expectedFeatures = [
+    "document.implementation.createHTMLDocument",
+    "document.documentElement.classList",
+    "Function.prototype.bind"
+  ];
+
+  for (var feature of expectedFeatures) {
+    let parts = feature.split(".");
+    let api = window;
+    for (var part of parts) {
+      if (typeof api[part] === "undefined") {
+        missingFeatures.push(feature);
+        break;
+      }
+      api = api[part];
+    }
+  }
+
+  if (missingFeatures.length > 0) {
+    instrument(<IMissingFeatureEventState>{
+      type: Instrumentation.MissingFeature,
+      missingFeatures: missingFeatures
+    });
     return false;
   }
 

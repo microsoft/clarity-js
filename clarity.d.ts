@@ -254,7 +254,7 @@ interface IViewportState {
 
 declare const enum Instrumentation {
   JsError,
-  ApiMissing,
+  MissingFeature,
   XhrError,
   TotalByteLimitExceeded,
   Teardown,
@@ -271,8 +271,8 @@ interface IJsErrorEventState extends IInstrumentationEventState {
   message: string;
 }
 
-interface IApiMissingEventState extends IInstrumentationEventState {
-  missingApis: string[];
+interface IMissingFeatureEventState extends IInstrumentationEventState {
+  missingFeatures: string[];
 }
 
 interface IXhrErrorEventState extends IInstrumentationEventState {

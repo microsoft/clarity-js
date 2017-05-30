@@ -16,8 +16,29 @@ describe("Functional Tests", () => {
   beforeEach(setupFixture);
   afterEach(cleanupFixture);
 
+  it("validates that missing api event is sent when required api is missing", (done) => {
+    core.teardown();
+
+    // Function.prorotype.bind is a required API for Clarity to work
+    // Mocking a browser that doesn't support it by temporarily deleting it
+    let originalBind = Function.prototype.bind;
+    delete Function.prototype.bind;
+    activateCore();
+    Function.prototype.bind = originalBind;
+
+    let events = getAllSentEvents();
+    assert.equal(events.length, 2);
+    assert.equal(events[0].type, instrumentationEventName);
+    assert.equal(events[0].state.type, Instrumentation.MissingFeature);
+    assert.equal(events[1].type, instrumentationEventName);
+    assert.equal(events[1].state.type, Instrumentation.Teardown);
+
+    done();
+  });
+
   it("validates that modules work fine together", (done) => {
     let events = getAllSentEvents();
+    console.log("Hello world");
     assert.equal(events.length >= 10, true);
     done();
   });
