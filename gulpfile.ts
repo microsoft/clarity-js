@@ -1,17 +1,18 @@
-import * as browserify from "browserify";
 import * as del from "del";
 import * as gulp from "gulp";
 import * as rename from "gulp-rename";
 import * as ts from "gulp-typescript";
 import * as uglify from "gulp-uglify";
 import * as karma from "karma";
+import * as typescript from "rollup-plugin-typescript2";
+import * as rollup from "rollup-stream";
 import * as runSequence from "run-sequence";
 import * as source from "vinyl-source-stream";
 
 declare const __dirname;
 const tsProject = ts.createProject("tsconfig.json");
-const clarityUncrunched = "clarity.uncrunched.js";
-const clarity = "clarity.js";
+const bundle = "clarity.js";
+const minifiedBundle = "clarity.min.js";
 const karmaServer = karma.Server;
 
 gulp.task("build", () => {
@@ -19,25 +20,28 @@ gulp.task("build", () => {
     "clean",
     "compile",
     "place-fixture",
-    "browserify",
+    "rollup",
     "uglify"
   );
 });
 
 gulp.task("uglify", () => {
-  return gulp.src("build/" + clarityUncrunched)
+  return gulp.src("build/" + bundle)
     .pipe(uglify())
-    .pipe(rename(clarity))
+    .pipe(rename(minifiedBundle))
     .pipe(gulp.dest("build"));
 });
 
-gulp.task("browserify", () => {
-  return browserify()
-    .require("./build/src/clarity.js", {
-      expose : "clarity"
+gulp.task("rollup", () => {
+  return rollup({
+      entry: "./src/clarity.ts",
+      format: "umd",
+      moduleName: "clarity",
+      plugins: [
+        typescript()
+      ]
     })
-    .bundle()
-    .pipe(source(clarityUncrunched))
+    .pipe(source(bundle))
     .pipe(gulp.dest("build"));
 });
 
