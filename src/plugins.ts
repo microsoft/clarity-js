@@ -5,6 +5,6 @@ import viewport from "./plugins/viewport";
 
 const classes = { layout, viewport, pointer, performance };
 
-export function plugins(name) {
+export default function getPlugin(name: string) {
   return classes[name];
 }

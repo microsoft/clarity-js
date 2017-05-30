@@ -2,11 +2,10 @@ import { addEvent, bind } from "../core";
 import * as mouse from "./pointer/mouse";
 import * as touch from "./pointer/touch";
 
-// Constants
 export default class Pointer implements IPlugin {
-  private eventName : string = "Pointer";
-  private distanceThreshold : number = 20;
-  private timeThreshold : number = 500;
+  private eventName = "Pointer";
+  private distanceThreshold = 20;
+  private timeThreshold = 500;
   private lastMoveState: IPointerState;
   private lastMoveTime: number;
 

@@ -1,6 +1,6 @@
 import compress from "./compress";
 import { config } from "./config";
-import { plugins } from "./plugins";
+import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
@@ -29,8 +29,9 @@ export function activate() {
   if (init()) {
     document[ClarityAttribute] = impressionId;
     for (let plugin of config.plugins) {
-      if (plugins(plugin)) {
-        let instance = new (plugins(plugin))();
+      let pluginClass = getPlugin(plugin);
+      if (pluginClass) {
+        let instance = new (pluginClass)();
         instance.reset();
         instance.activate();
         activePlugins.push(instance);
@@ -302,10 +303,10 @@ function checkFeatures() {
   }
 
   if (missingFeatures.length > 0) {
-    instrument(<IMissingFeatureEventState> {
+    instrument({
       type: Instrumentation.MissingFeature,
       missingFeatures
-    });
+    } as IMissingFeatureEventState);
     return false;
   }
 

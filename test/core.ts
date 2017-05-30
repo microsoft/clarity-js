@@ -16,7 +16,7 @@ describe("Functional Tests", () => {
   beforeEach(setupFixture);
   afterEach(cleanupFixture);
 
-  it("validates that missing api event is sent when required api is missing", (done) => {
+  it("validates that missing feature event is sent when required feature is missing", (done) => {
     core.teardown();
 
     // Function.prorotype.bind is a required API for Clarity to work
@@ -38,7 +38,6 @@ describe("Functional Tests", () => {
 
   it("validates that modules work fine together", (done) => {
     let events = getAllSentEvents();
-    console.log("Hello world");
     assert.equal(events.length >= 10, true);
     done();
   });

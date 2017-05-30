@@ -1,13 +1,12 @@
 import { config } from "./../config";
 import { addEvent, bind, getTimestamp } from "./../core";
 import { assert, debug, isNumber, traverseNodeTree } from "./../utils";
-import { getNodeIndex, NodeIndex, createGenericLayoutState, createLayoutState, IgnoreTag } from "./layout/stateprovider";
 import { ShadowDom } from "./layout/shadowdom";
+import { createGenericLayoutState, createLayoutState, getNodeIndex, IgnoreTag, NodeIndex } from "./layout/stateprovider";
 
-// Constants
 export default class Layout implements IPlugin {
-  private eventName: string = "Layout";
-  private distanceThreshold: number = 5;
+  private eventName = "Layout";
+  private distanceThreshold = 5;
   private shadowDom: ShadowDom;
   private shadowDomConsistent: boolean;
   private observer: MutationObserver;
