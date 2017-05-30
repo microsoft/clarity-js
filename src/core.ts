@@ -289,10 +289,10 @@ function checkFeatures() {
     "Function.prototype.bind"
   ];
 
-  for (var feature of expectedFeatures) {
+  for (let feature of expectedFeatures) {
     let parts = feature.split(".");
     let api = window;
-    for (var part of parts) {
+    for (let part of parts) {
       if (typeof api[part] === "undefined") {
         missingFeatures.push(feature);
         break;
@@ -302,9 +302,9 @@ function checkFeatures() {
   }
 
   if (missingFeatures.length > 0) {
-    instrument(<IMissingFeatureEventState>{
+    instrument(<IMissingFeatureEventState> {
       type: Instrumentation.MissingFeature,
-      missingFeatures: missingFeatures
+      missingFeatures
     });
     return false;
   }
