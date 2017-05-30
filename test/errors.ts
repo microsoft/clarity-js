@@ -33,12 +33,11 @@ describe("Error Tests", () => {
         assert.equal(errorEvents[0].state.lineno, lineno);
         assert.equal(errorEvents[0].state.colno, colno);
         done();
-        }
-    );
+     });
 
-    it("checks default message when not passed", (done) => {
+    it("checks empty message when not passed", (done) => {
         let syntheticEvent = document.createEvent("CustomEvent");
-        let message = "noMessage";
+        let message = null;
         let filename = "sample filename";
         let lineno = "sample error text";
         let colno = "sample error text";
@@ -58,8 +57,7 @@ describe("Error Tests", () => {
         assert.equal(errorEvents[0].state.lineno, lineno);
         assert.equal(errorEvents[0].state.colno, colno);
         done();
-        }
-    );
+    });
 
     it("checks that multiple error events are logged", (done) => {
         let syntheticEvent = document.createEvent("CustomEvent");
@@ -77,12 +75,12 @@ describe("Error Tests", () => {
         assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
         assert.equal(errorEvents[0].state.message, message);
         done();
-        }
-    );
+    });
 
     it("checks error objects directly passed are parsed", (done) => {
         let message = "sample error text";
-        let syntheticEvent = { error: new Error(message) };
+        let syntheticEvent = document.createEvent("CustomEvent");
+        syntheticEvent["error"] = new Error(message);
         errors.logError(syntheticEvent);
         triggerSend();
         let events = getAllSentEvents();
@@ -92,6 +90,5 @@ describe("Error Tests", () => {
         assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
         assert.equal(errorEvents[0].state.message, message);
         done();
-        }
-    );
+    });
 });

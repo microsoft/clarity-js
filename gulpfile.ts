@@ -34,6 +34,28 @@ gulp.task("build", () => {
   );
 });
 
+gulp.task("bnc", () => {
+  runSequence(
+    "clean",
+    "compile",
+    "place-fixture",
+    "browserify",
+    "uglify",
+    "coverage"
+  );
+});
+
+gulp.task("bnt", () => {
+  runSequence(
+    "clean",
+    "compile",
+    "place-fixture",
+    "browserify",
+    "uglify",
+    "test"
+  );
+});
+
 gulp.task("uglify", () => {
   return gulp.src("build/" + clarityUncrunched)
     .pipe(uglify())

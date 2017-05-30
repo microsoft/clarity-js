@@ -6,14 +6,14 @@ let apiContainer = {
   required: [
     "document.implementation.createHTMLDocument",
     "document.documentElement.classList",
-    "Function.prototype.bind"
+    "Function.prototype.bind",
+    "window.addEventListener"
   ],
 
   // APIs that can be missing without breaking Clarity
   optional: [
     "performance",
-    "performance.getEntriesByType",
-    "window.addEventListener"
+    "performance.getEntriesByType"
   ]
 };
 

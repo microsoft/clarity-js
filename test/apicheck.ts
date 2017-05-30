@@ -17,7 +17,7 @@ describe("ApiCheck Tests", () => {
   it("validates that missing api event is sent when required api is missing", (done) => {
     core.teardown();
 
-    // Function.protoype.bind is a required API for Clarity to work
+    // Function.prototype.bind is a required API for Clarity to work
     // Mocking a browser that doesn't support it by temporarily deleting it
     let originalBind = Function.prototype.bind;
     delete Function.prototype.bind;
