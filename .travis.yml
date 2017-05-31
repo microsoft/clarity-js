@@ -3,7 +3,7 @@ language: node_js
 node_js:
   - "5"
 install:
-  - gulp init
+  - npm run init
 script: gulp coverage
 cache:
   directories:
