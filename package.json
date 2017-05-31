@@ -49,7 +49,6 @@
   "scripts": {
     "complexity": "node node_modules/complexity-report/src/index.js -f plain src/",
     "init": "npm install && npm install -g gulp && gulp place-git-hooks",
-    "travis": "gulp build && gulp coverage",
     "tslint": "node_modules/.bin/tslint --project ./",
     "tslint-format": "node_modules/.bin/tslint --fix --project ./ --force"
   }
