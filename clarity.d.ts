@@ -32,7 +32,7 @@ interface IConfig {
   // Setting to enable debug features (e.g. console.log statements)
   debug?: boolean;
 
-  // Activate plugins
+  // Active plugins
   plugins?: string[];
 }
 
