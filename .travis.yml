@@ -1,5 +1,10 @@
 sudo: false
 language: node_js
-script: "npm run travis"
 node_js:
   - "5"
+before_script:
+  - npm install -g gulp
+script: gulp coverage
+cache:
+  directories:
+    - "node_modules"
