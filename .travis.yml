@@ -2,8 +2,8 @@ sudo: false
 language: node_js
 node_js:
   - "5"
-before_script:
-  - npm install -g gulp
+install:
+  - gulp init
 script: gulp coverage
 cache:
   directories:
