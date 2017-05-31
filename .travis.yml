@@ -4,7 +4,9 @@ node_js:
   - "5"
 install:
   - npm run init
-script: gulp coverage
+script:
+  - gulp build
+  - gulp coverage
 cache:
   directories:
     - "node_modules"
