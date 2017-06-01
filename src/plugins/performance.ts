@@ -1,15 +1,10 @@
-import { config } from "./config";
-import { addEvent, register } from "./core";
-import { instrument } from "./instrumentation";
-import { mapProperties } from "./utils";
+import { config } from "../config";
+import { addEvent, instrument } from "../core";
+import { mapProperties } from "../utils";
 
-export const TimingEventType = "PerformanceTiming";
-export const ResourceTimingEventType = "PerformanceResourceTiming";
-export const StateErrorEventType = "PerformanceStateError";
-const dummyHyperlink = document.createElement("a");
-const timeoutLength = 1000;
-
-class PerformanceProfiler implements IComponent {
+export default class PerformanceProfiler implements IPlugin {
+  private dummyHyperlink = document.createElement("a");
+  private timeoutLength = 1000;
   private lastInspectedEntryIndex: number;
   private clarityHostName: string;
   private logTimingTimeout: number;
@@ -35,10 +30,10 @@ class PerformanceProfiler implements IComponent {
 
   public activate() {
     if (this.timing) {
-      this.logTimingTimeout = setTimeout(this.logTiming.bind(this), timeoutLength);
+      this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
     if (this.getEntriesByType) {
-      this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), timeoutLength);
+      this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);
     }
   }
 
@@ -48,8 +43,8 @@ class PerformanceProfiler implements IComponent {
     this.incompleteEntryIndices = [];
 
     if (config.uploadUrl) {
-      dummyHyperlink.href = config.uploadUrl;
-      this.clarityHostName = dummyHyperlink.hostname;
+      this.dummyHyperlink.href = config.uploadUrl;
+      this.clarityHostName = this.dummyHyperlink.hostname;
     }
 
     // Potentially these don't need resets because performance object doesn't normally change within the page
@@ -72,9 +67,9 @@ class PerformanceProfiler implements IComponent {
       formattedTiming = mapProperties(formattedTiming, (name: string, value) => {
         return (formattedTiming[name] === 0) ? 0 : Math.round(formattedTiming[name] - formattedTiming.navigationStart);
       }, false);
-      addEvent(TimingEventType, { timing: formattedTiming });
+      addEvent("NavigationTiming", { timing: formattedTiming });
     } else {
-      this.logTimingTimeout = setTimeout(this.logTiming.bind(this), timeoutLength);
+      this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
   }
 
@@ -87,7 +82,7 @@ class PerformanceProfiler implements IComponent {
     if (entries.length < this.lastInspectedEntryIndex + 1) {
       if (!this.stateError) {
         this.stateError = true;
-        addEvent(StateErrorEventType, {});
+        addEvent("PerformanceStateError", {});
       }
 
       this.lastInspectedEntryIndex = -1;
@@ -118,19 +113,19 @@ class PerformanceProfiler implements IComponent {
     }
 
     if (entryInfos.length > 0) {
-      addEvent(ResourceTimingEventType, { entries: entryInfos });
+      addEvent("ResourceTiming", { entries: entryInfos });
     }
 
-    this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), timeoutLength);
+    this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);
   }
 
   private inspectEntry(entry, entryIndex): object {
     let networkData: IPerformanceResourceTiming = null;
     if (entry && entry.responseEnd > 0) {
-      dummyHyperlink.href = entry.name;
+      this.dummyHyperlink.href = entry.name;
 
       // Ignore Clarity's own network upload requests to avoid infinite loop of network reporting
-      if (dummyHyperlink.hostname !== this.clarityHostName) {
+      if (this.dummyHyperlink.hostname !== this.clarityHostName) {
         networkData = {
           duration: entry.duration,
           initiatorType: entry.initiatorType,
@@ -165,8 +160,4 @@ class PerformanceProfiler implements IComponent {
 
     return networkData;
   }
-}
-
-if (window.performance) {
-  register(new PerformanceProfiler());
 }

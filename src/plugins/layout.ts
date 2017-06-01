@@ -1,15 +1,12 @@
 import { config } from "./../config";
-import { addEvent, bind, getTimestamp, register } from "./../core";
+import { addEvent, bind, getTimestamp } from "./../core";
 import { assert, debug, isNumber, traverseNodeTree } from "./../utils";
-import * as LayoutStateProvider from "./layoutstateprovider";
-import { getNodeIndex, NodeIndex } from "./layoutstateprovider";
-import { ShadowDom } from "./shadowdom";
+import { ShadowDom } from "./layout/shadowdom";
+import { createGenericLayoutState, createLayoutState, getNodeIndex, IgnoreTag, NodeIndex } from "./layout/stateprovider";
 
-// Constants
-export const LayoutEventName = "Layout";
-const DistanceThreshold = 5;  // Pixels
-
-class Layout implements IComponent {
+export default class Layout implements IPlugin {
+  private eventName = "Layout";
+  private distanceThreshold = 5;
   private shadowDom: ShadowDom;
   private shadowDomConsistent: boolean;
   private observer: MutationObserver;
@@ -76,7 +73,7 @@ class Layout implements IComponent {
 
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
   private discoverNode(node: Node) {
-    let layout = LayoutStateProvider.createGenericLayoutState(node, null);
+    let layout = createGenericLayoutState(node, null);
     this.shadowDom.insertShadowNode(node, layout.parent, layout.next, layout);
     let index = getNodeIndex(node);
     layout.index = index;
@@ -99,10 +96,10 @@ class Layout implements IComponent {
       let index = this.domDiscoverQueue.shift();
       let shadowNode = this.shadowDom.getShadowNode(index);
       let oldLayoutState = shadowNode.layout;
-      let layoutState = LayoutStateProvider.createLayoutState(shadowNode.node, this.shadowDom);
+      let layoutState = createLayoutState(shadowNode.node, this.shadowDom);
       let originalProperties = this.originalProperties[index];
 
-      if (layoutState.tag !== LayoutStateProvider.IgnoreTag) {
+      if (layoutState.tag !== IgnoreTag) {
 
         // If we have any original properties recorded for this node, adjust layoutState with those values
         if (originalProperties) {
@@ -128,7 +125,7 @@ class Layout implements IComponent {
         layoutState.next = oldLayoutState.next;
         layoutState.source = Source.Discover;
         layoutState.action = Action.Insert;
-        addEvent(LayoutEventName, layoutState, time);
+        addEvent(this.eventName, layoutState, time);
       }
       this.shadowDom.updateShadowNode(index, layoutState);
       shadowNode.layout = layoutState;
@@ -219,18 +216,18 @@ class Layout implements IComponent {
         break;
     }
 
-    if (layoutState.tag !== LayoutStateProvider.IgnoreTag) {
+    if (layoutState.tag !== IgnoreTag) {
       if (eventInfo.source === Source.Mutation) {
         layoutState.mutationSequence = this.mutationSequence;
       }
       layoutState.source = eventInfo.source;
-      addEvent(LayoutEventName, layoutState);
+      addEvent(this.eventName, layoutState);
     }
   }
 
   private processInsertEvent(node: Node): ILayoutState {
     let index = getNodeIndex(node);
-    let layoutState = LayoutStateProvider.createLayoutState(node, this.shadowDom);
+    let layoutState = createLayoutState(node, this.shadowDom);
     layoutState.action = Action.Insert;
     this.shadowDom.getShadowNode(index).layout = layoutState;
     if (node.nodeType === Node.ELEMENT_NODE) {
@@ -244,7 +241,7 @@ class Layout implements IComponent {
 
   private processUpdateEvent(node: Node): ILayoutState {
     let index = getNodeIndex(node);
-    let layoutState = LayoutStateProvider.createLayoutState(node, this.shadowDom);
+    let layoutState = createLayoutState(node, this.shadowDom);
     layoutState.action = Action.Update;
     this.shadowDom.getShadowNode(index).layout = layoutState;
     return layoutState;
@@ -252,14 +249,14 @@ class Layout implements IComponent {
 
   private processRemoveEvent(node: Node) {
     let index = getNodeIndex(node);
-    let layoutState = LayoutStateProvider.createLayoutState(node, this.shadowDom);
+    let layoutState = createLayoutState(node, this.shadowDom);
     layoutState.action = Action.Remove;
     return layoutState;
   }
 
   private processMoveEvent(node: Node): ILayoutState {
     let index = getNodeIndex(node);
-    let layoutState = LayoutStateProvider.createLayoutState(node, this.shadowDom);
+    let layoutState = createLayoutState(node, this.shadowDom);
     layoutState.action = Action.Move;
     this.shadowDom.moveShadowNode(index, layoutState.parent, layoutState.next);
     return layoutState;
@@ -320,7 +317,7 @@ class Layout implements IComponent {
 
       // Update the reference of layouts object to current state
       if (recordEvent) {
-        addEvent(LayoutEventName, newLayoutState);
+        addEvent(this.eventName, newLayoutState);
         this.shadowDom.updateShadowNode(newLayoutState.index, newLayoutState);
       }
     }
@@ -329,7 +326,7 @@ class Layout implements IComponent {
   private checkDistance(stateOne: IElementLayoutState, stateTwo: IElementLayoutState) {
     let dx = stateOne.layout.scrollX - stateTwo.layout.scrollX;
     let dy = stateOne.layout.scrollY - stateTwo.layout.scrollY;
-    return (dx * dx + dy * dy > DistanceThreshold * DistanceThreshold);
+    return (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold);
   }
 
   private mutationCallback(mutations: MutationRecord[]) {
@@ -413,5 +410,3 @@ class Layout implements IComponent {
 
   }
 }
-
-register(new Layout());

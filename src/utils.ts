@@ -1,5 +1,5 @@
 import { config } from "./config";
-import { instrument } from "./instrumentation";
+import { instrument } from "./core";
 
 // Credit: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 // Excluding 3rd party code from tslint

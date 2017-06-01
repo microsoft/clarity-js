@@ -31,6 +31,9 @@ interface IConfig {
 
   // Setting to enable debug features (e.g. console.log statements)
   debug?: boolean;
+
+  // Active plugins
+  plugins?: string[];
 }
 
 /* ##################################### */
@@ -69,7 +72,7 @@ interface IDroppedPayloadInfo {
   xhrErrorState: IXhrErrorEventState;
 }
 
-interface IComponent {
+interface IPlugin {
   activate(): void;
   teardown(): void;
   reset(): void;
@@ -251,7 +254,7 @@ interface IViewportState {
 
 declare const enum Instrumentation {
   JsError,
-  ApiMissing,
+  MissingFeature,
   XhrError,
   TotalByteLimitExceeded,
   Teardown,
@@ -268,8 +271,8 @@ interface IJsErrorEventState extends IInstrumentationEventState {
   message: string;
 }
 
-interface IApiMissingEventState extends IInstrumentationEventState {
-  missingApis: string[];
+interface IMissingFeatureEventState extends IInstrumentationEventState {
+  missingFeatures: string[];
 }
 
 interface IXhrErrorEventState extends IInstrumentationEventState {

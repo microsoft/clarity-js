@@ -1,10 +1,8 @@
-import { addEvent, bind, register } from "./core";
+import { addEvent, bind } from "../core";
 
-// Constants
-export const ViewportEventName = "Viewport";
-export const DistanceThreshold = 20; // Pixels
-
-class Viewport implements IComponent {
+export default class Viewport implements IPlugin {
+  private eventName : string = "Viewport";
+  private distanceThreshold : number = 20;
   private lastViewportState: IViewportState;
 
   public activate() {
@@ -59,15 +57,13 @@ class Viewport implements IComponent {
     }
     if (recordState) {
       this.lastViewportState = state;
-      addEvent(ViewportEventName, state);
+      addEvent(this.eventName, state);
     }
   }
 
   private checkDistance(stateOne: IViewportState, stateTwo: IViewportState) {
     let dx = stateOne.viewport.x - stateTwo.viewport.x;
     let dy = stateOne.viewport.y - stateTwo.viewport.y;
-    return (dx * dx + dy * dy > DistanceThreshold * DistanceThreshold);
+    return (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold);
   }
 }
-
-register(new Viewport());

@@ -1,5 +1,5 @@
+import { start } from "../src/clarity";
 import { config } from "../src/config";
-import { start } from "../src/wireup";
 
 let sentBytes: string[] = [];
 

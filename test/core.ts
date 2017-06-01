@@ -1,16 +1,13 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
-import { InstrumentationEventName } from "../src/instrumentation";
-import uncompress from "../src/uncompress";
+import uncompress from "./uncompress";
 import { activateCore, cleanupFixture, setupFixture } from "./utils";
 import { getAllSentBytes, getAllSentEvents, MockEventName, observeEvents, triggerMockEvent, triggerSend } from "./utils";
 
 import * as chai from "chai";
-import "../src/layout/layout";
-import "../src/pointer";
-import "../src/viewport";
 
 let assert = chai.assert;
+let instrumentationEventName = "Instrumentation";
 
 describe("Functional Tests", () => {
   let limit = config.batchLimit;
@@ -18,6 +15,26 @@ describe("Functional Tests", () => {
 
   beforeEach(setupFixture);
   afterEach(cleanupFixture);
+
+  it("validates that missing feature event is sent when required feature is missing", (done) => {
+    core.teardown();
+
+    // Function.prorotype.bind is a required API for Clarity to work
+    // Mocking a browser that doesn't support it by temporarily deleting it
+    let originalBind = Function.prototype.bind;
+    delete Function.prototype.bind;
+    activateCore();
+    Function.prototype.bind = originalBind;
+
+    let events = getAllSentEvents();
+    assert.equal(events.length, 2);
+    assert.equal(events[0].type, instrumentationEventName);
+    assert.equal(events[0].state.type, Instrumentation.MissingFeature);
+    assert.equal(events[1].type, instrumentationEventName);
+    assert.equal(events[1].state.type, Instrumentation.Teardown);
+
+    done();
+  });
 
   it("validates that modules work fine together", (done) => {
     let events = getAllSentEvents();
@@ -69,7 +86,7 @@ describe("Functional Tests", () => {
     events = stopObserving();
 
     assert.equal(events.length, 2);
-    assert.equal(events[0].type, InstrumentationEventName);
+    assert.equal(events[0].type, instrumentationEventName);
     assert.equal(events[0].state.type, Instrumentation.XhrError);
     assert.equal(events[0].state.requestStatus, 400);
     assert.equal(events[1].type, secondMockEventName);
@@ -110,7 +127,7 @@ describe("Functional Tests", () => {
     // Upload invocations: First mock event, second mock event, first mock event re-upload
     assert.equal(uploadInvocationCount, 3);
     assert.equal(events.length, 3);
-    assert.equal(events[0].type, InstrumentationEventName);
+    assert.equal(events[0].type, instrumentationEventName);
     assert.equal(events[0].state.type, Instrumentation.XhrError);
     assert.equal(events[0].state.requestStatus, 400);
     assert.equal(events[1].type, secondMockEventName);
@@ -300,10 +317,10 @@ describe("Functional Tests", () => {
 
     let events = getAllSentEvents();
     assert.equal(events.length, 2);
-    assert.equal(events[0].type, InstrumentationEventName);
+    assert.equal(events[0].type, instrumentationEventName);
     assert.equal(events[0].state.type, Instrumentation.ClarityDuplicated);
     assert.equal(events[0].state.currentImpressionId, mockExistingImpressionId);
-    assert.equal(events[1].type, InstrumentationEventName);
+    assert.equal(events[1].type, instrumentationEventName);
     assert.equal(events[1].state.type, Instrumentation.Teardown);
     done();
   });
