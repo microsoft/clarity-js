@@ -1,11 +1,11 @@
 {
   "name": "clarity-js",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An analytics library that uses web page interactions to generate aggregated insights",
   "author": "Microsoft Corp.",
   "license": "MIT",
-  "main": "./build/clarity.js",
-  "typings": "./clarity.d.ts",
+  "main": "build/clarity.js",
+  "typings": "clarity.d.ts",
   "keywords": [
     "clarity",
     "Microsoft",
@@ -19,9 +19,6 @@
     "type": "git",
     "url": "https://github.com/Microsoft/clarity-js.git"
   },
-  "files": [
-    "./build/clarity.js"
-  ],
   "bugs": {
     "url": "https://github.com/Microsoft/clarity-js/issues"
   },
