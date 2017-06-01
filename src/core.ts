@@ -136,7 +136,7 @@ function envelope(): IEnvelope {
     clarityId: cid,
     impressionId,
     url: top.location.href,
-    version: "0.9",
+    version: "0.1.1",
     time: Math.round(getPageContextBasedTimestamp()),
     sequenceNumber: sequence++
   };
