@@ -20,7 +20,7 @@
     "url": "https://github.com/Microsoft/clarity-js.git"
   },
   "files": [
-    "build/clarity.js"
+    "./build/clarity.js"
   ],
   "bugs": {
     "url": "https://github.com/Microsoft/clarity-js/issues"
