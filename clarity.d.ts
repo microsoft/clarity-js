@@ -318,3 +318,11 @@ interface IPerformanceResourceTiming {
   encodedBodySize?: number;
   decodedBodySize?: number;
 }
+
+/* ##################################### */
+/* ############   LIBRARY   ############ */
+/* ##################################### */
+interface IClarity {
+  start(config?: IConfig): void;
+  stop(): void;
+}
