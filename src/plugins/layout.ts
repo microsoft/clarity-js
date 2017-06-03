@@ -68,6 +68,7 @@ export default class Layout implements IPlugin {
     let discoverTime = getTimestamp();
     traverseNodeTree(document, this.discoverNode.bind(this));
     this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
+    assert(this.shadowDomConsistent, "discoverDom", "shadowDom inconsistent after dom discovery");
     this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
   }
 
@@ -137,6 +138,8 @@ export default class Layout implements IPlugin {
         this.backfillLayoutsAsync(time, onDomDiscoverComplete);
       }, 0);
     } else {
+      this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
+      assert(this.shadowDomConsistent, "backfillLayoutsAsync", "shadowDom inconsistent after backfilling layouts");
       onDomDiscoverComplete();
     }
   }
