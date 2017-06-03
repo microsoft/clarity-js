@@ -291,6 +291,7 @@ interface ITotalByteLimitExceededEventState extends IInstrumentationEventState {
 
 interface IClarityAssertFailedEventState extends IInstrumentationEventState {
   source: string;
+  comment: string;
 }
 
 interface IClarityDuplicatedEventState extends IInstrumentationEventState {

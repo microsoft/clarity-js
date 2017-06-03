@@ -25,7 +25,7 @@ export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutStat
   // should always have the 'ignored' flag before child is processed
   if (parentIndex !== null) {
     let parentShadowNode = shadowDom.getShadowNode(parentIndex);
-    assert(parentShadowNode !== null, "createLayoutState");
+    assert(!!parentShadowNode, "createLayoutState", "parentShadowNode is missing");
     if (parentShadowNode.ignore && parentShadowNode.node !== document) {
       layoutState = createGenericLayoutState(node, IgnoreTag);
       return layoutState;

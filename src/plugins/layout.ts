@@ -151,7 +151,7 @@ export default class Layout implements IPlugin {
     }
 
     this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
-    assert(this.shadowDomConsistent, "onDomDiscoverComplete");
+    assert(this.shadowDomConsistent, "onDomDiscoverComplete", "shadowDom inconsistent after preDiscoverMutations");
   }
 
   // Mutation handler that is invoked for mutations that happen before domDiscover is completed
@@ -349,7 +349,7 @@ export default class Layout implements IPlugin {
 
       // Make sure ShadowDom arrived to the consistent state
       this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
-      assert(this.shadowDomConsistent, "mutation");
+      assert(this.shadowDomConsistent, "mutation", `shadowDomInconsistent after mutation sequence ${this.mutationSequence}`);
       if (this.shadowDomConsistent) {
         this.processMutations(summary, time);
       } else {
