@@ -1,8 +1,9 @@
+import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
-import * as core from "../src/core";
-import uncompress from "../src/uncompress";
+import { addEvent } from "../src/core";
 import { mapProperties } from "../src/utils";
 import { clearSentBytes, getSentBytes } from "./testsetup";
+import uncompress from "./uncompress";
 
 export const MockEventName = "ClarityTestMockEvent";
 
@@ -10,7 +11,7 @@ let originalConfig: IConfig = config;
 
 export function triggerMockEvent(eventName?: string) {
   eventName = eventName || MockEventName;
-  core.addEvent(eventName, {});
+  addEvent(eventName, {});
   triggerSend();
 }
 
@@ -60,7 +61,7 @@ export function setupFixture() {
 
 export function cleanupFixture() {
   fixture.cleanup();
-  core.teardown();
+  stop();
   jasmine.clock().uninstall();
   resetConfig();
 }
@@ -71,7 +72,7 @@ export function triggerSend() {
 
 export function activateCore() {
   clearSentBytes();
-  core.activate();
+  start();
   triggerSend();
 }
 

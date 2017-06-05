@@ -1,14 +1,13 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
-import { DistanceThreshold, PointerEventName, TimeThreshold } from "../src/pointer";
-import uncompress from "../src/uncompress";
+import uncompress from "./uncompress";
 import { cleanupFixture, observeEvents, setupFixture, triggerSend } from "./utils";
 
 import * as chai from "chai";
-import "../src/layout/layout";
-import "../src/pointer";
-import "../src/viewport";
 
+let distanceThreshold = 20;
+let eventName = "Pointer";
+let timeThreshold = 500;
 let assert = chai.assert;
 
 describe("Pointer Tests", () => {
@@ -18,12 +17,12 @@ describe("Pointer Tests", () => {
 
   it("validates that mouse events are processed by clarity", (done) => {
     let dom = document.getElementById("clarity");
-    let stopObserving = observeEvents(PointerEventName);
+    let stopObserving = observeEvents(eventName);
     document.addEventListener("click", callback);
 
     // Trigger mousemove events followed by a click event
     let x = 250;
-    let xDelta = (DistanceThreshold + 1);
+    let xDelta = (distanceThreshold + 1);
     triggerMouseEvent(dom, "mousemove", x, 100);
     triggerMouseEvent(dom, "mousemove", x + xDelta, 100);
     triggerMouseEvent(dom, "mousemove", x + (xDelta * 2), 100);
@@ -52,12 +51,12 @@ describe("Pointer Tests", () => {
   // Make sure that we don't record mouse events that are too close to each other
   it("validates that mouse events are throttled by distance", (done) => {
     let dom = document.getElementById("clarity");
-    let stopObserving = observeEvents(PointerEventName);
+    let stopObserving = observeEvents(eventName);
     document.addEventListener("click", callback);
 
     // Trigger mousemove events followed by a click event
     let x = 250;
-    let xDelta = Math.ceil(DistanceThreshold / 2) + 1;
+    let xDelta = Math.ceil(distanceThreshold / 2) + 1;
     triggerMouseEvent(dom, "mousemove", x, 100);
     triggerMouseEvent(dom, "mousemove", x + xDelta, 100);
     triggerMouseEvent(dom, "mousemove", x + (xDelta * 2), 100);
@@ -84,7 +83,7 @@ describe("Pointer Tests", () => {
   // Make sure that we don't record mouse events that are too close to each other
   it("validates that mouse events are throttled by time", (done) => {
     let dom = document.getElementById("clarity");
-    let stopObserving = observeEvents(PointerEventName);
+    let stopObserving = observeEvents(eventName);
     document.addEventListener("click", callback);
 
     // Trigger mousemove events followed by a click event
@@ -92,7 +91,7 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "mousemove", x, 100);
     triggerMouseEvent(dom, "mousemove", x, 100);
 
-    let thresholdTs = core.getTimestamp(true) + (TimeThreshold * 2);
+    let thresholdTs = core.getTimestamp(true) + (timeThreshold * 2);
     while (core.getTimestamp(true) < thresholdTs) {
       // Wait for time threadhold to expire
     }

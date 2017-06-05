@@ -1,13 +1,11 @@
-import { addEvent, bind, register } from "./core";
+import { addEvent, bind } from "../core";
 import * as mouse from "./pointer/mouse";
 import * as touch from "./pointer/touch";
 
-// Constants
-export const PointerEventName = "Pointer";
-export const DistanceThreshold = 20;  // Pixels
-export const TimeThreshold = 500;  // Milliseconds
-
-class Pointer implements IComponent {
+export default class Pointer implements IPlugin {
+  private eventName = "Pointer";
+  private distanceThreshold = 20;
+  private timeThreshold = 500;
   private lastMoveState: IPointerState;
   private lastMoveTime: number;
 
@@ -48,11 +46,11 @@ class Pointer implements IComponent {
           || this.checkTime(time)) {
           this.lastMoveState = state;
           this.lastMoveTime = time;
-          addEvent(PointerEventName, state);
+          addEvent(this.eventName, state);
         }
         break;
       default:
-        addEvent(PointerEventName, state);
+        addEvent(this.eventName, state);
         break;
     }
   }
@@ -60,12 +58,10 @@ class Pointer implements IComponent {
   private checkDistance(stateOne: IPointerState, stateTwo: IPointerState) {
     let dx = stateOne.x - stateTwo.x;
     let dy = stateOne.y - stateTwo.y;
-    return (dx * dx + dy * dy > DistanceThreshold * DistanceThreshold);
+    return (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold);
   }
 
   private checkTime(time: number) {
-    return time - this.lastMoveTime > TimeThreshold;
+    return time - this.lastMoveTime > this.timeThreshold;
   }
 }
-
-register(new Pointer());

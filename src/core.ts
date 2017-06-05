@@ -1,7 +1,6 @@
-import { checkApi } from "./apicheck";
 import compress from "./compress";
 import { config } from "./config";
-import { instrument } from "./instrumentation";
+import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
@@ -18,8 +17,7 @@ let impressionId: string;
 let sequence: number;
 let eventCount: number;
 let startTime: number;
-let components: IComponent[];
-let registeredComponents: IComponent[];
+let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
 let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
 let timeout: number;
@@ -27,17 +25,17 @@ let nextPayload: string[];
 let nextPayloadLength: number;
 export let state: State = State.Loaded;
 
-export function register(component: IComponent) {
-  registeredComponents.push(component);
-}
-
 export function activate() {
   if (init()) {
     document[ClarityAttribute] = impressionId;
-    for (let component of registeredComponents) {
-      component.reset();
-      component.activate();
-      components.push(component);
+    for (let plugin of config.plugins) {
+      let pluginClass = getPlugin(plugin);
+      if (pluginClass) {
+        let instance = new (pluginClass)();
+        instance.reset();
+        instance.activate();
+        activePlugins.push(instance);
+      }
     }
 
     bind(window, "beforeunload", teardown);
@@ -47,8 +45,8 @@ export function activate() {
 }
 
 export function teardown() {
-  for (let component of components) {
-    component.teardown();
+  for (let plugin of activePlugins) {
+    plugin.teardown();
   }
 
   // Walk through existing list of bindings and remove them all
@@ -111,6 +109,12 @@ export function getTimestamp(unix?: boolean, raw?: boolean) {
   return (raw ? time : Math.round(time));
 }
 
+export function instrument(eventState: IInstrumentationEventState) {
+  if (config.instrument) {
+    addEvent("Instrumentation", eventState);
+  }
+}
+
 function getUnixTimestamp(): number {
   return (window.performance && typeof performance.now === "function")
     ? performance.now() + performance.timing.navigationStart
@@ -132,7 +136,7 @@ function envelope(): IEnvelope {
     clarityId: cid,
     impressionId,
     url: top.location.href,
-    version: "0.8",
+    version: "0.1.3",
     time: Math.round(getPageContextBasedTimestamp()),
     sequenceNumber: sequence++
   };
@@ -245,7 +249,7 @@ function init() {
   sequence = 0;
   eventCount = 0;
   startTime = getUnixTimestamp();
-  components = [];
+  activePlugins = [];
   bindings = {};
   nextPayload = [];
   droppedPayloads = {};
@@ -270,7 +274,7 @@ function init() {
   }
 
   // If critical API is missing, don't activate Clarity
-  if (!checkApi()) {
+  if (!checkFeatures()) {
     teardown();
     return false;
   }
@@ -278,6 +282,36 @@ function init() {
   return true;
 }
 
-// Initialize registeredComponents and bindings early, so that registering and wiring up can be done properly
-registeredComponents = [];
+function checkFeatures() {
+  let missingFeatures = [];
+  let expectedFeatures = [
+    "document.implementation.createHTMLDocument",
+    "document.documentElement.classList",
+    "Function.prototype.bind"
+  ];
+
+  for (let feature of expectedFeatures) {
+    let parts = feature.split(".");
+    let api = window;
+    for (let part of parts) {
+      if (typeof api[part] === "undefined") {
+        missingFeatures.push(feature);
+        break;
+      }
+      api = api[part];
+    }
+  }
+
+  if (missingFeatures.length > 0) {
+    instrument({
+      type: Instrumentation.MissingFeature,
+      missingFeatures
+    } as IMissingFeatureEventState);
+    return false;
+  }
+
+  return true;
+}
+
+// Initialize bindings early, so that registering and wiring up can be done properly
 bindings = {};

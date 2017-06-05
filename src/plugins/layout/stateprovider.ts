@@ -1,5 +1,5 @@
-import { config } from "./../config";
-import { assert } from "./../utils";
+import { config } from "../../config";
+import { assert } from "../../utils";
 import { ShadowDom } from "./shadowdom";
 
 export const NodeIndex = "clarity-index";

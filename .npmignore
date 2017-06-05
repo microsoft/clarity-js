@@ -1,9 +1,6 @@
 # Visual Studio Code temporary files
 .vscode/
 
-# Build results
-build/
-
 # npm packages
 node_modules
 

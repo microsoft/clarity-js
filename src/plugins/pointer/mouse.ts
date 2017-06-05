@@ -1,4 +1,4 @@
-import { NodeIndex } from "../layout/layoutstateprovider";
+import { NodeIndex } from "../layout/stateprovider";
 
 export function transform(evt: MouseEvent): IPointerState[] {
   let de = document.documentElement;
