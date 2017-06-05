@@ -34,6 +34,7 @@ gulp.task("build", () => {
   );
 });
 
+//build and then run coverage
 gulp.task("bnc", () => {
   runSequence(
     "clean",
@@ -45,6 +46,7 @@ gulp.task("bnc", () => {
   );
 });
 
+//build and then run tests
 gulp.task("bnt", () => {
   runSequence(
     "clean",
