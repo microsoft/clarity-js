@@ -1,5 +1,4 @@
-import { bind, register } from "./core";
-import { instrument } from "./instrumentation";
+import { bind, instrument } from "../core";
 
 export function logError(errorToLog: Event) {
     // if errorToLog["error"] doesn't exist, occasionally we can get information directly from errorToLog
@@ -21,7 +20,7 @@ export function logError(errorToLog: Event) {
     instrument(jsErrorEventState);
 }
 
-class ErrorMonitor implements IComponent {
+class ErrorMonitor implements IPlugin {
 
     private errorCount: number;
 
@@ -37,5 +36,3 @@ class ErrorMonitor implements IComponent {
         return;
     }
 }
-
-register(new ErrorMonitor());

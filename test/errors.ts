@@ -1,8 +1,7 @@
-import { InstrumentationEventName } from "../src/instrumentation";
 import { activateCore, cleanupFixture, getAllSentEvents, setupFixture, triggerSend } from "./utils";
 
 import * as chai from "chai";
-import * as errors from "../src/errors";
+import * as errors from "../src/plugins/errors";
 
 let assert = chai.assert;
 
@@ -26,7 +25,6 @@ describe("Error Tests", () => {
         let events = getAllSentEvents();
         let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
         assert.equal(errorEvents.length, 1);
-        assert.equal(errorEvents[0].type, InstrumentationEventName);
         assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
         assert.equal(errorEvents[0].state.message, message);
         assert.equal(errorEvents[0].state.source, filename);
@@ -50,7 +48,6 @@ describe("Error Tests", () => {
         let events = getAllSentEvents();
         let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
         assert.equal(errorEvents.length, 1);
-        assert.equal(errorEvents[0].type, InstrumentationEventName);
         assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
         assert.equal(errorEvents[0].state.message, message);
         assert.equal(errorEvents[0].state.source, filename);
@@ -71,7 +68,6 @@ describe("Error Tests", () => {
         let events = getAllSentEvents();
         let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
         assert.equal(errorEvents.length, 3);
-        assert.equal(errorEvents[0].type, InstrumentationEventName);
         assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
         assert.equal(errorEvents[0].state.message, message);
         done();
@@ -86,7 +82,6 @@ describe("Error Tests", () => {
         let events = getAllSentEvents();
         let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
         assert.equal(errorEvents.length, 1);
-        assert.equal(errorEvents[0].type, InstrumentationEventName);
         assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
         assert.equal(errorEvents[0].state.message, message);
         done();

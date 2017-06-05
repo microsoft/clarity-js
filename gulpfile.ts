@@ -31,7 +31,7 @@ gulp.task("bnc", () => {
     "clean",
     "compile",
     "place-fixture",
-    "browserify",
+    "rollup",
     "uglify",
     "coverage"
   );
@@ -43,7 +43,7 @@ gulp.task("bnt", () => {
     "clean",
     "compile",
     "place-fixture",
-    "browserify",
+    "rollup",
     "uglify",
     "test"
   );
