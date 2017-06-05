@@ -42,15 +42,17 @@ export class ShadowDom {
       this.shadowDocument = shadowNode;
     }
 
+    assert(!!parent, "insertShadowNode", "parent is missing");
+    if (!parent) {
+      return;
+    }
+
     if (this.classifyNodes) {
       this.setClass(shadowNode, NewNodeClassName);
       if (!this.hasClass(parent, NewNodeClassName)) {
         this.setClass(shadowNode, TopNewNodeClassName);
       }
     }
-
-    // Make sure new node has a parent that exists in DOM
-    assert(!!parent, "insertShadowNode");
 
     if (nextSibling) {
       parent.insertBefore(shadowNode, nextSibling);
@@ -65,9 +67,11 @@ export class ShadowDom {
     let parent = this.getShadowNode(newParentIndex);
     let nextSibling = this.getShadowNode(newNextSiblingIndex);
 
-    // Make new node has a parent that exists in DOM
-    assert(!!shadowNode, "moveShadowNode");
-    assert(!!parent, "moveShadowNode");
+    assert(!!parent, "moveShadowNode", "parent is missing");
+    assert(!!shadowNode, "moveShadowNode", "shadowNode is missing");
+    if (!(parent && shadowNode)) {
+      return;
+    }
 
     if (this.classifyNodes) {
       this.setClass(shadowNode, MovedNodeClassName);
@@ -88,7 +92,11 @@ export class ShadowDom {
 
   public updateShadowNode(index: number, newLayout?: ILayoutState) {
     let shadowNode = this.getShadowNode(index);
-    assert(!!shadowNode, "updateShadowNode");
+
+    assert(!!shadowNode, "updateShadowNode", "shadowNode is missing");
+    if (!shadowNode) {
+      return;
+    }
 
     if (shadowNode) {
       if (newLayout) {
@@ -104,7 +112,12 @@ export class ShadowDom {
 
   public removeShadowNode(index: number) {
     let shadowNode = this.getShadowNode(index);
-    assert(!!shadowNode, "removeShadowNode");
+
+    assert(!!shadowNode, "removeShadowNode", "shadowNode is missing");
+    if (!shadowNode) {
+      return;
+    }
+
     this.removedNodes.appendChild(shadowNode);
   }
 
@@ -172,19 +185,14 @@ export class ShadowDom {
     let shadowDomIndices: number[] = [];
     let mirrors = true;
 
-    if (this.shadowDocument === null) {
-      assert(this.shadowDocument !== null, "shadowDocumentIsNull");
-      return false;
-    }
-
-    assert(this.shadowDocument.node === document, "mirrorsRealDom");
+    assert(!!this.shadowDocument, "mirrorsRealDom", "shadowDocument is missing");
+    assert(this.shadowDocument.node === document, "mirrorsRealDom", "shadowDocument.node !== document");
 
     traverseNodeTree(document, (node: Node) => {
       domIndices.push(getNodeIndex(node));
     });
 
     traverseNodeTree(this.shadowDocument, (shadowNode: IShadowDomNode) => {
-      assert(parseInt(shadowNode.id, 10) === getNodeIndex(shadowNode.node), "mirrorsRealDom");
       shadowDomIndices.push(getNodeIndex(shadowNode.node));
     });
 
@@ -201,20 +209,26 @@ export class ShadowDom {
     return mirrors;
   }
 
+  public hasClass(shadowNode: IShadowDomNode, className: string) {
+    return shadowNode ? shadowNode.classList.contains(className) : false;
+  }
+
   public setClass(shadowNode: IShadowDomNode, className: string) {
-    shadowNode.classList.add(className);
+    if (shadowNode) {
+      shadowNode.classList.add(className);
+    }
   }
 
   public removeClass(shadowNode: IShadowDomNode, className: string) {
-    shadowNode.classList.remove(className);
+    if (shadowNode) {
+      shadowNode.classList.remove(className);
+    }
   }
 
   public removeAllClasses(shadowNode: IShadowDomNode) {
-    shadowNode.removeAttribute("class");
-  }
-
-  public hasClass(shadowNode: IShadowDomNode, className: string) {
-    return shadowNode.classList.contains(className);
+    if (shadowNode) {
+      shadowNode.removeAttribute("class");
+    }
   }
 
   public getMutationSummary(): IShadowDomMutationSummary {
@@ -328,7 +342,6 @@ export class ShadowDom {
       parentShadowNode = this.getShadowNode(parentIndex);
     } else {
       let childShadowNode = this.getShadowNode(childNodeIndex);
-      assert(!!childShadowNode, "shouldProcessChildListMutation");
       parentShadowNode = childShadowNode && childShadowNode.parentNode;
     }
     return parentShadowNode && !this.hasClass(parentShadowNode, FinalClassName);

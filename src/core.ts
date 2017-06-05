@@ -116,8 +116,8 @@ export function instrument(eventState: IInstrumentationEventState) {
 }
 
 function getUnixTimestamp(): number {
-  return (window.performance && typeof performance.now === "function")
-    ? performance.now() + performance.timing.navigationStart
+  return (window.performance && window.performance.now)
+    ? window.performance.now() + performance.timing.navigationStart
     : new Date().getTime();
 }
 
@@ -126,7 +126,7 @@ function getUnixTimestamp(): number {
 // In such case this number may not reflect the 'time since page start' accurately,
 // especially if Clarity script is post-loaded or injected after page load.
 function getPageContextBasedTimestamp(): number {
-  return (window.performance && typeof performance.now === "function")
+  return (window.performance && window.performance.now)
     ? performance.now()
     : new Date().getTime() - startTime;
 }
@@ -135,8 +135,8 @@ function envelope(): IEnvelope {
   return {
     clarityId: cid,
     impressionId,
-    url: top.location.href,
-    version: "0.1.3",
+    url: window.location.href,
+    version: "0.1.4",
     time: Math.round(getPageContextBasedTimestamp()),
     sequenceNumber: sequence++
   };
