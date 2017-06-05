@@ -72,6 +72,12 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
   let stateAttributes: IAttributes = {};
   for (let i = 0; i < elementAttributes.length; i++) {
     let attr = elementAttributes[i];
+
+    // If it's an image and configuration disallows capturing images then skip src attribute
+    if (tagName === "IMG" && !config.showImages && attr.name.toUpperCase() === "SRC") {
+      continue;
+    }
+
     stateAttributes[attr.name] = attr.value;
   }
   elementState.attributes = stateAttributes;
