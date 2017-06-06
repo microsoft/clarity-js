@@ -6,7 +6,7 @@ import { instrument } from "./core";
 // tslint:disable
 export function guid() {
   let d = new Date().getTime();
-  if (window.performance && typeof window.performance.now === "function") {
+  if (window.performance && window.performance.now) {
     d += performance.now(); //use high-precision timer if available
   }
   let uuid = "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, function(c) {
@@ -80,11 +80,12 @@ export function isNumber(value: any): boolean {
   return (typeof value === "number" && !isNaN(value));
 }
 
-export function assert(condition: boolean, source: string) {
+export function assert(condition: boolean, source: string, comment: string) {
   if (condition === false) {
     let eventState: IClarityAssertFailedEventState = {
       type: Instrumentation.ClarityAssertFailed,
-      source
+      source,
+      comment
     };
     instrument(eventState);
   }

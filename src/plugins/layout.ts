@@ -68,6 +68,7 @@ export default class Layout implements IPlugin {
     let discoverTime = getTimestamp();
     traverseNodeTree(document, this.discoverNode.bind(this));
     this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
+    assert(this.shadowDomConsistent, "discoverDom", "shadowDom inconsistent after dom discovery");
     this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
   }
 
@@ -137,6 +138,8 @@ export default class Layout implements IPlugin {
         this.backfillLayoutsAsync(time, onDomDiscoverComplete);
       }, 0);
     } else {
+      this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
+      assert(this.shadowDomConsistent, "backfillLayoutsAsync", "shadowDom inconsistent after backfilling layouts");
       onDomDiscoverComplete();
     }
   }
@@ -151,7 +154,7 @@ export default class Layout implements IPlugin {
     }
 
     this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
-    assert(this.shadowDomConsistent, "onDomDiscoverComplete");
+    assert(this.shadowDomConsistent, "onDomDiscoverComplete", "shadowDom inconsistent after preDiscoverMutations");
   }
 
   // Mutation handler that is invoked for mutations that happen before domDiscover is completed
@@ -349,7 +352,7 @@ export default class Layout implements IPlugin {
 
       // Make sure ShadowDom arrived to the consistent state
       this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
-      assert(this.shadowDomConsistent, "mutation");
+      assert(this.shadowDomConsistent, "mutation", `shadowDomInconsistent after mutation sequence ${this.mutationSequence}`);
       if (this.shadowDomConsistent) {
         this.processMutations(summary, time);
       } else {
