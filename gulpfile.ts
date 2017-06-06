@@ -25,6 +25,30 @@ gulp.task("build", () => {
   );
 });
 
+// build and then run coverage
+gulp.task("bnc", () => {
+  runSequence(
+    "clean",
+    "compile",
+    "place-fixture",
+    "rollup",
+    "uglify",
+    "coverage"
+  );
+});
+
+// build and then run tests
+gulp.task("bnt", () => {
+  runSequence(
+    "clean",
+    "compile",
+    "place-fixture",
+    "rollup",
+    "uglify",
+    "test"
+  );
+});
+
 gulp.task("uglify", () => {
   return gulp.src("build/" + bundle)
     .pipe(uglify())

@@ -19,7 +19,7 @@ describe("Functional Tests", () => {
   it("validates that missing feature event is sent when required feature is missing", (done) => {
     core.teardown();
 
-    // Function.prorotype.bind is a required API for Clarity to work
+    // Function.prototype.bind is a required API for Clarity to work
     // Mocking a browser that doesn't support it by temporarily deleting it
     let originalBind = Function.prototype.bind;
     delete Function.prototype.bind;
