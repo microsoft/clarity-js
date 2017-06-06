@@ -622,4 +622,36 @@ describe("Layout Tests", () => {
       done();
     }
   });
+
+  it("checks that input value is masked if the config is set to not show text", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Disable images
+    config.showText = false;
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let input = document.createElement("input");
+    input.setAttribute("value", "Clarity");
+    document.body.appendChild(input);
+
+    function callback() {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.tag, "INPUT");
+      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.attributes["value"], "*******");
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
 });
