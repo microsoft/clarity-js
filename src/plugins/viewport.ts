@@ -1,8 +1,8 @@
 import { addEvent, bind } from "../core";
 
 export default class Viewport implements IPlugin {
-  private eventName : string = "Viewport";
-  private distanceThreshold : number = 20;
+  private eventName = "Viewport";
+  private distanceThreshold = 20;
   private lastViewportState: IViewportState;
 
   public activate() {
@@ -38,8 +38,8 @@ export default class Viewport implements IPlugin {
         height: "innerHeight" in window ? window.innerHeight : de.clientHeight
       },
       document: {
-        width: body.clientWidth,
-        height: body.clientHeight
+        width: body ? body.clientWidth : null,
+        height: body ? body.clientHeight : null
       },
       dpi: "devicePixelRatio" in window ? window.devicePixelRatio : -1,
       visibility: "visibilityState" in document ? document.visibilityState : "default",
