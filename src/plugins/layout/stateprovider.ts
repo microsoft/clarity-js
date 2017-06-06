@@ -7,6 +7,8 @@ export const DoctypeTag = "*DOC*";
 export const IgnoreTag = "*IGNORE*";
 export const TextTag = "*TXT*";
 
+let attributeMaskList = ["value", "placeholder", "alt", "title"];
+
 export function getNodeIndex(node: Node): number {
   let index: number = null;
   if (node && NodeIndex in node) {
@@ -25,7 +27,7 @@ export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutStat
   // should always have the 'ignored' flag before child is processed
   if (parentIndex !== null) {
     let parentShadowNode = shadowDom.getShadowNode(parentIndex);
-    assert(parentShadowNode !== null, "createLayoutState");
+    assert(!!parentShadowNode, "createLayoutState", "parentShadowNode is missing");
     if (parentShadowNode.ignore && parentShadowNode.node !== document) {
       layoutState = createGenericLayoutState(node, IgnoreTag);
       return layoutState;
@@ -72,7 +74,19 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
   let stateAttributes: IAttributes = {};
   for (let i = 0; i < elementAttributes.length; i++) {
     let attr = elementAttributes[i];
-    stateAttributes[attr.name] = attr.value;
+    let attrName = attr.name.toLowerCase();
+
+    // If it's an image and configuration disallows capturing images then skip src attribute
+    if (tagName === "IMG" && !config.showImages && attrName === "src") {
+      continue;
+    }
+
+    // If we are masking text, also mask it from input boxes as well as alt description
+    if (!config.showText && attributeMaskList.indexOf(attrName) >= 0) {
+      stateAttributes[attr.name] = attr.value.replace(/\S/gi, "*");
+    } else {
+      stateAttributes[attr.name] = attr.value;
+    }
   }
   elementState.attributes = stateAttributes;
 

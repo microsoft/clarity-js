@@ -556,4 +556,102 @@ describe("Layout Tests", () => {
       callbackNumber++;
     }
   });
+
+  it("checks that images source is not captured if the config disallows it", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Disable images
+    config.showImages = false;
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let img = document.createElement("img");
+    img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAIBTAA7";
+    document.body.appendChild(img);
+
+    function callback() {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.tag, "IMG");
+      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.attributes["src"], undefined);
+      assert.equal(events[0].state.layout.width, 0);
+      assert.equal(events[0].state.layout.height, 0);
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
+  it("checks that images source is captured if the config allows it", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Disable images
+    config.showImages = true;
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let img = document.createElement("img");
+    let src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAIBTAA7";
+    img.src = src;
+    document.body.appendChild(img);
+
+    function callback() {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.tag, "IMG");
+      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.attributes["src"], src);
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
+  it("checks that input value is masked if the config is set to not show text", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Disable images
+    config.showText = false;
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let input = document.createElement("input");
+    input.setAttribute("value", "Clarity");
+    document.body.appendChild(input);
+
+    function callback() {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.tag, "INPUT");
+      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.attributes["value"], "*******");
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
 });

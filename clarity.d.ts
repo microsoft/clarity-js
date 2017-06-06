@@ -18,6 +18,9 @@ interface IConfig {
   // If set to false, text on the page will be masked with asterisks
   showText?: boolean;
 
+  // If set to false, src of images won't be captured
+  showImages?: boolean;
+
   // Maximum number of milliseconds, after which Clarity should yield the thread
   // It is used to avoid freezing the page during large object serialization
   timeToYield?: number;
@@ -294,6 +297,7 @@ interface ITotalByteLimitExceededEventState extends IInstrumentationEventState {
 
 interface IClarityAssertFailedEventState extends IInstrumentationEventState {
   source: string;
+  comment: string;
 }
 
 interface IClarityDuplicatedEventState extends IInstrumentationEventState {

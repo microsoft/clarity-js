@@ -5,6 +5,7 @@ export let config: IConfig = {
   totalLimit: 20 * 1024 * 1024,  // 20 megabytes
   uploadUrl: "",
   showText: false,
+  showImages: false,
   timeToYield: 50,
   instrument: false,
   uploadHandler: null,
