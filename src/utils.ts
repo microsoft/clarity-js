@@ -82,6 +82,7 @@ export function isNumber(value: any): boolean {
 
 export function assert(condition: boolean, source: string, comment: string) {
   if (condition === false) {
+    debug(`>>> Clarity Assert failed\nSource: ${source}\nComment: ${comment}`);
     let eventState: IClarityAssertFailedEventState = {
       type: Instrumentation.ClarityAssertFailed,
       source,
