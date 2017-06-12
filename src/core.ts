@@ -4,6 +4,7 @@ import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
+const version = "0.1.6";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -136,7 +137,7 @@ function envelope(): IEnvelope {
     clarityId: cid,
     impressionId,
     url: window.location.href,
-    version: "0.1.5",
+    version,
     time: Math.round(getPageContextBasedTimestamp()),
     sequenceNumber: sequence++
   };
