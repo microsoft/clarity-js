@@ -138,8 +138,6 @@ export default class Layout implements IPlugin {
         this.backfillLayoutsAsync(time, onDomDiscoverComplete);
       }, 0);
     } else {
-      this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
-      assert(this.shadowDomConsistent, "backfillLayoutsAsync", "shadowDom inconsistent after backfilling layouts");
       onDomDiscoverComplete();
     }
   }
@@ -153,7 +151,6 @@ export default class Layout implements IPlugin {
       this.mutation(allMutationRecords, getTimestamp());
     }
 
-    this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
     assert(this.shadowDomConsistent, "onDomDiscoverComplete", "shadowDom inconsistent after preDiscoverMutations");
   }
 
@@ -353,6 +350,7 @@ export default class Layout implements IPlugin {
       // Make sure ShadowDom arrived to the consistent state
       this.shadowDomConsistent = this.shadowDom.mirrorsRealDom();
       assert(this.shadowDomConsistent, "mutation", `shadowDomInconsistent after mutation sequence ${this.mutationSequence}`);
+
       if (this.shadowDomConsistent) {
         this.processMutations(summary, time);
       } else {
