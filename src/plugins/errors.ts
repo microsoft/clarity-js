@@ -1,5 +1,22 @@
 import { bind, instrument } from "../core";
 
+export default class ErrorMonitor implements IPlugin {
+
+    private errorCount: number;
+
+    public activate() {
+        bind(window, "error", logError);
+    }
+
+    public reset(): void {
+        return;
+    }
+
+    public teardown() {
+        return;
+    }
+}
+
 export function logError(errorToLog: Event) {
     // if errorToLog["error"] doesn't exist, occasionally we can get information directly from errorToLog
     let error = errorToLog["error"] || errorToLog;
@@ -18,21 +35,4 @@ export function logError(errorToLog: Event) {
         source
     };
     instrument(jsErrorEventState);
-}
-
-class ErrorMonitor implements IPlugin {
-
-    private errorCount: number;
-
-    public activate() {
-        bind(window, "error", logError);
-    }
-
-    public reset(): void {
-        return;
-    }
-
-    public teardown() {
-        return;
-    }
 }
