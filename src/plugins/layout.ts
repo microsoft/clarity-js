@@ -96,40 +96,42 @@ export default class Layout implements IPlugin {
     while (this.domDiscoverQueue.length > 0 && getTimestamp(true) < yieldTime) {
       let index = this.domDiscoverQueue.shift();
       let shadowNode = this.shadowDom.getShadowNode(index);
-      let oldLayoutState = shadowNode.layout;
-      let layoutState = createLayoutState(shadowNode.node, this.shadowDom);
-      let originalProperties = this.originalProperties[index];
 
-      if (layoutState.tag !== IgnoreTag) {
+      if (shadowNode) {
+        let oldLayoutState = shadowNode.layout;
+        let layoutState = createLayoutState(shadowNode.node, this.shadowDom);
+        let originalProperties = this.originalProperties[index];
 
-        // If we have any original properties recorded for this node, adjust layoutState with those values
-        if (originalProperties) {
-          switch (shadowNode.node.nodeType) {
-            case Node.TEXT_NODE:
-              (layoutState as ITextLayoutState).content = originalProperties.characterData;
-              break;
-            case Node.ELEMENT_NODE:
-              let originalAttributes = (layoutState as IElementLayoutState).attributes;
-              for (let attr in originalAttributes) {
-                if (originalAttributes.hasOwnProperty(attr)) {
-                  (layoutState as IElementLayoutState).attributes[attr] = originalAttributes[attr];
+        if (layoutState.tag !== IgnoreTag) {
+          // If we have any original properties recorded for this node, adjust layoutState with those values
+          if (originalProperties) {
+            switch (shadowNode.node.nodeType) {
+              case Node.TEXT_NODE:
+                (layoutState as ITextLayoutState).content = originalProperties.characterData;
+                break;
+              case Node.ELEMENT_NODE:
+                let originalAttributes = (layoutState as IElementLayoutState).attributes;
+                for (let attr in originalAttributes) {
+                  if (originalAttributes.hasOwnProperty(attr)) {
+                    (layoutState as IElementLayoutState).attributes[attr] = originalAttributes[attr];
+                  }
                 }
-              }
-              break;
-            default:
-              break;
+                break;
+              default:
+                break;
+            }
           }
-        }
 
-        layoutState.parent = oldLayoutState.parent;
-        layoutState.previous = oldLayoutState.previous;
-        layoutState.next = oldLayoutState.next;
-        layoutState.source = Source.Discover;
-        layoutState.action = Action.Insert;
-        addEvent(this.eventName, layoutState, time);
+          layoutState.parent = oldLayoutState.parent;
+          layoutState.previous = oldLayoutState.previous;
+          layoutState.next = oldLayoutState.next;
+          layoutState.source = Source.Discover;
+          layoutState.action = Action.Insert;
+          addEvent(this.eventName, layoutState, time);
+        }
+        this.shadowDom.updateShadowNode(index, layoutState);
+        shadowNode.layout = layoutState;
       }
-      this.shadowDom.updateShadowNode(index, layoutState);
-      shadowNode.layout = layoutState;
     }
 
     // If there are more elements that need to be processed, yield the thread and return ASAP

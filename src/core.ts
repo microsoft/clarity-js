@@ -4,7 +4,7 @@ import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
-const version = "0.1.7";
+const version = "0.1.8";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -117,8 +117,8 @@ export function instrument(eventState: IInstrumentationEventState) {
 }
 
 function getUnixTimestamp(): number {
-  return (window.performance && window.performance.now)
-    ? window.performance.now() + performance.timing.navigationStart
+  return (window.performance && performance.now)
+    ? performance.now() + performance.timing.navigationStart
     : new Date().getTime();
 }
 
@@ -127,7 +127,7 @@ function getUnixTimestamp(): number {
 // In such case this number may not reflect the 'time since page start' accurately,
 // especially if Clarity script is post-loaded or injected after page load.
 function getPageContextBasedTimestamp(): number {
-  return (window.performance && window.performance.now)
+  return (window.performance && performance.now)
     ? performance.now()
     : new Date().getTime() - startTime;
 }
