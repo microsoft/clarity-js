@@ -117,7 +117,7 @@ export function instrument(eventState: IInstrumentationEventState) {
 }
 
 function getUnixTimestamp(): number {
-  return (window.performance && performance.now)
+  return (window.performance && performance.now && performance.timing)
     ? performance.now() + performance.timing.navigationStart
     : new Date().getTime();
 }
