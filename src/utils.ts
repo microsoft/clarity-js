@@ -6,8 +6,9 @@ import { instrument } from "./core";
 // tslint:disable
 export function guid() {
   let d = new Date().getTime();
-  if (window.performance && window.performance.now) {
-    d += performance.now(); //use high-precision timer if available
+  if (window.performance && performance.now) {
+    // Use high-precision timer if available
+    d += performance.now(); 
   }
   let uuid = "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, function(c) {
     let r = (d + Math.random() * 16) % 16 | 0;

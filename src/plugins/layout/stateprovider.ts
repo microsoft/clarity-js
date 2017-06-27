@@ -10,11 +10,7 @@ export const TextTag = "*TXT*";
 let attributeMaskList = ["value", "placeholder", "alt", "title"];
 
 export function getNodeIndex(node: Node): number {
-  let index: number = null;
-  if (node && NodeIndex in node) {
-    index = node[NodeIndex];
-  }
-  return index;
+  return (node && NodeIndex in node) ? node[NodeIndex] : null;
 }
 
 export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutState {
