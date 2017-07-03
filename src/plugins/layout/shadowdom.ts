@@ -185,9 +185,6 @@ export class ShadowDom {
     let shadowDomIndices: number[] = [];
     let mirrors = true;
 
-    assert(!!this.shadowDocument, "mirrorsRealDom", "shadowDocument is missing");
-    assert(this.shadowDocument.node === document, "mirrorsRealDom", "shadowDocument.node !== document");
-
     traverseNodeTree(document, (node: Node) => {
       domIndices.push(getNodeIndex(node));
     });
