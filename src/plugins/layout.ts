@@ -16,6 +16,7 @@ export default class Layout implements IPlugin {
   private domDiscoverQueue: number[];
   private domPreDiscoverMutations: MutationRecord[][];
   private originalProperties: INodePreUpdateInfo[];
+  private lastConsistentDomJson: object;
 
   public reset(): void {
     this.shadowDom = new ShadowDom();
@@ -27,6 +28,7 @@ export default class Layout implements IPlugin {
     this.domDiscoverQueue = [];
     this.domPreDiscoverMutations = [];
     this.originalProperties = [];
+    this.lastConsistentDomJson = {};
   }
 
   public activate(): void {
@@ -412,13 +414,19 @@ export default class Layout implements IPlugin {
   }
 
   private ensureConsistency(lastAction: string): void {
+    let domJson = this.shadowDom.createDomIndexJson();
     this.shadowDomConsistent = this.shadowDom.isConsistent();
-    let evt: IShadowDomInconsistentEventState = {
-      type: Instrumentation.ShadowDomInconsistent,
-      dom: JSON.stringify(this.shadowDom.createDomIndexJson()),
-      shadowDom: JSON.stringify(this.shadowDom.createShadowDomIndexJson()),
-      lastAction
-    };
-    instrument(evt);
+    if (this.shadowDomConsistent) {
+      this.lastConsistentDomJson = domJson;
+    } else {
+      let evt: IShadowDomInconsistentEventState = {
+        type: Instrumentation.ShadowDomInconsistent,
+        dom: JSON.stringify(domJson),
+        shadowDom: JSON.stringify(this.shadowDom.createShadowDomIndexJson()),
+        lastAction,
+        lastConsistentShadowDom: JSON.stringify(this.lastConsistentDomJson)
+      };
+      instrument(evt);
+    }
   }
 }

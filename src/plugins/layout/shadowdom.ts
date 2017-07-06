@@ -260,7 +260,7 @@ export class ShadowDom {
       let index = getNodeIndex(node);
       let childJson = {};
       let nextChild = node.firstChild;
-      json[index] = childJson;
+      json[index] = nextChild ? childJson : null;
       while (nextChild) {
         writeIndex(nextChild, childJson);
         nextChild = nextChild.nextSibling;
@@ -279,7 +279,7 @@ export class ShadowDom {
       let index = shadowNode.id;
       let childJson = {};
       let nextChild = shadowNode.firstChild as IShadowDomNode;
-      json[index] = childJson;
+      json[index] = nextChild ? childJson : null;
       while (nextChild) {
         writeIndex(nextChild, childJson);
         nextChild = nextChild.nextSibling as IShadowDomNode;
