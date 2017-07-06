@@ -1,5 +1,5 @@
 import { config } from "./../config";
-import { addEvent, bind, getTimestamp } from "./../core";
+import { addEvent, bind, getTimestamp, instrument } from "./../core";
 import { assert, debug, isNumber, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
 import { createGenericLayoutState, createLayoutState, getNodeIndex, IgnoreTag, NodeIndex } from "./layout/stateprovider";
@@ -67,8 +67,7 @@ export default class Layout implements IPlugin {
   private discoverDom() {
     let discoverTime = getTimestamp();
     traverseNodeTree(document, this.discoverNode.bind(this));
-    this.shadowDomConsistent = this.shadowDom.isConsistent();
-    assert(this.shadowDomConsistent, "discoverDom", "shadowDom inconsistent after dom discovery");
+    this.ensureConsistency("Discover DOM");
     this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
   }
 
@@ -153,7 +152,7 @@ export default class Layout implements IPlugin {
       this.mutation(allMutationRecords, getTimestamp());
     }
 
-    assert(this.shadowDomConsistent, "onDomDiscoverComplete", "shadowDom inconsistent after preDiscoverMutations");
+    this.ensureConsistency("Pre-discover mutation");
   }
 
   // Mutation handler that is invoked for mutations that happen before domDiscover is completed
@@ -350,8 +349,7 @@ export default class Layout implements IPlugin {
       let summary = this.shadowDom.applyMutationBatch(mutations);
 
       // Make sure ShadowDom arrived to the consistent state
-      this.shadowDomConsistent = this.shadowDom.isConsistent();
-      assert(this.shadowDomConsistent, "mutation", `shadowDomInconsistent after mutation sequence ${this.mutationSequence}`);
+      this.ensureConsistency(`Mutation ${this.mutationSequence}`);
 
       if (this.shadowDomConsistent) {
         this.processMutations(summary, time);
@@ -411,5 +409,16 @@ export default class Layout implements IPlugin {
       });
     }
 
+  }
+
+  private ensureConsistency(lastAction: string): void {
+    this.shadowDomConsistent = this.shadowDom.isConsistent();
+    let evt: IShadowDomInconsistentEventState = {
+      type: Instrumentation.ShadowDomInconsistent,
+      dom: JSON.stringify(this.shadowDom.createDomIndexJson()),
+      shadowDom: JSON.stringify(this.shadowDom.createShadowDomIndexJson()),
+      lastAction
+    };
+    instrument(evt);
   }
 }

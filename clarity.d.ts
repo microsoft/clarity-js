@@ -262,7 +262,8 @@ declare const enum Instrumentation {
   TotalByteLimitExceeded,
   Teardown,
   ClarityAssertFailed,
-  ClarityDuplicated
+  ClarityDuplicated,
+  ShadowDomInconsistent
 }
 
 interface IInstrumentationEventState {
@@ -303,6 +304,14 @@ interface IClarityAssertFailedEventState extends IInstrumentationEventState {
 interface IClarityDuplicatedEventState extends IInstrumentationEventState {
   currentImpressionId: string;
 }
+
+interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
+  dom: string;
+  shadowDom: string;
+  lastAction: string;
+  lastConsistentShadowDom?: string;
+}
+
 /* ##################################### */
 /* #########   PERFORMANCE   ########### */
 /* ##################################### */
