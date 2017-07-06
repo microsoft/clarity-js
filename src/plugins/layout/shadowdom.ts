@@ -180,32 +180,6 @@ export class ShadowDom {
     return summary;
   }
 
-  public mirrorsRealDom(): boolean {
-    let domIndices: number[] = [];
-    let shadowDomIndices: number[] = [];
-    let mirrors = true;
-
-    traverseNodeTree(document, (node: Node) => {
-      domIndices.push(getNodeIndex(node));
-    });
-
-    traverseNodeTree(this.shadowDocument, (shadowNode: IShadowDomNode) => {
-      shadowDomIndices.push(getNodeIndex(shadowNode.node));
-    });
-
-    if (domIndices.length === shadowDomIndices.length) {
-      for (let i = 0; i < domIndices.length; i++) {
-        if (domIndices[i] !== shadowDomIndices[i]) {
-          mirrors = false;
-        }
-      }
-    } else {
-      mirrors = false;
-    }
-
-    return mirrors;
-  }
-
   public hasClass(shadowNode: IShadowDomNode, className: string) {
     return shadowNode ? shadowNode.classList.contains(className) : false;
   }
@@ -278,6 +252,65 @@ export class ShadowDom {
     }
 
     return summary;
+  }
+
+  public createDomIndexJson(): object {
+
+    function writeIndex(node: Node, json: object) {
+      let index = getNodeIndex(node);
+      let childJson = {};
+      let nextChild = node.firstChild;
+      json[index] = childJson;
+      while (nextChild) {
+        writeIndex(nextChild, childJson);
+        nextChild = nextChild.nextSibling;
+      }
+    }
+
+    let indexJson = {};
+    writeIndex(document, indexJson);
+
+    return indexJson;
+  }
+
+  public createShadowDomIndexJson(): object {
+
+    function writeIndex(shadowNode: IShadowDomNode, json: object) {
+      let index = shadowNode.id;
+      let childJson = {};
+      let nextChild = shadowNode.firstChild as IShadowDomNode;
+      json[index] = childJson;
+      while (nextChild) {
+        writeIndex(nextChild, childJson);
+        nextChild = nextChild.nextSibling as IShadowDomNode;
+      }
+    }
+
+    let indexJson = {};
+    writeIndex(this.shadowDocument, indexJson);
+
+    return indexJson;
+  }
+
+  public isConsistent(): boolean {
+    return this.validateNodeWithSubtree(document, this.shadowDocument);
+  }
+
+  private validateShadow(node: Node, shadowNode: IShadowDomNode) {
+    let index = getNodeIndex(node);
+    return (isNumber(index) && shadowNode.id === (index).toString() && shadowNode.node === node);
+  }
+
+  private validateNodeWithSubtree(node: Node, shadowNode: IShadowDomNode): boolean {
+    let isConsistent = true;
+    let nextChild = node.firstChild;
+    let nextShadowChild = shadowNode.firstChild as IShadowDomNode;
+    while (isConsistent && (nextChild || nextShadowChild)) {
+      isConsistent = this.validateNodeWithSubtree(nextChild, nextShadowChild);
+      nextChild = node.nextSibling;
+      nextShadowChild = shadowNode.nextSibling as IShadowDomNode;
+    }
+    return isConsistent;
   }
 
   private applyInsert(addedNode: Node, parent: Node, previousSibling: Node, nextSibling: Node, force: boolean) {
