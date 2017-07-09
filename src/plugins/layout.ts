@@ -44,7 +44,8 @@ export default class Layout implements IPlugin {
         childList: true,
         characterData: true,
         subtree: true,
-        attributeOldValue: true
+        attributeOldValue: true,
+        characterDataOldValue: true
       });
     }
   }
@@ -127,7 +128,11 @@ export default class Layout implements IPlugin {
             let originalAttributes = originalProperties.attributes;
             for (let attr in originalAttributes) {
               if (originalAttributes.hasOwnProperty(attr)) {
-                (currentLayoutState as IElementLayoutState).attributes[attr] = originalAttributes[attr];
+                if (originalAttributes[attr] === null) {
+                  delete (currentLayoutState as IElementLayoutState).attributes[attr];
+                } else {
+                  (currentLayoutState as IElementLayoutState).attributes[attr] = originalAttributes[attr];
+                }
               }
             }
             break;
