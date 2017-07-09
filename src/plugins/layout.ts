@@ -14,15 +14,15 @@ export default class Layout implements IPlugin {
   private mutationSequence: number;
   private domDiscoverComplete: boolean;
   private domDiscoverQueue: number[];
-  private domPreDiscoverMutations: MutationRecord[][];
-  private originalProperties: INodePreUpdateInfo[];
+  private domPreDiscoverMutations: ILayoutEventInfo[][];
+  private originalProperties: {[key: number]: INodePreUpdateInfo};
   private lastConsistentDomJson: object;
 
   public reset(): void {
     this.shadowDom = new ShadowDom();
     this.shadowDomConsistent = false;
     this.watchList = [];
-    this.observer = window["MutationObserver"] ? new MutationObserver(this.mutationCallback.bind(this)) : null;
+    this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
     this.mutationSequence = 0;
     this.domDiscoverComplete = false;
     this.domDiscoverQueue = [];
@@ -38,7 +38,8 @@ export default class Layout implements IPlugin {
         attributes: true,
         childList: true,
         characterData: true,
-        subtree: true
+        subtree: true,
+        attributeOldValue: true
       });
     }
   }
@@ -70,7 +71,9 @@ export default class Layout implements IPlugin {
     let discoverTime = getTimestamp();
     traverseNodeTree(document, this.discoverNode.bind(this));
     this.ensureConsistency("Discover DOM");
-    this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
+    setTimeout(() => {
+      this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
+    }, 0);
   }
 
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
@@ -148,50 +151,36 @@ export default class Layout implements IPlugin {
   // Mark dom discovery process completed and process mutations that happened on the page up to this point
   private onDomDiscoverComplete() {
     this.domDiscoverComplete = true;
-
-    if (this.domPreDiscoverMutations.length > 0) {
-      let allMutationRecords = Array.prototype.concat.apply([], this.domPreDiscoverMutations);
-      this.mutation(allMutationRecords, getTimestamp());
-    }
-
-    this.ensureConsistency("Pre-discover mutation");
-  }
-
-  // Mutation handler that is invoked for mutations that happen before domDiscover is completed
-  // It tracks initial attribute/characterData values of mutated nodes and also queues
-  // the entire array of mutations so that they can be retroactively processed properly later.
-  private preDiscoverMutation(mutations: MutationRecord[], time: number) {
-    for (let mutation of mutations) {
-      switch (mutation.type) {
-        case "attributes":
-        case "characterData":
-          this.storeOriginalProperties(mutation);
-          break;
-        default:
-          break;
+    for (let i = 0; i < this.domPreDiscoverMutations.length; i++) {
+      let mutationEvents = this.domPreDiscoverMutations[i];
+      for (let j = 0; j < mutationEvents.length; j++) {
+        this.processNodeEvent(mutationEvents[j]);
       }
     }
-    this.domPreDiscoverMutations.push(mutations);
   }
 
   // Looks at whether some node's attributes/characterData have mutated for the first time
   // and records the original values for later process of restoring that node's initial state
   private storeOriginalProperties(mutation: MutationRecord) {
     let targetIndex = getNodeIndex(mutation.target);
-    let shadowNode = this.shadowDom.getShadowNode(targetIndex);
-    if (targetIndex !== null && shadowNode.layout === null) {
-      let originalProperties = this.originalProperties[targetIndex] || {};
+    assert(targetIndex !== null, "storeOriginalProperties", "targetIndex is null");
+    if (targetIndex !== null) {
+      let originalProperties = this.originalProperties[targetIndex] || {
+        attributes: {},
+        characterData: null
+      };
       switch (mutation.type) {
         case "attributes":
-          let originalAttributes = originalProperties.attributes || {};
-          if (originalAttributes[mutation.attributeName] === undefined) {
+          let originalAttributes = originalProperties.attributes;
+          if (!(mutation.attributeName in originalAttributes)) {
             originalAttributes[mutation.attributeName] = mutation.oldValue;
           }
-          originalProperties.attributes = originalAttributes;
+          break;
         case "characterData":
-          if (originalProperties.characterData === undefined) {
+          if (originalProperties.characterData === null) {
             originalProperties.characterData = mutation.oldValue;
           }
+          break;
         default:
           break;
       }
@@ -209,7 +198,10 @@ export default class Layout implements IPlugin {
         layoutState = this.processUpdateEvent(eventInfo.node);
         break;
       case Action.Remove:
+        // Index is passed explicitly because indices on removed nodes are cleared,
+        // so at this point we can't obtain node's index from the node itself
         layoutState = this.processRemoveEvent(eventInfo.node);
+        layoutState.index = eventInfo.index;
         break;
       case Action.Move:
         layoutState = this.processMoveEvent(eventInfo.node);
@@ -251,7 +243,6 @@ export default class Layout implements IPlugin {
   }
 
   private processRemoveEvent(node: Node) {
-    let index = getNodeIndex(node);
     let layoutState = createLayoutState(node, this.shadowDom);
     layoutState.action = Action.Remove;
     return layoutState;
@@ -332,29 +323,36 @@ export default class Layout implements IPlugin {
     return (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold);
   }
 
-  private mutationCallback(mutations: MutationRecord[]) {
-    let time = getTimestamp();
-    if (this.domDiscoverComplete) {
-      this.mutation(mutations, time);
-    } else {
-      this.preDiscoverMutation(mutations, time);
-    }
-  }
+  private mutation(mutations: MutationRecord[]) {
 
-  private mutation(mutations: MutationRecord[], time: number) {
     // Don't process mutations on top of the inconsistent state.
     // ShadowDom mutation processing logic requires consistent state as a prerequisite.
     // If we end up in the inconsistent state, that means that something went wrong already,
     // so we can give up on the following mutations and should investigate the cause of the error.
     // Continuing to process mutations can result in javascript errors and lead to even more inconsistencies.
     if (this.shadowDomConsistent) {
-      let summary = this.shadowDom.applyMutationBatch(mutations);
 
-      // Make sure ShadowDom arrived to the consistent state
+      // If node mutates before we got a chance to serialize it (this can happen because initially
+      // we serialize initial entire DOM asynchronously to avoid blocking ther UI thread), then
+      // store its original properties so that we can reconstruct its initial state later on.
+      for (let i = 0; i < mutations.length; i++) {
+        this.storeOriginalProperties(mutations[i]);
+      }
+
+      // Perform mutations on the shadow DOM and make sure ShadowDom arrived to the consistent state
+      let time = getTimestamp();
+      let summary = this.shadowDom.applyMutationBatch(mutations);
       this.ensureConsistency(`Mutation ${this.mutationSequence}`);
 
       if (this.shadowDomConsistent) {
-        this.processMutations(summary, time);
+        let events = this.processMutations(summary, time);
+        if (this.domDiscoverComplete) {
+          for (let i = 0; i < events.length; i++) {
+            this.processNodeEvent(events[i]);
+          }
+        } else {
+          this.domPreDiscoverMutations.push(events);
+        }
       } else {
         debug(`>>> ShadowDom doesn't match PageDOM after mutation batch #${this.mutationSequence}!`);
       }
@@ -362,13 +360,15 @@ export default class Layout implements IPlugin {
     this.mutationSequence++;
   }
 
-  private processMutations(summary: IShadowDomMutationSummary, time: number) {
+  private processMutations(summary: IShadowDomMutationSummary, time: number): ILayoutEventInfo[] {
+    let events: ILayoutEventInfo[] = [];
 
     // Process new nodes
     for (let i = 0; i < summary.newNodes.length; i++) {
       let node = summary.newNodes[i].node;
-      this.processNodeEvent({
+      events.push({
         node,
+        index: getNodeIndex(node),
         source: Source.Mutation,
         action: Action.Insert,
         time
@@ -378,8 +378,9 @@ export default class Layout implements IPlugin {
     // Process moves
     for (let i = 0; i < summary.movedNodes.length; i++) {
       let node = summary.movedNodes[i].node;
-      this.processNodeEvent({
+      events.push({
         node,
+        index: getNodeIndex(node),
         source: Source.Mutation,
         action: Action.Move,
         time
@@ -389,8 +390,9 @@ export default class Layout implements IPlugin {
     // Process updates
     for (let i = 0; i < summary.updatedNodes.length; i++) {
       let node = summary.updatedNodes[i].node;
-      this.processNodeEvent({
+      events.push({
         node,
+        index: getNodeIndex(node),
         source: Source.Mutation,
         action: Action.Update,
         time
@@ -400,8 +402,9 @@ export default class Layout implements IPlugin {
     // Process removes
     for (let i = 0; i < summary.removedNodes.length; i++) {
       let shadowNode = summary.removedNodes[i] as IShadowDomNode;
-      this.processNodeEvent({
+      events.push({
         node: shadowNode.node,
+        index: getNodeIndex(shadowNode.node),
         source: Source.Mutation,
         action: Action.Remove,
         time
@@ -411,6 +414,7 @@ export default class Layout implements IPlugin {
       });
     }
 
+    return events;
   }
 
   private ensureConsistency(lastAction: string): void {
