@@ -13,10 +13,15 @@ export default class Layout implements IPlugin {
   private watchList: boolean[];
   private mutationSequence: number;
   private domDiscoverComplete: boolean;
-  private domDiscoverQueue: number[];
   private domPreDiscoverMutations: ILayoutEventInfo[][];
-  private originalProperties: {[key: number]: INodePreUpdateInfo};
   private lastConsistentDomJson: object;
+  private originalProperties: {
+    [key: number]: INodePreUpdateInfo
+  };
+  private originalLayouts: Array<{
+    node: Node;
+    layout: ILayoutState;
+  }>;
 
   public reset(): void {
     this.shadowDom = new ShadowDom();
@@ -25,7 +30,7 @@ export default class Layout implements IPlugin {
     this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
     this.mutationSequence = 0;
     this.domDiscoverComplete = false;
-    this.domDiscoverQueue = [];
+    this.originalLayouts = [];
     this.domPreDiscoverMutations = [];
     this.originalProperties = [];
     this.lastConsistentDomJson = {};
@@ -80,9 +85,11 @@ export default class Layout implements IPlugin {
   private discoverNode(node: Node) {
     let layout = createGenericLayoutState(node, null);
     this.shadowDom.insertShadowNode(node, layout.parent, layout.next, layout);
-    let index = getNodeIndex(node);
-    layout.index = index;
-    this.domDiscoverQueue.push(index);
+    layout.index = getNodeIndex(node);
+    this.originalLayouts.push({
+      node,
+      layout
+    });
   }
 
   // Go back to the nodes that were stored with a dummy layout during the DOM discovery
@@ -97,49 +104,43 @@ export default class Layout implements IPlugin {
   // we can adjust the current layout JSON with the original values to mimic its initial state.
   private backfillLayoutsAsync(time: number, onDomDiscoverComplete: () => void) {
     let yieldTime = getTimestamp(true) + config.timeToYield;
-    while (this.domDiscoverQueue.length > 0 && getTimestamp(true) < yieldTime) {
-      let index = this.domDiscoverQueue.shift();
-      let shadowNode = this.shadowDom.getShadowNode(index);
+    while (this.originalLayouts.length > 0 && getTimestamp(true) < yieldTime) {
+      let originalLayout = this.originalLayouts.shift();
+      let originalLayoutState = originalLayout.layout;
+      let currentLayoutState = createLayoutState(originalLayout.node, this.shadowDom);
+      let originalProperties = this.originalProperties[originalLayout.layout.index];
 
-      if (shadowNode) {
-        let oldLayoutState = shadowNode.layout;
-        let layoutState = createLayoutState(shadowNode.node, this.shadowDom);
-        let originalProperties = this.originalProperties[index];
+      currentLayoutState.index = originalLayout.layout.index;
+      currentLayoutState.parent = originalLayoutState.parent;
+      currentLayoutState.previous = originalLayoutState.previous;
+      currentLayoutState.next = originalLayoutState.next;
+      currentLayoutState.source = Source.Discover;
+      currentLayoutState.action = Action.Insert;
 
-        if (layoutState.tag !== IgnoreTag) {
-          // If we have any original properties recorded for this node, adjust layoutState with those values
-          if (originalProperties) {
-            switch (shadowNode.node.nodeType) {
-              case Node.TEXT_NODE:
-                (layoutState as ITextLayoutState).content = originalProperties.characterData;
-                break;
-              case Node.ELEMENT_NODE:
-                let originalAttributes = (layoutState as IElementLayoutState).attributes;
-                for (let attr in originalAttributes) {
-                  if (originalAttributes.hasOwnProperty(attr)) {
-                    (layoutState as IElementLayoutState).attributes[attr] = originalAttributes[attr];
-                  }
-                }
-                break;
-              default:
-                break;
+      // If element is not ignored, override current layout with its original properties to recreate its original state
+      if (originalProperties && currentLayoutState.tag !== IgnoreTag) {
+        switch (originalLayout.node.nodeType) {
+          case Node.TEXT_NODE:
+            (currentLayoutState as ITextLayoutState).content = originalProperties.characterData;
+            break;
+          case Node.ELEMENT_NODE:
+            let originalAttributes = originalProperties.attributes;
+            for (let attr in originalAttributes) {
+              if (originalAttributes.hasOwnProperty(attr)) {
+                (currentLayoutState as IElementLayoutState).attributes[attr] = originalAttributes[attr];
+              }
             }
-          }
-
-          layoutState.parent = oldLayoutState.parent;
-          layoutState.previous = oldLayoutState.previous;
-          layoutState.next = oldLayoutState.next;
-          layoutState.source = Source.Discover;
-          layoutState.action = Action.Insert;
-          addEvent(this.eventName, layoutState, time);
+            break;
+          default:
+            break;
         }
-        this.shadowDom.updateShadowNode(index, layoutState);
-        shadowNode.layout = layoutState;
       }
+
+      addEvent(this.eventName, currentLayoutState, time);
     }
 
     // If there are more elements that need to be processed, yield the thread and return ASAP
-    if (this.domDiscoverQueue.length !== 0) {
+    if (this.originalLayouts.length > 0) {
       setTimeout(() => {
         this.backfillLayoutsAsync(time, onDomDiscoverComplete);
       }, 0);
@@ -332,17 +333,18 @@ export default class Layout implements IPlugin {
     // Continuing to process mutations can result in javascript errors and lead to even more inconsistencies.
     if (this.shadowDomConsistent) {
 
-      // If node mutates before we got a chance to serialize it (this can happen because initially
-      // we serialize initial entire DOM asynchronously to avoid blocking ther UI thread), then
-      // store its original properties so that we can reconstruct its initial state later on.
-      for (let i = 0; i < mutations.length; i++) {
-        this.storeOriginalProperties(mutations[i]);
-      }
-
       // Perform mutations on the shadow DOM and make sure ShadowDom arrived to the consistent state
       let time = getTimestamp();
       let summary = this.shadowDom.applyMutationBatch(mutations);
       this.ensureConsistency(`Mutation ${this.mutationSequence}`);
+
+      // If node mutates before dom discovery is completed (all initial states are serialized),
+      // then store its original properties so that we can reconstruct its initial state later on.
+      if (!this.domDiscoverComplete) {
+        for (let i = 0; i < mutations.length; i++) {
+          this.storeOriginalProperties(mutations[i]);
+        }
+      }
 
       if (this.shadowDomConsistent) {
         let events = this.processMutations(summary, time);
@@ -357,6 +359,7 @@ export default class Layout implements IPlugin {
         debug(`>>> ShadowDom doesn't match PageDOM after mutation batch #${this.mutationSequence}!`);
       }
     }
+
     this.mutationSequence++;
   }
 

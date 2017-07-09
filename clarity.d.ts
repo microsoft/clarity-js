@@ -141,18 +141,15 @@ interface ILayoutEventInfo {
   time?: number;
 }
 
-interface ILayoutStateBase {
+interface ILayoutState {
   index: number;  /* Index of the layout element */
+  tag: string;  /* Tag name of the element */
   source: Source; /* Source of discovery */
   action: Action; /* Reflect the action with respect to DOM */
-  mutationSequence?: number;  /* Sequence number of the mutation batch */
-}
-
-interface ILayoutState extends ILayoutStateBase {
   parent: number; /* Index of the parent element */
-  tag: string;  /* Tag name of the element */
   previous: number; /* Index of the previous sibling, if known */
   next: number; /* Index of the next sibling, if known */
+  mutationSequence?: number;  /* Sequence number of the mutation batch */
 }
 
 interface IDoctypeLayoutState extends ILayoutState {
