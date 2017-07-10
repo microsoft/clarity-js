@@ -15,6 +15,7 @@ export default class Layout implements IPlugin {
   private domDiscoverComplete: boolean;
   private domPreDiscoverMutations: ILayoutEventInfo[][];
   private lastConsistentDomJson: object;
+  private layoutStates: ILayoutState[];
   private originalProperties: {
     [key: number]: INodePreUpdateInfo
   };
@@ -30,10 +31,11 @@ export default class Layout implements IPlugin {
     this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
     this.mutationSequence = 0;
     this.domDiscoverComplete = false;
-    this.originalLayouts = [];
     this.domPreDiscoverMutations = [];
-    this.originalProperties = [];
     this.lastConsistentDomJson = {};
+    this.layoutStates = [];
+    this.originalProperties = [];
+    this.originalLayouts = [];
   }
 
   public activate(): void {
@@ -84,13 +86,18 @@ export default class Layout implements IPlugin {
 
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
   private discoverNode(node: Node) {
+    this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
+    let index = getNodeIndex(node);
     let layout = createGenericLayoutState(node, null);
-    this.shadowDom.insertShadowNode(node, layout.parent, layout.next, layout);
-    layout.index = getNodeIndex(node);
+    this.layoutStates[index] = layout;
     this.originalLayouts.push({
       node,
       layout
     });
+
+    if (layout.tag === IgnoreTag) {
+      this.shadowDom.getShadowNode(index).ignore = true;
+    }
   }
 
   // Go back to the nodes that were stored with a dummy layout during the DOM discovery
@@ -195,80 +202,53 @@ export default class Layout implements IPlugin {
   }
 
   private processNodeEvent<T extends ILayoutEventInfo>(eventInfo: T) {
-    let layoutState: ILayoutState = null;
+    let node = eventInfo.node;
+    let layoutState: ILayoutState = createLayoutState(node, this.shadowDom);
     switch (eventInfo.action) {
       case Action.Insert:
-        layoutState = this.processInsertEvent(eventInfo.node);
+        // Watch element for scroll and input change events
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          this.watch(node as Element, layoutState as IElementLayoutState);
+        }
+        if (layoutState.tag === IgnoreTag) {
+          this.shadowDom.getShadowNode(eventInfo.index).ignore = true;
+        }
+        layoutState.action = Action.Insert;
         break;
       case Action.Update:
-        layoutState = this.processUpdateEvent(eventInfo.node);
+        layoutState.action = Action.Update;
         break;
       case Action.Remove:
         // Index is passed explicitly because indices on removed nodes are cleared,
         // so at this point we can't obtain node's index from the node itself
-        layoutState = this.processRemoveEvent(eventInfo.node);
         layoutState.index = eventInfo.index;
+        layoutState.action = Action.Remove;
         break;
       case Action.Move:
-        layoutState = this.processMoveEvent(eventInfo.node);
+        layoutState.action = Action.Move;
         break;
       case Action.Ignore:
       default:
         break;
     }
 
-    if (layoutState.tag !== IgnoreTag) {
-      if (eventInfo.source === Source.Mutation) {
-        layoutState.mutationSequence = this.mutationSequence;
-      }
-      layoutState.source = eventInfo.source;
-      addEvent(this.eventName, layoutState);
+    if (eventInfo.source === Source.Mutation) {
+      layoutState.mutationSequence = this.mutationSequence;
     }
+    layoutState.source = eventInfo.source;
+    this.layoutStates[eventInfo.index] = layoutState;
+    addEvent(this.eventName, layoutState);
   }
 
-  private processInsertEvent(node: Node): ILayoutState {
-    let index = getNodeIndex(node);
-    let layoutState = createLayoutState(node, this.shadowDom);
-    layoutState.action = Action.Insert;
-    this.shadowDom.getShadowNode(index).layout = layoutState;
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      let styles = window.getComputedStyle(node as Element);
-      if (styles.opacity !== "0" && styles.visibility !== "hidden") {
-        this.watch(node as Element, layoutState as IElementLayoutState, styles);
-      }
-    }
-    return layoutState;
-  }
+  private watch(element: Element, layoutState: IElementLayoutState) {
 
-  private processUpdateEvent(node: Node): ILayoutState {
-    let index = getNodeIndex(node);
-    let layoutState = createLayoutState(node, this.shadowDom);
-    layoutState.action = Action.Update;
-    this.shadowDom.getShadowNode(index).layout = layoutState;
-    return layoutState;
-  }
-
-  private processRemoveEvent(node: Node) {
-    let layoutState = createLayoutState(node, this.shadowDom);
-    layoutState.action = Action.Remove;
-    return layoutState;
-  }
-
-  private processMoveEvent(node: Node): ILayoutState {
-    let index = getNodeIndex(node);
-    let layoutState = createLayoutState(node, this.shadowDom);
-    layoutState.action = Action.Move;
-    this.shadowDom.moveShadowNode(index, layoutState.parent, layoutState.next);
-    return layoutState;
-  }
-
-  private watch(element: Element, layoutState: IElementLayoutState, styles) {
     // We only wish to watch elements once and then wait on the events to push changes
     if (this.watchList[layoutState.index]) {
       return;
     }
 
     // Check if scroll is possible, and if so, bind to scroll event
+    let styles = window.getComputedStyle(element);
     let scrollPossible = (layoutState.layout !== null
                           && (styles["overflow-x"] === "auto"
                               || styles["overflow-x"] === "scroll"
@@ -293,7 +273,7 @@ export default class Layout implements IPlugin {
     let recordEvent = true;
     if (index !== null) {
       let time = getTimestamp();
-      let lastLayoutState = this.shadowDom.getShadowNode(index).layout;
+      let lastLayoutState = this.layoutStates[index];
 
       // Deep-copy an existing layout JSON
       let newLayoutState: IElementLayoutState = JSON.parse(JSON.stringify(lastLayoutState));
@@ -317,8 +297,8 @@ export default class Layout implements IPlugin {
 
       // Update the reference of layouts object to current state
       if (recordEvent) {
+        this.layoutStates[index] = newLayoutState;
         addEvent(this.eventName, newLayoutState);
-        this.shadowDom.updateShadowNode(newLayoutState.index, newLayoutState);
       }
     }
   }

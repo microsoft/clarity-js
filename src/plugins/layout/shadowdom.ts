@@ -26,17 +26,15 @@ export class ShadowDom {
     return node as IShadowDomNode;
   }
 
-  public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number, layout?: ILayoutState): IShadowDomNode {
+  public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number, ignore?: boolean): IShadowDomNode {
     let isDocument = (node === document);
     let index = this.setNodeIndex(node);
     let parent = (isDocument ? this.shadowDomRoot : this.getShadowNode(parentIndex)) as IShadowDomNode;
     let nextSibling = this.getShadowNode(nextSiblingIndex);
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
-    let ignore = (node === document) ? false : parent && parent.ignore;
     shadowNode.id = "" + index;
     shadowNode.node = node;
-    shadowNode.layout = layout;
-    shadowNode.ignore = (layout && layout.tag === IgnoreTag) || ignore;
+    shadowNode.ignore = ignore || (node === document ? false : parent && parent.ignore);
 
     if (isDocument) {
       this.shadowDocument = shadowNode;
@@ -90,7 +88,7 @@ export class ShadowDom {
     return shadowNode;
   }
 
-  public updateShadowNode(index: number, newLayout?: ILayoutState) {
+  public updateShadowNode(index: number) {
     let shadowNode = this.getShadowNode(index);
 
     assert(!!shadowNode, "updateShadowNode", "shadowNode is missing");
@@ -99,11 +97,6 @@ export class ShadowDom {
     }
 
     if (shadowNode) {
-      if (newLayout) {
-        shadowNode.layout = newLayout;
-        shadowNode.ignore = (newLayout.tag === IgnoreTag);
-      }
-
       if (this.classifyNodes) {
         this.setClass(shadowNode, UpdatedNodeClassName);
       }

@@ -24,7 +24,7 @@ export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutStat
   if (parentIndex !== null) {
     let parentShadowNode = shadowDom.getShadowNode(parentIndex);
     assert(!!parentShadowNode, "createLayoutState", "parentShadowNode is missing");
-    if (parentShadowNode.ignore && parentShadowNode.node !== document) {
+    if (parentShadowNode && parentShadowNode.ignore && parentShadowNode.node !== document) {
       layoutState = createGenericLayoutState(node, IgnoreTag);
       return layoutState;
     }

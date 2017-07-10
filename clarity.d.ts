@@ -99,7 +99,6 @@ type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: U
 
 interface IShadowDomNode extends HTMLDivElement {
   node: Node; /* Reference to the node in the real DOM */
-  layout: ILayoutState; /* Latest layout JSON */
   ignore: boolean;  /* Flag to avoid sending data for that node */
 }
 
