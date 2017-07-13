@@ -4,7 +4,6 @@ import { getNodeIndex, IgnoreTag, NodeIndex } from "./stateprovider";
 // Class names for child list mutation classifications
 const FinalClassName = "cl-final";
 const NewNodeClassName = "cl-new";
-const TopNewNodeClassName = "cl-new-top";
 const MovedNodeClassName = "cl-moved";
 const UpdatedNodeClassName = "cl-updated";
 
@@ -47,9 +46,6 @@ export class ShadowDom {
 
     if (this.classifyNodes) {
       this.setClass(shadowNode, NewNodeClassName);
-      if (!this.hasClass(parent, NewNodeClassName)) {
-        this.setClass(shadowNode, TopNewNodeClassName);
-      }
     }
 
     if (nextSibling) {
@@ -72,11 +68,8 @@ export class ShadowDom {
     }
 
     if (this.classifyNodes) {
-      this.setClass(shadowNode, MovedNodeClassName);
-      if (this.hasClass(parent as IShadowDomNode, NewNodeClassName)) {
-        this.removeClass(shadowNode, TopNewNodeClassName);
-      } else {
-        this.setClass(shadowNode, TopNewNodeClassName);
+      if (!this.hasClass(shadowNode, NewNodeClassName)) {
+        this.setClass(shadowNode, MovedNodeClassName);
       }
     }
 
@@ -90,16 +83,8 @@ export class ShadowDom {
 
   public updateShadowNode(index: number) {
     let shadowNode = this.getShadowNode(index);
-
-    assert(!!shadowNode, "updateShadowNode", "shadowNode is missing");
-    if (!shadowNode) {
-      return;
-    }
-
-    if (shadowNode) {
-      if (this.classifyNodes) {
-        this.setClass(shadowNode, UpdatedNodeClassName);
-      }
+    if (shadowNode && this.classifyNodes) {
+      this.setClass(shadowNode, UpdatedNodeClassName);
     }
   }
 
@@ -111,6 +96,7 @@ export class ShadowDom {
       return;
     }
 
+    this.setClass(shadowNode, MovedNodeClassName);
     this.removedNodes.appendChild(shadowNode);
   }
 
@@ -204,22 +190,11 @@ export class ShadowDom {
     };
 
     // Collect all new nodes in the top-down order
-    let topNewNodes = this.doc.getElementsByClassName(NewNodeClassName);
-    while (topNewNodes.length > 0) {
-      let topNode = topNewNodes[0] as IShadowDomNode;
-      let discoverQueue: IShadowDomNode[] = [ topNode ];
-      while (discoverQueue.length > 0) {
-        let next = discoverQueue.shift();
-        if (this.hasClass(next, NewNodeClassName)) {
-          summary.newNodes.push(next);
-          this.removeClass(next, NewNodeClassName);
-          // Add children right-to-left
-          let children = next.childNodes;
-          for (let i = children.length - 1; i >= 0; i--) {
-            discoverQueue.push(children[i] as IShadowDomNode);
-          }
-        }
-      }
+    let newNodes = this.doc.getElementsByClassName(NewNodeClassName);
+    while (newNodes.length > 0) {
+      let newNode = newNodes[0] as IShadowDomNode;
+      summary.newNodes.push(newNode);
+      this.removeClass(newNode, NewNodeClassName);
     }
 
     let moved = this.doc.getElementsByClassName(MovedNodeClassName);
@@ -236,12 +211,15 @@ export class ShadowDom {
       this.removeAllClasses(next);
     }
 
-    let removed = this.removedNodes.childNodes;
-    for (let i = 0; i < removed.length; i++) {
-      let next = removed[i] as IShadowDomNode;
-      if (!this.hasClass(next, NewNodeClassName)) {
-        summary.removedNodes.push(next);
-      }
+    let removedNodes = this.removedNodes.childNodes;
+    for (let i = 0; i < removedNodes.length; i++) {
+      traverseNodeTree(removedNodes[i], (shadowNode: IShadowDomNode) => {
+        if (this.hasClass(shadowNode, NewNodeClassName)) {
+          delete shadowNode.node[NodeIndex];
+        } else if (this.hasClass(shadowNode, MovedNodeClassName)) {
+          summary.removedNodes.push(shadowNode);
+        }
+      });
     }
 
     return summary;
@@ -295,13 +273,19 @@ export class ShadowDom {
   }
 
   private validateNodeWithSubtree(node: Node, shadowNode: IShadowDomNode): boolean {
-    let isConsistent = true;
+    let isConsistent = this.validateShadow(node, shadowNode);
     let nextChild = node.firstChild;
-    let nextShadowChild = shadowNode.firstChild as IShadowDomNode;
-    while (isConsistent && (nextChild || nextShadowChild)) {
-      isConsistent = this.validateNodeWithSubtree(nextChild, nextShadowChild);
-      nextChild = node.nextSibling;
-      nextShadowChild = shadowNode.nextSibling as IShadowDomNode;
+    let nextShadowChild = shadowNode.firstChild;
+    while (isConsistent) {
+      if (nextChild && nextShadowChild) {
+        isConsistent = this.validateNodeWithSubtree(nextChild, nextShadowChild as IShadowDomNode);
+        nextChild = nextChild.nextSibling;
+        nextShadowChild = nextShadowChild.nextSibling;
+      } else if (nextChild || nextShadowChild) {
+        isConsistent = false;
+      } else {
+        break;
+      }
     }
     return isConsistent;
   }
@@ -312,8 +296,8 @@ export class ShadowDom {
     let nextSiblingIndex = getNodeIndex(nextSibling);
     let validMutation = this.shouldProcessChildListMutation(addedNode, parent) || force;
     if (validMutation) {
-      let action = (addedNodeIndex === null) ? Action.Insert : Action.Move;
-      if (action === Action.Insert) {
+      // If inserted node has no index, then it's a new node and we should process insert
+      if (addedNodeIndex === null) {
         let shadowNode = this.insertShadowNode(addedNode, parentIndex, nextSiblingIndex);
         this.setClass(shadowNode, FinalClassName);
 
@@ -333,7 +317,6 @@ export class ShadowDom {
 
   private applyRemove(removedNode: Node, parent: Node) {
     let removedNodeIndex = getNodeIndex(removedNode);
-    let parentIndex = getNodeIndex(parent);
     if (removedNodeIndex !== null) {
       let validMutation = this.shouldProcessChildListMutation(removedNode, parent);
       if (validMutation) {
