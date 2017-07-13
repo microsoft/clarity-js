@@ -295,10 +295,12 @@ describe("Layout Tests", () => {
     let stopObserving = observeEvents(eventName);
 
     let dom = document.getElementById("clarity");
-    let children = dom.childNodes;
+    let children = [];
     let childIndices = [];
-    for (let i = 0; i < children.length; i++) {
-      let index = children[i][NodeIndex];
+    for (let i = 0; i < dom.childNodes.length; i++) {
+      let child = dom.childNodes[i];
+      let index = child[NodeIndex];
+      children.push(child);
       childIndices[index] = true;
     }
 
@@ -319,6 +321,48 @@ describe("Layout Tests", () => {
         assert.equal(childIndices[index], true);
         delete childIndices[index];
       }
+
+      // Make sure that clarity index is cleared from all removed nodes
+      for (let i = 0; i < children.length; i++) {
+        assert.equal(NodeIndex in children[i], false);
+      }
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
+  // Nodes that are inserted and then removed in the same mutation don't produce any events and their mutations are ignored
+  // However, it's possible that some other observed node can be appended to the ignored node and then get removed from the
+  // DOM as a part of the ignored node's subtree. This test makes sure that removing observed node this way is captured correctly.
+  it("checks that removal of a known node through a subtree of its ignored parent is handled correctly", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+    let stopObserving = observeEvents(eventName);
+
+    let clarityNode = document.getElementById("clarity");
+    let backupNode = document.getElementById("backup");
+    let backupNodeIndex = backupNode[NodeIndex];
+    let tempNode = document.createElement("div");
+
+    clarityNode.appendChild(tempNode);
+    tempNode.appendChild(backupNode);
+    clarityNode.removeChild(tempNode);
+
+    function callback() {
+      observer.disconnect();
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Remove);
+      assert.equal(events[0].state.index, backupNodeIndex);
+
+      // Make sure that clarity index is cleared from all removed nodes
+      assert.equal(NodeIndex in tempNode, false);
+      assert.equal(NodeIndex in backupNode, false);
 
       // Explicitly signal that we are done here
       done();
@@ -380,6 +424,9 @@ describe("Layout Tests", () => {
       // Prove that we didn't send any extra instrumentation back for no-op mutation
       assert.equal(events.length, 0);
 
+      // Make sure that clarity index is cleared from all removed nodes
+      assert.equal(NodeIndex in div, false);
+
       // Explicitly signal that we are done here
       done();
     }
@@ -406,18 +453,21 @@ describe("Layout Tests", () => {
       // Prove that we didn't send any extra instrumentation back for no-op mutation
       assert.equal(events.length, 0);
 
+      // Make sure that clarity index is cleared from all removed nodes
+      assert.equal(NodeIndex in div, false);
+      assert.equal(NodeIndex in span, false);
+
       // Explicitly signal that we are done here
       done();
     }
   });
 
   it("checks that we do not instrument child nodes within a previously observed disconnected dom tree", (done) => {
-    let clarityDiv = document.getElementById("clarity");
-
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
     let stopObserving = observeEvents(eventName);
+    let clarityDiv = document.getElementById("clarity");
     let span = document.createElement("span");
     let clarityDivIndex = clarityDiv[NodeIndex];
     clarityDiv.appendChild(span);
@@ -434,6 +484,10 @@ describe("Layout Tests", () => {
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Remove);
       assert.equal(events[0].state.index, clarityDivIndex);
+
+      // Make sure that clarity index is cleared from all removed nodes
+      assert.equal(NodeIndex in clarityDiv, false);
+      assert.equal(NodeIndex in span, false);
 
       // Explicitly signal that we are done here
       done();
@@ -506,7 +560,6 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 4);
-
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[1].state.action, Action.Move);
       assert.equal(events[2].state.action, Action.Update);
