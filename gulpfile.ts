@@ -62,7 +62,7 @@ gulp.task("rollup", () => {
       format: "umd",
       moduleName: "clarity",
       plugins: [
-        typescript()
+        (typescript as any)()
       ]
     })
     .pipe(source(bundle))
