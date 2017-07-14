@@ -2,7 +2,8 @@ import { config } from "./../config";
 import { addEvent, bind, getTimestamp, instrument } from "./../core";
 import { debug, isNumber, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
-import { createGenericLayoutState, createLayoutState, getNodeIndex, IgnoreTag, NodeIndex } from "./layout/stateprovider";
+import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
+import { getNodeIndex, IgnoreTag, NodeIndex, shouldIgnoreNode } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
   private eventName = "Layout";
@@ -82,7 +83,8 @@ export default class Layout implements IPlugin {
 
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
   private discoverNode(node: Node) {
-    this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
+    let ignore = shouldIgnoreNode(node, this.shadowDom);
+    this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling), ignore);
     let index = getNodeIndex(node);
     let layout = createGenericLayoutState(node, null);
     this.layoutStates[index] = layout;
@@ -90,10 +92,6 @@ export default class Layout implements IPlugin {
       node,
       layout
     });
-
-    if (layout.tag === IgnoreTag) {
-      this.shadowDom.getShadowNode(index).ignore = true;
-    }
   }
 
   // Go back to the nodes that were stored with a dummy layout during the DOM discovery

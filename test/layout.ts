@@ -1,7 +1,7 @@
 import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
-import { NodeIndex } from "../src/plugins/layout/stateprovider";
+import { IgnoreTag, NodeIndex } from "../src/plugins/layout/stateprovider";
 import uncompress from "./uncompress";
 import { cleanupFixture, getEventsByType, observeEvents, setupFixture, triggerSend } from "./utils";
 
@@ -38,7 +38,7 @@ describe("Layout Tests", () => {
 
       assert.equal(events.length, 3);
       assert.equal(events[0].state.tag, "DIV");
-      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[1].state.tag, "SPAN");
       assert.equal(events[2].state.tag, "*TXT*");
 
@@ -67,7 +67,7 @@ describe("Layout Tests", () => {
 
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "DIV");
-      assert.equal(events[0].state.action, 2);
+      assert.equal(events[0].state.action, Action.Remove);
 
       // Explicitly signal that we are done here
       done();
@@ -94,7 +94,7 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, 3);
+      assert.equal(events[0].state.action, Action.Move);
 
       // Explicitly signal that we are done here
       done();
@@ -123,7 +123,7 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, 3);
+      assert.equal(events[0].state.action, Action.Move);
       assert.equal(events[0].state.parent, domIndex);
       assert.equal(events[0].state.next, firstChildIndex);
 
@@ -157,14 +157,14 @@ describe("Layout Tests", () => {
 
       assert.equal(events.length, 3);
 
-      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, "SPAN");
 
-      assert.equal(events[1].state.action, 3);
+      assert.equal(events[1].state.action, Action.Move);
       assert.equal(events[1].state.index, dom[NodeIndex]);
       assert.equal(events[1].state.next, backup[NodeIndex]);
 
-      assert.equal(events[2].state.action, 3);
+      assert.equal(events[2].state.action, Action.Move);
       assert.equal(events[2].state.index, backup[NodeIndex]);
       assert.equal(events[2].state.next, null);
 
@@ -201,7 +201,7 @@ describe("Layout Tests", () => {
 
   //      assert.equal(core.bytes.length, 2);
   //      assert.equal(events.length, 2);
-  //      assert.equal(events[0].state.action, 0);
+  //      assert.equal(events[0].state.action, Action.Insert);
   //      assert.equal(events[0].state.parent, domIndex);
   //      assert.equal(events[1].state.content.indexOf("red") > 0, true);
 
@@ -233,7 +233,7 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, childrenCount);
-      assert.equal(events[0].state.action, 3);
+      assert.equal(events[0].state.action, Action.Move);
       assert.equal(events[0].state.parent, backupIndex);
       assert.equal(events[4].state.parent, backupIndex);
       assert.equal(events[4].state.next, events[5].state.index);
@@ -394,7 +394,7 @@ describe("Layout Tests", () => {
 
         assert.equal(events.length, 3);
         assert.equal(events[0].state.tag, "DIV");
-        assert.equal(events[0].state.action, 0);
+        assert.equal(events[0].state.action, Action.Insert);
         assert.equal(events[1].state.tag, "*TXT*");
 
         // Explicitly signal that we are done here
@@ -634,7 +634,7 @@ describe("Layout Tests", () => {
       let events = stopObserving();
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "IMG");
-      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.attributes["src"], undefined);
       assert.equal(events[0].state.layout.width, 0);
       assert.equal(events[0].state.layout.height, 0);
@@ -669,7 +669,7 @@ describe("Layout Tests", () => {
 
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "IMG");
-      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.attributes["src"], src);
 
       // Explicitly signal that we are done here
@@ -701,8 +701,97 @@ describe("Layout Tests", () => {
 
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "INPUT");
-      assert.equal(events[0].state.action, 0);
+      assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.attributes["value"], "*******");
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
+  it("checks that script element and its text are ignored", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let script = document.createElement("script");
+    script.innerText = "/*some javascriptcode*/";
+    document.body.appendChild(script);
+
+    function callback() {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 2);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.tag, IgnoreTag);
+      assert.equal(events[0].state.nodeType, Node.ELEMENT_NODE);
+
+      assert.equal(events[1].state.action, Action.Insert);
+      assert.equal(events[1].state.tag, IgnoreTag);
+      assert.equal(events[1].state.nodeType, Node.TEXT_NODE);
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
+  it("checks that meta element is ignored", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let meta = document.createElement("meta");
+    document.body.appendChild(meta);
+
+    function callback() {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.tag, IgnoreTag);
+      assert.equal(events[0].state.nodeType, Node.ELEMENT_NODE);
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
+  it("checks that comment node is ignored", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let comment = document.createComment("some explanation");
+    document.body.appendChild(comment);
+
+    function callback() {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.tag, IgnoreTag);
+      assert.equal(events[0].state.nodeType, Node.COMMENT_NODE);
 
       // Explicitly signal that we are done here
       done();

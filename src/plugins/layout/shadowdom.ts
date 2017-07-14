@@ -1,5 +1,5 @@
 import { assert, isNumber, traverseNodeTree } from "../../utils";
-import { getNodeIndex, IgnoreTag, NodeIndex } from "./stateprovider";
+import { getNodeIndex, NodeIndex } from "./stateprovider";
 
 // Class names for child list mutation classifications
 const FinalClassName = "cl-final";

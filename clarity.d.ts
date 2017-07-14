@@ -167,6 +167,10 @@ interface ITextLayoutState extends ILayoutState {
   content: string;
 }
 
+interface IIgnoreLayoutState extends ILayoutState {
+  nodeType: number;
+}
+
 interface IMutationEntry {
   node: Node;
   action: Action;
