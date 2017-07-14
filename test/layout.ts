@@ -1,3 +1,4 @@
+import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { NodeIndex } from "../src/plugins/layout/stateprovider";
@@ -176,17 +177,17 @@ describe("Layout Tests", () => {
   //  Keeping it in code to use it again, once CSS rule modification capturing is restored
   //
   //  it('ensures we capture css rule modifications via javascript', (done) => {
-  //    var observer = new MutationObserver(callback);
+  //    let observer = new MutationObserver(callback);
   //    observer.observe(document, {"childList": true,"subtree": true});
 
   //    // Add a style tag and later modify styles using javascript
-  //    var dom = document.getElementById("clarity");
-  //    var domIndex = dom[NodeIndex];
-  //    var style = document.createElement("style");
+  //    let dom = document.getElementById("clarity");
+  //    let domIndex = dom[NodeIndex];
+  //    let style = document.createElement("style");
   //    style.textContent = "body {}";
   //    dom.appendChild(style);
-  //    var stylesheet = style.sheet;
-  //    var rules = stylesheet["cssRules"] || stylesheet["rules"];
+  //    let stylesheet = style.sheet;
+  //    let rules = stylesheet["cssRules"] || stylesheet["rules"];
   //    rules[0].style.background = "red";
 
   //    function callback() {
@@ -196,7 +197,7 @@ describe("Layout Tests", () => {
   //      waitForSend();
 
   //      // Uncompress recent data from mutations
-  //      var events = getEventsByType(LayoutEventName);
+  //      let events = getEventsByType(LayoutEventName);
 
   //      assert.equal(core.bytes.length, 2);
   //      assert.equal(events.length, 2);

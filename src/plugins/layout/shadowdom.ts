@@ -40,19 +40,18 @@ export class ShadowDom {
     }
 
     assert(!!parent, "insertShadowNode", "parent is missing");
-    if (!parent) {
-      return;
+    if (parent) {
+      if (this.classifyNodes) {
+        this.setClass(shadowNode, NewNodeClassName);
+      }
+
+      if (nextSibling) {
+        parent.insertBefore(shadowNode, nextSibling);
+      } else {
+        parent.appendChild(shadowNode);
+      }
     }
 
-    if (this.classifyNodes) {
-      this.setClass(shadowNode, NewNodeClassName);
-    }
-
-    if (nextSibling) {
-      parent.insertBefore(shadowNode, nextSibling);
-    } else {
-      parent.appendChild(shadowNode);
-    }
     return shadowNode;
   }
 
@@ -63,20 +62,18 @@ export class ShadowDom {
 
     assert(!!parent, "moveShadowNode", "parent is missing");
     assert(!!shadowNode, "moveShadowNode", "shadowNode is missing");
-    if (!(parent && shadowNode)) {
-      return;
-    }
-
-    if (this.classifyNodes) {
-      if (!this.hasClass(shadowNode, NewNodeClassName)) {
-        this.setClass(shadowNode, MovedNodeClassName);
+    if (parent && shadowNode) {
+      if (this.classifyNodes) {
+        if (!this.hasClass(shadowNode, NewNodeClassName)) {
+          this.setClass(shadowNode, MovedNodeClassName);
+        }
       }
-    }
 
-    if (nextSibling) {
-      parent.insertBefore(shadowNode, nextSibling);
-    } else {
-      parent.appendChild(shadowNode);
+      if (nextSibling) {
+        parent.insertBefore(shadowNode, nextSibling);
+      } else {
+        parent.appendChild(shadowNode);
+      }
     }
     return shadowNode;
   }
@@ -90,14 +87,10 @@ export class ShadowDom {
 
   public removeShadowNode(index: number) {
     let shadowNode = this.getShadowNode(index);
-
-    assert(!!shadowNode, "removeShadowNode", "shadowNode is missing");
-    if (!shadowNode) {
-      return;
+    if (shadowNode) {
+      this.setClass(shadowNode, MovedNodeClassName);
+      this.removedNodes.appendChild(shadowNode);
     }
-
-    this.setClass(shadowNode, MovedNodeClassName);
-    this.removedNodes.appendChild(shadowNode);
   }
 
   public applyMutationBatch(mutations: MutationRecord[]): IShadowDomMutationSummary {

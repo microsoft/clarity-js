@@ -122,8 +122,7 @@ declare const enum Action {
   Insert,
   Update,
   Remove,
-  Move,
-  Ignore
+  Move
 }
 
 interface IAttributes {

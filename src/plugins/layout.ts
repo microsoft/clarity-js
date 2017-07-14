@@ -1,6 +1,6 @@
 import { config } from "./../config";
 import { addEvent, bind, getTimestamp, instrument } from "./../core";
-import { assert, debug, isNumber, traverseNodeTree } from "./../utils";
+import { debug, isNumber, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
 import { createGenericLayoutState, createLayoutState, getNodeIndex, IgnoreTag, NodeIndex } from "./layout/stateprovider";
 
@@ -176,7 +176,6 @@ export default class Layout implements IPlugin {
   // and records the original values for later process of restoring that node's initial state
   private storeOriginalProperties(mutation: MutationRecord) {
     let targetIndex = getNodeIndex(mutation.target);
-    assert(targetIndex !== null, "storeOriginalProperties", "targetIndex is null");
     if (targetIndex !== null) {
       let originalProperties = this.originalProperties[targetIndex] || {
         attributes: {},
@@ -227,7 +226,6 @@ export default class Layout implements IPlugin {
       case Action.Move:
         layoutState.action = Action.Move;
         break;
-      case Action.Ignore:
       default:
         break;
     }
@@ -327,7 +325,10 @@ export default class Layout implements IPlugin {
       // then store its original properties so that we can reconstruct its initial state later on.
       if (!this.domDiscoverComplete) {
         for (let i = 0; i < mutations.length; i++) {
-          this.storeOriginalProperties(mutations[i]);
+          let mutation = mutations[i];
+          if (mutation.type === "attributes" || mutation.type === "characterData") {
+            this.storeOriginalProperties(mutations[i]);
+          }
         }
       }
 
