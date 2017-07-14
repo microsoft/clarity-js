@@ -42,9 +42,7 @@ export default class Layout implements IPlugin {
         attributes: true,
         childList: true,
         characterData: true,
-        subtree: true,
-        attributeOldValue: true,
-        characterDataOldValue: true
+        subtree: true
       });
     }
   }
