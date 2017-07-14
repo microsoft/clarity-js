@@ -16,9 +16,6 @@ export default class Layout implements IPlugin {
   private domPreDiscoverMutations: ILayoutEventInfo[][];
   private lastConsistentDomJson: object;
   private layoutStates: ILayoutState[];
-  private originalProperties: {
-    [key: number]: INodePreUpdateInfo
-  };
   private originalLayouts: Array<{
     node: Node;
     layout: ILayoutState;
@@ -34,7 +31,6 @@ export default class Layout implements IPlugin {
     this.domPreDiscoverMutations = [];
     this.lastConsistentDomJson = {};
     this.layoutStates = [];
-    this.originalProperties = [];
     this.originalLayouts = [];
   }
 
@@ -116,7 +112,6 @@ export default class Layout implements IPlugin {
       let originalLayout = this.originalLayouts.shift();
       let originalLayoutState = originalLayout.layout;
       let currentLayoutState = createLayoutState(originalLayout.node, this.shadowDom);
-      let originalProperties = this.originalProperties[originalLayout.layout.index];
 
       currentLayoutState.index = originalLayout.layout.index;
       currentLayoutState.parent = originalLayoutState.parent;
@@ -124,29 +119,6 @@ export default class Layout implements IPlugin {
       currentLayoutState.next = originalLayoutState.next;
       currentLayoutState.source = Source.Discover;
       currentLayoutState.action = Action.Insert;
-
-      // If element is not ignored, override current layout with its original properties to recreate its original state
-      if (originalProperties && currentLayoutState.tag !== IgnoreTag) {
-        switch (originalLayout.node.nodeType) {
-          case Node.TEXT_NODE:
-            (currentLayoutState as ITextLayoutState).content = originalProperties.characterData;
-            break;
-          case Node.ELEMENT_NODE:
-            let originalAttributes = originalProperties.attributes;
-            for (let attr in originalAttributes) {
-              if (originalAttributes.hasOwnProperty(attr)) {
-                if (originalAttributes[attr] === null) {
-                  delete (currentLayoutState as IElementLayoutState).attributes[attr];
-                } else {
-                  (currentLayoutState as IElementLayoutState).attributes[attr] = originalAttributes[attr];
-                }
-              }
-            }
-            break;
-          default:
-            break;
-        }
-      }
 
       addEvent(this.eventName, currentLayoutState, time);
     }
@@ -169,34 +141,6 @@ export default class Layout implements IPlugin {
       for (let j = 0; j < mutationEvents.length; j++) {
         this.processNodeEvent(mutationEvents[j]);
       }
-    }
-  }
-
-  // Looks at whether some node's attributes/characterData have mutated for the first time
-  // and records the original values for later process of restoring that node's initial state
-  private storeOriginalProperties(mutation: MutationRecord) {
-    let targetIndex = getNodeIndex(mutation.target);
-    if (targetIndex !== null) {
-      let originalProperties = this.originalProperties[targetIndex] || {
-        attributes: {},
-        characterData: null
-      };
-      switch (mutation.type) {
-        case "attributes":
-          let originalAttributes = originalProperties.attributes;
-          if (!(mutation.attributeName in originalAttributes)) {
-            originalAttributes[mutation.attributeName] = mutation.oldValue;
-          }
-          break;
-        case "characterData":
-          if (originalProperties.characterData === null) {
-            originalProperties.characterData = mutation.oldValue;
-          }
-          break;
-        default:
-          break;
-      }
-      this.originalProperties[targetIndex] = originalProperties;
     }
   }
 
@@ -320,17 +264,6 @@ export default class Layout implements IPlugin {
       let time = getTimestamp();
       let summary = this.shadowDom.applyMutationBatch(mutations);
       this.ensureConsistency(`Mutation ${this.mutationSequence}`);
-
-      // If node mutates before dom discovery is completed (all initial states are serialized),
-      // then store its original properties so that we can reconstruct its initial state later on.
-      if (!this.domDiscoverComplete) {
-        for (let i = 0; i < mutations.length; i++) {
-          let mutation = mutations[i];
-          if (mutation.type === "attributes" || mutation.type === "characterData") {
-            this.storeOriginalProperties(mutations[i]);
-          }
-        }
-      }
 
       if (this.shadowDomConsistent) {
         let events = this.processMutations(summary, time);
