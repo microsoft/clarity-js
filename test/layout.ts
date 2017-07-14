@@ -403,6 +403,42 @@ describe("Layout Tests", () => {
     }
   });
 
+  it("checks that nodes that are added and removed in the same mutation don't create index gaps in event logs ", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true, attributes: true });
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let div1 = document.createElement("div");
+    let div2 = document.createElement("div");
+    let div3 = document.createElement("div");
+
+    document.body.appendChild(div1);
+    document.body.appendChild(div3);
+    document.body.appendChild(div2);
+    document.body.removeChild(div3);
+
+    function callback(mutations) {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 2);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.index, div1[NodeIndex]);
+      assert.equal(events[1].state.action, Action.Insert);
+      assert.equal(events[1].state.index, div2[NodeIndex]);
+      assert.equal(div1[NodeIndex], div2[NodeIndex] - 1);
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
   it("checks that we do not instrument disconnected dom tree", (done) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });

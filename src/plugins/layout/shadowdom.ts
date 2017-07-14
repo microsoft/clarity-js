@@ -39,12 +39,12 @@ export class ShadowDom {
       this.shadowDocument = shadowNode;
     }
 
+    if (this.classifyNodes) {
+      this.setClass(shadowNode, NewNodeClassName);
+    }
+
     assert(!!parent, "insertShadowNode", "parent is missing");
     if (parent) {
-      if (this.classifyNodes) {
-        this.setClass(shadowNode, NewNodeClassName);
-      }
-
       if (nextSibling) {
         parent.insertBefore(shadowNode, nextSibling);
       } else {
@@ -94,6 +94,7 @@ export class ShadowDom {
   }
 
   public applyMutationBatch(mutations: MutationRecord[]): IShadowDomMutationSummary {
+    let nextIndexBeforeProcessing = this.nextIndex;
     this.doc.documentElement.appendChild(this.removedNodes);
     this.classifyNodes = true;
 
@@ -137,6 +138,9 @@ export class ShadowDom {
 
     // Detach removed nodes
     this.removedNodes.parentElement.removeChild(this.removedNodes);
+
+    // Re-assign indices for all new nodes that remained attached to DOM such that there are no gaps between them
+    this.reIndexNewNodes(nextIndexBeforeProcessing);
 
     // Process the new state of the ShadowDom and extract the summary
     let summary = this.getMutationSummary();
@@ -344,6 +348,22 @@ export class ShadowDom {
       parentShadowNode = childShadowNode && childShadowNode.parentNode;
     }
     return parentShadowNode && !this.hasClass(parentShadowNode, FinalClassName);
+  }
+
+  // When we apply a mutation batch, we assign a new index to every node that is added to the DOM as we parse mutations
+  // in their natural order. However, some of those nodes end up being again removed from DOM with the some follow-up mutation
+  // thus 'stealing' an index with them. Since we don't instrument nodes that were added and removed within the same
+  // mutation batch, we have no records of these stolen indices. To maintain consistency on the backend, at the end of the mutation,
+  // we can re-assign indices for all nodes that remained attached to the DOM such that they all go in increasing order without gaps
+  private reIndexNewNodes(nextIndex: number) {
+    let newNodes = this.doc.getElementsByClassName(NewNodeClassName);
+    for (let i = 0; i < newNodes.length; i++) {
+      let shadowNode = newNodes[i] as IShadowDomNode;
+      shadowNode.id = "" + nextIndex;
+      shadowNode.node[NodeIndex] = nextIndex;
+      nextIndex++;
+    }
+    this.nextIndex = nextIndex;
   }
 
   private setNodeIndex(node: Node): number {
