@@ -17,9 +17,9 @@ describe("Custom Data Tests", () => {
     let stopObserving = observeEvents(eventName);
     document.addEventListener("customtestdone", callback);
 
-    triggerCustomEvent(dom, "string");
-    triggerCustomEvent(dom, { this: "is", an: "object" });
-    triggerCustomEvent(dom, ["a", "r", "r", "a", "y"]);
+	triggerCustomEvent(dom, { type: "string", data: "string" });
+	triggerCustomEvent(dom, { type: "object", data: { this: "is", an: "object" } });
+	triggerCustomEvent(dom, { type: "array", data: ["a", "r", "r", "a", "y"] });
 
     // We need to yield so there's time to process events, so sent a sentinel event to
     // mark when the test events are done. This is better than the alternative of adding
@@ -33,9 +33,12 @@ describe("Custom Data Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-      assert.equal(events[0].state.detail, "string");
-      assert.deepEqual(events[1].state.detail, { this: "is", an: "object" });
-      assert.deepEqual(events[2].state.detail, ["a", "r", "r", "a", "y"]);
+	  assert.equal(events[0].state.type, "string");
+	  assert.equal(events[0].state.data, "string");
+	  assert.equal(events[1].state.type, "object");
+	  assert.deepEqual(events[1].state.data, { this: "is", an: "object" });
+	  assert.equal(events[2].state.type, "array");
+	  assert.deepEqual(events[2].state.data, ["a", "r", "r", "a", "y"]);
 
       document.removeEventListener("customtestdone", callback);
       done();

@@ -327,6 +327,19 @@ interface IPerformanceResourceTiming {
 }
 
 /* ##################################### */
+/* ##########   CUSTOM EVENT   ######### */
+/* ##################################### */
+
+interface ITypeData {
+	type: string;
+	data: any;
+}
+
+interface ICustomEvent extends IEvent {
+	detail: ITypeData;
+}
+
+/* ##################################### */
 /* ############   LIBRARY   ############ */
 /* ##################################### */
 interface IClarity {

@@ -12,7 +12,7 @@ Usage
 
 Custom events are created by dispatching a normal DOM event with the type `claritydata` and your data object in the `detail` property. Clarity will receive your event and record the associated data.
 
-The schema of the custom event is entirely determined by the client site. It is recommend that, at minimum, a custom event includes a `type` to assist in querying.
+Custom events are objects with a `type` and a `data` property. The list of types and schema of the data property are left up to the client site to define.
 
 Custom data is subject to the same bandwidth usage limits as other Clarity events.
 
@@ -27,7 +27,7 @@ The following JavaScript snippet demonstrates how to use the custom data plugin.
       true,
       false
     );
-    clarityEvent.detail = { test: "this is a test object" };
+    clarityEvent.detail = { type: "test", data: "this is a test object" };
 
     document.dispatchEvent(clarityEvent);
 
@@ -38,6 +38,6 @@ The resulting event recorded by Clarity will look like:
       "time": xxx,
       "type": "Custom",
       "state": {
-    "detail": { test: "this is a test object" }
+	    "type": "test", "data": "this is a test object"
       }
     }
