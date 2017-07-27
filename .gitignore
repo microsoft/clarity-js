@@ -12,3 +12,6 @@ npm-debug.log*
 
 # rollup-plugins-typescript2
 .rpt2_cache
+
+# sauceLabs test run logs
+sc_karma*.log

@@ -7,6 +7,11 @@ before_script:
 script:
   - gulp build
   - gulp coverage
+  - gulp webtest
 cache:
   directories:
     - "node_modules"
+addons:
+  sauce_connect:
+    username: "ender336"
+    access_key: "fcfad206-6db2-46bc-8824-c1e576d549cf"

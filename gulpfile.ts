@@ -90,6 +90,13 @@ gulp.task("place-git-hooks", () => {
     .pipe(gulp.dest(".git/hooks"));
 });
 
+gulp.task("webtest", (done) => {
+  new karmaServer({
+    configFile: __dirname + "/build/test/sauce.karma.conf.js",
+    singleRun: true
+  }, done).start();
+});
+
 gulp.task("test", (done) => {
   new karmaServer({
     browsers: [],
