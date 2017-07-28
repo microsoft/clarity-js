@@ -17,7 +17,7 @@ export = (config) => {
     singleRun : true,
     autoWatch : false,
 
-    frameworks: ["mocha", "chai", "browserify", "jasmine"],
+    frameworks: ["mocha", "chai", "jasmine"],
 
     files: [
         "test/clarity.fixture.html",
@@ -29,15 +29,9 @@ export = (config) => {
         "test/*.html": ["html2js"]
     },
 
-    browserify: {
-        debug: true,
-        transform: "varify"
-    },
-
     plugins: [
       "karma-mocha",
       "karma-chai",
-      "karma-browserify",
       "karma-jasmine",
       "karma-sauce-launcher",
       "karma-spec-reporter",
