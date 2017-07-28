@@ -30,7 +30,8 @@ export = (config) => {
     },
 
     browserify: {
-        debug: true
+        debug: true,
+        varify: true
     },
 
     plugins: [

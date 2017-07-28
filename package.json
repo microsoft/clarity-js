@@ -65,7 +65,8 @@
     "typescript": "^2.0.7",
     "uglify-js": "^2.7",
     "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.7.0"
+    "watchify": "^3.7.0",
+    "varify":"0.2.0"
   },
   "scripts": {
     "complexity": "node node_modules/complexity-report/src/index.js -f plain src/",
