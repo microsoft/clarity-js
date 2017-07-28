@@ -101,7 +101,7 @@ export function addEvent(type: string, eventState: any, time?: number) {
     if (timeout) {
       clearTimeout(timeout);
     }
-    timeout = setTimeout(uploadNextPayload, config.delay);
+    timeout = window.setTimeout(uploadNextPayload, config.delay);
   }
 }
 

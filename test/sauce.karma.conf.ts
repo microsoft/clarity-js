@@ -47,6 +47,9 @@ export = (config) => {
 
     sauceLabs: {
         public: "public",
+        testName: "Basic Web Test",
+        tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
+        startConnect: false,
         connectOptions: {
              username: "ender336",
              accessKey: "fcfad206-6db2-46bc-8824-c1e576d549cf",

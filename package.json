@@ -25,6 +25,7 @@
     "@types/chai": "^3.4.34",
     "@types/jasmine": "^2.5.37",
     "@types/karma-fixture": "^0.2.2",
+    "@types/node": "^8.0.17",
     "chai": "^3.5.0",
     "codecov": "^1.0.1",
     "complexity-report": "^1.4.1",
