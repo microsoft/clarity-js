@@ -25,7 +25,7 @@ export = (config) => {
     ],
 
     preprocessors: {
-        "test/basicEventValidation.js": ["browserify"],
+        // "test/basicEventValidation.js": ["browserify"],
         "test/*.html": ["html2js"]
     },
 
