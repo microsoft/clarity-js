@@ -59,6 +59,7 @@
     "rollup-stream": "^1.19.0",
     "run-sequence": "^1.2.2",
     "selenium-webdriver": "3.4.0",
+    "selenium-sauce":"0.4.1",
     "ts-node": "^3.0.2",
     "tslib": "^1.7.1",
     "tslint": "^4.5.1",
@@ -66,6 +67,7 @@
     "uglify-js": "^2.7",
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.7.0",
+    "webdriverio": "*",
     "varify":"0.2.0"
   },
   "scripts": {

@@ -1,4 +1,4 @@
-import * as webdriver from "selenium-webdriver";
+// import * as webdriver from "selenium-webdriver";
 
 let username = "ender336";
 let accessKey = "fcfad206-6db2-46bc-8824-c1e576d549cf";
