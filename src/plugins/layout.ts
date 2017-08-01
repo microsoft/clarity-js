@@ -81,8 +81,7 @@ export default class Layout implements IPlugin {
 
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
   private discoverNode(node: Node) {
-    let ignore = shouldIgnoreNode(node, this.shadowDom);
-    this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling), ignore);
+    this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
     let index = getNodeIndex(node);
     let layout = createGenericLayoutState(node, null);
     this.layoutStates[index] = layout;
@@ -148,9 +147,6 @@ export default class Layout implements IPlugin {
         // Watch element for scroll and input change events
         if (node.nodeType === Node.ELEMENT_NODE) {
           this.watch(node as Element, layoutState as IElementLayoutState);
-        }
-        if (layoutState.tag === IgnoreTag) {
-          this.shadowDom.getShadowNode(eventInfo.index).ignore = true;
         }
         layoutState.action = Action.Insert;
         break;

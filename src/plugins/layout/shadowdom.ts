@@ -1,5 +1,5 @@
 import { assert, isNumber, traverseNodeTree } from "../../utils";
-import { getNodeIndex, NodeIndex } from "./stateprovider";
+import { getNodeIndex, NodeIndex, shouldIgnoreNode } from "./stateprovider";
 
 // Class names for child list mutation classifications
 const FinalClassName = "cl-final";
@@ -25,7 +25,7 @@ export class ShadowDom {
     return node as IShadowDomNode;
   }
 
-  public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number, ignore?: boolean): IShadowDomNode {
+  public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number): IShadowDomNode {
     let isDocument = (node === document);
     let index = this.setNodeIndex(node);
     let parent = (isDocument ? this.shadowDomRoot : this.getShadowNode(parentIndex)) as IShadowDomNode;
@@ -33,7 +33,7 @@ export class ShadowDom {
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
     shadowNode.id = "" + index;
     shadowNode.node = node;
-    shadowNode.ignore = ignore || (node === document ? false : parent && parent.ignore);
+    shadowNode.ignore = shouldIgnoreNode(node, this);
 
     if (isDocument) {
       this.shadowDocument = shadowNode;
