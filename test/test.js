@@ -1,10 +1,10 @@
 // import * as webdriver from "selenium-webdriver";
 
-let webdriver = require("selenium-webdriver");
+var webdriver = require("selenium-webdriver");
 
-let username = "ender336";
-let accessKey = "fcfad206-6db2-46bc-8824-c1e576d549cf";
-let driver = new webdriver.Builder().
+var username = "ender336";
+var accessKey = "fcfad206-6db2-46bc-8824-c1e576d549cf";
+var driver = new webdriver.Builder().
   /*withCapabilities({
     'browserName': 'chrome',
     'platform': 'Windows XP',
