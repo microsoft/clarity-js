@@ -21,7 +21,8 @@ export = (config) => {
 
     files: [
         "test/clarity.fixture.html",
-        "test/basicEventValidation.js"
+        "test/test.js"
+        //"test/basicEventValidation.js"
     ],
 
     preprocessors: {
