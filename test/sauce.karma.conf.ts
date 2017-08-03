@@ -36,7 +36,8 @@ export = (config) => {
       "karma-jasmine",
       "karma-sauce-launcher",
       "karma-spec-reporter",
-      "karma-html2js-preprocessor"
+      "karma-html2js-preprocessor",
+      "karma-browserify"
     ],
 
     reporters: ["saucelabs", "spec"],
