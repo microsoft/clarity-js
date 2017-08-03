@@ -35,6 +35,9 @@ interface IConfig {
   // Setting to enable debug features (e.g. console.log statements)
   debug?: boolean;
 
+  // Setting to enable consistency verifications between real DOM and shadow DOM 
+  ensureConsistency?: boolean;
+
   // Active plugins
   plugins?: string[];
 }

@@ -250,14 +250,14 @@ export default class Layout implements IPlugin {
     // If we end up in the inconsistent state, that means that something went wrong already,
     // so we can give up on the following mutations and should investigate the cause of the error.
     // Continuing to process mutations can result in javascript errors and lead to even more inconsistencies.
-    if (this.shadowDomConsistent) {
+    if (this.allowMutation()) {
 
       // Perform mutations on the shadow DOM and make sure ShadowDom arrived to the consistent state
       let time = getTimestamp();
       let summary = this.shadowDom.applyMutationBatch(mutations);
       this.ensureConsistency(`Mutation ${this.mutationSequence}`);
 
-      if (this.shadowDomConsistent) {
+      if (this.allowMutation()) {
         let events = this.processMutations(summary, time);
         if (this.domDiscoverComplete) {
           for (let i = 0; i < events.length; i++) {
@@ -272,6 +272,10 @@ export default class Layout implements IPlugin {
     }
 
     this.mutationSequence++;
+  }
+
+  private allowMutation(): boolean {
+    return this.shadowDomConsistent || !config.ensureConsistency;
   }
 
   private processMutations(summary: IShadowDomMutationSummary, time: number): ILayoutEventInfo[] {
@@ -332,19 +336,21 @@ export default class Layout implements IPlugin {
   }
 
   private ensureConsistency(lastAction: string): void {
-    let domJson = this.shadowDom.createDomIndexJson();
-    this.shadowDomConsistent = this.shadowDom.isConsistent();
-    if (this.shadowDomConsistent) {
-      this.lastConsistentDomJson = domJson;
-    } else {
-      let evt: IShadowDomInconsistentEventState = {
-        type: Instrumentation.ShadowDomInconsistent,
-        dom: JSON.stringify(domJson),
-        shadowDom: JSON.stringify(this.shadowDom.createShadowDomIndexJson()),
-        lastAction,
-        lastConsistentShadowDom: JSON.stringify(this.lastConsistentDomJson)
-      };
-      instrument(evt);
+    if (config.ensureConsistency) {
+      let domJson = this.shadowDom.createDomIndexJson();
+      this.shadowDomConsistent = this.shadowDom.isConsistent();
+      if (this.shadowDomConsistent) {
+        this.lastConsistentDomJson = domJson;
+      } else {
+        let evt: IShadowDomInconsistentEventState = {
+          type: Instrumentation.ShadowDomInconsistent,
+          dom: JSON.stringify(domJson),
+          shadowDom: JSON.stringify(this.shadowDom.createShadowDomIndexJson()),
+          lastAction,
+          lastConsistentShadowDom: JSON.stringify(this.lastConsistentDomJson)
+        };
+        instrument(evt);
+      }
     }
   }
 }
