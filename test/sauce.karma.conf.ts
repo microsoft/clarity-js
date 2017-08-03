@@ -26,7 +26,7 @@ export = (config) => {
     ],
 
     preprocessors: {
-        "test/basicEventValidation.js": ["browserify"],
+        "test/basicEventValidation.js": ["browserify", "regex"],
         "test/*.html": ["html2js"]
     },
 
@@ -37,10 +37,22 @@ export = (config) => {
       "karma-sauce-launcher",
       "karma-spec-reporter",
       "karma-html2js-preprocessor",
-      "karma-browserify"
+      "karma-browserify",
+      "karma-regex-preprocessor"
     ],
 
     reporters: ["saucelabs", "spec"],
+
+    regexPreprocessor: {
+      rules: [
+        {
+          // Replacements for basicEventValidation.js.
+          fileName: "basicEventValidation.js", replacement: [
+            { replace: "const ", with: "var" }
+          ]
+        }
+      ]
+    },
 
     sauceLabs: {
         public: "public",
