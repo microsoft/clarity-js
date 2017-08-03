@@ -17,7 +17,7 @@ export = (config) => {
     singleRun : true,
     autoWatch : false,
 
-    frameworks: ["mocha", "chai", "jasmine"],
+    frameworks: ["mocha", "chai", "jasmine", "browserify"],
 
     files: [
         "test/clarity.fixture.html",
