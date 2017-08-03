@@ -14,7 +14,7 @@ export = (config) => {
   config.set({
     basePath: "..",
     logLevel: "LOG_DEBUG",
-    singleRun : false,
+    singleRun : true,
     autoWatch : false,
 
     frameworks: ["mocha", "chai", "jasmine", "browserify"],
