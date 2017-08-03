@@ -14,7 +14,7 @@ export = (config) => {
   config.set({
     basePath: "..",
     logLevel: "LOG_DEBUG",
-    singleRun : true,
+    singleRun : false,
     autoWatch : false,
 
     frameworks: ["mocha", "chai", "jasmine", "browserify"],
@@ -48,7 +48,7 @@ export = (config) => {
         {
           // Replacements for basicEventValidation.js.
           fileName: "basicEventValidation.js", replacement: [
-            { replace: "const ", with: "var" }
+            { replace: "const ", with: "var " }
           ]
         }
       ]

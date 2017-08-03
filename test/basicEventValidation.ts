@@ -1,5 +1,5 @@
- import * as webdriver from "selenium-webdriver";
-
+ // import * as webdriver from "selenium-webdriver";
+import * as webdriver from "webdriverio";
 // let webdriver = require("selenium-webdriver");
 
 let username = "ender336";
