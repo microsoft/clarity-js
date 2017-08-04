@@ -20,7 +20,6 @@ gulp.task("build", () => {
     "clean",
     "compile",
     "place-fixture",
-    "place-webtest",
     "rollup",
     "uglify"
   );
@@ -32,7 +31,6 @@ gulp.task("bnc", () => {
     "clean",
     "compile",
     "place-fixture",
-    // "place-webtest",
     "rollup",
     "uglify",
     "coverage"
@@ -45,7 +43,6 @@ gulp.task("bnt", () => {
     "clean",
     "compile",
     "place-fixture",
-    // "place-webtest",
     "rollup",
     "uglify",
     "test"
@@ -85,11 +82,6 @@ gulp.task("compile", () => {
 
 gulp.task("place-fixture", () => {
   return gulp.src("test/clarity.fixture.html")
-    .pipe(gulp.dest("build/test"));
-});
-
-gulp.task("place-webtest", () => {
-  return gulp.src("test/test.js")
     .pipe(gulp.dest("build/test"));
 });
 
