@@ -20,14 +20,14 @@ export = (config) => {
     frameworks: ["mocha", "chai", "jasmine", "browserify"],
 
     files: [
-        "test/clarity.fixture.html",
-        // "test/test.js"
-        "test/basicEventValidation.js"
+        // "test/clarity.fixture.html",
+        "test/test.js"
+        // "test/basicEventValidation.js"
     ],
 
     preprocessors: {
-        "test/basicEventValidation.js": ["browserify", "regex"],
-        "test/*.html": ["html2js"]
+        // "test/basicEventValidation.js": ["browserify", "regex"],
+        // "test/*.html": ["html2js"]
     },
 
     plugins: [
@@ -42,17 +42,6 @@ export = (config) => {
     ],
 
     reporters: ["saucelabs", "spec"],
-
-    regexPreprocessor: {
-      rules: [
-        {
-          // Replacements for basicEventValidation.js.
-          fileName: "basicEventValidation.js", replacement: [
-            { replace: "const ", with: "var " }
-          ]
-        }
-      ]
-    },
 
     sauceLabs: {
         public: "public",

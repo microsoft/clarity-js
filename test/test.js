@@ -3,7 +3,7 @@ var webdriver = require("selenium-webdriver");
 var username = "ender336";
 var accessKey = "fcfad206-6db2-46bc-8824-c1e576d549cf";
 var driver = new webdriver.Builder().
-  withCapabilities({
+ /* withCapabilities({
     'browserName': 'chrome',
     'platform': 'Windows XP',
     'version': '43.0',
@@ -11,7 +11,7 @@ var driver = new webdriver.Builder().
     'accessKey': accessKey
   }).
   usingServer("http://" + username + ":" + accessKey +
-              "@ondemand.saucelabs.com:80/wd/hub").
+              "@ondemand.saucelabs.com:80/wd/hub").*/
 build();
 
 it("make sure we can call sauce", (done) => {

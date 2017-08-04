@@ -7,7 +7,7 @@ before_script:
 script:
   - gulp build
   - gulp coverage
-  - node test/test.js
+  - gulp webtest
 cache:
   directories:
     - "node_modules"
