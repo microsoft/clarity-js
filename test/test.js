@@ -14,14 +14,12 @@ var driver = new webdriver.Builder().
               "@ondemand.saucelabs.com:80/wd/hub").
 build();
 
-describe("Basic WebDriver Tests", () => {
-    it("make sure we can call sauce", (done) => {
-        driver.get("http://www.bing.com/search?q=test");
-        driver.getTitle().then((title) => {
-            console.log("title is: " + title);
-        });
-        console.log("hi sam");
-        driver.quit();
-        done()
-  });
+it("make sure we can call sauce", (done) => {
+    driver.get("http://www.bing.com/search?q=test");
+    driver.getTitle().then((title) => {
+        console.log("title is: " + title);
+    });
+    console.log("hi sam");
+    driver.quit();
+    done()
 });
