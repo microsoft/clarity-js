@@ -19,6 +19,6 @@ driver.get("http://www.bing.com/search?q=test");
 driver.getTitle().then((title) => {
     console.log("title is: " + title);
 });
-driver.log("hi sam");
+console.log("hi sam");
 driver.quit();
 done();
