@@ -9,7 +9,7 @@ export = (config) => {
         pattern: "test/**/*.js"
       }
     ],
-    exclude: ["test/basicEventValidation.js"],
+    exclude: ["test/test.js"],
     plugins: [
       "karma-mocha",
       "karma-chai",
