@@ -21,4 +21,3 @@ driver.getTitle().then((title) => {
 });
 console.log("hi sam");
 driver.quit();
-done();
