@@ -1,5 +1,5 @@
 var webdriver = require("selenium-webdriver");
-var fs = require("fs");
+var fs = require('fs');
 
 var username = "ender336";
 var accessKey = "fcfad206-6db2-46bc-8824-c1e576d549cf";
@@ -22,11 +22,8 @@ driver.getTitle().then((title) => {
 });
 
 
-var getClarityCode = function () {
-  console.log("before inject");
-  var clarityResource = "/home/travis/build/Microsoft/clarity-js/build/clarity.min.js";
-  var clarityContents = fs.readFileSync(clarityResource,'utf8');
-  
+var getClarityCode = function (clarityContents) {
+  console.log("before inject");  
   console.log("contents " + clarityContents.substring(0,20));
 
   var script = document.createElement('script');
@@ -44,6 +41,9 @@ var verifyClarityCode = function () {
     console.log("logError there!");
   }
 }
+
+var clarityResource = "/home/travis/build/Microsoft/clarity-js/build/clarity.min.js";
+var clarityContents = fs.readFileSync(clarityResource,'utf8');
 
 driver.executeAsyncScript(getClarityCode).then(verifyClarityCode());
 
