@@ -14,9 +14,9 @@ var driver = new webdriver.Builder().
               "@ondemand.saucelabs.com:80/wd/hub").*/
 build();
 
-it("make sure we can call sauce", (done) => {
+it("make sure we can call sauce", function (done) {
     driver.get("http://www.bing.com/search?q=test");
-    driver.getTitle().then((title) => {
+    driver.getTitle().then(function (title) {
         console.log("title is: " + title);
     });
     console.log("hi sam");
