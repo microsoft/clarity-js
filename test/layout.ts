@@ -755,9 +755,7 @@ describe("Layout Tests", () => {
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "IMG");
       assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.attributes["src"], undefined);
-      assert.equal(events[0].state.layout.width, 0);
-      assert.equal(events[0].state.layout.height, 0);
+      assert.equal("src" in events[0].state.attributes, false);
 
       // Explicitly signal that we are done here
       done();
