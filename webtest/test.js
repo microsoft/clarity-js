@@ -1,4 +1,5 @@
 var webdriver = require("selenium-webdriver");
+var fs = require("fs");
 
 var username = "ender336";
 var accessKey = "fcfad206-6db2-46bc-8824-c1e576d549cf";
