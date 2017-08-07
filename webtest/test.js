@@ -19,14 +19,21 @@ driver.get("http://www.bing.com/search?q=test");
 driver.getTitle().then((title) => {
     console.log("title is: " + title);
 });
-console.log("before inject");
+
 
 var getClarityCode = function () {
+  console.log("before inject");
   var clarityResource = "/home/travis/build/Microsoft/clarity-js/build/clarity.min.js";
+  var clarityContents = fs.readFileSync(clarityResource,'utf8');
+  
+  console.log("contents " + clarityContents.substring(0,20));
+
   var script = document.createElement('script');
   var head = document.getElementsByTagName('head')[0];
-  script.src = clarityResource;
+
+  script.innerHTML = clarityContents;
   head.appendChild(script);
+  console.log("appended " + script.innerHTML.substring(0,100));
 }
 
 var verifyClarityCode = function () {
