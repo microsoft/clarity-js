@@ -32,7 +32,6 @@ gulp.task("bnc", () => {
     "clean",
     "compile",
     "place-fixture",
-    // "place-webtest",
     "rollup",
     "uglify",
     "coverage"
@@ -45,7 +44,6 @@ gulp.task("bnt", () => {
     "clean",
     "compile",
     "place-fixture",
-    // "place-webtest",
     "rollup",
     "uglify",
     "test"
@@ -89,8 +87,8 @@ gulp.task("place-fixture", () => {
 });
 
 gulp.task("place-webtest", () => {
-  return gulp.src("test/test.js")
-    .pipe(gulp.dest("build/test"));
+  return gulp.src("webtest/test.js")
+    .pipe(gulp.dest("build/webtest"));
 });
 
 gulp.task("place-git-hooks", () => {

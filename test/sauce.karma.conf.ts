@@ -21,12 +21,12 @@ export = (config) => {
 
     files: [
         // "test/clarity.fixture.html",
-        "test/test.js"
+        "webtest/test.js"
         // "test/basicEventValidation.js"
     ],
 
     preprocessors: {
-        "test/test.js": ["browserify"],
+        // "webtest/test.js": ["browserify"],
         // "test/*.html": ["html2js"]
     },
 
