@@ -21,16 +21,22 @@ driver.getTitle().then((title) => {
 });
 console.log("before inject");
 
-var clarityResource = "/home/travis/build/Microsoft/clarity-js/build/clarity.min.js";
-var script = document.createElement('script');
-var head = document.getElementsByTagName('head')[0];
-script.src = clarityResource;
-head.appendChild(script);
-
-if(typeof(logError) == "undefined") {
-  console.log("logError undefined");
-} else {
-  console.log("logError there!");
+var getClarityCode = function () {
+  var clarityResource = "/home/travis/build/Microsoft/clarity-js/build/clarity.min.js";
+  var script = document.createElement('script');
+  var head = document.getElementsByTagName('head')[0];
+  script.src = clarityResource;
+  head.appendChild(script);
 }
+
+var verifyClarityCode = function () {
+  if(typeof(logError) == "undefined") {
+    console.log("logError undefined");
+  } else {
+    console.log("logError there!");
+  }
+}
+
+driver.executeAsyncScript(getClarityCode).then(verifyClarityCode());
 
 driver.quit();
