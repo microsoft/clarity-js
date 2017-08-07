@@ -9,13 +9,14 @@ export default class Layout implements IPlugin {
   private eventName = "Layout";
   private distanceThreshold = 5;
   private shadowDom: ShadowDom;
-  private shadowDomConsistent: boolean;
+  private inconsistentShadowDomCount: number;
   private observer: MutationObserver;
   private watchList: boolean[];
   private mutationSequence: number;
   private domDiscoverComplete: boolean;
   private domPreDiscoverMutations: ILayoutEventInfo[][];
   private lastConsistentDomJson: object;
+  private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventState;
   private layoutStates: ILayoutState[];
   private originalLayouts: Array<{
     node: Node;
@@ -24,13 +25,14 @@ export default class Layout implements IPlugin {
 
   public reset(): void {
     this.shadowDom = new ShadowDom();
-    this.shadowDomConsistent = false;
+    this.inconsistentShadowDomCount = 0;
     this.watchList = [];
     this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
     this.mutationSequence = 0;
     this.domDiscoverComplete = false;
     this.domPreDiscoverMutations = [];
-    this.lastConsistentDomJson = {};
+    this.lastConsistentDomJson = null;
+    this.firstShadowDomInconsistentEvent = null;
     this.layoutStates = [];
     this.originalLayouts = [];
   }
@@ -275,7 +277,7 @@ export default class Layout implements IPlugin {
   }
 
   private allowMutation(): boolean {
-    return this.shadowDomConsistent || !config.ensureConsistency;
+    return this.inconsistentShadowDomCount < 2 || !config.ensureConsistency;
   }
 
   private processMutations(summary: IShadowDomMutationSummary, time: number): ILayoutEventInfo[] {
@@ -338,18 +340,26 @@ export default class Layout implements IPlugin {
   private ensureConsistency(lastAction: string): void {
     if (config.ensureConsistency) {
       let domJson = this.shadowDom.createDomIndexJson();
-      this.shadowDomConsistent = this.shadowDom.isConsistent();
-      if (this.shadowDomConsistent) {
-        this.lastConsistentDomJson = domJson;
-      } else {
+      let shadowDomConsistent = this.shadowDom.isConsistent();
+      if (!shadowDomConsistent) {
+        this.inconsistentShadowDomCount++;
         let evt: IShadowDomInconsistentEventState = {
           type: Instrumentation.ShadowDomInconsistent,
-          dom: JSON.stringify(domJson),
-          shadowDom: JSON.stringify(this.shadowDom.createShadowDomIndexJson()),
-          lastAction,
-          lastConsistentShadowDom: JSON.stringify(this.lastConsistentDomJson)
+          dom: domJson,
+          shadowDom: this.shadowDom.createShadowDomIndexJson(),
+          lastConsistentShadowDom: this.lastConsistentDomJson,
+          lastAction
         };
-        instrument(evt);
+        if (this.inconsistentShadowDomCount < 2) {
+          this.firstShadowDomInconsistentEvent = evt;
+        } else {
+          evt.firstEvent = this.firstShadowDomInconsistentEvent;
+          instrument(evt);
+        }
+      } else {
+        this.inconsistentShadowDomCount = 0;
+        this.firstShadowDomInconsistentEvent = null;
+        this.lastConsistentDomJson = domJson;
       }
     }
   }

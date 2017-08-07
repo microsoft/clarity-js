@@ -309,10 +309,11 @@ interface IClarityDuplicatedEventState extends IInstrumentationEventState {
 }
 
 interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
-  dom: string;
-  shadowDom: string;
+  dom: object;
+  shadowDom: object;
+  lastConsistentShadowDom: object;
   lastAction: string;
-  lastConsistentShadowDom?: string;
+  firstEvent?: IShadowDomInconsistentEventState;
 }
 
 /* ##################################### */

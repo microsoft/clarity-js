@@ -132,6 +132,90 @@ describe("Layout Tests", () => {
     }
   });
 
+  // This test is related to a specific MutationObserver behavior in Internet Explorer for this scenario:
+  //  1. Append script 'myscript' to the page
+  //  2. 'myscript' executes and appends 'mydiv' div to the page
+  //  3. Inspect MutationObserver callback
+  // In Chrome:
+  //    MutationObserver will invoke a callback and show 2 mutation records:
+  //    (1) script added
+  //    (2) <div> added
+  // In IE:
+  //    (1) MutationObserver will invoke first callback with 1 mutation record: <div> added
+  //    (2) MutationObserver will invoke second callback with 1 mutation record: script added
+  //  The problem with this behavior in IE is that during the first MutationObserver's callback, script element
+  //  can already be observed in the DOM, even though its mutation is not reported in the callback.
+  //  As a result, after processing (1), DOM and ShadowDOM states are not consistent until (2) is processed.
+  //  This breaks functionality, because after (1) we determine that ShadowDOM arrived to the inconsistent
+  //  state and stop processing mutations.
+  // Solution:
+  //  Wait for 2 consequtive mutations that bring ShadowDOM to the inconsistent state before disabling mutation processing.
+  it("checks that inserting script, which inserts an element, works correctly", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Insert a node before an existing node and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let events: IEvent[] = [];
+    let callbackCount = 0;
+    let script = document.createElement("script");
+    script.type = "text/javascript";
+    script.innerHTML = `var div=document.createElement("div");div.id="newdiv";document.body.appendChild(div);`;
+    document.body.appendChild(script);
+
+    function callback() {
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let newEvents = stopObserving();
+      events = events.concat(newEvents);
+
+      if (callbackCount === 0) {
+        // IE path: Only div insertion is reported in the first callback
+        if (events.length === 1) {
+          // Observe more events
+          stopObserving = observeEvents(eventName);
+        } else {
+          // Non-IE path: Both div and script are reported in the first callback
+          observer.disconnect();
+
+          assert.equal(events.length, 3);
+          assert.equal(events[0].state.action, Action.Insert);
+          assert.equal(events[0].state.tag, IgnoreTag);
+          assert.equal(events[1].state.action, Action.Insert);
+          assert.equal(events[1].state.tag, IgnoreTag);
+          assert.equal(events[2].state.action, Action.Insert);
+          assert.equal(events[2].state.tag, "DIV");
+
+          // Explicitly signal that we are done here
+          done();
+        }
+      } else if (callbackCount === 1) {
+        // Add another mutation to ensure that we continue processing mutations
+        let span = document.createElement("span");
+        document.body.appendChild(span);
+        // Observe more events
+        stopObserving = observeEvents(eventName);
+      } else {
+        observer.disconnect();
+        assert.equal(events.length, 4);
+        assert.equal(events[0].state.action, Action.Insert);
+        assert.equal(events[0].state.tag, "DIV");
+        assert.equal(events[1].state.action, Action.Insert);
+        assert.equal(events[1].state.tag, IgnoreTag);
+        assert.equal(events[2].state.action, Action.Insert);
+        assert.equal(events[2].state.tag, IgnoreTag);
+        assert.equal(events[3].state.action, Action.Insert);
+        assert.equal(events[3].state.tag, "SPAN");
+
+        // Explicitly signal that we are done here
+        done();
+      }
+      callbackCount++;
+    }
+  });
+
   it("checks that moving two known nodes to a new location such that they are siblings works correctly", (done) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
