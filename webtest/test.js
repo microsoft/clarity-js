@@ -45,6 +45,6 @@ var verifyClarityCode = function () {
 var clarityResource = "/home/travis/build/Microsoft/clarity-js/build/clarity.min.js";
 var clarityContents = fs.readFileSync(clarityResource,'utf8');
 
-driver.executeAsyncScript(getClarityCode).then(verifyClarityCode());
+driver.executeAsyncScript(getClarityCode, clarityContents).then(verifyClarityCode());
 
 driver.quit();
