@@ -109,6 +109,9 @@ export function createTextLayoutState(textNode: Text): ITextLayoutState {
 export function createIgnoreLayoutState(node: Node): IIgnoreLayoutState {
   let layoutState = createGenericLayoutState(node, IgnoreTag) as IIgnoreLayoutState;
   layoutState.nodeType = node.nodeType;
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    layoutState.elementTag = (node as Element).tagName;
+  }
   return layoutState;
 }
 

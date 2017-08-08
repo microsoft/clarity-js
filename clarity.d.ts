@@ -100,6 +100,10 @@ type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: U
 /* ############   LAYOUT   ############# */
 /* ##################################### */
 
+type NumberJson = {
+  [key: number]: NumberJson;
+};
+
 interface IShadowDomNode extends HTMLDivElement {
   node: Node; /* Reference to the node in the real DOM */
   ignore: boolean;  /* Flag to avoid sending data for that node */
@@ -172,6 +176,7 @@ interface ITextLayoutState extends ILayoutState {
 
 interface IIgnoreLayoutState extends ILayoutState {
   nodeType: number;
+  elementTag?: string;
 }
 
 interface IMutationEntry {
@@ -309,10 +314,22 @@ interface IClarityDuplicatedEventState extends IInstrumentationEventState {
 }
 
 interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
-  dom: object;
-  shadowDom: object;
-  lastConsistentShadowDom: object;
+  // JSON of node indicies, representing the DOM
+  dom: NumberJson;
+
+  // JSON of ShadowNode IDs, representing the inconsistent ShadowDom
+  shadowDom: NumberJson;
+
+  // JSON of ShadowNode IDs, representing the last consistent ShadowDom
+  lastConsistentShadowDom: NumberJson;
+
+  // Last action that happened before we found out that ShadowDom is inconsistent
   lastAction: string;
+
+  // To handle specific MutationObserver behavior in IE, we wait for ShadowDom to become inconsistent twice in a row,
+  // before we stop processing mutations and send ShadowDomInconsistentEvent. This means that the actual transition
+  // from consistent to inconsistent state happened on some previous action and there was also an event created for it.
+  // That first event is sent in this property.
   firstEvent?: IShadowDomInconsistentEventState;
 }
 

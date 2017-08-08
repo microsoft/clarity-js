@@ -454,7 +454,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that dom additions with immediate attribute change are handled by clarity", (done) => {
+  it("checks that dom addition with the follow-up attribute change captures the 'Update' action", (done) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -462,7 +462,6 @@ describe("Layout Tests", () => {
     let stopObserving = observeEvents(eventName);
     let count = 0;
     let div = document.createElement("div");
-    div.innerHTML = "Clarity";
     document.body.appendChild(div);
 
     function callback(mutations) {
@@ -476,14 +475,72 @@ describe("Layout Tests", () => {
         // Uncompress recent data from mutations
         let events = stopObserving();
 
-        assert.equal(events.length, 3);
-        assert.equal(events[0].state.tag, "DIV");
+        assert.equal(events.length, 2);
         assert.equal(events[0].state.action, Action.Insert);
-        assert.equal(events[1].state.tag, "*TXT*");
+        assert.equal(events[0].state.tag, "DIV");
+        assert.equal(events[1].state.action, Action.Update);
 
         // Explicitly signal that we are done here
         done();
       }
+    }
+  });
+
+  it("checks that dom addition with immediate attribute change ignores the 'Update' action", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true, attributes: true });
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let div = document.createElement("div");
+    document.body.appendChild(div);
+    div.setAttribute("data-clarity", "test");
+
+    function callback(mutations) {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.tag, "DIV");
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
+  it("checks that dom addition with immediate move ignores the 'Move' action", (done) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true, attributes: true });
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let clarity = document.getElementById("clarity");
+    let div = document.createElement("div");
+    document.body.appendChild(div);
+    clarity.appendChild(div);
+
+    function callback(mutations) {
+      observer.disconnect();
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.tag, "DIV");
+      assert.equal(events[0].state.parent, clarity[NodeIndex]);
+
+      // Explicitly signal that we are done here
+      done();
     }
   });
 

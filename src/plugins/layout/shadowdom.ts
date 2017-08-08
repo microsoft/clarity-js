@@ -1,23 +1,24 @@
 import { assert, isNumber, traverseNodeTree } from "../../utils";
 import { getNodeIndex, NodeIndex, shouldIgnoreNode } from "./stateprovider";
 
-// Class names for child list mutation classifications
+// Class names to tag actions that happen to nodes in a single mutation batch
 const FinalClassName = "cl-final";
 const NewNodeClassName = "cl-new";
 const MovedNodeClassName = "cl-moved";
 const UpdatedNodeClassName = "cl-updated";
 
 export class ShadowDom {
-  public doc = document.implementation.createHTMLDocument("ShadowDom");
+  public shadowDocument: IShadowDomNode;
 
+  private doc = document.implementation.createHTMLDocument("ShadowDom");
   private nextIndex = 0;
   private removedNodes = this.doc.createElement("div");
   private shadowDomRoot = this.doc.createElement("div");
-  private shadowDocument: IShadowDomNode = null;
   private classifyNodes = false;
 
   constructor() {
     this.doc.documentElement.appendChild(this.shadowDomRoot);
+    this.shadowDocument = document.createElement("div") as IShadowDomNode;
   }
 
   public getShadowNode(index: number): IShadowDomNode {
@@ -93,6 +94,22 @@ export class ShadowDom {
     }
   }
 
+  // As we process a batch of mutations, various things can be happening to a single node
+  // In the end, however, for each affected node we will have one of the following outcomes:
+  //  1. A new node was added
+  //  2. Existing node was moved
+  //  3. Existing node was removed
+  //  4. Existing node was updated
+  //  5. Existing node was moved and updated
+  // Various actions on a node will lead to different finals states. Also a final state of a parent node
+  // can affect and/or override the state of its children (e.g. if node A was moved to node B, but B was removed,
+  // that means that A was removed as well). One of the simpler solutions to determining the final states of all
+  // affected nodes and its children is 'tagging' shadow nodes with class names based on the mutations as they happen,
+  // and then determining the final states of all affected nodes based on the combination of their classes (getting mutation summary).
+  // Note: When we process 'remove' action on a node, instead of marking it as removed and permanently removing it from ShadowDOM
+  //       and erasing its index, we actually moved it to a separate 'removedNodes' container, which is not part of the representation
+  //       of the real DOM, but is still a part of the document. This way, if this node is re-inserted to the page, we can just move
+  //       add it back to ShadowDOM and just record the 'Move' event, letting it maintain its index.
   public applyMutationBatch(mutations: MutationRecord[]): IShadowDomMutationSummary {
     let nextIndexBeforeProcessing = this.nextIndex;
     this.doc.documentElement.appendChild(this.removedNodes);
@@ -178,6 +195,16 @@ export class ShadowDom {
     }
   }
 
+  // As a result of processing mutation batch, some shadow nodes that were affected by mutations have indicative class names.
+  // Steps to creating a mutation summary from these nodes are the following:
+  //  1. Record 'Insert' events on nodes with NewNodeClassName. We can ignore and remove other classes on such nodes, because it
+  //     doesn't matter if this node was also moved around or updated - it's new, so we record its state from scratch anyways.
+  //  2. Record 'Move' events on remaining nodes with MovedNodeClassName class.
+  //  3. Record 'Update' events on remaining nodes with UpdatedNodeClassName class (there can be nodes that were moved AND updated).
+  //  4. Inspect nodes inside the 'removedNodes' container:
+  //    - Ignore nodes that have NewNodeClassName class. They are new and were not in the ShadowDom to begin with
+  //    - Record a 'Remove' event for nodes that have MovedNodeClassName. They were explicitly moved and ended up in the 'removed' container
+  //    - Ignore remaining nodes. Since they weren't explicitly moved, they will be auto-removed through the subtree of their removed parent
   public getMutationSummary(): IShadowDomMutationSummary {
     let summary: IShadowDomMutationSummary = {
       newNodes: [],
@@ -191,14 +218,14 @@ export class ShadowDom {
     while (newNodes.length > 0) {
       let newNode = newNodes[0] as IShadowDomNode;
       summary.newNodes.push(newNode);
-      this.removeClass(newNode, NewNodeClassName);
+      this.removeAllClasses(newNode);
     }
 
     let moved = this.doc.getElementsByClassName(MovedNodeClassName);
     while (moved.length > 0) {
       let next = moved[0] as IShadowDomNode;
       summary.movedNodes.push(next);
-      this.removeAllClasses(next);
+      this.removeClass(next, MovedNodeClassName);
     }
 
     let updated = this.doc.getElementsByClassName(UpdatedNodeClassName);
@@ -222,60 +249,39 @@ export class ShadowDom {
     return summary;
   }
 
-  public createDomIndexJson(): object {
-
-    function writeIndex(node: Node, json: object) {
-      let index = getNodeIndex(node);
-      let childJson = {};
-      let nextChild = node.firstChild;
-      json[index] = nextChild ? childJson : null;
-      while (nextChild) {
-        writeIndex(nextChild, childJson);
-        nextChild = nextChild.nextSibling;
-      }
-    }
-
-    let indexJson = {};
-    writeIndex(document, indexJson);
-
-    return indexJson;
-  }
-
-  public createShadowDomIndexJson(): object {
-
-    function writeIndex(shadowNode: IShadowDomNode, json: object) {
-      let index = shadowNode.id;
-      let childJson = {};
-      let nextChild = shadowNode.firstChild as IShadowDomNode;
-      json[index] = nextChild ? childJson : null;
-      while (nextChild) {
-        writeIndex(nextChild, childJson);
-        nextChild = nextChild.nextSibling as IShadowDomNode;
-      }
-    }
-
-    let indexJson = {};
-    writeIndex(this.shadowDocument, indexJson);
-
+  public createIndexJson(rootNode: Node, getIndexFromNode: (node: Node) => number): NumberJson {
+    let indexJson: NumberJson = {};
+    this.writeIndexToJson(rootNode, indexJson, getIndexFromNode);
     return indexJson;
   }
 
   public isConsistent(): boolean {
-    return this.validateNodeWithSubtree(document, this.shadowDocument);
+    return this.isConstentSubtree(document, this.shadowDocument);
   }
 
-  private validateShadow(node: Node, shadowNode: IShadowDomNode) {
+  private writeIndexToJson(node: Node, json: NumberJson, getIndexFromNode: (node: Node) => number) {
+    let index = getIndexFromNode(node);
+    let childJson: NumberJson = {};
+    let nextChild = node.firstChild;
+    json[index] = nextChild ? childJson : null;
+    while (nextChild) {
+      this.writeIndexToJson(nextChild, childJson, getIndexFromNode);
+      nextChild = nextChild.nextSibling as IShadowDomNode;
+    }
+  }
+
+  private isConsistentNode(node: Node, shadowNode: IShadowDomNode): boolean {
     let index = getNodeIndex(node);
     return (isNumber(index) && shadowNode.id === (index).toString() && shadowNode.node === node);
   }
 
-  private validateNodeWithSubtree(node: Node, shadowNode: IShadowDomNode): boolean {
-    let isConsistent = this.validateShadow(node, shadowNode);
+  private isConstentSubtree(node: Node, shadowNode: IShadowDomNode): boolean {
+    let isConsistent = this.isConsistentNode(node, shadowNode);
     let nextChild = node.firstChild;
     let nextShadowChild = shadowNode.firstChild;
     while (isConsistent) {
       if (nextChild && nextShadowChild) {
-        isConsistent = this.validateNodeWithSubtree(nextChild, nextShadowChild as IShadowDomNode);
+        isConsistent = this.isConstentSubtree(nextChild, nextShadowChild as IShadowDomNode);
         nextChild = nextChild.nextSibling;
         nextShadowChild = nextShadowChild.nextSibling;
       } else if (nextChild || nextShadowChild) {
@@ -351,7 +357,7 @@ export class ShadowDom {
   }
 
   // When we apply a mutation batch, we assign a new index to every node that is added to the DOM as we parse mutations
-  // in their natural order. However, some of those nodes end up being again removed from DOM with the some follow-up mutation
+  // in their natural order. However, some of those nodes end up being again removed from DOM with some follow-up mutation
   // thus 'stealing' an index with them. Since we don't instrument nodes that were added and removed within the same
   // mutation batch, we have no records of these stolen indices. To maintain consistency on the backend, at the end of the mutation,
   // we can re-assign indices for all nodes that remained attached to the DOM such that they all go in increasing order without gaps

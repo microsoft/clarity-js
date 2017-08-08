@@ -15,7 +15,7 @@ export default class Layout implements IPlugin {
   private mutationSequence: number;
   private domDiscoverComplete: boolean;
   private domPreDiscoverMutations: ILayoutEventInfo[][];
-  private lastConsistentDomJson: object;
+  private lastConsistentDomJson: NumberJson;
   private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventState;
   private layoutStates: ILayoutState[];
   private originalLayouts: Array<{
@@ -57,7 +57,7 @@ export default class Layout implements IPlugin {
     // Clean up node indices on observed nodes
     // If Clarity is re-activated within the same page later,
     // old, uncleared indices would cause it to work incorrectly
-    let allNodes = this.shadowDom.doc.querySelectorAll("*");
+    let allNodes = this.shadowDom.shadowDocument.querySelectorAll("*");
     for (let i = 0; i < allNodes.length; i++) {
       let node = (allNodes[i] as IShadowDomNode).node;
       if (node) {
@@ -339,14 +339,19 @@ export default class Layout implements IPlugin {
 
   private ensureConsistency(lastAction: string): void {
     if (config.ensureConsistency) {
-      let domJson = this.shadowDom.createDomIndexJson();
+      let domJson = this.shadowDom.createIndexJson(document, (node: Node) => {
+        return getNodeIndex(node);
+      });
       let shadowDomConsistent = this.shadowDom.isConsistent();
       if (!shadowDomConsistent) {
         this.inconsistentShadowDomCount++;
+        let shadowDomJson = this.shadowDom.createIndexJson(this.shadowDom.shadowDocument, (node: Node) => {
+          return parseInt((node as IShadowDomNode).id, 10);
+        });
         let evt: IShadowDomInconsistentEventState = {
           type: Instrumentation.ShadowDomInconsistent,
           dom: domJson,
-          shadowDom: this.shadowDom.createShadowDomIndexJson(),
+          shadowDom: shadowDomJson,
           lastConsistentShadowDom: this.lastConsistentDomJson,
           lastAction
         };
