@@ -10,6 +10,6 @@ export let config: IConfig = {
   instrument: false,
   uploadHandler: null,
   debug: false,
-  ensureConsistency: false,
+  validateConsistency: false,
   plugins: ["viewport", "layout", "pointer", "performance", "errors"]
 };

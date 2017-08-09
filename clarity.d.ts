@@ -36,7 +36,11 @@ interface IConfig {
   debug?: boolean;
 
   // Setting to enable consistency verifications between real DOM and shadow DOM
-  ensureConsistency?: boolean;
+  // Validating consistency can be costly performance-wise, because it requires
+  // re-traversing entire DOM and ShadowDom to compare them against each other.
+  // The upside is knowing deterministically that all activity on the page was
+  // interpreted correctly and data is reliable.
+  validateConsistency?: boolean;
 
   // Active plugins
   plugins?: string[];
@@ -187,6 +191,20 @@ interface IMutationEntry {
   next?: Node;
 }
 
+declare const enum LayoutRoutine {
+  DiscoverDom,
+  Mutation
+}
+
+interface ILayoutRoutineInfo {
+  action: LayoutRoutine;
+}
+
+interface IMutationRoutineInfo extends ILayoutRoutineInfo {
+  mutationSequence: number; /* Sequence number of the mutation batch */
+  batchSize: number;  /* Number of mutation records in the mutation callback */
+}
+
 // Interface to store some information about the initial state of the node
 // in cases where mutation happens before we process the node for the first time.
 // Stroring original values of the properties that can were mutated allows us to
@@ -324,7 +342,7 @@ interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
   lastConsistentShadowDom: NumberJson;
 
   // Last action that happened before we found out that ShadowDom is inconsistent
-  lastAction: string;
+  lastAction: ILayoutRoutineInfo;
 
   // To handle specific MutationObserver behavior in IE, we wait for ShadowDom to become inconsistent twice in a row,
   // before we stop processing mutations and send ShadowDomInconsistentEvent. This means that the actual transition

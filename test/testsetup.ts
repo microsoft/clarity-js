@@ -24,7 +24,7 @@ XMLHttpRequest.prototype.send = (data: any) => {
 let customConfig: IConfig = {
   uploadUrl: "https://www.claritytest.com/test",
   instrument: true,
-  ensureConsistency: true,
+  validateConsistency: true,
 };
 
 start(customConfig);

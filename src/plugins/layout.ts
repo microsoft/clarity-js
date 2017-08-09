@@ -75,7 +75,9 @@ export default class Layout implements IPlugin {
   private discoverDom() {
     let discoverTime = getTimestamp();
     traverseNodeTree(document, this.discoverNode.bind(this));
-    this.checkConsistency("Discover DOM");
+    this.checkConsistency({
+      action: LayoutRoutine.DiscoverDom
+    });
     setTimeout(() => {
       this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
     }, 0);
@@ -257,7 +259,12 @@ export default class Layout implements IPlugin {
       // Perform mutations on the shadow DOM and make sure ShadowDom arrived to the consistent state
       let time = getTimestamp();
       let summary = this.shadowDom.applyMutationBatch(mutations);
-      this.checkConsistency(`Mutation ${this.mutationSequence}`);
+      let actionInfo: IMutationRoutineInfo = {
+        action: LayoutRoutine.Mutation,
+        mutationSequence: this.mutationSequence,
+        batchSize: mutations.length
+      };
+      this.checkConsistency(actionInfo);
 
       if (this.allowMutation()) {
         let events = this.processMutations(summary, time);
@@ -277,7 +284,7 @@ export default class Layout implements IPlugin {
   }
 
   private allowMutation(): boolean {
-    return this.inconsistentShadowDomCount < 2 || !config.ensureConsistency;
+    return this.inconsistentShadowDomCount < 2 || !config.validateConsistency;
   }
 
   private processMutations(summary: IShadowDomMutationSummary, time: number): ILayoutEventInfo[] {
@@ -337,8 +344,8 @@ export default class Layout implements IPlugin {
     return events;
   }
 
-  private checkConsistency(lastAction: string): void {
-    if (config.ensureConsistency) {
+  private checkConsistency(lastActionInfo: ILayoutRoutineInfo): void {
+    if (config.validateConsistency) {
       let domJson = this.shadowDom.createIndexJson(document, (node: Node) => {
         return getNodeIndex(node);
       });
@@ -353,7 +360,7 @@ export default class Layout implements IPlugin {
           dom: domJson,
           shadowDom: shadowDomJson,
           lastConsistentShadowDom: this.lastConsistentDomJson,
-          lastAction
+          lastAction: lastActionInfo
         };
         if (this.inconsistentShadowDomCount < 2) {
           this.firstShadowDomInconsistentEvent = evt;
