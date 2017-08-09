@@ -6,6 +6,8 @@ export const NodeIndex = "clarity-index";
 export const DoctypeTag = "*DOC*";
 export const TextTag = "*TXT*";
 export const IgnoreTag = "*IGNORE*";
+const MetaTag = "META";
+const ScriptTag = "SCRIPT";
 
 let attributeMaskList = ["value", "placeholder", "alt", "title"];
 
@@ -50,7 +52,7 @@ export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLay
 export function createElementLayoutState(element: Element): IElementLayoutState {
   let tagName = element.tagName;
   let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
-  if (tagName === "SCRIPT" || tagName === "META") {
+  if (tagName === ScriptTag || tagName === MetaTag) {
     elementState.tag = IgnoreTag;
     return elementState;
   }
@@ -134,7 +136,7 @@ export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {
   switch (node.nodeType) {
     case Node.ELEMENT_NODE:
       let tagName = (node as Element).tagName;
-      if (tagName === "SCRIPT" || tagName === "META") {
+      if (tagName === ScriptTag || tagName === MetaTag) {
         ignore = true;
       }
       break;
