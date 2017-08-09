@@ -23,7 +23,8 @@ XMLHttpRequest.prototype.send = (data: any) => {
 // Allow instrumentation events
 let customConfig: IConfig = {
   uploadUrl: "https://www.claritytest.com/test",
-  instrument: true
+  instrument: true,
+  validateConsistency: true,
 };
 
 start(customConfig);

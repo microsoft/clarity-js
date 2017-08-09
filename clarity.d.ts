@@ -35,6 +35,13 @@ interface IConfig {
   // Setting to enable debug features (e.g. console.log statements)
   debug?: boolean;
 
+  // Setting to enable consistency verifications between real DOM and shadow DOM
+  // Validating consistency can be costly performance-wise, because it requires
+  // re-traversing entire DOM and ShadowDom to compare them against each other.
+  // The upside is knowing deterministically that all activity on the page was
+  // interpreted correctly and data is reliable.
+  validateConsistency?: boolean;
+
   // Active plugins
   plugins?: string[];
 }
@@ -97,9 +104,12 @@ type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: U
 /* ############   LAYOUT   ############# */
 /* ##################################### */
 
+type NumberJson = {
+  [key: number]: NumberJson;
+};
+
 interface IShadowDomNode extends HTMLDivElement {
   node: Node; /* Reference to the node in the real DOM */
-  layout: ILayoutState; /* Latest layout JSON */
   ignore: boolean;  /* Flag to avoid sending data for that node */
 }
 
@@ -123,8 +133,7 @@ declare const enum Action {
   Insert,
   Update,
   Remove,
-  Move,
-  Ignore
+  Move
 }
 
 interface IAttributes {
@@ -135,23 +144,21 @@ interface IAttributes {
 // different layout events originating from different actions
 interface ILayoutEventInfo {
   node: Node;
+  index: number;
   source: Source;
   action: Action;
   time?: number;
 }
 
-interface ILayoutStateBase {
+interface ILayoutState {
   index: number;  /* Index of the layout element */
+  tag: string;  /* Tag name of the element */
   source: Source; /* Source of discovery */
   action: Action; /* Reflect the action with respect to DOM */
-  mutationSequence?: number;  /* Sequence number of the mutation batch */
-}
-
-interface ILayoutState extends ILayoutStateBase {
   parent: number; /* Index of the parent element */
-  tag: string;  /* Tag name of the element */
   previous: number; /* Index of the previous sibling, if known */
   next: number; /* Index of the next sibling, if known */
+  mutationSequence?: number;  /* Sequence number of the mutation batch */
 }
 
 interface IDoctypeLayoutState extends ILayoutState {
@@ -171,12 +178,31 @@ interface ITextLayoutState extends ILayoutState {
   content: string;
 }
 
+interface IIgnoreLayoutState extends ILayoutState {
+  nodeType: number;
+  elementTag?: string;
+}
+
 interface IMutationEntry {
   node: Node;
   action: Action;
   parent?: Node;
   previous?: Node;
   next?: Node;
+}
+
+declare const enum LayoutRoutine {
+  DiscoverDom,
+  Mutation
+}
+
+interface ILayoutRoutineInfo {
+  action: LayoutRoutine;
+}
+
+interface IMutationRoutineInfo extends ILayoutRoutineInfo {
+  mutationSequence: number; /* Sequence number of the mutation batch */
+  batchSize: number;  /* Number of mutation records in the mutation callback */
 }
 
 // Interface to store some information about the initial state of the node
@@ -262,7 +288,8 @@ declare const enum Instrumentation {
   TotalByteLimitExceeded,
   Teardown,
   ClarityAssertFailed,
-  ClarityDuplicated
+  ClarityDuplicated,
+  ShadowDomInconsistent
 }
 
 interface IInstrumentationEventState {
@@ -303,6 +330,27 @@ interface IClarityAssertFailedEventState extends IInstrumentationEventState {
 interface IClarityDuplicatedEventState extends IInstrumentationEventState {
   currentImpressionId: string;
 }
+
+interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
+  // JSON of node indicies, representing the DOM
+  dom: NumberJson;
+
+  // JSON of ShadowNode IDs, representing the inconsistent ShadowDom
+  shadowDom: NumberJson;
+
+  // JSON of ShadowNode IDs, representing the last consistent ShadowDom
+  lastConsistentShadowDom: NumberJson;
+
+  // Last action that happened before we found out that ShadowDom is inconsistent
+  lastAction: ILayoutRoutineInfo;
+
+  // To handle specific MutationObserver behavior in IE, we wait for ShadowDom to become inconsistent twice in a row,
+  // before we stop processing mutations and send ShadowDomInconsistentEvent. This means that the actual transition
+  // from consistent to inconsistent state happened on some previous action and there was also an event created for it.
+  // That first event is sent in this property.
+  firstEvent?: IShadowDomInconsistentEventState;
+}
+
 /* ##################################### */
 /* #########   PERFORMANCE   ########### */
 /* ##################################### */

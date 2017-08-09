@@ -4,8 +4,10 @@ import { ShadowDom } from "./shadowdom";
 
 export const NodeIndex = "clarity-index";
 export const DoctypeTag = "*DOC*";
-export const IgnoreTag = "*IGNORE*";
 export const TextTag = "*TXT*";
+export const IgnoreTag = "*IGNORE*";
+const MetaTag = "META";
+const ScriptTag = "SCRIPT";
 
 let attributeMaskList = ["value", "placeholder", "alt", "title"];
 
@@ -14,22 +16,11 @@ export function getNodeIndex(node: Node): number {
 }
 
 export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutState {
-  let layoutState: ILayoutState = null;
-  let parent = node.parentNode;
-  let parentIndex = getNodeIndex(parent);
-
-  // If parent is ignored, ignore this node as well
-  // Because nodes are processed in document order, parent
-  // should always have the 'ignored' flag before child is processed
-  if (parentIndex !== null) {
-    let parentShadowNode = shadowDom.getShadowNode(parentIndex);
-    assert(!!parentShadowNode, "createLayoutState", "parentShadowNode is missing");
-    if (parentShadowNode.ignore && parentShadowNode.node !== document) {
-      layoutState = createGenericLayoutState(node, IgnoreTag);
-      return layoutState;
-    }
+  if (shouldIgnoreNode(node, shadowDom)) {
+    return createIgnoreLayoutState(node);
   }
 
+  let layoutState: ILayoutState = null;
   switch (node.nodeType) {
     case Node.DOCUMENT_TYPE_NODE:
       layoutState = createDoctypeLayoutState(node as DocumentType);
@@ -41,7 +32,7 @@ export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutStat
       layoutState = createElementLayoutState(node as Element);
       break;
     default:
-      layoutState = createGenericLayoutState(node, IgnoreTag);
+      layoutState = createIgnoreLayoutState(node);
       break;
   }
 
@@ -61,7 +52,7 @@ export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLay
 export function createElementLayoutState(element: Element): IElementLayoutState {
   let tagName = element.tagName;
   let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
-  if (tagName === "SCRIPT" || tagName === "META") {
+  if (tagName === ScriptTag || tagName === MetaTag) {
     elementState.tag = IgnoreTag;
     return elementState;
   }
@@ -117,6 +108,15 @@ export function createTextLayoutState(textNode: Text): ITextLayoutState {
   return textState;
 }
 
+export function createIgnoreLayoutState(node: Node): IIgnoreLayoutState {
+  let layoutState = createGenericLayoutState(node, IgnoreTag) as IIgnoreLayoutState;
+  layoutState.nodeType = node.nodeType;
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    layoutState.elementTag = (node as Element).tagName;
+  }
+  return layoutState;
+}
+
 export function createGenericLayoutState(node: Node, tag: string): ILayoutState {
   let layoutState: ILayoutState = {
     index: getNodeIndex(node),
@@ -128,4 +128,35 @@ export function createGenericLayoutState(node: Node, tag: string): ILayoutState 
     tag
   };
   return layoutState;
+}
+
+export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {
+  let shadowNode = shadowDom.getShadowNode(getNodeIndex(node));
+  let ignore = false;
+  switch (node.nodeType) {
+    case Node.ELEMENT_NODE:
+      let tagName = (node as Element).tagName;
+      if (tagName === ScriptTag || tagName === MetaTag) {
+        ignore = true;
+      }
+      break;
+    case Node.COMMENT_NODE:
+      ignore = true;
+      break;
+    default:
+      break;
+  }
+
+  // Ignore subtrees of ignored nodes (e.g. text with a <script> parent)
+  if (!ignore) {
+    let parentIndex = getNodeIndex(node.parentNode);
+    if (parentIndex !== null) {
+      let parentShadowNode = shadowDom.getShadowNode(parentIndex);
+      assert(!!parentShadowNode, "shouldIgnoreNode", "parentShadowNode is missing");
+      if (parentShadowNode && parentShadowNode.ignore && parentShadowNode.node !== document) {
+        ignore = true;
+      }
+    }
+  }
+  return ignore;
 }

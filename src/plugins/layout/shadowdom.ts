@@ -1,24 +1,24 @@
 import { assert, isNumber, traverseNodeTree } from "../../utils";
-import { getNodeIndex, IgnoreTag, NodeIndex } from "./stateprovider";
+import { getNodeIndex, NodeIndex, shouldIgnoreNode } from "./stateprovider";
 
-// Class names for child list mutation classifications
+// Class names to tag actions that happen to nodes in a single mutation batch
 const FinalClassName = "cl-final";
 const NewNodeClassName = "cl-new";
-const TopNewNodeClassName = "cl-new-top";
 const MovedNodeClassName = "cl-moved";
 const UpdatedNodeClassName = "cl-updated";
 
 export class ShadowDom {
-  public doc = document.implementation.createHTMLDocument("ShadowDom");
+  public shadowDocument: IShadowDomNode;
 
+  private doc = document.implementation.createHTMLDocument("ShadowDom");
   private nextIndex = 0;
   private removedNodes = this.doc.createElement("div");
   private shadowDomRoot = this.doc.createElement("div");
-  private shadowDocument: IShadowDomNode = null;
   private classifyNodes = false;
 
   constructor() {
     this.doc.documentElement.appendChild(this.shadowDomRoot);
+    this.shadowDocument = document.createElement("div") as IShadowDomNode;
   }
 
   public getShadowNode(index: number): IShadowDomNode {
@@ -26,39 +26,33 @@ export class ShadowDom {
     return node as IShadowDomNode;
   }
 
-  public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number, layout?: ILayoutState): IShadowDomNode {
+  public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number): IShadowDomNode {
     let isDocument = (node === document);
     let index = this.setNodeIndex(node);
     let parent = (isDocument ? this.shadowDomRoot : this.getShadowNode(parentIndex)) as IShadowDomNode;
     let nextSibling = this.getShadowNode(nextSiblingIndex);
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
-    let ignore = (node === document) ? false : parent && parent.ignore;
     shadowNode.id = "" + index;
     shadowNode.node = node;
-    shadowNode.layout = layout;
-    shadowNode.ignore = (layout && layout.tag === IgnoreTag) || ignore;
+    shadowNode.ignore = shouldIgnoreNode(node, this);
 
     if (isDocument) {
       this.shadowDocument = shadowNode;
     }
 
-    assert(!!parent, "insertShadowNode", "parent is missing");
-    if (!parent) {
-      return;
-    }
-
     if (this.classifyNodes) {
       this.setClass(shadowNode, NewNodeClassName);
-      if (!this.hasClass(parent, NewNodeClassName)) {
-        this.setClass(shadowNode, TopNewNodeClassName);
+    }
+
+    assert(!!parent, "insertShadowNode", "parent is missing");
+    if (parent) {
+      if (nextSibling) {
+        parent.insertBefore(shadowNode, nextSibling);
+      } else {
+        parent.appendChild(shadowNode);
       }
     }
 
-    if (nextSibling) {
-      parent.insertBefore(shadowNode, nextSibling);
-    } else {
-      parent.appendChild(shadowNode);
-    }
     return shadowNode;
   }
 
@@ -69,59 +63,55 @@ export class ShadowDom {
 
     assert(!!parent, "moveShadowNode", "parent is missing");
     assert(!!shadowNode, "moveShadowNode", "shadowNode is missing");
-    if (!(parent && shadowNode)) {
-      return;
-    }
-
-    if (this.classifyNodes) {
-      this.setClass(shadowNode, MovedNodeClassName);
-      if (this.hasClass(parent as IShadowDomNode, NewNodeClassName)) {
-        this.removeClass(shadowNode, TopNewNodeClassName);
-      } else {
-        this.setClass(shadowNode, TopNewNodeClassName);
+    if (parent && shadowNode) {
+      if (this.classifyNodes) {
+        if (!this.hasClass(shadowNode, NewNodeClassName)) {
+          this.setClass(shadowNode, MovedNodeClassName);
+        }
       }
-    }
 
-    if (nextSibling) {
-      parent.insertBefore(shadowNode, nextSibling);
-    } else {
-      parent.appendChild(shadowNode);
+      if (nextSibling) {
+        parent.insertBefore(shadowNode, nextSibling);
+      } else {
+        parent.appendChild(shadowNode);
+      }
     }
     return shadowNode;
   }
 
-  public updateShadowNode(index: number, newLayout?: ILayoutState) {
+  public updateShadowNode(index: number) {
     let shadowNode = this.getShadowNode(index);
-
-    assert(!!shadowNode, "updateShadowNode", "shadowNode is missing");
-    if (!shadowNode) {
-      return;
-    }
-
-    if (shadowNode) {
-      if (newLayout) {
-        shadowNode.layout = newLayout;
-        shadowNode.ignore = (newLayout.tag === IgnoreTag);
-      }
-
-      if (this.classifyNodes) {
-        this.setClass(shadowNode, UpdatedNodeClassName);
-      }
+    if (shadowNode && this.classifyNodes) {
+      this.setClass(shadowNode, UpdatedNodeClassName);
     }
   }
 
   public removeShadowNode(index: number) {
     let shadowNode = this.getShadowNode(index);
-
-    assert(!!shadowNode, "removeShadowNode", "shadowNode is missing");
-    if (!shadowNode) {
-      return;
+    if (shadowNode) {
+      this.setClass(shadowNode, MovedNodeClassName);
+      this.removedNodes.appendChild(shadowNode);
     }
-
-    this.removedNodes.appendChild(shadowNode);
   }
 
+  // As we process a batch of mutations, various things can be happening to a single node
+  // In the end, however, for each affected node we will have one of the following outcomes:
+  //  1. A new node was added
+  //  2. Existing node was moved
+  //  3. Existing node was removed
+  //  4. Existing node was updated
+  //  5. Existing node was moved and updated
+  // Various actions on a node will lead to different finals states. Also a final state of a parent node
+  // can affect and/or override the state of its children (e.g. if node A was moved to node B, but B was removed,
+  // that means that A was removed as well). One of the simpler solutions to determining the final states of all
+  // affected nodes and its children is 'tagging' shadow nodes with class names based on the mutations as they happen,
+  // and then determining the final states of all affected nodes based on the combination of their classes (getting mutation summary).
+  // Note: When we process 'remove' action on a node, instead of marking it as removed and permanently removing it from ShadowDOM
+  //       and erasing its index, we actually moved it to a separate 'removedNodes' container, which is not part of the representation
+  //       of the real DOM, but is still a part of the document. This way, if this node is re-inserted to the page, we can just move
+  //       add it back to ShadowDOM and just record the 'Move' event, letting it maintain its index.
   public applyMutationBatch(mutations: MutationRecord[]): IShadowDomMutationSummary {
+    let nextIndexBeforeProcessing = this.nextIndex;
     this.doc.documentElement.appendChild(this.removedNodes);
     this.classifyNodes = true;
 
@@ -166,6 +156,9 @@ export class ShadowDom {
     // Detach removed nodes
     this.removedNodes.parentElement.removeChild(this.removedNodes);
 
+    // Re-assign indices for all new nodes that remained attached to DOM such that there are no gaps between them
+    this.reIndexNewNodes(nextIndexBeforeProcessing);
+
     // Process the new state of the ShadowDom and extract the summary
     let summary = this.getMutationSummary();
 
@@ -178,35 +171,6 @@ export class ShadowDom {
     this.classifyNodes = false;
 
     return summary;
-  }
-
-  public mirrorsRealDom(): boolean {
-    let domIndices: number[] = [];
-    let shadowDomIndices: number[] = [];
-    let mirrors = true;
-
-    assert(!!this.shadowDocument, "mirrorsRealDom", "shadowDocument is missing");
-    assert(this.shadowDocument.node === document, "mirrorsRealDom", "shadowDocument.node !== document");
-
-    traverseNodeTree(document, (node: Node) => {
-      domIndices.push(getNodeIndex(node));
-    });
-
-    traverseNodeTree(this.shadowDocument, (shadowNode: IShadowDomNode) => {
-      shadowDomIndices.push(getNodeIndex(shadowNode.node));
-    });
-
-    if (domIndices.length === shadowDomIndices.length) {
-      for (let i = 0; i < domIndices.length; i++) {
-        if (domIndices[i] !== shadowDomIndices[i]) {
-          mirrors = false;
-        }
-      }
-    } else {
-      mirrors = false;
-    }
-
-    return mirrors;
   }
 
   public hasClass(shadowNode: IShadowDomNode, className: string) {
@@ -231,6 +195,16 @@ export class ShadowDom {
     }
   }
 
+  // As a result of processing mutation batch, some shadow nodes that were affected by mutations have indicative class names.
+  // Steps to creating a mutation summary from these nodes are the following:
+  //  1. Record 'Insert' events on nodes with NewNodeClassName. We can ignore and remove other classes on such nodes, because it
+  //     doesn't matter if this node was also moved around or updated - it's new, so we record its state from scratch anyways.
+  //  2. Record 'Move' events on remaining nodes with MovedNodeClassName class.
+  //  3. Record 'Update' events on remaining nodes with UpdatedNodeClassName class (there can be nodes that were moved AND updated).
+  //  4. Inspect nodes inside the 'removedNodes' container:
+  //    - Ignore nodes that have NewNodeClassName class. They are new and were not in the ShadowDom to begin with
+  //    - Record a 'Remove' event for nodes that have MovedNodeClassName. They were explicitly moved and ended up in the 'removed' container
+  //    - Ignore remaining nodes. Since they weren't explicitly moved, they will be auto-removed through the subtree of their removed parent
   public getMutationSummary(): IShadowDomMutationSummary {
     let summary: IShadowDomMutationSummary = {
       newNodes: [],
@@ -240,29 +214,18 @@ export class ShadowDom {
     };
 
     // Collect all new nodes in the top-down order
-    let topNewNodes = this.doc.getElementsByClassName(NewNodeClassName);
-    while (topNewNodes.length > 0) {
-      let topNode = topNewNodes[0] as IShadowDomNode;
-      let discoverQueue: IShadowDomNode[] = [ topNode ];
-      while (discoverQueue.length > 0) {
-        let next = discoverQueue.shift();
-        if (this.hasClass(next, NewNodeClassName)) {
-          summary.newNodes.push(next);
-          this.removeClass(next, NewNodeClassName);
-          // Add children right-to-left
-          let children = next.childNodes;
-          for (let i = children.length - 1; i >= 0; i--) {
-            discoverQueue.push(children[i] as IShadowDomNode);
-          }
-        }
-      }
+    let newNodes = this.doc.getElementsByClassName(NewNodeClassName);
+    while (newNodes.length > 0) {
+      let newNode = newNodes[0] as IShadowDomNode;
+      summary.newNodes.push(newNode);
+      this.removeAllClasses(newNode);
     }
 
     let moved = this.doc.getElementsByClassName(MovedNodeClassName);
     while (moved.length > 0) {
       let next = moved[0] as IShadowDomNode;
       summary.movedNodes.push(next);
-      this.removeAllClasses(next);
+      this.removeClass(next, MovedNodeClassName);
     }
 
     let updated = this.doc.getElementsByClassName(UpdatedNodeClassName);
@@ -272,15 +235,62 @@ export class ShadowDom {
       this.removeAllClasses(next);
     }
 
-    let removed = this.removedNodes.childNodes;
-    for (let i = 0; i < removed.length; i++) {
-      let next = removed[i] as IShadowDomNode;
-      if (!this.hasClass(next, NewNodeClassName)) {
-        summary.removedNodes.push(next);
-      }
+    let removedNodes = this.removedNodes.childNodes;
+    for (let i = 0; i < removedNodes.length; i++) {
+      traverseNodeTree(removedNodes[i], (shadowNode: IShadowDomNode) => {
+        if (this.hasClass(shadowNode, NewNodeClassName)) {
+          delete shadowNode.node[NodeIndex];
+        } else if (this.hasClass(shadowNode, MovedNodeClassName)) {
+          summary.removedNodes.push(shadowNode);
+        }
+      });
     }
 
     return summary;
+  }
+
+  public createIndexJson(rootNode: Node, getIndexFromNode: (node: Node) => number): NumberJson {
+    let indexJson: NumberJson = {};
+    this.writeIndexToJson(rootNode, indexJson, getIndexFromNode);
+    return indexJson;
+  }
+
+  public isConsistent(): boolean {
+    return this.isConstentSubtree(document, this.shadowDocument);
+  }
+
+  private writeIndexToJson(node: Node, json: NumberJson, getIndexFromNode: (node: Node) => number) {
+    let index = getIndexFromNode(node);
+    let childJson: NumberJson = {};
+    let nextChild = node.firstChild;
+    json[index] = nextChild ? childJson : null;
+    while (nextChild) {
+      this.writeIndexToJson(nextChild, childJson, getIndexFromNode);
+      nextChild = nextChild.nextSibling as IShadowDomNode;
+    }
+  }
+
+  private isConsistentNode(node: Node, shadowNode: IShadowDomNode): boolean {
+    let index = getNodeIndex(node);
+    return (isNumber(index) && shadowNode.id === (index).toString() && shadowNode.node === node);
+  }
+
+  private isConstentSubtree(node: Node, shadowNode: IShadowDomNode): boolean {
+    let isConsistent = this.isConsistentNode(node, shadowNode);
+    let nextChild = node.firstChild;
+    let nextShadowChild = shadowNode.firstChild;
+    while (isConsistent) {
+      if (nextChild && nextShadowChild) {
+        isConsistent = this.isConstentSubtree(nextChild, nextShadowChild as IShadowDomNode);
+        nextChild = nextChild.nextSibling;
+        nextShadowChild = nextShadowChild.nextSibling;
+      } else if (nextChild || nextShadowChild) {
+        isConsistent = false;
+      } else {
+        break;
+      }
+    }
+    return isConsistent;
   }
 
   private applyInsert(addedNode: Node, parent: Node, previousSibling: Node, nextSibling: Node, force: boolean) {
@@ -289,8 +299,8 @@ export class ShadowDom {
     let nextSiblingIndex = getNodeIndex(nextSibling);
     let validMutation = this.shouldProcessChildListMutation(addedNode, parent) || force;
     if (validMutation) {
-      let action = (addedNodeIndex === null) ? Action.Insert : Action.Move;
-      if (action === Action.Insert) {
+      // If inserted node has no index, then it's a new node and we should process insert
+      if (addedNodeIndex === null) {
         let shadowNode = this.insertShadowNode(addedNode, parentIndex, nextSiblingIndex);
         this.setClass(shadowNode, FinalClassName);
 
@@ -310,7 +320,6 @@ export class ShadowDom {
 
   private applyRemove(removedNode: Node, parent: Node) {
     let removedNodeIndex = getNodeIndex(removedNode);
-    let parentIndex = getNodeIndex(parent);
     if (removedNodeIndex !== null) {
       let validMutation = this.shouldProcessChildListMutation(removedNode, parent);
       if (validMutation) {
@@ -345,6 +354,22 @@ export class ShadowDom {
       parentShadowNode = childShadowNode && childShadowNode.parentNode;
     }
     return parentShadowNode && !this.hasClass(parentShadowNode, FinalClassName);
+  }
+
+  // When we apply a mutation batch, we assign a new index to every node that is added to the DOM as we parse mutations
+  // in their natural order. However, some of those nodes end up being again removed from DOM with some follow-up mutation
+  // thus 'stealing' an index with them. Since we don't instrument nodes that were added and removed within the same
+  // mutation batch, we have no records of these stolen indices. To maintain consistency on the backend, at the end of the mutation,
+  // we can re-assign indices for all nodes that remained attached to the DOM such that they all go in increasing order without gaps
+  private reIndexNewNodes(nextIndex: number) {
+    let newNodes = this.doc.getElementsByClassName(NewNodeClassName);
+    for (let i = 0; i < newNodes.length; i++) {
+      let shadowNode = newNodes[i] as IShadowDomNode;
+      shadowNode.id = "" + nextIndex;
+      shadowNode.node[NodeIndex] = nextIndex;
+      nextIndex++;
+    }
+    this.nextIndex = nextIndex;
   }
 
   private setNodeIndex(node: Node): number {
