@@ -163,9 +163,9 @@ export class ShadowDom {
     let summary = this.getMutationSummary();
 
     // Clean up the state to be ready for next mutation batch processing
-    let finalNodes = this.doc.getElementsByClassName(FinalClassName);
-    while (finalNodes.length > 0) {
-      this.removeClass(finalNodes[0] as IShadowDomNode, FinalClassName);
+    let remainingNodesWithClasses = Array.prototype.slice.call(this.doc.querySelectorAll("[class]"));
+    for (let i = 0; i < remainingNodesWithClasses.length; i++) {
+      this.removeAllClasses(remainingNodesWithClasses[i]);
     }
     this.removedNodes.innerHTML = "";
     this.classifyNodes = false;
@@ -214,23 +214,23 @@ export class ShadowDom {
     };
 
     // Collect all new nodes in the top-down order
-    let newNodes = this.doc.getElementsByClassName(NewNodeClassName);
-    while (newNodes.length > 0) {
-      let newNode = newNodes[0] as IShadowDomNode;
+    let newNodes = Array.prototype.slice.call(this.doc.getElementsByClassName(NewNodeClassName));
+    for (let i = 0; i < newNodes.length; i++) {
+      let newNode = newNodes[i] as IShadowDomNode;
       summary.newNodes.push(newNode);
       this.removeAllClasses(newNode);
     }
 
-    let moved = this.doc.getElementsByClassName(MovedNodeClassName);
-    while (moved.length > 0) {
-      let next = moved[0] as IShadowDomNode;
+    let moved = Array.prototype.slice.call(this.doc.getElementsByClassName(MovedNodeClassName));
+    for (let i = 0; i < moved.length; i++) {
+      let next = moved[i] as IShadowDomNode;
       summary.movedNodes.push(next);
       this.removeClass(next, MovedNodeClassName);
     }
 
-    let updated = this.doc.getElementsByClassName(UpdatedNodeClassName);
-    while (updated.length > 0) {
-      let next = updated[0] as IShadowDomNode;
+    let updated = Array.prototype.slice.call(this.doc.getElementsByClassName(UpdatedNodeClassName));
+    for (let i = 0; i < updated.length; i++) {
+      let next = updated[i] as IShadowDomNode;
       summary.updatedNodes.push(next);
       this.removeAllClasses(next);
     }
