@@ -123,7 +123,7 @@ export default class Layout implements IPlugin {
       currentLayoutState.source = Source.Discover;
       currentLayoutState.action = Action.Insert;
 
-      addEvent(this.eventName, currentLayoutState, time);
+      addEvent({type: this.eventName, state: currentLayoutState, time});
     }
 
     // If there are more elements that need to be processed, yield the thread and return ASAP
@@ -179,7 +179,7 @@ export default class Layout implements IPlugin {
     }
     layoutState.source = eventInfo.source;
     this.layoutStates[eventInfo.index] = layoutState;
-    addEvent(this.eventName, layoutState);
+    addEvent({type: this.eventName, state: layoutState});
   }
 
   private watch(element: Element, layoutState: IElementLayoutState) {
@@ -240,7 +240,7 @@ export default class Layout implements IPlugin {
       // Update the reference of layouts object to current state
       if (recordEvent) {
         this.layoutStates[index] = newLayoutState;
-        addEvent(this.eventName, newLayoutState);
+        addEvent({type: this.eventName, state: newLayoutState});
       }
     }
   }

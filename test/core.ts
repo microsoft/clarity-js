@@ -221,8 +221,14 @@ describe("Functional Tests", () => {
     let eventOneData = Array(Math.round(limit * (1 / 3))).join("1");
     let eventTwoData = Array(Math.round(limit * (1 / 3))).join("2");
 
-    core.addEvent(eventName, { data: eventOneData });
-    core.addEvent(eventName, { data: eventTwoData });
+    core.addEvent({
+      type: eventName,
+      state: { data: eventOneData }
+    });
+    core.addEvent({
+      type: eventName,
+      state: { data: eventTwoData }
+    });
 
     triggerSend();
 
@@ -239,8 +245,14 @@ describe("Functional Tests", () => {
     let eventOneData = Array(Math.round(limit * (2 / 3))).join("1");
     let eventTwoData = Array(Math.round(limit / 2)).join("2");
 
-    core.addEvent(eventName, { data: eventOneData });
-    core.addEvent(eventName, { data: eventTwoData });
+    core.addEvent({
+      type: eventName,
+      state: { data: eventOneData }
+    });
+    core.addEvent({
+      type: eventName,
+      state: { data: eventTwoData }
+    });
 
     triggerSend();
 
@@ -255,7 +267,10 @@ describe("Functional Tests", () => {
     let expectedBytesLength = bytesLengthBefore + 1;
 
     let eventData = Array(Math.round(limit + 1)).join("1");
-    core.addEvent(eventName, { data: eventData });
+    core.addEvent({
+      type: eventName,
+      state: { data: eventData }
+    });
 
     triggerSend();
 
@@ -269,7 +284,10 @@ describe("Functional Tests", () => {
     let bytesLengthBefore = getAllSentBytes().length;
     let expectedBytesLength = bytesLengthBefore;
 
-    core.addEvent(eventName, {});
+    core.addEvent({
+      type: eventName,
+      state: {}
+    });
     assert.equal(getAllSentBytes().length, expectedBytesLength);
 
     expectedBytesLength += 1;
@@ -292,7 +310,10 @@ describe("Functional Tests", () => {
     }
 
     config.totalLimit = currentSentBytesCount + 1;
-    core.addEvent(eventName, {});
+    core.addEvent({
+      type: eventName,
+      state: {}
+    });
     triggerSend();
 
     config.totalLimit = originalTotalLimit;

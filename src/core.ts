@@ -77,12 +77,12 @@ export function bind(target: EventTarget, event: string, listener: EventListener
   bindings[event] = eventBindings;
 }
 
-export function addEvent(type: string, eventState: any, time?: number) {
+export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   let evt: IEvent = {
     id: eventCount++,
-    time: isNumber(time) ? time : getTimestamp(),
-    type,
-    state: eventState
+    time: isNumber(event.time) ? event.time : getTimestamp(),
+    type: event.type,
+    state: event.state
   };
   let eventStr = JSON.stringify(evt);
   if (nextPayloadLength > 0 && nextPayloadLength + eventStr.length > config.batchLimit) {
@@ -92,15 +92,21 @@ export function addEvent(type: string, eventState: any, time?: number) {
   nextPayloadLength += eventStr.length;
 
   // Edge case:
-  // Don't reschedule upload when next payload consists of exactly one XhrError instrumentation event.
+  // Don't schedule next upload when next payload consists of exactly one XhrError instrumentation event.
   // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
   // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
-  let rescheduleUpload = !(eventState && eventState.type === Instrumentation.XhrError && nextPayload.length === 1);
-  if (rescheduleUpload) {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
+  scheduleUpload = scheduleUpload && !(event.state && event.state.type === Instrumentation.XhrError && nextPayload.length === 1);
+  if (scheduleUpload) {
+    clearTimeout(timeout);
     timeout = setTimeout(uploadNextPayload, config.delay);
+  }
+}
+
+export function addMultipleEvents(events: IEventData[]) {
+  for (let i = 0; i < events.length; i++) {
+    // Only schedule upload after the last event
+    let scheduleUpload = (i === events.length - 1);
+    addEvent(events[i], scheduleUpload);
   }
 }
 
@@ -111,7 +117,7 @@ export function getTimestamp(unix?: boolean, raw?: boolean) {
 
 export function instrument(eventState: IInstrumentationEventState) {
   if (config.instrument) {
-    addEvent("Instrumentation", eventState);
+    addEvent({type: "Instrumentation", state: eventState});
   }
 }
 
