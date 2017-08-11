@@ -92,7 +92,6 @@ gulp.task("place-git-hooks", () => {
 
 gulp.task("test", (done) => {
   new karmaServer({
-    browsers: [],
     configFile: __dirname + "/build/test/karma.conf.js",
     singleRun: true
   }, done).start();
@@ -100,7 +99,6 @@ gulp.task("test", (done) => {
 
 gulp.task("test-debug", (done) => {
   new karmaServer({
-    browsers: ["Chrome"],
     configFile: __dirname + "/build/test/karma.conf.js",
     singleRun: false
   }, done).start();

@@ -22,9 +22,24 @@ export = (config) => {
       "karma-browserify",
       "karma-jasmine"
     ],
+    browsers: ["ChromeNoSandbox"],
+    customLaunchers: {
+      ChromeNoSandbox: {
+        base: "Chrome",
+        flags: ["--no-sandbox"]
+      }
+    },
     detectBrowsers: {
       enabled: true,
-      usePhantomJS: false
+      usePhantomJS: false,
+      postDetection: (availableBrowsers: string[]) => {
+        // Switch Chrome to ChromeNoSandbox
+        let i = availableBrowsers.indexOf("Chrome");
+        if (i > -1) {
+          availableBrowsers[i] = "ChromeNoSandbox";
+        }
+        return availableBrowsers;
+      }
     },
     singleRun: true,
     preprocessors: {
