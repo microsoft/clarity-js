@@ -11,7 +11,6 @@ const Cookie = "ClarityID";
 export const ClarityAttribute = "clarity-iid";
 
 // Variables
-let bytes;
 let sentBytesCount: number;
 let cid: string;
 let impressionId: string;
@@ -155,12 +154,9 @@ function uploadNextPayload() {
     upload(compressed, onSuccess, onFailure);
 
     if (config.debug && localStorage) {
-      // Debug Information
-      bytes.push(compressed);
-      let compressedKb = Math.ceil(bytes[bytes.length - 1].length / 1024.0);
+      let compressedKb = Math.ceil(compressed.length / 1024.0);
       let rawKb = Math.ceil(uncompressed.length / 1024.0);
       debug(`** Clarity #${sequence}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
-      localStorage.setItem("clarity", JSON.stringify(bytes));
     }
 
     if (state === State.Activated && sentBytesCount > config.totalLimit) {
@@ -243,8 +239,6 @@ function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
 }
 
 function init() {
-  // Reset own state
-  bytes = [];
   cid = getCookie(Cookie);
   impressionId = guid();
   sequence = 0;

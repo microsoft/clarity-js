@@ -15,6 +15,7 @@ export class ShadowDom {
   private removedNodes = this.doc.createElement("div");
   private shadowDomRoot = this.doc.createElement("div");
   private classifyNodes = false;
+  private nodes: IShadowDomNode[] = [];
 
   constructor() {
     this.doc.documentElement.appendChild(this.shadowDomRoot);
@@ -22,8 +23,8 @@ export class ShadowDom {
   }
 
   public getShadowNode(index: number): IShadowDomNode {
-    let node = isNumber(index) ? this.doc.getElementById("" + index) : null;
-    return node as IShadowDomNode;
+    let node = isNumber(index) ? this.nodes[index] : null;
+    return node;
   }
 
   public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number): IShadowDomNode {
@@ -35,6 +36,7 @@ export class ShadowDom {
     shadowNode.id = "" + index;
     shadowNode.node = node;
     shadowNode.ignore = shouldIgnoreNode(node, this);
+    this.nodes[index] = shadowNode;
 
     if (isDocument) {
       this.shadowDocument = shadowNode;
@@ -163,9 +165,9 @@ export class ShadowDom {
     let summary = this.getMutationSummary();
 
     // Clean up the state to be ready for next mutation batch processing
-    let remainingNodesWithClasses = Array.prototype.slice.call(this.doc.querySelectorAll("[class]"));
-    for (let i = 0; i < remainingNodesWithClasses.length; i++) {
-      this.removeAllClasses(remainingNodesWithClasses[i]);
+    let finalNodes = Array.prototype.slice.call(this.doc.getElementsByClassName(FinalClassName));
+    for (let i = 0; i < finalNodes.length; i++) {
+      this.removeAllClasses(finalNodes[i]);
     }
     this.removedNodes.innerHTML = "";
     this.classifyNodes = false;
@@ -365,8 +367,11 @@ export class ShadowDom {
     let newNodes = this.doc.getElementsByClassName(NewNodeClassName);
     for (let i = 0; i < newNodes.length; i++) {
       let shadowNode = newNodes[i] as IShadowDomNode;
+      let currentIndex = getNodeIndex(shadowNode);
       shadowNode.id = "" + nextIndex;
       shadowNode.node[NodeIndex] = nextIndex;
+      delete this.nodes[currentIndex];
+      this.nodes[nextIndex] = shadowNode;
       nextIndex++;
     }
     this.nextIndex = nextIndex;

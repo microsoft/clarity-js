@@ -57,9 +57,13 @@ export default class Layout implements IPlugin {
     // Clean up node indices on observed nodes
     // If Clarity is re-activated within the same page later,
     // old, uncleared indices would cause it to work incorrectly
-    let allNodes = this.shadowDom.shadowDocument.querySelectorAll("*");
-    for (let i = 0; i < allNodes.length; i++) {
-      let node = (allNodes[i] as IShadowDomNode).node;
+    let documentShadowNode = this.shadowDom.shadowDocument;
+    if (documentShadowNode.node) {
+      delete documentShadowNode.node[NodeIndex];
+    }
+    let otherNodes = this.shadowDom.shadowDocument.querySelectorAll("*");
+    for (let i = 0; i < otherNodes.length; i++) {
+      let node = (otherNodes[i] as IShadowDomNode).node;
       if (node) {
         delete node[NodeIndex];
       }
