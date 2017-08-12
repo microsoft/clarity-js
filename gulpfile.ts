@@ -20,6 +20,7 @@ gulp.task("build", () => {
     "clean",
     "compile",
     "place-fixture",
+    "place-webtest",
     "rollup",
     "uglify"
   );
@@ -85,9 +86,21 @@ gulp.task("place-fixture", () => {
     .pipe(gulp.dest("build/test"));
 });
 
+gulp.task("place-webtest", () => {
+  return gulp.src("webtest/test.js")
+    .pipe(gulp.dest("build/webtest"));
+});
+
 gulp.task("place-git-hooks", () => {
   return gulp.src("githooks/*")
     .pipe(gulp.dest(".git/hooks"));
+});
+
+gulp.task("webtest", (done) => {
+  new karmaServer({
+    configFile: __dirname + "/build/test/sauce.karma.conf.js",
+    singleRun: true
+  }, done).start();
 });
 
 gulp.task("test", (done) => {

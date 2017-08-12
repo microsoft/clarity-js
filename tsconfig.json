@@ -15,7 +15,7 @@
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
         "outDir": "build/",
-        "types" : ["jasmine", "karma-fixture"]
+        "types" : ["jasmine", "karma-fixture", "node"]
     },
     "include":[
        "clarity.d.ts",
