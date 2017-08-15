@@ -15,7 +15,7 @@ export class ShadowDom {
   private removedNodes = this.doc.createElement("div");
   private shadowDomRoot = this.doc.createElement("div");
   private classifyNodes = false;
-  private nodes: IShadowDomNode[] = [];
+  private nodeMap: IShadowDomNode[] = [];
 
   constructor() {
     this.doc.documentElement.appendChild(this.shadowDomRoot);
@@ -23,7 +23,7 @@ export class ShadowDom {
   }
 
   public getShadowNode(index: number): IShadowDomNode {
-    let node = isNumber(index) ? this.nodes[index] : null;
+    let node = isNumber(index) ? this.nodeMap[index] : null;
     return node;
   }
 
@@ -36,7 +36,7 @@ export class ShadowDom {
     shadowNode.id = "" + index;
     shadowNode.node = node;
     shadowNode.ignore = shouldIgnoreNode(node, this);
-    this.nodes[index] = shadowNode;
+    this.nodeMap[index] = shadowNode;
 
     if (isDocument) {
       this.shadowDocument = shadowNode;
@@ -370,8 +370,10 @@ export class ShadowDom {
       let currentIndex = getNodeIndex(shadowNode);
       shadowNode.id = "" + nextIndex;
       shadowNode.node[NodeIndex] = nextIndex;
-      delete this.nodes[currentIndex];
-      this.nodes[nextIndex] = shadowNode;
+
+      // Setting this to 'undefined' is roughly 2x faster than using 'delete'
+      this.nodeMap[currentIndex] = undefined;
+      this.nodeMap[nextIndex] = shadowNode;
       nextIndex++;
     }
     this.nextIndex = nextIndex;

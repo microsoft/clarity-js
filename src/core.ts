@@ -95,18 +95,21 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   // Don't schedule next upload when next payload consists of exactly one XhrError instrumentation event.
   // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
   // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
-  scheduleUpload = scheduleUpload && !(event.state && event.state.type === Instrumentation.XhrError && nextPayload.length === 1);
-  if (scheduleUpload) {
+  let payloadIsSingleXhrErrorEvent = event.state && event.state.type === Instrumentation.XhrError && nextPayload.length === 1;
+  if (scheduleUpload && !payloadIsSingleXhrErrorEvent) {
     clearTimeout(timeout);
     timeout = setTimeout(uploadNextPayload, config.delay);
   }
 }
 
 export function addMultipleEvents(events: IEventData[]) {
-  for (let i = 0; i < events.length; i++) {
-    // Only schedule upload after the last event
-    let scheduleUpload = (i === events.length - 1);
-    addEvent(events[i], scheduleUpload);
+  if (events.length > 0) {
+    // Don't schedule upload until we add the last event
+    for (let i = 0; i < events.length - 1; i++) {
+      addEvent(events[i], false);
+    }
+    let lastEvent = events[events.length - 1];
+    addEvent(lastEvent, true);
   }
 }
 
