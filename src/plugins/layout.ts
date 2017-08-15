@@ -1,5 +1,5 @@
 import { config } from "./../config";
-import { addEvent, bind, getTimestamp, instrument } from "./../core";
+import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
 import { debug, isNumber, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
 import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
@@ -111,6 +111,7 @@ export default class Layout implements IPlugin {
   // we can adjust the current layout JSON with the original values to mimic its initial state.
   private backfillLayoutsAsync(time: number, onDomDiscoverComplete: () => void) {
     let yieldTime = getTimestamp(true) + config.timeToYield;
+    let events: IEventData[] = [];
     while (this.originalLayouts.length > 0 && getTimestamp(true) < yieldTime) {
       let originalLayout = this.originalLayouts.shift();
       let originalLayoutState = originalLayout.layout;
@@ -123,8 +124,13 @@ export default class Layout implements IPlugin {
       currentLayoutState.source = Source.Discover;
       currentLayoutState.action = Action.Insert;
 
-      addEvent({type: this.eventName, state: currentLayoutState, time});
+      events.push({
+        type: this.eventName,
+        state: currentLayoutState,
+        time
+      });
     }
+    addMultipleEvents(events);
 
     // If there are more elements that need to be processed, yield the thread and return ASAP
     if (this.originalLayouts.length > 0) {
@@ -140,14 +146,22 @@ export default class Layout implements IPlugin {
   private onDomDiscoverComplete() {
     this.domDiscoverComplete = true;
     for (let i = 0; i < this.domPreDiscoverMutations.length; i++) {
-      let mutationEvents = this.domPreDiscoverMutations[i];
-      for (let j = 0; j < mutationEvents.length; j++) {
-        this.processNodeEvent(mutationEvents[j]);
-      }
+      this.processMultipleNodeEvents(this.domPreDiscoverMutations[i]);
     }
   }
 
-  private processNodeEvent<T extends ILayoutEventInfo>(eventInfo: T) {
+  private processMultipleNodeEvents<T extends ILayoutEventInfo>(eventInfos: T[]) {
+    let eventsData: IEventData[] = [];
+    for (let i = 0; i < eventInfos.length; i++) {
+      eventsData.push({
+        type: this.eventName,
+        state: this.createEventState(eventInfos[i])
+      });
+    }
+    addMultipleEvents(eventsData);
+  }
+
+  private createEventState<T extends ILayoutEventInfo>(eventInfo: T): ILayoutState {
     let node = eventInfo.node;
     let layoutState: ILayoutState = createLayoutState(node, this.shadowDom);
     switch (eventInfo.action) {
@@ -178,8 +192,7 @@ export default class Layout implements IPlugin {
       layoutState.mutationSequence = this.mutationSequence;
     }
     layoutState.source = eventInfo.source;
-    this.layoutStates[eventInfo.index] = layoutState;
-    addEvent({type: this.eventName, state: layoutState});
+    return layoutState;
   }
 
   private watch(element: Element, layoutState: IElementLayoutState) {
@@ -273,9 +286,7 @@ export default class Layout implements IPlugin {
       if (this.allowMutation()) {
         let events = this.processMutations(summary, time);
         if (this.domDiscoverComplete) {
-          for (let i = 0; i < events.length; i++) {
-            this.processNodeEvent(events[i]);
-          }
+          this.processMultipleNodeEvents(events);
         } else {
           this.domPreDiscoverMutations.push(events);
         }
