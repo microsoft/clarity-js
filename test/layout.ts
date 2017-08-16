@@ -972,4 +972,96 @@ describe("Layout Tests", () => {
       done();
     }
   });
+
+  it("checks that scroll capturing works on inserted element", (done) => {
+    let stopObserving = null;
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Add a scrollable DIV
+    let outerDiv = document.createElement("div");
+    let innerDiv = document.createElement("div");
+    outerDiv.style.overflowY = "auto";
+    outerDiv.style.width = "200px";
+    outerDiv.style.maxHeight = "100px";
+    innerDiv.style.height = "300px";
+    outerDiv.appendChild(innerDiv);
+    document.body.appendChild(outerDiv);
+
+    function callback() {
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+      observer.disconnect();
+
+      // Add a node to the document and observe Clarity events
+      stopObserving = observeEvents(eventName);
+
+      // Trigger scroll
+      outerDiv.addEventListener("scroll", scrollCallback);
+      outerDiv.scrollTop = 100;
+    }
+
+    function scrollCallback() {
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+      outerDiv.removeEventListener("scroll", scrollCallback);
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Update);
+      assert.equal(events[0].state.source, Source.Scroll);
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
+
+  it("checks that input change capturing works on inserted element", (done) => {
+    let stopObserving = null;
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    let newValueString = "new value";
+    let input = document.createElement("input");
+    document.body.appendChild(input);
+
+    function callback() {
+
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+      observer.disconnect();
+
+      // Add a node to the document and observe Clarity events
+      stopObserving = observeEvents(eventName);
+
+      // Trigger scroll
+      input.addEventListener("change", inputChangeCallback);
+      input.value = newValueString;
+
+      // Programmatic value change doesn't trigger "onchange" event, so we trigger it manually
+      let onChangeEvent = document.createEvent("HTMLEvents");
+      onChangeEvent.initEvent("change", false, true);
+      input.dispatchEvent(onChangeEvent);
+    }
+
+    function inputChangeCallback() {
+      // Following jasmine feature fast forwards the async delay in setTimeout calls
+      triggerSend();
+      input.removeEventListener("scroll", inputChangeCallback);
+
+      // Uncompress recent data from mutations
+      let events = stopObserving();
+
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Update);
+      assert.equal(events[0].state.source, Source.Input);
+      assert.equal(events[0].state.attributes.value, newValueString);
+
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
 });

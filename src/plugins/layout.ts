@@ -129,6 +129,7 @@ export default class Layout implements IPlugin {
         state: currentLayoutState,
         time
       });
+      this.layoutStates[originalLayout.layout.index] = currentLayoutState;
     }
     addMultipleEvents(events);
 
@@ -153,10 +154,12 @@ export default class Layout implements IPlugin {
   private processMultipleNodeEvents<T extends ILayoutEventInfo>(eventInfos: T[]) {
     let eventsData: IEventData[] = [];
     for (let i = 0; i < eventInfos.length; i++) {
+      let eventState = this.createEventState(eventInfos[i]);
       eventsData.push({
         type: this.eventName,
-        state: this.createEventState(eventInfos[i])
+        state: eventState
       });
+      this.layoutStates[eventState.index] = eventState;
     }
     addMultipleEvents(eventsData);
   }
