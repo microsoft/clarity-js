@@ -1041,7 +1041,7 @@ describe("Layout Tests", () => {
       input.addEventListener("change", inputChangeCallback);
       input.value = newValueString;
 
-      // Programmatic value change doesn't trigger "onchange" event, so we trigger it manually
+      // Programmatic value change doesn't trigger "onchange" event, so we need to trigger it manually
       let onChangeEvent = document.createEvent("HTMLEvents");
       onChangeEvent.initEvent("change", false, true);
       input.dispatchEvent(onChangeEvent);
@@ -1050,7 +1050,7 @@ describe("Layout Tests", () => {
     function inputChangeCallback() {
       // Following jasmine feature fast forwards the async delay in setTimeout calls
       triggerSend();
-      input.removeEventListener("scroll", inputChangeCallback);
+      input.removeEventListener("change", inputChangeCallback);
 
       // Uncompress recent data from mutations
       let events = stopObserving();
