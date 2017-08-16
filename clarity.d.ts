@@ -70,11 +70,15 @@ interface IEnvelope {
   sequenceNumber: number;
 }
 
-interface IEvent {
+interface IEventData {
+  type: string;
+  state: any;
+  time?: number;
+}
+
+interface IEvent extends IEventData {
   id: number; /* Event ID */
   time: number; /* Time relative to page start */
-  type: string; /* Type of the event */
-  state: any;
 }
 
 interface IDroppedPayloadInfo {

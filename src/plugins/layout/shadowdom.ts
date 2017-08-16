@@ -15,6 +15,7 @@ export class ShadowDom {
   private removedNodes = this.doc.createElement("div");
   private shadowDomRoot = this.doc.createElement("div");
   private classifyNodes = false;
+  private nodeMap: IShadowDomNode[] = [];
 
   constructor() {
     this.doc.documentElement.appendChild(this.shadowDomRoot);
@@ -22,8 +23,8 @@ export class ShadowDom {
   }
 
   public getShadowNode(index: number): IShadowDomNode {
-    let node = isNumber(index) ? this.doc.getElementById("" + index) : null;
-    return node as IShadowDomNode;
+    let node = isNumber(index) ? this.nodeMap[index] : null;
+    return node;
   }
 
   public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number): IShadowDomNode {
@@ -35,6 +36,7 @@ export class ShadowDom {
     shadowNode.id = "" + index;
     shadowNode.node = node;
     shadowNode.ignore = shouldIgnoreNode(node, this);
+    this.nodeMap[index] = shadowNode;
 
     if (isDocument) {
       this.shadowDocument = shadowNode;
@@ -163,9 +165,9 @@ export class ShadowDom {
     let summary = this.getMutationSummary();
 
     // Clean up the state to be ready for next mutation batch processing
-    let finalNodes = this.doc.getElementsByClassName(FinalClassName);
-    while (finalNodes.length > 0) {
-      this.removeClass(finalNodes[0] as IShadowDomNode, FinalClassName);
+    let finalNodes = Array.prototype.slice.call(this.doc.getElementsByClassName(FinalClassName));
+    for (let i = 0; i < finalNodes.length; i++) {
+      this.removeAllClasses(finalNodes[i]);
     }
     this.removedNodes.innerHTML = "";
     this.classifyNodes = false;
@@ -214,23 +216,23 @@ export class ShadowDom {
     };
 
     // Collect all new nodes in the top-down order
-    let newNodes = this.doc.getElementsByClassName(NewNodeClassName);
-    while (newNodes.length > 0) {
-      let newNode = newNodes[0] as IShadowDomNode;
+    let newNodes = Array.prototype.slice.call(this.doc.getElementsByClassName(NewNodeClassName));
+    for (let i = 0; i < newNodes.length; i++) {
+      let newNode = newNodes[i] as IShadowDomNode;
       summary.newNodes.push(newNode);
       this.removeAllClasses(newNode);
     }
 
-    let moved = this.doc.getElementsByClassName(MovedNodeClassName);
-    while (moved.length > 0) {
-      let next = moved[0] as IShadowDomNode;
+    let moved = Array.prototype.slice.call(this.doc.getElementsByClassName(MovedNodeClassName));
+    for (let i = 0; i < moved.length; i++) {
+      let next = moved[i] as IShadowDomNode;
       summary.movedNodes.push(next);
       this.removeClass(next, MovedNodeClassName);
     }
 
-    let updated = this.doc.getElementsByClassName(UpdatedNodeClassName);
-    while (updated.length > 0) {
-      let next = updated[0] as IShadowDomNode;
+    let updated = Array.prototype.slice.call(this.doc.getElementsByClassName(UpdatedNodeClassName));
+    for (let i = 0; i < updated.length; i++) {
+      let next = updated[i] as IShadowDomNode;
       summary.updatedNodes.push(next);
       this.removeAllClasses(next);
     }
@@ -365,8 +367,13 @@ export class ShadowDom {
     let newNodes = this.doc.getElementsByClassName(NewNodeClassName);
     for (let i = 0; i < newNodes.length; i++) {
       let shadowNode = newNodes[i] as IShadowDomNode;
+      let currentIndex = getNodeIndex(shadowNode);
       shadowNode.id = "" + nextIndex;
       shadowNode.node[NodeIndex] = nextIndex;
+
+      // Setting this to 'undefined' is roughly 2x faster than using 'delete'
+      this.nodeMap[currentIndex] = undefined;
+      this.nodeMap[nextIndex] = shadowNode;
       nextIndex++;
     }
     this.nextIndex = nextIndex;

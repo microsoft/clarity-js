@@ -57,7 +57,7 @@ export default class Viewport implements IPlugin {
     }
     if (recordState) {
       this.lastViewportState = state;
-      addEvent(this.eventName, state);
+      addEvent({type: this.eventName, state});
     }
   }
 

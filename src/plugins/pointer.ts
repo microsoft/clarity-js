@@ -46,11 +46,11 @@ export default class Pointer implements IPlugin {
           || this.checkTime(time)) {
           this.lastMoveState = state;
           this.lastMoveTime = time;
-          addEvent(this.eventName, state);
+          addEvent({type: this.eventName, state});
         }
         break;
       default:
-        addEvent(this.eventName, state);
+        addEvent({type: this.eventName, state});
         break;
     }
   }

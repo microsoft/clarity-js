@@ -11,7 +11,6 @@ const Cookie = "ClarityID";
 export const ClarityAttribute = "clarity-iid";
 
 // Variables
-let bytes;
 let sentBytesCount: number;
 let cid: string;
 let impressionId: string;
@@ -78,12 +77,12 @@ export function bind(target: EventTarget, event: string, listener: EventListener
   bindings[event] = eventBindings;
 }
 
-export function addEvent(type: string, eventState: any, time?: number) {
+export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   let evt: IEvent = {
     id: eventCount++,
-    time: isNumber(time) ? time : getTimestamp(),
-    type,
-    state: eventState
+    time: isNumber(event.time) ? event.time : getTimestamp(),
+    type: event.type,
+    state: event.state
   };
   let eventStr = JSON.stringify(evt);
   if (nextPayloadLength > 0 && nextPayloadLength + eventStr.length > config.batchLimit) {
@@ -93,15 +92,24 @@ export function addEvent(type: string, eventState: any, time?: number) {
   nextPayloadLength += eventStr.length;
 
   // Edge case:
-  // Don't reschedule upload when next payload consists of exactly one XhrError instrumentation event.
+  // Don't schedule next upload when next payload consists of exactly one XhrError instrumentation event.
   // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
   // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
-  let rescheduleUpload = !(eventState && eventState.type === Instrumentation.XhrError && nextPayload.length === 1);
-  if (rescheduleUpload) {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
+  let payloadIsSingleXhrErrorEvent = event.state && event.state.type === Instrumentation.XhrError && nextPayload.length === 1;
+  if (scheduleUpload && !payloadIsSingleXhrErrorEvent) {
+    clearTimeout(timeout);
     timeout = setTimeout(uploadNextPayload, config.delay);
+  }
+}
+
+export function addMultipleEvents(events: IEventData[]) {
+  if (events.length > 0) {
+    // Don't schedule upload until we add the last event
+    for (let i = 0; i < events.length - 1; i++) {
+      addEvent(events[i], false);
+    }
+    let lastEvent = events[events.length - 1];
+    addEvent(lastEvent, true);
   }
 }
 
@@ -112,7 +120,7 @@ export function getTimestamp(unix?: boolean, raw?: boolean) {
 
 export function instrument(eventState: IInstrumentationEventState) {
   if (config.instrument) {
-    addEvent("Instrumentation", eventState);
+    addEvent({type: "Instrumentation", state: eventState});
   }
 }
 
@@ -155,12 +163,9 @@ function uploadNextPayload() {
     upload(compressed, onSuccess, onFailure);
 
     if (config.debug && localStorage) {
-      // Debug Information
-      bytes.push(compressed);
-      let compressedKb = Math.ceil(bytes[bytes.length - 1].length / 1024.0);
+      let compressedKb = Math.ceil(compressed.length / 1024.0);
       let rawKb = Math.ceil(uncompressed.length / 1024.0);
       debug(`** Clarity #${sequence}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
-      localStorage.setItem("clarity", JSON.stringify(bytes));
     }
 
     if (state === State.Activated && sentBytesCount > config.totalLimit) {
@@ -243,8 +248,6 @@ function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
 }
 
 function init() {
-  // Reset own state
-  bytes = [];
   cid = getCookie(Cookie);
   impressionId = guid();
   sequence = 0;

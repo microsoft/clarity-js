@@ -11,7 +11,7 @@ let originalConfig: IConfig = config;
 
 export function triggerMockEvent(eventName?: string) {
   eventName = eventName || MockEventName;
-  addEvent(eventName, {});
+  addEvent({type: eventName, state: {}});
   triggerSend();
 }
 

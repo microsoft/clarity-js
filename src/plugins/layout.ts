@@ -1,5 +1,5 @@
 import { config } from "./../config";
-import { addEvent, bind, getTimestamp, instrument } from "./../core";
+import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
 import { debug, isNumber, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
 import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
@@ -57,9 +57,13 @@ export default class Layout implements IPlugin {
     // Clean up node indices on observed nodes
     // If Clarity is re-activated within the same page later,
     // old, uncleared indices would cause it to work incorrectly
-    let allNodes = this.shadowDom.shadowDocument.querySelectorAll("*");
-    for (let i = 0; i < allNodes.length; i++) {
-      let node = (allNodes[i] as IShadowDomNode).node;
+    let documentShadowNode = this.shadowDom.shadowDocument;
+    if (documentShadowNode.node) {
+      delete documentShadowNode.node[NodeIndex];
+    }
+    let otherNodes = this.shadowDom.shadowDocument.querySelectorAll("*");
+    for (let i = 0; i < otherNodes.length; i++) {
+      let node = (otherNodes[i] as IShadowDomNode).node;
       if (node) {
         delete node[NodeIndex];
       }
@@ -107,6 +111,7 @@ export default class Layout implements IPlugin {
   // we can adjust the current layout JSON with the original values to mimic its initial state.
   private backfillLayoutsAsync(time: number, onDomDiscoverComplete: () => void) {
     let yieldTime = getTimestamp(true) + config.timeToYield;
+    let events: IEventData[] = [];
     while (this.originalLayouts.length > 0 && getTimestamp(true) < yieldTime) {
       let originalLayout = this.originalLayouts.shift();
       let originalLayoutState = originalLayout.layout;
@@ -119,8 +124,14 @@ export default class Layout implements IPlugin {
       currentLayoutState.source = Source.Discover;
       currentLayoutState.action = Action.Insert;
 
-      addEvent(this.eventName, currentLayoutState, time);
+      events.push({
+        type: this.eventName,
+        state: currentLayoutState,
+        time
+      });
+      this.layoutStates[originalLayout.layout.index] = currentLayoutState;
     }
+    addMultipleEvents(events);
 
     // If there are more elements that need to be processed, yield the thread and return ASAP
     if (this.originalLayouts.length > 0) {
@@ -136,14 +147,24 @@ export default class Layout implements IPlugin {
   private onDomDiscoverComplete() {
     this.domDiscoverComplete = true;
     for (let i = 0; i < this.domPreDiscoverMutations.length; i++) {
-      let mutationEvents = this.domPreDiscoverMutations[i];
-      for (let j = 0; j < mutationEvents.length; j++) {
-        this.processNodeEvent(mutationEvents[j]);
-      }
+      this.processMultipleNodeEvents(this.domPreDiscoverMutations[i]);
     }
   }
 
-  private processNodeEvent<T extends ILayoutEventInfo>(eventInfo: T) {
+  private processMultipleNodeEvents<T extends ILayoutEventInfo>(eventInfos: T[]) {
+    let eventsData: IEventData[] = [];
+    for (let i = 0; i < eventInfos.length; i++) {
+      let eventState = this.createEventState(eventInfos[i]);
+      eventsData.push({
+        type: this.eventName,
+        state: eventState
+      });
+      this.layoutStates[eventState.index] = eventState;
+    }
+    addMultipleEvents(eventsData);
+  }
+
+  private createEventState<T extends ILayoutEventInfo>(eventInfo: T): ILayoutState {
     let node = eventInfo.node;
     let layoutState: ILayoutState = createLayoutState(node, this.shadowDom);
     switch (eventInfo.action) {
@@ -174,8 +195,7 @@ export default class Layout implements IPlugin {
       layoutState.mutationSequence = this.mutationSequence;
     }
     layoutState.source = eventInfo.source;
-    this.layoutStates[eventInfo.index] = layoutState;
-    addEvent(this.eventName, layoutState);
+    return layoutState;
   }
 
   private watch(element: Element, layoutState: IElementLayoutState) {
@@ -236,7 +256,7 @@ export default class Layout implements IPlugin {
       // Update the reference of layouts object to current state
       if (recordEvent) {
         this.layoutStates[index] = newLayoutState;
-        addEvent(this.eventName, newLayoutState);
+        addEvent({type: this.eventName, state: newLayoutState});
       }
     }
   }
@@ -269,9 +289,7 @@ export default class Layout implements IPlugin {
       if (this.allowMutation()) {
         let events = this.processMutations(summary, time);
         if (this.domDiscoverComplete) {
-          for (let i = 0; i < events.length; i++) {
-            this.processNodeEvent(events[i]);
-          }
+          this.processMultipleNodeEvents(events);
         } else {
           this.domPreDiscoverMutations.push(events);
         }
