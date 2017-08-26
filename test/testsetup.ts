@@ -34,7 +34,7 @@ let testUploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?
   for (let i = 0; i < onUploadCallbacks.length; i++) {
     onUploadCallbacks[i]();
   }
-}
+};
 
 // Make config uri non-empty, so that Clarity executes send
 // Allow instrumentation events
