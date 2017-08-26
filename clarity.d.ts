@@ -56,6 +56,12 @@ declare const enum State {
   Unloaded
 }
 
+interface IPlugin {
+  activate(): void;
+  teardown(): void;
+  reset(): void;
+}
+
 interface IPayload {
   envelope: IEnvelope;
   events: IEvent[];
@@ -86,12 +92,6 @@ interface IDroppedPayloadInfo {
   xhrErrorState: IXhrErrorEventState;
 }
 
-interface IPlugin {
-  activate(): void;
-  teardown(): void;
-  reset(): void;
-}
-
 interface IEventBindingPair {
   target: EventTarget;
   listener: EventListener;
@@ -103,6 +103,33 @@ interface IBindingContainer {
 
 type UploadCallback = (status: number) => void;
 type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) => void;
+
+/* ##################################### */
+/* ######   COMPRESSION WORKER   ####### */
+/* ##################################### */
+
+declare const enum WorkerMessageType {
+  /* Main thread to Worker messages */
+  AddEvent,
+  ForceUpload,
+
+  /* Worker to main thread messages */
+  Upload
+}
+
+interface IWorkerMessage {
+  type: WorkerMessageType;
+}
+
+interface IUploadMessage extends IWorkerMessage {
+  compressedData: string;
+  rawData: string;
+}
+
+interface IAddEventMessage extends IWorkerMessage {
+  event: IEvent;
+  time: number;
+}
 
 /* ##################################### */
 /* ############   LAYOUT   ############# */

@@ -1,10 +1,11 @@
 import compress from "./compress";
+import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
-const version = "0.1.9";
+const version = "0.1.10";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -21,8 +22,7 @@ let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
 let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
 let timeout: number;
-let nextPayload: string[];
-let nextPayloadLength: number;
+let compressionWorker: Worker;
 export let state: State = State.Loaded;
 
 export function activate() {
@@ -64,7 +64,8 @@ export function teardown() {
 
   // Upload residual events
   instrument({ type: Instrumentation.Teardown });
-  uploadNextPayload();
+  forceUpload();
+  compressionWorker.terminate();
 }
 
 export function bind(target: EventTarget, event: string, listener: EventListener) {
@@ -84,22 +85,22 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
     type: event.type,
     state: event.state
   };
-  let eventStr = JSON.stringify(evt);
-  if (nextPayloadLength > 0 && nextPayloadLength + eventStr.length > config.batchLimit) {
-    uploadNextPayload();
-  }
-  nextPayload.push(eventStr);
-  nextPayloadLength += eventStr.length;
+  let addEventMessage: IAddEventMessage = {
+    type: WorkerMessageType.AddEvent,
+    event: evt,
+    time: getTimestamp()
+  };
+  compressionWorker.postMessage(JSON.stringify(addEventMessage));
 
-  // Edge case:
-  // Don't schedule next upload when next payload consists of exactly one XhrError instrumentation event.
-  // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
-  // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
-  let payloadIsSingleXhrErrorEvent = event.state && event.state.type === Instrumentation.XhrError && nextPayload.length === 1;
-  if (scheduleUpload && !payloadIsSingleXhrErrorEvent) {
-    clearTimeout(timeout);
-    timeout = setTimeout(uploadNextPayload, config.delay);
-  }
+  // // Edge case:
+  // // Don't schedule next upload when next payload consists of exactly one XhrError instrumentation event.
+  // // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
+  // // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
+  // let payloadIsSingleXhrErrorEvent = event.state && event.state.type === Instrumentation.XhrError && nextPayload.length === 1;
+  // if (scheduleUpload && !payloadIsSingleXhrErrorEvent) {
+  //   clearTimeout(timeout);
+  //   timeout = setTimeout(uploadNextPayload, config.delay);
+  // }
 }
 
 export function addMultipleEvents(events: IEventData[]) {
@@ -113,6 +114,13 @@ export function addMultipleEvents(events: IEventData[]) {
   }
 }
 
+export function forceUpload() {
+  let forceUploadMessage: IWorkerMessage = {
+    type: WorkerMessageType.ForceUpload
+  };
+  compressionWorker.postMessage(JSON.stringify(forceUploadMessage));
+}
+
 export function getTimestamp(unix?: boolean, raw?: boolean) {
   let time = unix ? getUnixTimestamp() : getPageContextBasedTimestamp();
   return (raw ? time : Math.round(time));
@@ -121,6 +129,17 @@ export function getTimestamp(unix?: boolean, raw?: boolean) {
 export function instrument(eventState: IInstrumentationEventState) {
   if (config.instrument) {
     addEvent({type: "Instrumentation", state: eventState});
+  }
+}
+
+export function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
+  if (config.uploadUrl.length > 0) {
+    payload = JSON.stringify(payload);
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", config.uploadUrl);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, onSuccess, onFailure); };
+    xhr.send(payload);
   }
 }
 
@@ -151,31 +170,21 @@ function envelope(): IEnvelope {
   };
 }
 
-function uploadNextPayload() {
-  if (nextPayloadLength > 0) {
-    let uncompressed = `{"envelope":${JSON.stringify(envelope())},"events":[${nextPayload.join()}]}`;
-    let compressed = compress(uncompressed);
-    let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
-    let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uncompressed, compressed); };
-
-    nextPayload = [];
-    nextPayloadLength = 0;
-    upload(compressed, onSuccess, onFailure);
-
-    if (config.debug && localStorage) {
-      let compressedKb = Math.ceil(compressed.length / 1024.0);
-      let rawKb = Math.ceil(uncompressed.length / 1024.0);
-      debug(`** Clarity #${sequence}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
-    }
-
-    if (state === State.Activated && sentBytesCount > config.totalLimit) {
-      let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
-        type: Instrumentation.TotalByteLimitExceeded,
-        bytes: sentBytesCount
-      };
-      instrument(totalByteLimitExceededEventState);
-      teardown();
-    }
+function onWorkerMessage(evt: MessageEvent) {
+  let message = JSON.parse(evt.data) as IWorkerMessage;
+  switch (message.type) {
+    case WorkerMessageType.Upload:
+      let uploadMsg = message as IUploadMessage;
+      let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
+      let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uploadMsg.rawData, uploadMsg.compressedData); };
+      let compressedKb = Math.ceil(uploadMsg.compressedData.length / 1024.0);
+      let rawKb = Math.ceil(uploadMsg.rawData.length / 1024.0);
+      let envelope = JSON.parse(uploadMsg.rawData).envelope as IEnvelope;
+      upload(uploadMsg.compressedData);
+      debug(`** Clarity #${envelope.sequenceNumber}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
+      break;
+    default:
+      break;
   }
 }
 
@@ -192,17 +201,6 @@ function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadC
     defaultUpload(payload, onSuccess, onFailure);
   }
   sentBytesCount += payload.length;
-}
-
-function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
-  if (config.uploadUrl.length > 0) {
-    payload = JSON.stringify(payload);
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", config.uploadUrl);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, onSuccess, onFailure); };
-    xhr.send(payload);
-  }
 }
 
 function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, onFailure: UploadCallback) {
@@ -248,6 +246,13 @@ function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
 }
 
 function init() {
+
+  // If critical API is missing, don't activate Clarity
+  if (!checkFeatures()) {
+    teardown();
+    return false;
+  }
+
   cid = getCookie(Cookie);
   impressionId = guid();
   sequence = 0;
@@ -255,10 +260,9 @@ function init() {
   startTime = getUnixTimestamp();
   activePlugins = [];
   bindings = {};
-  nextPayload = [];
   droppedPayloads = {};
-  nextPayloadLength = 0;
   sentBytesCount = 0;
+  compressionWorker = createCompressionWorker(envelope(), onWorkerMessage.bind(this));
 
   // If CID cookie isn't present, set it now
   if (!cid) {
@@ -277,12 +281,6 @@ function init() {
     return false;
   }
 
-  // If critical API is missing, don't activate Clarity
-  if (!checkFeatures()) {
-    teardown();
-    return false;
-  }
-
   return true;
 }
 
@@ -291,7 +289,8 @@ function checkFeatures() {
   let expectedFeatures = [
     "document.implementation.createHTMLDocument",
     "document.documentElement.classList",
-    "Function.prototype.bind"
+    "Function.prototype.bind",
+    "window.Worker"
   ];
 
   for (let feature of expectedFeatures) {

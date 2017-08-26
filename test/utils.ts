@@ -1,8 +1,8 @@
 import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
-import { addEvent } from "../src/core";
+import { addEvent, forceUpload } from "../src/core";
 import { mapProperties } from "../src/utils";
-import { clearSentBytes, getSentBytes } from "./testsetup";
+import { addOnUploadCallback, clearOnUploadCallbacks, clearSentBytes, getSentBytes } from "./testsetup";
 import uncompress from "./uncompress";
 
 export const MockEventName = "ClarityTestMockEvent";
@@ -64,9 +64,11 @@ export function cleanupFixture() {
   stop();
   jasmine.clock().uninstall();
   resetConfig();
+  clearOnUploadCallbacks();
 }
 
 export function triggerSend() {
+  forceUpload();
   jasmine.clock().tick(config.delay * 2);
 }
 
