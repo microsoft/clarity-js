@@ -5,10 +5,8 @@ import { mapProperties } from "../src/utils";
 import { clearSentBytes, getSentBytes } from "./testsetup";
 import uncompress from "./uncompress";
 
-import * as chai from "chai";
-
 export const MockEventName = "ClarityTestMockEvent";
-export const TestFinishedEventName = "ClarityTestEnd";
+export const TestClosingEventName = "ClarityTestClosingEvent";
 
 let originalConfig: IConfig = config;
 
@@ -88,33 +86,23 @@ export function resetConfig() {
   mapProperties(originalConfig, null, true, config);
 }
 
-export function layoutBackfillCompleted(): boolean {
-  let events = getEventsByType(getAllSentEvents(), "Instrumentation");
-  for (let i = 0; i < events.length; i++) {
-    let event = events[i];
-    if (event.state.type === Instrumentation.Timestamp && event.state.source === TimestampSource.LayoutBackfillEnd) {
-      return true;
-    }
-  }
-  return false;
+export function finishTest(performAssertions: () => void) {
+  triggerMockEvent(TestClosingEventName);
+  waitFor(closingEventSent, performAssertions);
 }
 
-export function testFinished(): boolean {
-  let events = getEventsByType(getAllSentEvents(), TestFinishedEventName);
-  return events.length > 0;
-}
-
-export function waitFor(conditionChecker: () => boolean, callback: () => void, pollFrequency: number = config.delay * 2) {
+export function waitFor(conditionChecker: () => boolean, callback: () => void, pollFrequency: number = 50) {
   // Set real interval
   jasmine.clock().uninstall();
-  let interval = setTimeout(() => {
-    chai.expect(conditionChecker()).to.equal(true);
-    jasmine.clock().uninstall();
-    clearInterval(interval);
-    jasmine.clock().install();
-
-    callback();
-  }, config.delay * 2);
+  let interval = setInterval(() => {
+    jasmine.clock().tick(config.delay * 2);
+    if (conditionChecker()) {
+      jasmine.clock().uninstall();
+      clearInterval(interval);
+      jasmine.clock().install();
+      callback();
+    }
+  }, pollFrequency);
   jasmine.clock().install();
 }
 
@@ -125,4 +113,20 @@ function getEventsFromSentBytes(sentBytes: string[]): IEvent[] {
     events = events.concat(payload.events);
   }
   return events;
+}
+
+function layoutBackfillCompleted(): boolean {
+  let events = getEventsByType(getAllSentEvents(), "Instrumentation");
+  for (let i = 0; i < events.length; i++) {
+    let event = events[i];
+    if (event.state.type === Instrumentation.Timestamp && event.state.source === TimestampSource.LayoutBackfillEnd) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function closingEventSent(): boolean {
+  let events = getEventsByType(getAllSentEvents(), TestClosingEventName);
+  return events.length > 0;
 }

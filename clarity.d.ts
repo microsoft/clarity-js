@@ -422,6 +422,7 @@ interface IPerformanceResourceTiming {
 /* ##################################### */
 /* ############   LIBRARY   ############ */
 /* ##################################### */
+
 interface IClarity {
   start(config?: IConfig): void;
   stop(): void;
