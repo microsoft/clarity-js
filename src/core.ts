@@ -64,8 +64,7 @@ export function teardown() {
 
   // Upload residual events
   instrument({ type: Instrumentation.Teardown });
-  forceUpload();
-  compressionWorker.terminate();
+  terminateWorker();
 }
 
 export function bind(target: EventTarget, event: string, listener: EventListener) {
@@ -92,15 +91,14 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   };
   compressionWorker.postMessage(JSON.stringify(addEventMessage));
 
-  // // Edge case:
-  // // Don't schedule next upload when next payload consists of exactly one XhrError instrumentation event.
-  // // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
-  // // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
-  // let payloadIsSingleXhrErrorEvent = event.state && event.state.type === Instrumentation.XhrError && nextPayload.length === 1;
-  // if (scheduleUpload && !payloadIsSingleXhrErrorEvent) {
-  //   clearTimeout(timeout);
-  //   timeout = setTimeout(uploadNextPayload, config.delay);
-  // }
+  // Edge case: Don't schedule next upload for XhrError instrumentation events
+  // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
+  // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
+  let payloadIsSingleXhrErrorEvent = event.state && event.state.type === Instrumentation.XhrError;
+  if (scheduleUpload && !payloadIsSingleXhrErrorEvent) {
+    clearTimeout(timeout);
+    timeout = setTimeout(forceUpload, config.delay);
+  }
 }
 
 export function addMultipleEvents(events: IEventData[]) {
@@ -115,8 +113,9 @@ export function addMultipleEvents(events: IEventData[]) {
 }
 
 export function forceUpload() {
-  let forceUploadMessage: IWorkerMessage = {
-    type: WorkerMessageType.ForceUpload
+  let forceUploadMessage: ITimestampedWorkerMessage = {
+    type: WorkerMessageType.ForceUpload,
+    time: getTimestamp()
   };
   compressionWorker.postMessage(JSON.stringify(forceUploadMessage));
 }
@@ -129,17 +128,6 @@ export function getTimestamp(unix?: boolean, raw?: boolean) {
 export function instrument(eventState: IInstrumentationEventState) {
   if (config.instrument) {
     addEvent({type: "Instrumentation", state: eventState});
-  }
-}
-
-export function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
-  if (config.uploadUrl.length > 0) {
-    payload = JSON.stringify(payload);
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", config.uploadUrl);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, onSuccess, onFailure); };
-    xhr.send(payload);
   }
 }
 
@@ -200,7 +188,34 @@ function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadC
   } else {
     defaultUpload(payload, onSuccess, onFailure);
   }
+  if (state === State.Activated && sentBytesCount > config.totalLimit) {
+    let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
+      type: Instrumentation.TotalByteLimitExceeded,
+      bytes: sentBytesCount
+    };
+    instrument(totalByteLimitExceededEventState);
+    teardown();
+  }
   sentBytesCount += payload.length;
+}
+
+function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
+  if (config.uploadUrl.length > 0) {
+    payload = JSON.stringify(payload);
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", config.uploadUrl);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, onSuccess, onFailure); };
+    xhr.send(payload);
+  }
+}
+
+function terminateWorker() {
+  let terminateMsg: ITimestampedWorkerMessage = {
+    type: WorkerMessageType.Terminate,
+    time: getTimestamp()
+  };
+  compressionWorker.postMessage(JSON.stringify(terminateMsg));
 }
 
 function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, onFailure: UploadCallback) {

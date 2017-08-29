@@ -2,10 +2,13 @@ import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
 import { addEvent, forceUpload } from "../src/core";
 import { mapProperties } from "../src/utils";
-import { addOnUploadCallback, clearOnUploadCallbacks, clearSentBytes, getSentBytes } from "./testsetup";
+import { clearSentBytes, getSentBytes } from "./testsetup";
 import uncompress from "./uncompress";
 
+import * as chai from "chai";
+
 export const MockEventName = "ClarityTestMockEvent";
+export const TestFinishedEventName = "ClarityTestEnd";
 
 let originalConfig: IConfig = config;
 
@@ -47,16 +50,20 @@ export function getAllSentEvents(): IEvent[] {
   return getEventsFromSentBytes(getSentBytes());
 }
 
-export function getAllSentBytes() {
+export function getAllSentBytes(): string[] {
   return getSentBytes();
 }
 
-export function setupFixture() {
+export function setupFixture(done) {
   fixture.setBase("test");
   fixture.load("clarity.fixture.html");
   jasmine.clock().install();
   originalConfig = mapProperties(config, null, true);
   activateCore();
+
+  waitFor(layoutBackfillCompleted, () => {
+    done();
+  });
 }
 
 export function cleanupFixture() {
@@ -64,12 +71,11 @@ export function cleanupFixture() {
   stop();
   jasmine.clock().uninstall();
   resetConfig();
-  clearOnUploadCallbacks();
 }
 
 export function triggerSend() {
-  forceUpload();
   jasmine.clock().tick(config.delay * 2);
+  forceUpload();
 }
 
 export function activateCore() {
@@ -80,6 +86,36 @@ export function activateCore() {
 
 export function resetConfig() {
   mapProperties(originalConfig, null, true, config);
+}
+
+export function layoutBackfillCompleted(): boolean {
+  let events = getEventsByType(getAllSentEvents(), "Instrumentation");
+  for (let i = 0; i < events.length; i++) {
+    let event = events[i];
+    if (event.state.type === Instrumentation.Timestamp && event.state.source === TimestampSource.LayoutBackfillEnd) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function testFinished(): boolean {
+  let events = getEventsByType(getAllSentEvents(), TestFinishedEventName);
+  return events.length > 0;
+}
+
+export function waitFor(conditionChecker: () => boolean, callback: () => void, pollFrequency: number = config.delay * 2) {
+  // Set real interval
+  jasmine.clock().uninstall();
+  let interval = setTimeout(() => {
+    chai.expect(conditionChecker()).to.equal(true);
+    jasmine.clock().uninstall();
+    clearInterval(interval);
+    jasmine.clock().install();
+
+    callback();
+  }, config.delay * 2);
+  jasmine.clock().install();
 }
 
 function getEventsFromSentBytes(sentBytes: string[]): IEvent[] {

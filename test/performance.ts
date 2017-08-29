@@ -14,11 +14,11 @@ describe("Performance Tests", () => {
   let dummyPerformance;
   let dummyResourceTimings;
 
-  beforeEach(() => {
+  beforeEach((done) => {
     resetDummies();
     originalPerformance = window.performance;
     setWindowProperty("performance", dummyPerformance);
-    setupFixture();
+    setupFixture(done);
   });
 
   afterEach(() => {

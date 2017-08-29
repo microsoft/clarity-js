@@ -13,8 +13,8 @@ export default class Layout implements IPlugin {
   private observer: MutationObserver;
   private watchList: boolean[];
   private mutationSequence: number;
-  private domDiscoverComplete: boolean;
   private domPreDiscoverMutations: ILayoutEventInfo[][];
+  private domDiscoverComplete: boolean;
   private lastConsistentDomJson: NumberJson;
   private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventState;
   private layoutStates: ILayoutState[];
@@ -83,6 +83,11 @@ export default class Layout implements IPlugin {
       action: LayoutRoutine.DiscoverDom
     });
     setTimeout(() => {
+      let backfillStartEvent: ITimestampEventState = {
+        type: Instrumentation.Timestamp,
+        source: TimestampSource.LayoutBackfillStart
+      };
+      instrument(backfillStartEvent);
       this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
     }, 0);
   }
@@ -139,6 +144,11 @@ export default class Layout implements IPlugin {
         this.backfillLayoutsAsync(time, onDomDiscoverComplete);
       }, 0);
     } else {
+      let backfillEndEvent: ITimestampEventState = {
+        type: Instrumentation.Timestamp,
+        source: TimestampSource.LayoutBackfillEnd
+      };
+      instrument(backfillEndEvent);
       onDomDiscoverComplete();
     }
   }

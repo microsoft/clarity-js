@@ -112,6 +112,7 @@ declare const enum WorkerMessageType {
   /* Main thread to Worker messages */
   AddEvent,
   ForceUpload,
+  Terminate,
 
   /* Worker to main thread messages */
   Upload
@@ -121,14 +122,17 @@ interface IWorkerMessage {
   type: WorkerMessageType;
 }
 
+interface ITimestampedWorkerMessage extends IWorkerMessage {
+  time: number;
+}
+
 interface IUploadMessage extends IWorkerMessage {
   compressedData: string;
   rawData: string;
 }
 
-interface IAddEventMessage extends IWorkerMessage {
+interface IAddEventMessage extends ITimestampedWorkerMessage {
   event: IEvent;
-  time: number;
 }
 
 /* ##################################### */
@@ -320,7 +324,13 @@ declare const enum Instrumentation {
   Teardown,
   ClarityAssertFailed,
   ClarityDuplicated,
-  ShadowDomInconsistent
+  ShadowDomInconsistent,
+  Timestamp
+}
+
+declare const enum TimestampSource {
+  LayoutBackfillStart,
+  LayoutBackfillEnd
 }
 
 interface IInstrumentationEventState {
@@ -380,6 +390,10 @@ interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
   // from consistent to inconsistent state happened on some previous action and there was also an event created for it.
   // That first event is sent in this property.
   firstEvent?: IShadowDomInconsistentEventState;
+}
+
+interface ITimestampEventState extends IInstrumentationEventState {
+  source: TimestampSource;
 }
 
 /* ##################################### */

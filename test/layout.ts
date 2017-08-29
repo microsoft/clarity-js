@@ -3,7 +3,8 @@ import { config } from "../src/config";
 import * as core from "../src/core";
 import { IgnoreTag, NodeIndex } from "../src/plugins/layout/stateprovider";
 import uncompress from "./uncompress";
-import { cleanupFixture, getEventsByType, observeEvents, setupFixture, triggerSend } from "./utils";
+import { cleanupFixture, getEventsByType, observeEvents, setupFixture, triggerMockEvent, triggerSend, waitFor } from "./utils";
+import { testFinished, TestFinishedEventName } from "./utils";
 
 import * as chai from "chai";
 
@@ -29,10 +30,11 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
+      triggerMockEvent(TestFinishedEventName);
+      waitFor(testFinished, performAssertions);
+    }
 
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
+    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -58,10 +60,11 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
+      triggerMockEvent(TestFinishedEventName);
+      waitFor(testFinished, performAssertions);
+    }
 
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
+    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 

@@ -30,8 +30,13 @@ function workerContext() {
         addEvent(addEventMsg.event, addEventMsg.time);
         break;
       case WorkerMessageType.ForceUpload:
-        // TODO: Implement
+        let forceUploadMsg = message as ITimestampedWorkerMessage;
+        uploadNextPayload(forceUploadMsg.time);
         break;
+      case WorkerMessageType.Terminate:
+        let terminatedMsg = message as ITimestampedWorkerMessage;
+        uploadNextPayload(terminatedMsg.time);
+        self.close();
       default:
         break;
     }
@@ -56,15 +61,6 @@ function workerContext() {
       nextPayload = [];
       nextPayloadLength = 0;
       upload(compressed, raw);
-
-      // if (state === State.Activated && sentBytesCount > config.totalLimit) {
-      //   let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
-      //     type: Instrumentation.TotalByteLimitExceeded,
-      //     bytes: sentBytesCount
-      //   };
-      //   instrument(totalByteLimitExceededEventState);
-      //   teardown();
-      // }
     }
   }
 

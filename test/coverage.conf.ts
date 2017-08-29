@@ -13,24 +13,32 @@ export = (config) => {
       "karma-mocha",
       "karma-chai",
       "karma-coverage",
-      "karma-phantomjs-launcher",
+      "karma-chrome-launcher",
       "karma-fixture",
       "karma-html2js-preprocessor",
       "karma-browserify",
       "karma-jasmine"
     ],
-
-    browsers: ["PhantomJS"],
-
+    browsers: ["ChromeHeadless"],
+    customLaunchers: {
+      ChromeHeadless: {
+        base: "Chrome",
+        flags: [
+          "--headless",
+          "--disable-gpu",
+          "--no-sandbox",
+          // Without a remote debugging port, Google Chrome exits immediately.
+          "--remote-debugging-port=9222",
+        ],
+      }
+    },
     reporters: ["progress", "coverage"],
     preprocessors: {
       "src/*.js": ["coverage"],
       "test/*.js": ["browserify"],
       "test/*.html": ["html2js"]
     },
-
     singleRun: true,
-
     coverageReporter: {
       dir: "coverage/",
       reporters: [
