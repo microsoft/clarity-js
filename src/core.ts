@@ -168,7 +168,7 @@ function onWorkerMessage(evt: MessageEvent) {
       let compressedKb = Math.ceil(uploadMsg.compressedData.length / 1024.0);
       let rawKb = Math.ceil(uploadMsg.rawData.length / 1024.0);
       let envelope = JSON.parse(uploadMsg.rawData).envelope as IEnvelope;
-      upload(uploadMsg.compressedData);
+      upload(uploadMsg.compressedData, onSuccess, onFailure);
       debug(`** Clarity #${envelope.sequenceNumber}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
       break;
     default:
@@ -261,13 +261,6 @@ function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
 }
 
 function init() {
-
-  // If critical API is missing, don't activate Clarity
-  if (!checkFeatures()) {
-    teardown();
-    return false;
-  }
-
   cid = getCookie(Cookie);
   impressionId = guid();
   sequence = 0;
@@ -277,7 +270,13 @@ function init() {
   bindings = {};
   droppedPayloads = {};
   sentBytesCount = 0;
-  compressionWorker = createCompressionWorker(envelope(), onWorkerMessage.bind(this));
+  compressionWorker = createCompressionWorker(envelope(), onWorkerMessage);
+
+  // If critical API is missing, don't activate Clarity
+  if (!checkFeatures()) {
+    teardown();
+    return false;
+  }
 
   // If CID cookie isn't present, set it now
   if (!cid) {

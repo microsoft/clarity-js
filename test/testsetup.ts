@@ -1,30 +1,34 @@
 import { start } from "../src/clarity";
 import { config } from "../src/config";
 
-let sentBytes: string[] = [];
+let sentEvents: IEvent[] = [];
 
-export function getSentBytes(): string[] {
-  return sentBytes;
+export function getSentEvents(): IEvent[] {
+  return sentEvents;
 }
 
-export function clearSentBytes(): void {
-  sentBytes = [];
+export function clearSentEvents() {
+  sentEvents = [];
 }
 
-// Set up page environment for testing
-
-// Override send function to store bytes for test verification,
-// instead of actually sending it to the backend
-XMLHttpRequest.prototype.send = (data: any) => {
-  sentBytes.push(data);
-};
+export function onWorkerMessage(data: any) {
+  let message = JSON.parse(data) as IWorkerMessage;
+  switch (message.type) {
+    case WorkerMessageType.AddEvent:
+      let addEventMsg = message as IAddEventMessage;
+      sentEvents.push(addEventMsg.event);
+      break;
+    default:
+      break;
+  }
+}
 
 // Make config uri non-empty, so that Clarity executes send
 // Allow instrumentation events
-let customConfig: IConfig = {
+export let testConfig: IConfig = {
   uploadUrl: "https://www.claritytest.com/test",
   instrument: true,
   validateConsistency: true
 };
 
-start(customConfig);
+start(testConfig);

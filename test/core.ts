@@ -2,23 +2,25 @@ import { config } from "../src/config";
 import * as core from "../src/core";
 import uncompress from "./uncompress";
 import { activateCore, cleanupFixture, setupFixture } from "./utils";
-import { getAllSentBytes, getAllSentEvents, MockEventName, observeEvents, triggerMockEvent, triggerSend } from "./utils";
+import { getAllSentEvents, MockEventName, observeEvents, triggerMockEvent } from "./utils";
 
 import * as chai from "chai";
 
 let assert = chai.assert;
 let instrumentationEventName = "Instrumentation";
 
-describe("Functional Tests", () => {
+describe("Core Tests", () => {
   let limit = config.batchLimit;
   let base64img = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
-  beforeEach(setupFixture);
+  beforeEach(() => {
+    setupFixture([]);
+  });
   afterEach(cleanupFixture);
 
   it("validates that missing feature event is sent when required feature is missing", (done) => {
     core.teardown();
-
+    let stopObserving = observeEvents();
     // Function.prototype.bind is a required API for Clarity to work
     // Mocking a browser that doesn't support it by temporarily deleting it
     let originalBind = Function.prototype.bind;
@@ -32,130 +34,136 @@ describe("Functional Tests", () => {
     assert.equal(events[0].state.type, Instrumentation.MissingFeature);
     assert.equal(events[1].type, instrumentationEventName);
     assert.equal(events[1].state.type, Instrumentation.Teardown);
-
     done();
   });
 
-  it("validates that modules work fine together", (done) => {
-    let events = getAllSentEvents();
-    assert.equal(events.length >= 10, true);
-    done();
-  });
+  // This test doesn't really belong to 'Core'. If needed, create separate test suite for all modules combined
+  // it("validates that modules work fine together", (done) => {
+  //   assert.equal(getAllSentEvents().length >= 10, true);
+  //   done();
+  // });
 
-  it("validates that custom sendCallback is invoked when passed through config", (done) => {
-    let sendCount = 0;
-    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
-      mockUploadHandler(payload);
-      sendCount++;
-    };
-    triggerMockEvent();
+  // it("validates that custom sendCallback is invoked when passed through config", (done) => {
+  //   let sendCount = 0;
+  //   config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
+  //     mockUploadHandler(payload);
+  //     sendCount++;
+  //   };
+  //   let b1 = getAllSentBytes();
+  //   let e1 = getAllSentEvents();
+  //   triggerMockEvent();
+  //   finishTest(performAssertions);
 
-    assert.equal(sendCount, 1);
-    done();
-  });
+  //   function performAssertions() {
+  //     let b2 = getAllSentBytes();
+  //     let e2 = getAllSentEvents();
+  //     assert.equal(sendCount, 1);
+  //     done();
+  //   }
+  // });
 
-  it("validates that XhrError is logged for failed requests through the 'onFailure' upload callback ", (done) => {
-    let stopObserving = observeEvents();
-    let mockFailure = true;
+  // it("validates that XhrError is logged for failed requests through the 'onFailure' upload callback ", (done) => {
+  //   let stopObserving = observeEvents();
+  //   let mockFailure = true;
 
-    // Mock 1 failed request
-    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
-      if (mockFailure) {
-        onFailure(400);
-        mockFailure = false;
-      } else {
-        mockUploadHandler(payload);
+  //   // Mock 1 failed request
+  //   config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
+  //     if (mockFailure) {
+  //       onFailure(400);
+  //       mockFailure = false;
+  //     } else {
+  //       mockUploadHandler(payload);
 
-        // Explicitly skipping the reporting of successful delivery to avoid re-sending dropped event
-        // and keep the focus on testing the 'onFailure' logging, rather than the 'onSuccess' re-delivery
-        // onSuccess(200);
-      }
-    };
+  //       // Explicitly skipping the reporting of successful delivery to avoid re-sending dropped event
+  //       // and keep the focus on testing the 'onFailure' logging, rather than the 'onSuccess' re-delivery
+  //       // onSuccess(200);
+  //     }
+  //   };
 
-    triggerMockEvent();
-    let events = stopObserving();
+  //   triggerMockEvent();
+  //   let events = stopObserving();
 
-    // Not expecting any events to be sent quite yet at this point, because request with mock event failed
-    // and generated XhrError instrumentation event doesn't get sent out on its own (edge case exception)
-    assert.equal(events.length, 0);
+  //   // Not expecting any events to be sent quite yet at this point, because request with mock event failed
+  //   // and generated XhrError instrumentation event doesn't get sent out on its own (edge case exception)
+  //   assert.equal(events.length, 0);
 
-    // Generate one more event to trigger proper upload
-    let secondMockEventName = "SecondMockEvent";
-    stopObserving = observeEvents();
-    triggerMockEvent(secondMockEventName);
-    events = stopObserving();
+  //   // Generate one more event to trigger proper upload
+  //   let secondMockEventName = "SecondMockEvent";
+  //   stopObserving = observeEvents();
+  //   triggerMockEvent(secondMockEventName);
+  //   events = stopObserving();
 
-    assert.equal(events.length, 2);
-    assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.XhrError);
-    assert.equal(events[0].state.requestStatus, 400);
-    assert.equal(events[1].type, secondMockEventName);
+  //   assert.equal(events.length, 2);
+  //   assert.equal(events[0].type, instrumentationEventName);
+  //   assert.equal(events[0].state.type, Instrumentation.XhrError);
+  //   assert.equal(events[0].state.requestStatus, 400);
+  //   assert.equal(events[1].type, secondMockEventName);
 
-    done();
-  });
+  //   done();
+  // });
 
-  it("validates that dropped payloads are re-sent through the next request's 'onSuccess' callback", (done) => {
-    let stopObserving = observeEvents();
-    let mockFailure = true;
-    let uploadInvocationCount = 0;
+  // it("validates that dropped payloads are re-sent through the next request's 'onSuccess' callback", (done) => {
+  //   let stopObserving = observeEvents();
+  //   let mockFailure = true;
+  //   let uploadInvocationCount = 0;
 
-    // Mock 1 failed request
-    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
-      if (mockFailure) {
-        onFailure(400);
-        mockFailure = false;
-      } else {
-        mockUploadHandler(payload);
-        onSuccess(200);
-      }
-      uploadInvocationCount++;
-    };
+  //   // Mock 1 failed request
+  //   config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
+  //     if (mockFailure) {
+  //       onFailure(400);
+  //       mockFailure = false;
+  //     } else {
+  //       mockUploadHandler(payload);
+  //       onSuccess(200);
+  //     }
+  //     uploadInvocationCount++;
+  //   };
 
-    triggerMockEvent();
-    let events = stopObserving();
+  //   triggerMockEvent();
+  //   let events = stopObserving();
 
-    // Not expecting any events to be sent quite yet at this point, because request with mock event failed
-    // and generated XhrError instrumentation event doesn't get sent out on its own (edge case exception)
-    assert.equal(events.length, 0);
+  //   // Not expecting any events to be sent quite yet at this point, because request with mock event failed
+  //   // and generated XhrError instrumentation event doesn't get sent out on its own (edge case exception)
+  //   assert.equal(events.length, 0);
 
-    // Generate one more event to trigger proper upload
-    let secondMockEventName = "SecondMockEvent";
-    stopObserving = observeEvents();
-    triggerMockEvent(secondMockEventName);
-    events = stopObserving();
+  //   // Generate one more event to trigger proper upload
+  //   let secondMockEventName = "SecondMockEvent";
+  //   stopObserving = observeEvents();
+  //   triggerMockEvent(secondMockEventName);
+  //   events = stopObserving();
 
-    // Upload invocations: First mock event, second mock event, first mock event re-upload
-    assert.equal(uploadInvocationCount, 3);
-    assert.equal(events.length, 3);
-    assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.XhrError);
-    assert.equal(events[0].state.requestStatus, 400);
-    assert.equal(events[1].type, secondMockEventName);
-    assert.equal(events[2].type, MockEventName);
+  //   // Upload invocations: First mock event, second mock event, first mock event re-upload
+  //   assert.equal(uploadInvocationCount, 3);
+  //   assert.equal(events.length, 3);
+  //   assert.equal(events[0].type, instrumentationEventName);
+  //   assert.equal(events[0].state.type, Instrumentation.XhrError);
+  //   assert.equal(events[0].state.requestStatus, 400);
+  //   assert.equal(events[1].type, secondMockEventName);
+  //   assert.equal(events[2].type, MockEventName);
 
-    done();
-  });
+  //   done();
+  // });
 
-  it("validates that re-send cycle doesn't enter an infinite loop when all requests fail", (done) => {
-    let uploadInvocationCount = 0;
+  // it("validates that re-send cycle doesn't enter an infinite loop when all requests fail", (done) => {
+  //   let uploadInvocationCount = 0;
 
-    // Mock fail all requests (e.g. dropped internet connection)
-    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
-      onFailure(400);
-      uploadInvocationCount++;
-    };
-    triggerMockEvent();
-    triggerSend();
+  //   // Mock fail all requests (e.g. dropped internet connection)
+  //   config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
+  //     onFailure(400);
+  //     uploadInvocationCount++;
+  //   };
+  //   triggerMockEvent();
+  //   triggerSend();
 
-    let settledUploadInvocationCount = uploadInvocationCount;
-    // Ensure that no new events are generated through 'try to report failure --> fail to deliver --> try to report failure' cycle
-    for (let i = 0; i < 5; i++) {
-      triggerSend();
-      assert.equal(uploadInvocationCount, settledUploadInvocationCount);
-    }
+  //   let settledUploadInvocationCount = uploadInvocationCount;
+  //   // Ensure that no new events are generated through 'try to report failure --> fail to deliver --> try to report failure' cycle
+  //   for (let i = 0; i < 5; i++) {
+  //     triggerSend();
+  //     assert.equal(uploadInvocationCount, settledUploadInvocationCount);
+  //   }
 
-    done();
-  });
+  //   done();
+  // });
 
   it("validates that multiple bindings with same event name get bound correctly", (done) => {
     let img = document.createElement("img");
@@ -212,115 +220,107 @@ describe("Functional Tests", () => {
     }
   });
 
-  it("validates that events are batched for upload correctly when total length is below the limit", (done) => {
-    triggerSend();
-    let eventName = "CoreByteLimitTest";
-    let bytesLengthBefore = getAllSentBytes().length;
-    let expectedBytesLength = bytesLengthBefore + 1;
+  // it("validates that events are batched for upload correctly when total length is below the limit", (done) => {
+  //   let eventName = "CoreByteLimitTest";
+  //   let bytesLengthBefore = getAllSentBytes().length;
+  //   let expectedBytesLength = bytesLengthBefore + 1;
+  //   let eventOneData = Array(Math.round(limit * (1 / 3))).join("1");
+  //   let eventTwoData = Array(Math.round(limit * (1 / 3))).join("2");
 
-    let eventOneData = Array(Math.round(limit * (1 / 3))).join("1");
-    let eventTwoData = Array(Math.round(limit * (1 / 3))).join("2");
+  //   core.addEvent({
+  //     type: eventName,
+  //     state: { data: eventOneData }
+  //   });
+  //   core.addEvent({
+  //     type: eventName,
+  //     state: { data: eventTwoData }
+  //   });
+  //   waitForNewBytes(performAssertions);
 
-    core.addEvent({
-      type: eventName,
-      state: { data: eventOneData }
-    });
-    core.addEvent({
-      type: eventName,
-      state: { data: eventTwoData }
-    });
+  //   function performAssertions() {
+  //     assert.equal(getAllSentBytes().length, expectedBytesLength);
+  //     done();
+  //   }
+  // });
 
-    triggerSend();
+  // it("validates that events are batched for upload correctly when total length is above the limit", (done) => {
+  //   triggerSend();
+  //   let eventName = "CoreByteLimitTest";
+  //   let bytesLengthBefore = getAllSentBytes().length;
+  //   let expectedBytesLength = bytesLengthBefore + 2;
 
-    assert.equal(getAllSentBytes().length, expectedBytesLength);
-    done();
-  });
+  //   let eventOneData = Array(Math.round(limit * (2 / 3))).join("1");
+  //   let eventTwoData = Array(Math.round(limit / 2)).join("2");
 
-  it("validates that events are batched for upload correctly when total length is above the limit", (done) => {
-    triggerSend();
-    let eventName = "CoreByteLimitTest";
-    let bytesLengthBefore = getAllSentBytes().length;
-    let expectedBytesLength = bytesLengthBefore + 2;
+  //   core.addEvent({
+  //     type: eventName,
+  //     state: { data: eventOneData }
+  //   });
+  //   core.addEvent({
+  //     type: eventName,
+  //     state: { data: eventTwoData }
+  //   });
+  //   waitForNewBytes(performAssertions);
 
-    let eventOneData = Array(Math.round(limit * (2 / 3))).join("1");
-    let eventTwoData = Array(Math.round(limit / 2)).join("2");
+  //   function performAssertions() {
+  //     assert.equal(getAllSentBytes().length, expectedBytesLength);
+  //     done();
+  //   }
+  // });
 
-    core.addEvent({
-      type: eventName,
-      state: { data: eventOneData }
-    });
-    core.addEvent({
-      type: eventName,
-      state: { data: eventTwoData }
-    });
+  // it("validates that single event is sent when its own length is above the limit", (done) => {
+  //   let eventName = "CoreByteLimitTest";
+  //   let bytesLengthBefore = getAllSentBytes().length;
+  //   let expectedBytesLength = bytesLengthBefore + 1;
+  //   let eventData = Array(Math.round(limit + 1)).join("1");
+  //   core.addEvent({
+  //     type: eventName,
+  //     state: { data: eventData }
+  //   });
+  //   waitForNewBytes(performAssertions);
 
-    triggerSend();
+  //   function performAssertions() {
+  //     assert.equal(getAllSentBytes().length, expectedBytesLength);
+  //     done();
+  //   }
+  // });
 
-    assert.equal(getAllSentBytes().length, expectedBytesLength);
-    done();
-  });
+  // it("validates that queued payload is sent on teardown", (done) => {
+  //   let eventName = "CoreSendOnTeardownTest";
+  //   let bytesLengthBeforeTeardown = getAllSentBytes().length;
 
-  it("validates that single event is sent when its own length is above the limit", (done) => {
-    triggerSend();
-    let eventName = "CoreByteLimitTest";
-    let bytesLengthBefore = getAllSentBytes().length;
-    let expectedBytesLength = bytesLengthBefore + 1;
+  //   triggerMockEvent(TestClosingEventName);
+  //   core.teardown();
+  //   waitForNewBytes(performAssertions);
 
-    let eventData = Array(Math.round(limit + 1)).join("1");
-    core.addEvent({
-      type: eventName,
-      state: { data: eventData }
-    });
+  //   function performAssertions() {
+  //     assert.equal(getAllSentBytes().length, bytesLengthBeforeTeardown + 1);
+  //     done();
+  //   }
+  // });
 
-    triggerSend();
+  // it("validates that Clarity tears down when total byte limit is exceeded", (done) => {
+  //   assert.equal(core.state, State.Activated);
 
-    assert.equal(getAllSentBytes().length, expectedBytesLength);
-    done();
-  });
+  //   let originalTotalLimit = config.totalLimit;
+  //   let currentSentBytesCount = 0;
+  //   let eventName = "CoreByteLimitTest";
+  //   let bytes = getAllSentBytes();
 
-  it("validates that queued payload is sent on teardown", (done) => {
-    triggerSend();
-    let eventName = "CoreSendOnTeardownTest";
-    let bytesLengthBefore = getAllSentBytes().length;
-    let expectedBytesLength = bytesLengthBefore;
+  //   for (let i = 0; i < bytes.length; i++) {
+  //     currentSentBytesCount += bytes[i].length;
+  //   }
 
-    core.addEvent({
-      type: eventName,
-      state: {}
-    });
-    assert.equal(getAllSentBytes().length, expectedBytesLength);
+  //   config.totalLimit = currentSentBytesCount + 1;
+  //   triggerMockEvent("BreakingByteLimit");
+  //   finishTest(performAssertions);
 
-    expectedBytesLength += 1;
-    core.teardown();
-    assert.equal(getAllSentBytes().length, expectedBytesLength);
-
-    done();
-  });
-
-  it("validates that Clarity tears down when total byte limit is exceeded", (done) => {
-    assert.equal(core.state, State.Activated);
-
-    let originalTotalLimit = config.totalLimit;
-    let currentSentBytesCount = 0;
-    let eventName = "CoreByteLimitTest";
-    let bytes = getAllSentBytes();
-
-    for (let i = 0; i < bytes.length; i++) {
-      currentSentBytesCount += bytes[i].length;
-    }
-
-    config.totalLimit = currentSentBytesCount + 1;
-    core.addEvent({
-      type: eventName,
-      state: {}
-    });
-    triggerSend();
-
-    config.totalLimit = originalTotalLimit;
-    assert.equal(core.state, State.Unloaded);
-
-    done();
-  });
+  //   function performAssertions() {
+  //     config.totalLimit = originalTotalLimit;
+  //     assert.equal(core.state, State.Unloaded);
+  //     done();
+  //   }
+  // });
 
   it("validates that Clarity tears down on activate, when another instance of Clarity is already activated", (done) => {
     core.teardown();

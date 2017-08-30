@@ -6,10 +6,13 @@ export function createCompressionWorker(
   onMessage?: (e: MessageEvent) => void,
   onError?: (e: ErrorEvent) => void
 ): Worker {
-  let workerUrl = createWorkerUrl(sampleEnvelope);
-  let worker = new Worker(workerUrl);
-  worker.onmessage = onMessage || null;
-  worker.onerror = onError || null;
+  let worker = null;
+  if (Worker) {
+    let workerUrl = createWorkerUrl(sampleEnvelope);
+    worker = new Worker(workerUrl);
+    worker.onmessage = onMessage || null;
+    worker.onerror = onError || null;
+  }
   return worker;
 }
 

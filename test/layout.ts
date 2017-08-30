@@ -3,7 +3,7 @@ import { config } from "../src/config";
 import * as core from "../src/core";
 import { IgnoreTag, NodeIndex } from "../src/plugins/layout/stateprovider";
 import uncompress from "./uncompress";
-import { cleanupFixture, finishTest, getEventsByType, observeEvents, setupFixture, triggerMockEvent, triggerSend, waitFor } from "./utils";
+import { cleanupFixture, getEventsByType, observeEvents, setupFixture } from "./utils";
 
 import * as chai from "chai";
 
@@ -12,7 +12,9 @@ let assert = chai.assert;
 
 describe("Layout Tests", () => {
 
-  beforeEach(setupFixture);
+  beforeEach(() => {
+    setupFixture(["layout"]);
+  });
   afterEach(cleanupFixture);
 
   it("checks that dom additions are captured by clarity", (done) => {
@@ -29,10 +31,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -58,10 +57,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -86,10 +82,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -115,10 +108,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -164,11 +154,6 @@ describe("Layout Tests", () => {
     document.body.appendChild(script);
 
     function callback() {
-      observer.disconnect();
-      finishTest(performAssertions);
-    }
-
-    function performAssertions() {
       // Uncompress recent data from mutations
       let newEvents = stopObserving();
       events = events.concat(newEvents);
@@ -234,10 +219,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -278,11 +260,10 @@ describe("Layout Tests", () => {
 
   //    function callback() {
   //      observer.disconnect();
-  //      triggerMockEvent(TestFinishedEventName);
-  //      finishTest(performAssertions);
-  //    }
 
-  //    function performAssertions() {
+  //      // Following jasmine feature fast forwards the async delay in setTimeout calls
+  //      waitForSend();
+
   //      // Uncompress recent data from mutations
   //      let events = getEventsByType(LayoutEventName);
 
@@ -310,13 +291,9 @@ describe("Layout Tests", () => {
     while (dom.childNodes.length > 0) {
       backup.appendChild(dom.childNodes[0]);
     }
-
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -350,10 +327,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -400,10 +374,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -444,10 +415,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -474,25 +442,22 @@ describe("Layout Tests", () => {
     let div = document.createElement("div");
     document.body.appendChild(div);
 
-    function callback() {
+    function callback(mutations) {
       div.setAttribute("data-clarity", "test");
       if (count++ > 0) {
         observer.disconnect();
-        finishTest(performAssertions);
+
+        // Uncompress recent data from mutations
+        let events = stopObserving();
+
+        assert.equal(events.length, 2);
+        assert.equal(events[0].state.action, Action.Insert);
+        assert.equal(events[0].state.tag, "DIV");
+        assert.equal(events[1].state.action, Action.Update);
+
+        // Explicitly signal that we are done here
+        done();
       }
-    }
-
-    function performAssertions() {
-      // Uncompress recent data from mutations
-      let events = stopObserving();
-
-      assert.equal(events.length, 2);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, "DIV");
-      assert.equal(events[1].state.action, Action.Update);
-
-      // Explicitly signal that we are done here
-      done();
     }
   });
 
@@ -506,12 +471,9 @@ describe("Layout Tests", () => {
     document.body.appendChild(div);
     div.setAttribute("data-clarity", "test");
 
-    function callback() {
+    function callback(mutations) {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -535,12 +497,9 @@ describe("Layout Tests", () => {
     document.body.appendChild(div);
     clarity.appendChild(div);
 
-    function callback() {
+    function callback(mutations) {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -569,12 +528,9 @@ describe("Layout Tests", () => {
     document.body.appendChild(div2);
     document.body.removeChild(div3);
 
-    function callback() {
+    function callback(mutations) {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -600,12 +556,9 @@ describe("Layout Tests", () => {
     document.body.appendChild(div);
     document.body.removeChild(div);
 
-    function callback() {
+    function callback(mutations) {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -632,13 +585,9 @@ describe("Layout Tests", () => {
     div.appendChild(span);
     document.body.removeChild(div);
 
-    function callback() {
+    function callback(mutations) {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       // Prove that we didn't send any extra instrumentation back for no-op mutation
@@ -664,12 +613,9 @@ describe("Layout Tests", () => {
     clarityDiv.appendChild(span);
     clarityDiv.parentElement.removeChild(clarityDiv);
 
-    function callback() {
+    function callback(mutations) {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -707,10 +653,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -747,10 +690,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -786,24 +726,21 @@ describe("Layout Tests", () => {
     function callback() {
       if (callbackNumber === 1) {
         observer.disconnect();
-        finishTest(performAssertions);
+
+        // Uncompress recent data from mutations
+        let events = stopObserving();
+        assert.equal(events.length, 2);
+
+        let firstEventSequence = events[0].state.mutationSequence;
+        assert.isTrue(firstEventSequence >= 0);
+        assert.equal(events[1].state.mutationSequence, firstEventSequence + 1);
+
+        // Explicitly signal that we are done here
+        done();
       } else {
         document.body.appendChild(divTwo);
       }
       callbackNumber++;
-    }
-
-    function performAssertions() {
-      // Uncompress recent data from mutations
-      let events = stopObserving();
-      assert.equal(events.length, 2);
-
-      let firstEventSequence = events[0].state.mutationSequence;
-      assert.isTrue(firstEventSequence >= 0);
-      assert.equal(events[1].state.mutationSequence, firstEventSequence + 1);
-
-      // Explicitly signal that we are done here
-      done();
     }
   });
 
@@ -822,10 +759,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
       assert.equal(events.length, 1);
@@ -854,10 +788,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -886,10 +817,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -915,10 +843,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -947,10 +872,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -975,10 +897,7 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -993,11 +912,11 @@ describe("Layout Tests", () => {
   });
 
   it("checks that scroll capturing works on inserted element", (done) => {
+    let stopObserving = null;
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
     // Add a scrollable DIV
-    let stopObserving = observeEvents(eventName);
     let outerDiv = document.createElement("div");
     let innerDiv = document.createElement("div");
     outerDiv.style.overflowY = "auto";
@@ -1010,25 +929,23 @@ describe("Layout Tests", () => {
     function callback() {
       observer.disconnect();
 
-        // Trigger scroll
+      // Add a node to the document and observe Clarity events
+      stopObserving = observeEvents(eventName);
+
+      // Trigger scroll
       outerDiv.addEventListener("scroll", scrollCallback);
       outerDiv.scrollTop = 100;
     }
 
     function scrollCallback() {
       outerDiv.removeEventListener("scroll", scrollCallback);
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
-      assert.equal(events.length, 3);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[1].state.action, Action.Insert);
-      assert.equal(events[2].state.action, Action.Update);
-      assert.equal(events[2].state.source, Source.Scroll);
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Update);
+      assert.equal(events[0].state.source, Source.Scroll);
 
       // Explicitly signal that we are done here
       done();
@@ -1062,18 +979,14 @@ describe("Layout Tests", () => {
 
     function inputChangeCallback() {
       input.removeEventListener("change", inputChangeCallback);
-      finishTest(performAssertions);
-    }
 
-    function performAssertions() {
       // Uncompress recent data from mutations
       let events = stopObserving();
 
-      assert.equal(events.length, 2);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[1].state.action, Action.Update);
-      assert.equal(events[1].state.source, Source.Input);
-      assert.equal(events[1].state.attributes.value, newValueString);
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Update);
+      assert.equal(events[0].state.source, Source.Input);
+      assert.equal(events[0].state.attributes.value, newValueString);
 
       // Explicitly signal that we are done here
       done();

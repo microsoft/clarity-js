@@ -1,7 +1,7 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
 import uncompress from "./uncompress";
-import { cleanupFixture, observeEvents, setupFixture, triggerSend } from "./utils";
+import { cleanupFixture, observeEvents, setupFixture } from "./utils";
 
 import * as chai from "chai";
 
@@ -12,7 +12,9 @@ let assert = chai.assert;
 
 describe("Pointer Tests", () => {
 
-  beforeEach(setupFixture);
+  beforeEach(() => {
+    setupFixture(["pointer"]);
+  });
   afterEach(cleanupFixture);
 
   it("validates that mouse events are processed by clarity", (done) => {
@@ -29,8 +31,6 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "click", 260, 100);
 
     function callback() {
-      triggerSend();
-
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -63,8 +63,6 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "click", 260, 100);
 
     function callback() {
-      triggerSend();
-
       // Uncompress recent data from mutations
       let events = stopObserving();
 
@@ -100,8 +98,6 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "click", 260, 100);
 
     function callback() {
-      triggerSend();
-
       // Uncompress recent data from mutations
       let events = stopObserving();
 

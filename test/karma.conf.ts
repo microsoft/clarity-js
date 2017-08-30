@@ -2,7 +2,7 @@ export = (config) => {
   config.set({
     basePath: "..",
     autoWatch: true,
-    frameworks: ["mocha", "chai", "detectBrowsers", "fixture", "browserify", "jasmine"],
+    frameworks: ["chai", "detectBrowsers", "fixture", "browserify", "jasmine"],
     files: [
       "test/clarity.fixture.html",
       {
@@ -10,7 +10,6 @@ export = (config) => {
       }
     ],
     plugins: [
-      "karma-mocha",
       "karma-chai",
       "karma-chrome-launcher",
       "karma-edge-launcher",
