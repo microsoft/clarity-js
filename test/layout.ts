@@ -2,8 +2,9 @@ import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { IgnoreTag, NodeIndex } from "../src/plugins/layout/stateprovider";
+import { cleanupFixture, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { cleanupFixture, getEventsByType, observeEvents, setupFixture } from "./utils";
+import { getEventsByType, observeEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -31,17 +32,12 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 3);
       assert.equal(events[0].state.tag, "DIV");
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[1].state.tag, "SPAN");
       assert.equal(events[2].state.tag, "*TXT*");
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -57,15 +53,10 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "DIV");
       assert.equal(events[0].state.action, Action.Remove);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -82,14 +73,9 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Move);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -108,16 +94,11 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Move);
       assert.equal(events[0].state.parent, domIndex);
       assert.equal(events[0].state.next, firstChildIndex);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -166,7 +147,6 @@ describe("Layout Tests", () => {
         } else {
           // Non-IE path: Both div and script are reported in the first callback
           observer.disconnect();
-
           assert.equal(events.length, 3);
           assert.equal(events[0].state.action, Action.Insert);
           assert.equal(events[0].state.tag, IgnoreTag);
@@ -174,8 +154,6 @@ describe("Layout Tests", () => {
           assert.equal(events[1].state.tag, IgnoreTag);
           assert.equal(events[2].state.action, Action.Insert);
           assert.equal(events[2].state.tag, "DIV");
-
-          // Explicitly signal that we are done here
           done();
         }
       } else if (callbackCount === 1) {
@@ -195,8 +173,6 @@ describe("Layout Tests", () => {
         assert.equal(events[2].state.tag, IgnoreTag);
         assert.equal(events[3].state.action, Action.Insert);
         assert.equal(events[3].state.tag, "SPAN");
-
-        // Explicitly signal that we are done here
         done();
       }
       callbackCount++;
@@ -219,12 +195,9 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, "SPAN");
 
@@ -236,7 +209,6 @@ describe("Layout Tests", () => {
       assert.equal(events[2].state.index, backup[NodeIndex]);
       assert.equal(events[2].state.next, null);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -293,17 +265,12 @@ describe("Layout Tests", () => {
     }
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, childrenCount);
       assert.equal(events[0].state.action, Action.Move);
       assert.equal(events[0].state.parent, backupIndex);
       assert.equal(events[4].state.parent, backupIndex);
       assert.equal(events[4].state.next, events[5].state.index);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -327,13 +294,9 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-
-      // Check DIV insert event
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, "DIV");
       assert.equal(events[0].state.previous, backupPrevious[NodeIndex]);
@@ -349,7 +312,6 @@ describe("Layout Tests", () => {
       assert.equal(events[2].state.tag, "A");
       assert.equal(events[2].state.next, backup[NodeIndex]);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -374,8 +336,6 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       // Make sure that there is a remove event for every child
@@ -391,7 +351,6 @@ describe("Layout Tests", () => {
         assert.equal(NodeIndex in children[i], false);
       }
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -416,9 +375,7 @@ describe("Layout Tests", () => {
     function callback() {
       observer.disconnect();
 
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Remove);
       assert.equal(events[0].state.index, backupNodeIndex);
@@ -427,7 +384,6 @@ describe("Layout Tests", () => {
       assert.equal(NodeIndex in tempNode, false);
       assert.equal(NodeIndex in backupNode, false);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -446,16 +402,11 @@ describe("Layout Tests", () => {
       div.setAttribute("data-clarity", "test");
       if (count++ > 0) {
         observer.disconnect();
-
-        // Uncompress recent data from mutations
         let events = stopObserving();
-
         assert.equal(events.length, 2);
         assert.equal(events[0].state.action, Action.Insert);
         assert.equal(events[0].state.tag, "DIV");
         assert.equal(events[1].state.action, Action.Update);
-
-        // Explicitly signal that we are done here
         done();
       }
     }
@@ -473,15 +424,10 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, "DIV");
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -499,16 +445,11 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, "DIV");
       assert.equal(events[0].state.parent, clarity[NodeIndex]);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -530,18 +471,13 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 2);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.index, div1[NodeIndex]);
       assert.equal(events[1].state.action, Action.Insert);
       assert.equal(events[1].state.index, div2[NodeIndex]);
       assert.equal(div1[NodeIndex], div2[NodeIndex] - 1);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -558,8 +494,6 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       // Prove that we didn't send any extra instrumentation back for no-op mutation
@@ -568,7 +502,6 @@ describe("Layout Tests", () => {
       // Make sure that clarity index is cleared from all removed nodes
       assert.equal(NodeIndex in div, false);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -587,7 +520,6 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-
       let events = stopObserving();
 
       // Prove that we didn't send any extra instrumentation back for no-op mutation
@@ -597,7 +529,6 @@ describe("Layout Tests", () => {
       assert.equal(NodeIndex in div, false);
       assert.equal(NodeIndex in span, false);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -615,8 +546,6 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       // Prove that we didn't send any extra instrumentation back for no-op mutation
@@ -628,7 +557,6 @@ describe("Layout Tests", () => {
       assert.equal(NodeIndex in clarityDiv, false);
       assert.equal(NodeIndex in span, false);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -654,9 +582,7 @@ describe("Layout Tests", () => {
     function callback() {
       observer.disconnect();
 
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 2);
 
       // Check DIV insert event
@@ -669,7 +595,6 @@ describe("Layout Tests", () => {
       assert.equal(events[1].state.parent, n1[NodeIndex]);
       assert.equal(events[1].state.tag, "SPAN");
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -690,8 +615,6 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       assert.equal(events.length, 4);
@@ -708,7 +631,6 @@ describe("Layout Tests", () => {
       assert.equal(events[2].state.mutationSequence, mutationSequence);
       assert.equal(events[3].state.mutationSequence, mutationSequence);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -727,7 +649,6 @@ describe("Layout Tests", () => {
       if (callbackNumber === 1) {
         observer.disconnect();
 
-        // Uncompress recent data from mutations
         let events = stopObserving();
         assert.equal(events.length, 2);
 
@@ -735,7 +656,6 @@ describe("Layout Tests", () => {
         assert.isTrue(firstEventSequence >= 0);
         assert.equal(events[1].state.mutationSequence, firstEventSequence + 1);
 
-        // Explicitly signal that we are done here
         done();
       } else {
         document.body.appendChild(divTwo);
@@ -759,15 +679,11 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "IMG");
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal("src" in events[0].state.attributes, false);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -788,16 +704,11 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "IMG");
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.attributes["src"], src);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -817,16 +728,11 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "INPUT");
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.attributes["value"], "*******");
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -844,7 +750,6 @@ describe("Layout Tests", () => {
     function callback() {
       observer.disconnect();
 
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       assert.equal(events.length, 2);
@@ -856,7 +761,6 @@ describe("Layout Tests", () => {
       assert.equal(events[1].state.tag, IgnoreTag);
       assert.equal(events[1].state.nodeType, Node.TEXT_NODE);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -872,16 +776,11 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, IgnoreTag);
       assert.equal(events[0].state.nodeType, Node.ELEMENT_NODE);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -897,16 +796,11 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, IgnoreTag);
       assert.equal(events[0].state.nodeType, Node.COMMENT_NODE);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -939,15 +833,10 @@ describe("Layout Tests", () => {
 
     function scrollCallback() {
       outerDiv.removeEventListener("scroll", scrollCallback);
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Update);
       assert.equal(events[0].state.source, Source.Scroll);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -979,16 +868,11 @@ describe("Layout Tests", () => {
 
     function inputChangeCallback() {
       input.removeEventListener("change", inputChangeCallback);
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Update);
       assert.equal(events[0].state.source, Source.Input);
       assert.equal(events[0].state.attributes.value, newValueString);
-
-      // Explicitly signal that we are done here
       done();
     }
   });

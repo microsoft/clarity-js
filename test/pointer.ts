@@ -1,7 +1,7 @@
 import { config } from "../src/config";
-import * as core from "../src/core";
-import uncompress from "./uncompress";
-import { cleanupFixture, observeEvents, setupFixture } from "./utils";
+import { getTimestamp } from "../src/core";
+import { cleanupFixture, setupFixture } from "./testsetup";
+import { observeEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -31,9 +31,8 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "click", 260, 100);
 
     function callback() {
-      // Uncompress recent data from mutations
+      document.removeEventListener("click", callback);
       let events = stopObserving();
-
       assert.equal(events.length, 4);
       assert.equal(events[0].state.event, "mousemove");
       assert.equal(events[0].state.x, x);
@@ -42,8 +41,6 @@ describe("Pointer Tests", () => {
       assert.equal(events[2].state.event, "mousemove");
       assert.equal(events[2].state.x, x + (xDelta * 2));
       assert.equal(events[3].state.event, "click");
-
-      document.removeEventListener("click", callback);
       done();
     }
   });
@@ -63,17 +60,14 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "click", 260, 100);
 
     function callback() {
-      // Uncompress recent data from mutations
+      document.removeEventListener("click", callback);
       let events = stopObserving();
-
       assert.equal(events.length, 3);
       assert.equal(events[0].state.event, "mousemove");
       assert.equal(events[0].state.x, x);
       assert.equal(events[1].state.event, "mousemove");
       assert.equal(events[1].state.x, x + (xDelta * 2));
       assert.equal(events[2].state.event, "click");
-
-      document.removeEventListener("click", callback);
       done();
     }
   });
@@ -89,8 +83,8 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "mousemove", x, 100);
     triggerMouseEvent(dom, "mousemove", x, 100);
 
-    let thresholdTs = core.getTimestamp(true) + (timeThreshold * 2);
-    while (core.getTimestamp(true) < thresholdTs) {
+    let thresholdTs = getTimestamp(true) + (timeThreshold * 2);
+    while (getTimestamp(true) < thresholdTs) {
       // Wait for time threadhold to expire
     }
 
@@ -98,17 +92,14 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "click", 260, 100);
 
     function callback() {
-      // Uncompress recent data from mutations
+      document.removeEventListener("click", callback);
       let events = stopObserving();
-
       assert.equal(events.length, 3);
       assert.equal(events[0].state.event, "mousemove");
       assert.equal(events[0].state.x, x);
       assert.equal(events[1].state.event, "mousemove");
       assert.equal(events[1].state.x, x);
       assert.equal(events[2].state.event, "click");
-
-      document.removeEventListener("click", callback);
       done();
     }
   });

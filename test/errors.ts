@@ -1,4 +1,5 @@
-import { activateCore, cleanupFixture, getAllSentEvents, observeEvents, setupFixture } from "./utils";
+import { cleanupFixture, setupFixture } from "./testsetup";
+import { observeEvents } from "./utils";
 
 import * as chai from "chai";
 import * as errors from "../src/plugins/errors";

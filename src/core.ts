@@ -131,6 +131,24 @@ export function instrument(eventState: IInstrumentationEventState) {
   }
 }
 
+export function onWorkerMessage(evt: MessageEvent) {
+  let message = JSON.parse(evt.data) as IWorkerMessage;
+  switch (message.type) {
+    case WorkerMessageType.Upload:
+      let uploadMsg = message as IUploadMessage;
+      let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
+      let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uploadMsg.rawData, uploadMsg.compressedData); };
+      let compressedKb = Math.ceil(uploadMsg.compressedData.length / 1024.0);
+      let rawKb = Math.ceil(uploadMsg.rawData.length / 1024.0);
+      let envelope = JSON.parse(uploadMsg.rawData).envelope as IEnvelope;
+      upload(uploadMsg.compressedData, onSuccess, onFailure);
+      debug(`** Clarity #${envelope.sequenceNumber}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
+      break;
+    default:
+      break;
+  }
+}
+
 function getUnixTimestamp(): number {
   return (window.performance && performance.now && performance.timing)
     ? performance.now() + performance.timing.navigationStart
@@ -158,24 +176,6 @@ function envelope(): IEnvelope {
   };
 }
 
-function onWorkerMessage(evt: MessageEvent) {
-  let message = JSON.parse(evt.data) as IWorkerMessage;
-  switch (message.type) {
-    case WorkerMessageType.Upload:
-      let uploadMsg = message as IUploadMessage;
-      let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
-      let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uploadMsg.rawData, uploadMsg.compressedData); };
-      let compressedKb = Math.ceil(uploadMsg.compressedData.length / 1024.0);
-      let rawKb = Math.ceil(uploadMsg.rawData.length / 1024.0);
-      let envelope = JSON.parse(uploadMsg.rawData).envelope as IEnvelope;
-      upload(uploadMsg.compressedData, onSuccess, onFailure);
-      debug(`** Clarity #${envelope.sequenceNumber}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
-      break;
-    default:
-      break;
-  }
-}
-
 function uploadDroppedPayloadsMappingFunction(sequenceNumber: string, droppedPayloadInfo: IDroppedPayloadInfo) {
   let onSuccess = (status: number) => { onResendDeliverySuccess(droppedPayloadInfo); };
   let onFailure = (status: number) => { onResendDeliveryFailure(status, droppedPayloadInfo); };
@@ -188,6 +188,7 @@ function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadC
   } else {
     defaultUpload(payload, onSuccess, onFailure);
   }
+  sentBytesCount += payload.length;
   if (state === State.Activated && sentBytesCount > config.totalLimit) {
     let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
       type: Instrumentation.TotalByteLimitExceeded,
@@ -196,7 +197,6 @@ function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadC
     instrument(totalByteLimitExceededEventState);
     teardown();
   }
-  sentBytesCount += payload.length;
 }
 
 function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {

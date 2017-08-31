@@ -1,6 +1,6 @@
 import compress from "../src/compress";
+import { cleanupFixture, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { cleanupFixture, setupFixture } from "./utils";
 
 let assert = chai.assert;
 

@@ -1,13 +1,10 @@
-import { start, stop } from "../src/clarity";
-import { config } from "../src/config";
-import { addEvent, forceUpload } from "../src/core";
-import { mapProperties } from "../src/utils";
-import { clearSentEvents, getSentEvents, onWorkerMessage, testConfig } from "./testsetup";
-import uncompress from "./uncompress";
+
+import compress from "../src/compress";
+import { addEvent, onWorkerMessage } from "../src/core";
+import { guid } from "../src/utils";
+import { getSentEvents } from "./testsetup";
 
 export const MockEventName = "ClarityTestMockEvent";
-
-let originalConfig: IConfig = config;
 
 export function triggerMockEvent(eventName?: string) {
   eventName = eventName || MockEventName;
@@ -40,44 +37,43 @@ export function getEventsByCustomCondition(events: IEvent[], conditionFunction: 
   return matchingEvents;
 }
 
-export function getAllSentEvents() {
-  return getSentEvents();
-}
-
-export function setupFixture(plugins?: string[]) {
-  fixture.setBase("test");
-  fixture.load("clarity.fixture.html");
-  jasmine.clock().install();
-
-  spyOn(Worker.prototype, "postMessage").and.callFake(onWorkerMessage);
-  testConfig.plugins = plugins || config.plugins;
-  activateCore(testConfig);
-}
-
-export function cleanupFixture() {
-  fixture.cleanup();
-  stop();
-  resetConfig();
-  jasmine.clock().uninstall();
-}
-
-export function activateCore(config?: IConfig) {
-  clearSentEvents();
-  start(config);
-  waitForStartupAcvitityToFinish();
-}
-
-export function resetConfig() {
-  mapProperties(originalConfig, null, true, config);
-}
-
-function waitForStartupAcvitityToFinish() {
-  let currentEventsLength = getSentEvents().length;
-  let hasNewEvents = true;
-  while (hasNewEvents) {
-    jasmine.clock().tick(config.delay * 2);
-    let newSentEventsLength = getSentEvents().length;
-    hasNewEvents = newSentEventsLength > currentEventsLength;
-    currentEventsLength = newSentEventsLength;
+export function uploadEvents(events: IEvent[], envelope?: IEnvelope) {
+  let mockNextPayload: string[] = [];
+  for (let i = 0; i < events.length; i++) {
+    mockNextPayload.push(JSON.stringify(events[i]));
   }
+  envelope = envelope || getMockEnvelope();
+  let mockRawData = `{"envelope":${JSON.stringify(envelope)},"events":[${mockNextPayload.join()}]}`;
+  let mockCompressedData = compress(mockRawData);
+  let mockUploadMessage: IUploadMessage = {
+    type: WorkerMessageType.Upload,
+    compressedData: mockCompressedData,
+    rawData: mockRawData
+  };
+  let mockUploadMessageEvent = {
+    data: JSON.stringify(mockUploadMessage)
+  } as MessageEvent;
+  onWorkerMessage(mockUploadMessageEvent);
+}
+
+export function getMockEnvelope() {
+  let mockEnvelope: IEnvelope = {
+    clarityId: guid(),
+    impressionId: guid(),
+    sequenceNumber: 0,
+    time: new Date().getTime(),
+    url: window.location.toString(),
+    version: "0.0.0"
+  };
+  return mockEnvelope;
+}
+
+export function getMockEvent() {
+  let mockEvent: IEvent = {
+    id: 0,
+    state: {},
+    time: new Date().getTime(),
+    type: MockEventName
+  };
+  return mockEvent;
 }

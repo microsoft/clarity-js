@@ -1,6 +1,7 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
-import { cleanupFixture, getAllSentEvents, getEventsByType, observeEvents, setupFixture } from "./utils";
+import { cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
+import { getEventsByType, observeEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -30,7 +31,7 @@ describe("Performance Tests", () => {
   it("checks that w3c performance timing is logged by clarity", (done) => {
     // Timings are checked in an interval, so it needs additional time to re-invoke the check
     fastForwardToNextPerformancePoll();
-    let events = getEventsByType(getAllSentEvents(), navigationTimingEventName);
+    let events = getEventsByType(getSentEvents(), navigationTimingEventName);
     assert.equal(events.length, 1);
 
     let timing = events[0].state && events[0].state.timing;
