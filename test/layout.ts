@@ -18,7 +18,7 @@ describe("Layout Tests", () => {
   });
   afterEach(cleanupFixture);
 
-  it("checks that dom additions are captured by clarity", (done) => {
+  it("checks that dom additions are captured by clarity", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -42,7 +42,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that dom removals are captured by clarity", (done) => {
+  it("checks that dom removals are captured by clarity", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -61,7 +61,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that dom moves are captured correctly by clarity", (done) => {
+  it("checks that dom moves are captured correctly by clarity", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -80,7 +80,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that insertBefore works correctly", (done) => {
+  it("checks that insertBefore works correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -121,7 +121,7 @@ describe("Layout Tests", () => {
   //  state and stop processing mutations.
   // Solution:
   //  Wait for 2 consequtive mutations that bring ShadowDOM to the inconsistent state before disabling mutation processing.
-  it("checks that inserting script, which inserts an element, works correctly", (done) => {
+  it("checks that inserting script, which inserts an element, works correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -179,7 +179,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that moving two known nodes to a new location such that they are siblings works correctly", (done) => {
+  it("checks that moving two known nodes to a new location such that they are siblings works correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -216,7 +216,7 @@ describe("Layout Tests", () => {
   //  Currently we stopped capturing CSS rule modifications, so disabling this test
   //  Keeping it in code to use it again, once CSS rule modification capturing is restored
   //
-  //  it('ensures we capture css rule modifications via javascript', (done) => {
+  //  it('ensures we capture css rule modifications via javascript', (done: DoneFn) => {
   //    let observer = new MutationObserver(callback);
   //    observer.observe(document, {"childList": true,"subtree": true});
 
@@ -250,7 +250,7 @@ describe("Layout Tests", () => {
   //    };
   //  });
 
-  it("checks dom changes are captured accurately when multiple siblings are moved to another parent", (done) => {
+  it("checks dom changes are captured accurately when multiple siblings are moved to another parent", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -275,7 +275,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that insertion of multiple nodes in the same mutation record is handled correctly", (done) => {
+  it("checks that insertion of multiple nodes in the same mutation record is handled correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
     let stopObserving = observeEvents(eventName);
@@ -316,7 +316,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that removal of multiple nodes in the same mutation record is handled correctly", (done) => {
+  it("checks that removal of multiple nodes in the same mutation record is handled correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
     let stopObserving = observeEvents(eventName);
@@ -358,7 +358,7 @@ describe("Layout Tests", () => {
   // Nodes that are inserted and then removed in the same mutation don't produce any events and their mutations are ignored
   // However, it's possible that some other observed node can be appended to the ignored node and then get removed from the
   // DOM as a part of the ignored node's subtree. This test makes sure that removing observed node this way is captured correctly.
-  it("checks that removal of a known node through a subtree of its ignored parent is handled correctly", (done) => {
+  it("checks that removal of a known node through a subtree of its ignored parent is handled correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
     let stopObserving = observeEvents(eventName);
@@ -388,7 +388,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that dom addition with the follow-up attribute change captures the 'Update' action", (done) => {
+  it("checks that dom addition with the follow-up attribute change captures the 'Update' action", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -412,7 +412,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that dom addition with immediate attribute change ignores the 'Update' action", (done) => {
+  it("checks that dom addition with immediate attribute change ignores the 'Update' action", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -432,7 +432,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that dom addition with immediate move ignores the 'Move' action", (done) => {
+  it("checks that dom addition with immediate move ignores the 'Move' action", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -454,7 +454,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that nodes that are added and removed in the same mutation don't create index gaps in event logs ", (done) => {
+  it("checks that nodes that are added and removed in the same mutation don't create index gaps in event logs ", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -482,7 +482,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that we do not instrument disconnected dom tree", (done) => {
+  it("checks that we do not instrument disconnected dom tree", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -506,7 +506,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that we do not instrument child nodes within disconnected dom tree", (done) => {
+  it("checks that we do not instrument child nodes within disconnected dom tree", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -533,7 +533,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that we do not instrument child nodes within a previously observed disconnected dom tree", (done) => {
+  it("checks that we do not instrument child nodes within a previously observed disconnected dom tree", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -561,7 +561,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that we do not instrument inserted nodes twice", (done) => {
+  it("checks that we do not instrument inserted nodes twice", (done: DoneFn) => {
     // Edge case scenario for the test:
     // 1. Node n1 is added to the page
     // 2. Immediately node n2 is appended to n1
@@ -599,7 +599,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that all kinds of mutations within the same batch have the same mutation sequence", (done) => {
+  it("checks that all kinds of mutations within the same batch have the same mutation sequence", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -635,7 +635,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that mutation sequence number is incremented between mutation callbacks", (done) => {
+  it("checks that mutation sequence number is incremented between mutation callbacks", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -664,7 +664,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that images source is not captured if the config disallows it", (done) => {
+  it("checks that images source is not captured if the config disallows it", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -688,7 +688,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that images source is captured if the config allows it", (done) => {
+  it("checks that images source is captured if the config allows it", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -713,7 +713,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that input value is masked if the config is set to not show text", (done) => {
+  it("checks that input value is masked if the config is set to not show text", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -737,7 +737,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that script element and its text are ignored", (done) => {
+  it("checks that script element and its text are ignored", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -765,7 +765,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that meta element is ignored", (done) => {
+  it("checks that meta element is ignored", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -785,7 +785,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that comment node is ignored", (done) => {
+  it("checks that comment node is ignored", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -805,7 +805,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that scroll capturing works on inserted element", (done) => {
+  it("checks that scroll capturing works on inserted element", (done: DoneFn) => {
     let stopObserving = null;
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
@@ -841,7 +841,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that input change capturing works on inserted element", (done) => {
+  it("checks that input change capturing works on inserted element", (done: DoneFn) => {
     let stopObserving = null;
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });

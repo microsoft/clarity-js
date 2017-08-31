@@ -90,12 +90,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
     time: getTimestamp()
   };
   compressionWorker.postMessage(JSON.stringify(addEventMessage));
-
-  // Edge case: Don't schedule next upload for XhrError instrumentation events
-  // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
-  // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
-  let payloadIsSingleXhrErrorEvent = event.state && event.state.type === Instrumentation.XhrError;
-  if (scheduleUpload && !payloadIsSingleXhrErrorEvent) {
+  if (scheduleUpload) {
     clearTimeout(timeout);
     timeout = setTimeout(forceUpload, config.delay);
   }

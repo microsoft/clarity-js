@@ -12,7 +12,7 @@ describe("Error Tests", () => {
     });
     afterEach(cleanupFixture);
 
-    it("checks that a single error event is logged", (done) => {
+    it("checks that a single error event is logged", (done: DoneFn) => {
         let stopObserving = observeEvents();
         let syntheticEvent = document.createEvent("CustomEvent");
         let message = "sample error text";
@@ -36,7 +36,7 @@ describe("Error Tests", () => {
         done();
      });
 
-    it("checks empty message when not passed", (done) => {
+    it("checks empty message when not passed", (done: DoneFn) => {
         let stopObserving = observeEvents();
         let syntheticEvent = document.createEvent("CustomEvent");
         let message = null;
@@ -59,7 +59,7 @@ describe("Error Tests", () => {
         done();
     });
 
-    it("checks that multiple error events are logged", (done) => {
+    it("checks that multiple error events are logged", (done: DoneFn) => {
         let stopObserving = observeEvents();
         let syntheticEvent = document.createEvent("CustomEvent");
         let message = "sample error text";
@@ -76,7 +76,7 @@ describe("Error Tests", () => {
         done();
     });
 
-    it("checks error objects directly passed are parsed", (done) => {
+    it("checks error objects directly passed are parsed", (done: DoneFn) => {
         let stopObserving = observeEvents();
         let message = "sample error text";
         let syntheticEvent = document.createEvent("CustomEvent");

@@ -25,6 +25,11 @@ function workerContext() {
   let nextPayloadLength = 0;
   let sequence = 0;
 
+  // Edge case: Don't schedule next upload for XhrError instrumentation events
+  // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
+  // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
+  let nextPayloadIsSingleXhrErrorEvent: boolean =  false;
+
   onmessage = (evt: MessageEvent) => {
     let message = JSON.parse(evt.data) as IWorkerMessage;
     switch (message.type) {
@@ -52,15 +57,18 @@ function workerContext() {
     }
     nextPayload.push(eventStr);
     nextPayloadLength += eventStr.length;
+    nextPayloadIsSingleXhrErrorEvent = (nextPayload.length === 1 && event.state && event.state.type === Instrumentation.XhrError);
+    if (nextPayloadLength >= config.batchLimit) {
+      uploadNextPayload(time);
+    }
   }
 
   function uploadNextPayload(time: number) {
-    if (nextPayloadLength > 0) {
+    if (nextPayloadLength > 0 && !nextPayloadIsSingleXhrErrorEvent) {
       envelope.sequenceNumber = sequence++;
       envelope.time = time;
       let raw = `{"envelope":${JSON.stringify(envelope)},"events":[${nextPayload.join()}]}`;
       let compressed = compress(raw);
-
       nextPayload = [];
       nextPayloadLength = 0;
       upload(compressed, raw);

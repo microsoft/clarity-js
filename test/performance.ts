@@ -28,7 +28,7 @@ describe("Performance Tests", () => {
     cleanupFixture();
   });
 
-  it("checks that w3c performance timing is logged by clarity", (done) => {
+  it("checks that w3c performance timing is logged by clarity", (done: DoneFn) => {
     // Timings are checked in an interval, so it needs additional time to re-invoke the check
     fastForwardToNextPerformancePoll();
     let events = getEventsByType(getSentEvents(), navigationTimingEventName);
@@ -41,7 +41,7 @@ describe("Performance Tests", () => {
     done();
   });
 
-  it("checks that network resource timings are logged by clarity", (done) => {
+  it("checks that network resource timings are logged by clarity", (done: DoneFn) => {
     let stopObserving = observeEvents(resourceTimingEventName);
     let dummyEntry = { initiatorType: "dummy", responseEnd: 1 };
     dummyResourceTimings.push(dummyEntry);
@@ -58,7 +58,7 @@ describe("Performance Tests", () => {
     done();
   });
 
-  it("checks that multiple network resource timings are logged together", (done) => {
+  it("checks that multiple network resource timings are logged together", (done: DoneFn) => {
     let stopObserving = observeEvents(resourceTimingEventName);
     dummyResourceTimings.push({ responseEnd: 1 });
     dummyResourceTimings.push({ responseEnd: 1 });
@@ -74,7 +74,7 @@ describe("Performance Tests", () => {
     done();
   });
 
-  it("checks that error is logged when entries are cleared", (done) => {
+  it("checks that error is logged when entries are cleared", (done: DoneFn) => {
     let stopObserving = observeEvents(resourceTimingEventName);
     dummyResourceTimings.push({ responseEnd: 1 });
     fastForwardToNextPerformancePoll();
@@ -92,7 +92,7 @@ describe("Performance Tests", () => {
     done();
   });
 
-  it("checks that incomplete entries are not logged initially, but then revisited", (done) => {
+  it("checks that incomplete entries are not logged initially, but then revisited", (done: DoneFn) => {
     let completeEntry = { responseEnd: 1, initiatorType: "completeEntry" };
     let incompleteEntry = { responseEnd: 0, initiatorType: "incompleteEntry" };
     let stopObserving = observeEvents(resourceTimingEventName);

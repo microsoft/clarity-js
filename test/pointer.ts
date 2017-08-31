@@ -17,7 +17,7 @@ describe("Pointer Tests", () => {
   });
   afterEach(cleanupFixture);
 
-  it("validates that mouse events are processed by clarity", (done) => {
+  it("validates that mouse events are processed by clarity", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
     let stopObserving = observeEvents(eventName);
     document.addEventListener("click", callback);
@@ -46,7 +46,7 @@ describe("Pointer Tests", () => {
   });
 
   // Make sure that we don't record mouse events that are too close to each other
-  it("validates that mouse events are throttled by distance", (done) => {
+  it("validates that mouse events are throttled by distance", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
     let stopObserving = observeEvents(eventName);
     document.addEventListener("click", callback);
@@ -73,7 +73,7 @@ describe("Pointer Tests", () => {
   });
 
   // Make sure that we don't record mouse events that are too close to each other
-  it("validates that mouse events are throttled by time", (done) => {
+  it("validates that mouse events are throttled by time", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
     let stopObserving = observeEvents(eventName);
     document.addEventListener("click", callback);

@@ -56,11 +56,11 @@ export function uploadEvents(events: IEvent[], envelope?: IEnvelope) {
   onWorkerMessage(mockUploadMessageEvent);
 }
 
-export function getMockEnvelope() {
+export function getMockEnvelope(sequenceNumber?: number) {
   let mockEnvelope: IEnvelope = {
     clarityId: guid(),
     impressionId: guid(),
-    sequenceNumber: 0,
+    sequenceNumber: sequenceNumber >= 0 ? sequenceNumber : -1,
     time: new Date().getTime(),
     url: window.location.toString(),
     version: "0.0.0"
@@ -68,12 +68,12 @@ export function getMockEnvelope() {
   return mockEnvelope;
 }
 
-export function getMockEvent() {
+export function getMockEvent(eventName?: string) {
   let mockEvent: IEvent = {
-    id: 0,
+    id: -1,
     state: {},
     time: new Date().getTime(),
-    type: MockEventName
+    type: eventName || MockEventName
   };
   return mockEvent;
 }

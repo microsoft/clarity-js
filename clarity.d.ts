@@ -126,13 +126,13 @@ interface ITimestampedWorkerMessage extends IWorkerMessage {
   time: number;
 }
 
+interface IAddEventMessage extends ITimestampedWorkerMessage {
+  event: IEvent;
+}
+
 interface IUploadMessage extends IWorkerMessage {
   compressedData: string;
   rawData: string;
-}
-
-interface IAddEventMessage extends ITimestampedWorkerMessage {
-  event: IEvent;
 }
 
 /* ##################################### */

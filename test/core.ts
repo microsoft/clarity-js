@@ -18,7 +18,7 @@ describe("Core Tests", () => {
   });
   afterEach(cleanupFixture);
 
-  it("validates that missing feature event is sent when required feature is missing", (done) => {
+  it("validates that missing feature event is sent when required feature is missing", (done: DoneFn) => {
     core.teardown();
     let stopObserving = observeEvents();
     // Function.prototype.bind is a required API for Clarity to work
@@ -37,7 +37,7 @@ describe("Core Tests", () => {
     done();
   });
 
-  it("validates that custom sendCallback is invoked when passed through config", (done) => {
+  it("validates that custom sendCallback is invoked when passed through config", (done: DoneFn) => {
     let sendCount = 0;
     config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
       sendCount++;
@@ -51,7 +51,7 @@ describe("Core Tests", () => {
     done();
   });
 
-  it("validates that XhrError is logged for failed requests through the 'onFailure' upload callback ", (done) => {
+  it("validates that XhrError is logged for failed requests through the 'onFailure' upload callback ", (done: DoneFn) => {
     config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
       // Suppose XHR was opened and returned a 400 code
       onFailure(400);
@@ -69,7 +69,7 @@ describe("Core Tests", () => {
     done();
   });
 
-  it("validates that dropped payloads are re-sent through the next request's 'onSuccess' callback", (done) => {
+  it("validates that dropped payloads are re-sent through the next request's 'onSuccess' callback", (done: DoneFn) => {
     let mockFailure = true;
     let uploadInvocationCount = 0;
     let attemptedPayloads: string[] = [];
@@ -89,10 +89,8 @@ describe("Core Tests", () => {
     // Part 1: Mock an XHR failure, so that dropped payload is stored for re-delivery
     let stopObserving = observeEvents();
     let firstMockEventName = "FirstMockEvent";
-    let firstMockEvent = getMockEvent();
-    let firstEnvelope = getMockEnvelope();
-    firstMockEvent.type = firstMockEventName;
-    firstEnvelope.sequenceNumber = 0;
+    let firstMockEvent = getMockEvent(firstMockEventName);
+    let firstEnvelope = getMockEnvelope(0);
     uploadEvents([firstMockEvent], firstEnvelope);
 
     // Ensure XHR failure is logged
@@ -104,10 +102,8 @@ describe("Core Tests", () => {
 
     // Part 2: Successfully send second payload, which should trigger re-send of the first payload
     let secondMockEventName = "SecondMockEvent";
-    let secondMockEvent = getMockEvent();
-    let secondEnvelope = getMockEnvelope();
-    secondMockEvent.type = secondMockEventName;
-    secondEnvelope.sequenceNumber = 1;
+    let secondMockEvent = getMockEvent(secondMockEventName);
+    let secondEnvelope = getMockEnvelope(1);
     uploadEvents([secondMockEvent], secondEnvelope);
 
     // Upload invocations: First payload, second payload, first payload re-upload
@@ -135,7 +131,7 @@ describe("Core Tests", () => {
     done();
   });
 
-  it("validates that multiple bindings with same event name get bound correctly", (done) => {
+  it("validates that multiple bindings with same event name get bound correctly", (done: DoneFn) => {
     let img = document.createElement("img");
     let firstHandlerFired = false;
     let secondHandlerFired = false;
@@ -162,7 +158,7 @@ describe("Core Tests", () => {
     }
   });
 
-  it("validates that multiple bindings with same event name get unbound on teardown", (done) => {
+  it("validates that multiple bindings with same event name get unbound on teardown", (done: DoneFn) => {
     let img = document.createElement("img");
     let firstHandlerFired = false;
     let secondHandlerFired = false;
@@ -190,7 +186,7 @@ describe("Core Tests", () => {
     }
   });
 
-  it("validates that Clarity tears down and logs instrumentation when total byte limit is exceeded", (done) => {
+  it("validates that Clarity tears down and logs instrumentation when total byte limit is exceeded", (done: DoneFn) => {
     assert.equal(core.state, State.Activated);
 
     let stopObserving = observeEvents("Instrumentation");
@@ -206,7 +202,7 @@ describe("Core Tests", () => {
     done();
   });
 
-  it("validates that Clarity tears down on activate, when another instance of Clarity is already activated", (done) => {
+  it("validates that Clarity tears down on activate, when another instance of Clarity is already activated", (done: DoneFn) => {
     core.teardown();
     document[core.ClarityAttribute] = 1;
     activateCore();
@@ -214,7 +210,7 @@ describe("Core Tests", () => {
     done();
   });
 
-  it("validates that Clarity logs instrumentation, when another instance of Clarity is already activated", (done) => {
+  it("validates that Clarity logs instrumentation, when another instance of Clarity is already activated", (done: DoneFn) => {
     let mockExistingImpressionId = "1";
     core.teardown();
     document[core.ClarityAttribute] = mockExistingImpressionId;
