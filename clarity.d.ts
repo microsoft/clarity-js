@@ -324,13 +324,7 @@ declare const enum Instrumentation {
   Teardown,
   ClarityAssertFailed,
   ClarityDuplicated,
-  ShadowDomInconsistent,
-  Timestamp
-}
-
-declare const enum TimestampSource {
-  LayoutBackfillStart,
-  LayoutBackfillEnd
+  ShadowDomInconsistent
 }
 
 interface IInstrumentationEventState {
@@ -390,10 +384,6 @@ interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
   // from consistent to inconsistent state happened on some previous action and there was also an event created for it.
   // That first event is sent in this property.
   firstEvent?: IShadowDomInconsistentEventState;
-}
-
-interface ITimestampEventState extends IInstrumentationEventState {
-  source: TimestampSource;
 }
 
 /* ##################################### */
