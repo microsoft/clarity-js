@@ -2,7 +2,7 @@
 import compress from "../src/compress";
 import { addEvent, onWorkerMessage } from "../src/core";
 import { guid } from "../src/utils";
-import { getSentEvents } from "./testsetup";
+import { getSentEvents, getWorkerMessages } from "./testsetup";
 
 export const MockEventName = "ClarityTestMockEvent";
 
@@ -16,6 +16,15 @@ export function observeEvents(eventType?: string): () => IEvent[] {
   let stopObserving = (): IEvent[] => {
     let newEvents = getSentEvents().slice(initialEventsLength);
     return eventType ? getEventsByType(newEvents, eventType) : newEvents;
+  };
+  return stopObserving;
+}
+
+export function observeWorkerMessages() {
+  let initialEventsLength = getWorkerMessages().length;
+  let stopObserving = (): IWorkerMessage[] => {
+    let newMessages = getWorkerMessages().slice(initialEventsLength);
+    return newMessages;
   };
   return stopObserving;
 }

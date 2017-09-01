@@ -2,7 +2,7 @@ import { config } from "../src/config";
 import * as core from "../src/core";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, triggerMockEvent, uploadEvents } from "./utils";
+import { getMockEnvelope, getMockEvent, observeEvents, observeWorkerMessages, uploadEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -223,6 +223,40 @@ describe("Core Tests", () => {
     assert.equal(events[0].state.currentImpressionId, mockExistingImpressionId);
     assert.equal(events[1].type, instrumentationEventName);
     assert.equal(events[1].state.type, Instrumentation.Teardown);
+    done();
+  });
+
+  it("validates that force upload message is sent after config.delay milliseconds without new events", (done: DoneFn) => {
+    let mockEvent = getMockEvent();
+    core.addEvent(mockEvent);
+
+    let stopObserving = observeWorkerMessages();
+    // Fast forward to force upload
+    jasmine.clock().tick(config.delay + 1);
+
+    let workerMessages = stopObserving();
+    assert.equal(workerMessages.length, 1);
+    assert.equal(workerMessages[0].type, WorkerMessageType.ForceUpload);
+    done();
+  });
+
+  it("validates that force upload timeout is pushed back with each new event", (done: DoneFn) => {
+    let mockEvent = getMockEvent();
+    let eventCount = 10;
+    let stopObserving = observeWorkerMessages();
+
+    for (let i = 0; i < eventCount; i++) {
+      core.addEvent(mockEvent);
+      jasmine.clock().tick(config.delay * (2 / 3));
+    }
+    jasmine.clock().tick(config.delay * (1 / 3));
+
+    let workerMessages = stopObserving();
+    assert.equal(workerMessages.length, eventCount + 1);
+    for (let i = 0; i < eventCount; i++) {
+      assert.equal(workerMessages[i].type, WorkerMessageType.AddEvent);
+    }
+    assert.equal(workerMessages[eventCount].type, WorkerMessageType.ForceUpload);
     done();
   });
 

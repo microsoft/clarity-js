@@ -3,7 +3,8 @@ import { config } from "../src/config";
 import { guid, mapProperties } from "../src/utils";
 import { testConfig } from "./clarity";
 
-export let sentEvents = [];
+let sentEvents = [];
+let workerMessages: IWorkerMessage[] = [];
 let workerPostMessageSpy: jasmine.Spy = null;
 let originalConfig: IConfig = config;
 
@@ -26,13 +27,22 @@ export function cleanupFixture() {
 }
 
 export function activateCore(config?: IConfig) {
-  sentEvents = [];
+  resetSetup();
   start(config);
   waitForStartupAcvitityToFinish();
 }
 
 export function getSentEvents() {
   return sentEvents;
+}
+
+export function getWorkerMessages() {
+  return workerMessages;
+}
+
+function resetSetup() {
+  sentEvents = [];
+  workerMessages = [];
 }
 
 function waitForStartupAcvitityToFinish() {
@@ -65,5 +75,6 @@ function mockWorkerOnMessage(data: any) {
       default:
         break;
     }
+    workerMessages.push(message);
   }
 }
