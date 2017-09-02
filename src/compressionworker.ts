@@ -25,7 +25,7 @@ function workerContext() {
   let nextPayloadBytes = 0;
   let sequence = 0;
 
-  // Edge case: Don't schedule next upload for XhrError instrumentation events
+  // Edge case: Flag to skip uploading payloads consisting of a single XhrError instrumentation event
   // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
   // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
   let nextPayloadIsSingleXhrErrorEvent: boolean =  false;
