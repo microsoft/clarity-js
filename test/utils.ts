@@ -6,11 +6,6 @@ import { getSentEvents, getWorkerMessages } from "./testsetup";
 
 export const MockEventName = "ClarityTestMockEvent";
 
-export function triggerMockEvent(eventName?: string) {
-  eventName = eventName || MockEventName;
-  addEvent({type: eventName, state: {}});
-}
-
 export function observeEvents(eventType?: string): () => IEvent[] {
   let initialEventsLength = getSentEvents().length;
   let stopObserving = (): IEvent[] => {
@@ -30,20 +25,7 @@ export function observeWorkerMessages() {
 }
 
 export function getEventsByType(events: IEvent[], eventType: string): IEvent[] {
-  function checkEventType(event: IEvent): boolean {
-    return (event.type === eventType);
-  }
-  return getEventsByCustomCondition(events, checkEventType);
-}
-
-export function getEventsByCustomCondition(events: IEvent[], conditionFunction: (event: IEvent) => boolean): IEvent[] {
-  let matchingEvents: IEvent[] = [];
-  for (let i = 0; i < events.length; i++) {
-    if (conditionFunction(events[i])) {
-      matchingEvents.push(events[i]);
-    }
-  }
-  return matchingEvents;
+  return events.filter((event) => event.type === eventType);
 }
 
 export function uploadEvents(events: IEvent[], envelope?: IEnvelope) {

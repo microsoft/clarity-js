@@ -26,13 +26,12 @@ describe("Error Tests", () => {
         syntheticEvent["colno"] = colno;
         errors.logError(syntheticEvent);
         let events = stopObserving();
-        let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
-        assert.equal(errorEvents.length, 1);
-        assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
-        assert.equal(errorEvents[0].state.message, message);
-        assert.equal(errorEvents[0].state.source, filename);
-        assert.equal(errorEvents[0].state.lineno, lineno);
-        assert.equal(errorEvents[0].state.colno, colno);
+        assert.equal(events.length, 1);
+        assert.equal(events[0].state.type, Instrumentation.JsError);
+        assert.equal(events[0].state.message, message);
+        assert.equal(events[0].state.source, filename);
+        assert.equal(events[0].state.lineno, lineno);
+        assert.equal(events[0].state.colno, colno);
         done();
      });
 
@@ -49,13 +48,12 @@ describe("Error Tests", () => {
         syntheticEvent["colno"] = colno;
         errors.logError(syntheticEvent);
         let events = stopObserving();
-        let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
-        assert.equal(errorEvents.length, 1);
-        assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
-        assert.equal(errorEvents[0].state.message, message);
-        assert.equal(errorEvents[0].state.source, filename);
-        assert.equal(errorEvents[0].state.lineno, lineno);
-        assert.equal(errorEvents[0].state.colno, colno);
+        assert.equal(events.length, 1);
+        assert.equal(events[0].state.type, Instrumentation.JsError);
+        assert.equal(events[0].state.message, message);
+        assert.equal(events[0].state.source, filename);
+        assert.equal(events[0].state.lineno, lineno);
+        assert.equal(events[0].state.colno, colno);
         done();
     });
 
@@ -69,10 +67,9 @@ describe("Error Tests", () => {
         errors.logError(syntheticEvent);
         errors.logError(syntheticEvent);
         let events = stopObserving();
-        let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
-        assert.equal(errorEvents.length, 3);
-        assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
-        assert.equal(errorEvents[0].state.message, message);
+        assert.equal(events.length, 3);
+        assert.equal(events[0].state.type, Instrumentation.JsError);
+        assert.equal(events[0].state.message, message);
         done();
     });
 
@@ -83,10 +80,9 @@ describe("Error Tests", () => {
         syntheticEvent["error"] = new Error(message);
         errors.logError(syntheticEvent);
         let events = stopObserving();
-        let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
-        assert.equal(errorEvents.length, 1);
-        assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
-        assert.equal(errorEvents[0].state.message, message);
+        assert.equal(events.length, 1);
+        assert.equal(events[0].state.type, Instrumentation.JsError);
+        assert.equal(events[0].state.message, message);
         done();
     });
 });

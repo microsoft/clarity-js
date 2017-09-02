@@ -2,13 +2,13 @@ import compress from "./compress";
 import { config } from "./config";
 
 export function createCompressionWorker(
-  sampleEnvelope: IEnvelope,
+  envelope: IEnvelope,
   onMessage?: (e: MessageEvent) => void,
   onError?: (e: ErrorEvent) => void
 ): Worker {
   let worker = null;
   if (Worker) {
-    let workerUrl = createWorkerUrl(sampleEnvelope);
+    let workerUrl = createWorkerUrl(envelope);
     worker = new Worker(workerUrl);
     worker.onmessage = onMessage || null;
     worker.onerror = onError || null;
@@ -83,12 +83,12 @@ function workerContext() {
   }
 }
 
-function createWorkerUrl(sampleEnvelope: IEnvelope): string {
+function createWorkerUrl(envelope: IEnvelope): string {
   let workerContextStr = workerContext.toString();
   let workerStr = workerContextStr.substring(workerContextStr.indexOf("{") + 1, workerContextStr.lastIndexOf("}"));
   let compressStr = `self.compress=${compress.toString()};`;
   let configStr = `self.config=${JSON.stringify(config)};`;
-  let envelopeStr = `self.envelope=${JSON.stringify(sampleEnvelope)};`;
+  let envelopeStr = `self.envelope=${JSON.stringify(envelope)};`;
   let code = compressStr + configStr + envelopeStr + workerStr;
   let blob = new Blob([code], {type: "application/javascript"});
   return URL.createObjectURL(blob);
