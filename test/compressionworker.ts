@@ -115,31 +115,6 @@ describe("Compression Worker Tests", () => {
     }
   });
 
-  it("validates that queued payload is sent on terminate", (done: DoneFn) => {
-    let worker = createTestWorker();
-    let mockEvent = getMockEvent();
-    let addEventMessage = createAddEventMessage(mockEvent);
-    let terminateMsg: ITimestampedWorkerMessage = {
-      type: WorkerMessageType.Terminate,
-      time: new Date().getTime()
-    };
-
-    assert.equal(workerMessages.length, 0);
-    messageHandlers.push(messageHandler);
-    worker.postMessage(JSON.stringify(addEventMessage));
-    worker.postMessage(JSON.stringify(terminateMsg));
-    scheduleTestFailureTimeout();
-
-    function messageHandler(message: IWorkerMessage) {
-      assert.equal(message.type, WorkerMessageType.Upload);
-      let uploadMessage = message as IUploadMessage;
-      let payload = JSON.parse(uploadMessage.rawData);
-      assert.equal(payload.events.length, 1);
-      assert.equal(payload.events[0].type, MockEventName);
-      done();
-    }
-  });
-
   it("validates that payloads consisting of a single XHR error event are not uploaded", (done: DoneFn) => {
     let worker = createTestWorker();
     let mockXhrErrorEvent = getMockEvent(InstrumentationEventName);
@@ -214,7 +189,7 @@ describe("Compression Worker Tests", () => {
 
   function createForceUploadMessage(): ITimestampedWorkerMessage {
     let forceUploadMessage: ITimestampedWorkerMessage = {
-      type: WorkerMessageType.Terminate,
+      type: WorkerMessageType.ForceUpload,
       time: new Date().getTime()
     };
     return forceUploadMessage;

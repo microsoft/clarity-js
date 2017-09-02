@@ -57,7 +57,8 @@ export function uploadEvents(events: IEvent[], envelope?: IEnvelope) {
   let mockUploadMessage: IUploadMessage = {
     type: WorkerMessageType.Upload,
     compressedData: mockCompressedData,
-    rawData: mockRawData
+    rawData: mockRawData,
+    eventCount: events.length
   };
   let mockUploadMessageEvent = {
     data: JSON.stringify(mockUploadMessage)

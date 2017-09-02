@@ -72,8 +72,8 @@ interface IEnvelope {
   impressionId: string;
   url: string;
   version: string;
-  time: number;
-  sequenceNumber: number;
+  time?: number;
+  sequenceNumber?: number;
 }
 
 interface IEventData {
@@ -112,7 +112,6 @@ declare const enum WorkerMessageType {
   /* Main thread to Worker messages */
   AddEvent,
   ForceUpload,
-  Terminate,
 
   /* Worker to main thread messages */
   Upload
@@ -133,6 +132,7 @@ interface IAddEventMessage extends ITimestampedWorkerMessage {
 interface IUploadMessage extends IWorkerMessage {
   compressedData: string;
   rawData: string;
+  eventCount: number;
 }
 
 /* ##################################### */

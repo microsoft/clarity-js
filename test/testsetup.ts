@@ -69,9 +69,6 @@ function mockWorkerOnMessage(data: any) {
         let addEventMsg = message as IAddEventMessage;
         sentEvents.push(addEventMsg.event);
         break;
-      case WorkerMessageType.Terminate:
-        thisWorker.terminate();
-        break;
       default:
         break;
     }

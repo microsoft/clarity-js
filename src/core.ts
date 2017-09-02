@@ -21,8 +21,10 @@ let startTime: number;
 let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
 let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
+let pendingEvents: IEvent[] = [];
 let timeout: number;
 let compressionWorker: Worker;
+let envelope: IEnvelope;
 export let state: State = State.Loaded;
 
 export function activate() {
@@ -60,11 +62,12 @@ export function teardown() {
   }
 
   delete document[ClarityAttribute];
+  compressionWorker.terminate();
   state = State.Unloaded;
 
-  // Upload residual events
+  // Instrument teardown and upload residual events
   instrument({ type: Instrumentation.Teardown });
-  terminateWorker();
+  uploadPendingEvents();
 }
 
 export function bind(target: EventTarget, event: string, listener: EventListener) {
@@ -90,6 +93,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
     time: getTimestamp()
   };
   compressionWorker.postMessage(JSON.stringify(addEventMessage));
+  pendingEvents.push(evt);
   if (scheduleUpload) {
     clearTimeout(timeout);
     timeout = setTimeout(forceUpload, config.delay);
@@ -127,20 +131,26 @@ export function instrument(eventState: IInstrumentationEventState) {
 }
 
 export function onWorkerMessage(evt: MessageEvent) {
-  let message = JSON.parse(evt.data) as IWorkerMessage;
-  switch (message.type) {
-    case WorkerMessageType.Upload:
-      let uploadMsg = message as IUploadMessage;
-      let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
-      let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uploadMsg.rawData, uploadMsg.compressedData); };
-      let compressedKb = Math.ceil(uploadMsg.compressedData.length / 1024.0);
-      let rawKb = Math.ceil(uploadMsg.rawData.length / 1024.0);
-      let envelope = JSON.parse(uploadMsg.rawData).envelope as IEnvelope;
-      upload(uploadMsg.compressedData, onSuccess, onFailure);
-      debug(`** Clarity #${envelope.sequenceNumber}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
-      break;
-    default:
-      break;
+  if (state !== State.Unloaded) {
+    let message = JSON.parse(evt.data) as IWorkerMessage;
+    switch (message.type) {
+      case WorkerMessageType.Upload:
+        let uploadMsg = message as IUploadMessage;
+        let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
+        let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uploadMsg.rawData, uploadMsg.compressedData); };
+        upload(uploadMsg.compressedData, onSuccess, onFailure);
+        pendingEvents.splice(0, uploadMsg.eventCount);
+        sequence++;
+        if (config.debug) {
+          let env = JSON.parse(uploadMsg.rawData).envelope as IEnvelope;
+          let compressedKb = Math.ceil(uploadMsg.compressedData.length / 1024.0);
+          let rawKb = Math.ceil(uploadMsg.rawData.length / 1024.0);
+          debug(`** Clarity #${env.sequenceNumber}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
+        }
+        break;
+      default:
+        break;
+    }
   }
 }
 
@@ -158,17 +168,6 @@ function getPageContextBasedTimestamp(): number {
   return (window.performance && performance.now)
     ? performance.now()
     : new Date().getTime() - startTime;
-}
-
-function envelope(): IEnvelope {
-  return {
-    clarityId: cid,
-    impressionId,
-    url: window.location.href,
-    version,
-    time: Math.round(getPageContextBasedTimestamp()),
-    sequenceNumber: sequence++
-  };
 }
 
 function uploadDroppedPayloadsMappingFunction(sequenceNumber: string, droppedPayloadInfo: IDroppedPayloadInfo) {
@@ -203,14 +202,6 @@ function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: 
     xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, onSuccess, onFailure); };
     xhr.send(payload);
   }
-}
-
-function terminateWorker() {
-  let terminateMsg: ITimestampedWorkerMessage = {
-    type: WorkerMessageType.Terminate,
-    time: getTimestamp()
-  };
-  compressionWorker.postMessage(JSON.stringify(terminateMsg));
 }
 
 function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, onFailure: UploadCallback) {
@@ -255,6 +246,18 @@ function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
   delete droppedPayloads[droppedPayloadInfo.xhrErrorState.sequenceNumber];
 }
 
+function uploadPendingEvents() {
+  if (pendingEvents.length > 0) {
+    envelope.sequenceNumber = sequence++;
+    envelope.time = getTimestamp();
+    let raw = JSON.stringify({ envelope, events: pendingEvents });
+    let compressed = compress(raw);
+    let onSuccess = (status: number) => { /* Do nothing */ };
+    let onFailure = (status: number) => { /* Do nothing */ };
+    upload(compressed, onSuccess, onFailure);
+  }
+}
+
 function init() {
   cid = getCookie(Cookie);
   impressionId = guid();
@@ -264,8 +267,15 @@ function init() {
   activePlugins = [];
   bindings = {};
   droppedPayloads = {};
+  pendingEvents = [];
   sentBytesCount = 0;
-  compressionWorker = createCompressionWorker(envelope(), onWorkerMessage);
+  envelope = {
+    clarityId: cid,
+    impressionId,
+    url: window.location.href,
+    version
+  };
+  compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
 
   // If critical API is missing, don't activate Clarity
   if (!checkFeatures()) {

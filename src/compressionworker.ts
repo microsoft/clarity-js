@@ -21,8 +21,8 @@ function workerContext() {
   let compress = workerGlobalScope.compress;
   let config = workerGlobalScope.config;
   let envelope: IEnvelope = workerGlobalScope.envelope;
-  let nextPayload: string[] = [];
-  let nextPayloadLength = 0;
+  let nextPayloadEvents: IEvent[] = [];
+  let nextPayloadBytes = 0;
   let sequence = 0;
 
   // Edge case: Don't schedule next upload for XhrError instrumentation events
@@ -41,10 +41,6 @@ function workerContext() {
         let forceUploadMsg = message as ITimestampedWorkerMessage;
         uploadNextPayload(forceUploadMsg.time);
         break;
-      case WorkerMessageType.Terminate:
-        let terminatedMsg = message as ITimestampedWorkerMessage;
-        uploadNextPayload(terminatedMsg.time);
-        self.close();
       default:
         break;
     }
@@ -52,34 +48,36 @@ function workerContext() {
 
   function addEvent(event: IEvent, time: number) {
     let eventStr = JSON.stringify(event);
-    if (nextPayloadLength > 0 && nextPayloadLength + eventStr.length > config.batchLimit) {
+    if (nextPayloadBytes > 0 && nextPayloadBytes + eventStr.length > config.batchLimit) {
       uploadNextPayload(time);
     }
-    nextPayload.push(eventStr);
-    nextPayloadLength += eventStr.length;
-    nextPayloadIsSingleXhrErrorEvent = (nextPayload.length === 1 && event.state && event.state.type === Instrumentation.XhrError);
-    if (nextPayloadLength >= config.batchLimit) {
+    nextPayloadBytes += eventStr.length;
+    nextPayloadEvents.push(event);
+    nextPayloadIsSingleXhrErrorEvent = (nextPayloadEvents.length === 1 && event.state && event.state.type === Instrumentation.XhrError);
+    if (nextPayloadBytes >= config.batchLimit) {
       uploadNextPayload(time);
     }
   }
 
   function uploadNextPayload(time: number) {
-    if (nextPayloadLength > 0 && !nextPayloadIsSingleXhrErrorEvent) {
+    if (nextPayloadBytes > 0 && !nextPayloadIsSingleXhrErrorEvent) {
       envelope.sequenceNumber = sequence++;
       envelope.time = time;
-      let raw = `{"envelope":${JSON.stringify(envelope)},"events":[${nextPayload.join()}]}`;
+      let raw = JSON.stringify({ envelope, events: nextPayloadEvents });
       let compressed = compress(raw);
-      nextPayload = [];
-      nextPayloadLength = 0;
-      upload(compressed, raw);
+      let eventCount = nextPayloadEvents.length;
+      nextPayloadEvents = [];
+      nextPayloadBytes = 0;
+      upload(compressed, raw, eventCount);
     }
   }
 
-  function upload(compressed: string, uncompressed: string) {
+  function upload(compressed: string, uncompressed: string, eventCount: number) {
     let message: IUploadMessage = {
       type: WorkerMessageType.Upload,
       compressedData: compressed,
-      rawData: uncompressed
+      rawData: uncompressed,
+      eventCount
     };
     workerGlobalScope.postMessage(JSON.stringify(message));
   }

@@ -2,7 +2,7 @@ import { config } from "../src/config";
 import * as core from "../src/core";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { getMockEnvelope, getMockEvent, observeEvents, observeWorkerMessages, uploadEvents } from "./utils";
+import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, uploadEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -260,11 +260,25 @@ describe("Core Tests", () => {
     done();
   });
 
-  function mockUploadHandler(payload: string) {
-    payload = JSON.stringify(payload);
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", config.uploadUrl);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(payload);
-  }
+  it("validates that pending events are sent on teardown", (done: DoneFn) => {
+    let sentBytes: string[] = [];
+    let mockEvent = getMockEvent();
+    config.uploadHandler = mockUploadHandler;
+    core.addEvent(mockEvent);
+    core.teardown();
+
+    assert.equal(sentBytes.length, 1);
+
+    let uncompressedPayload = JSON.parse(uncompress(sentBytes[0]));
+    let events = uncompressedPayload.events as IEvent[];
+    assert.equal(events.length, 2);
+    assert.equal(events[0].type, MockEventName);
+    assert.equal(events[1].type, "Instrumentation");
+    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    done();
+
+    function mockUploadHandler(payload: string) {
+      sentBytes.push(payload);
+    }
+  });
 });
