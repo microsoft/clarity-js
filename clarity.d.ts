@@ -65,6 +65,7 @@ interface IEnvelope {
   clarityId: string;
   impressionId: string;
   url: string;
+  title: string;
   version: string;
   time: number;
   sequenceNumber: number;

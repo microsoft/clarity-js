@@ -146,6 +146,7 @@ function envelope(): IEnvelope {
     impressionId,
     url: window.location.href,
     version,
+    title: document.title,
     time: Math.round(getPageContextBasedTimestamp()),
     sequenceNumber: sequence++
   };
