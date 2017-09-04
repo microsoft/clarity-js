@@ -1,4 +1,5 @@
 import { config } from "../../config";
+import { profile } from "../../core";
 import { assert } from "../../utils";
 import { ShadowDom } from "./shadowdom";
 
@@ -8,6 +9,7 @@ export const TextTag = "*TXT*";
 export const IgnoreTag = "*IGNORE*";
 const MetaTag = "META";
 const ScriptTag = "SCRIPT";
+const HeadTags = [MetaTag, ScriptTag, "TITLE", "STYLE", "LINK"];
 
 let attributeMaskList = ["value", "placeholder", "alt", "title"];
 
@@ -15,7 +17,7 @@ export function getNodeIndex(node: Node): number {
   return (node && NodeIndex in node) ? node[NodeIndex] : null;
 }
 
-export function createLayoutState(node: Node, styles: CSSStyleDeclaration, shadowDom: ShadowDom): ILayoutState {
+export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutState {
   if (shouldIgnoreNode(node, shadowDom)) {
     return createIgnoreLayoutState(node);
   }
@@ -29,7 +31,7 @@ export function createLayoutState(node: Node, styles: CSSStyleDeclaration, shado
       layoutState = createTextLayoutState(node as Text);
       break;
     case Node.ELEMENT_NODE:
-      layoutState = createElementLayoutState(node as Element, styles);
+      layoutState = createElementLayoutState(node as Element);
       break;
     default:
       layoutState = createIgnoreLayoutState(node);
@@ -49,7 +51,7 @@ export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLay
   return doctypeState;
 }
 
-export function createElementLayoutState(element: Element, styles: CSSStyleDeclaration): IElementLayoutState {
+export function createElementLayoutState(element: Element): IElementLayoutState {
   let tagName = element.tagName;
   let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
   if (tagName === ScriptTag || tagName === MetaTag) {
@@ -81,29 +83,43 @@ export function createElementLayoutState(element: Element, styles: CSSStyleDecla
   // from a DOM tree, sometimes results in a 'Unspecified Error'
   // Wrapping this in try/catch is faster than checking whether element is connected to DOM
   let rect = null;
-  try {
-    rect = element.getBoundingClientRect();
-  } catch (e) {
-    // Ignore
-  }
-
   elementState.layout = null;
-  if (rect) {
-    if (styles["visibility"] !== "hidden") {
+
+  let label = "boxmodel";
+  profile(label);
+  if (shouldCaptureBoxModel(element)) {
+    try {
+      rect = element.getBoundingClientRect();
+    } catch (e) {
+      // Ignore
+    }
+
+    if (rect) {
+      let styles = window.getComputedStyle(element);
       elementState.layout = {
         x: Math.round(rect.left),
         y: Math.round(rect.top),
         width: Math.round(rect.width),
-        height: Math.round(rect.height),
-        color: styles["color"]
-       };
+        height: Math.round(rect.height)
+      };
 
       // Capture overflow style if it's different from default value
-      if (styles["overflow"] !== "visible") {
-        elementState.layout.overflow = styles["overflow"];
+      if (styles["overflow"] === "hidden" || styles["overflow-x"] === "hidden" || styles["overflow-y"] === "hidden") {
+        elementState.layout.overflow = "hidden";
+      }
+
+      // Capture visibility if it's different from default value
+      if (styles["visibility"] === "hidden") {
+        elementState.layout.visibility = styles["visibility"];
+      }
+
+      // Capture color based on the configuration
+      if (styles["color"] && config.fetchColor) {
+        elementState.layout.color = styles["color"];
       }
     }
   }
+  profile(label);
 
   return elementState;
 }
@@ -113,6 +129,24 @@ export function createTextLayoutState(textNode: Text): ITextLayoutState {
   let showText = (textNode.parentElement && textNode.parentElement.tagName === "STYLE") ? true : config.showText;
   let textState = createGenericLayoutState(textNode, TextTag) as ITextLayoutState;
   textState.content = showText ? textNode.textContent : textNode.textContent.replace(/\S/gi, "*");
+
+  if (config.showLines) {
+    let range = document.createRange();
+    range.selectNodeContents(textNode);
+    let lines = range.getClientRects();
+    if (lines.length > 0) {
+      textState.lines = [];
+      for (let i = 0; i < lines.length; i++) {
+        textState.lines.push({
+          x: Math.round(lines[i].left),
+          y: Math.round(lines[i].top),
+          width: Math.round(lines[i].width),
+          height: Math.round(lines[i].height)
+        });
+      }
+    }
+  }
+
   return textState;
 }
 
@@ -136,6 +170,29 @@ export function createGenericLayoutState(node: Node, tag: string): ILayoutState 
     tag
   };
   return layoutState;
+}
+
+export function shouldCaptureBoxModel(element) {
+  if (HeadTags.indexOf(element.tagName) >= 0) {
+    return false;
+  }
+
+  let childNodes = element.childNodes;
+
+  // For box model, we will capture all elements at the leaf level
+  // We determine that by ensuring there are no child nodes
+  if (childNodes.length === 0 && element.nodeType !== Node.TEXT_NODE) {
+    return true;
+  }
+
+  // Also, we include nodes that include TEXT_NODE as one of the child nodes
+  for (let node of childNodes) {
+    if (node.nodeType === Node.TEXT_NODE || node.tagName === "IMG") {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {

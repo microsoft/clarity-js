@@ -115,9 +115,7 @@ export default class Layout implements IPlugin {
     while (this.originalLayouts.length > 0 && getTimestamp(true) < yieldTime) {
       let originalLayout = this.originalLayouts.shift();
       let originalLayoutState = originalLayout.layout;
-      let originalNode = originalLayout.node;
-      let currentStyles = originalNode.nodeType === Node.ELEMENT_NODE ? window.getComputedStyle(originalNode as Element) : null;
-      let currentLayoutState = createLayoutState(originalNode, currentStyles, this.shadowDom);
+      let currentLayoutState = createLayoutState(originalLayout.node, this.shadowDom);
 
       currentLayoutState.index = originalLayout.layout.index;
       currentLayoutState.parent = originalLayoutState.parent;
@@ -168,13 +166,12 @@ export default class Layout implements IPlugin {
 
   private createEventState<T extends ILayoutEventInfo>(eventInfo: T): ILayoutState {
     let node = eventInfo.node;
-    let styles = node.nodeType === Node.ELEMENT_NODE ? window.getComputedStyle(node as Element) : null;
-    let layoutState: ILayoutState = createLayoutState(node, styles, this.shadowDom);
+    let layoutState: ILayoutState = createLayoutState(node, this.shadowDom);
     switch (eventInfo.action) {
       case Action.Insert:
         // Watch element for scroll and input change events
         if (node.nodeType === Node.ELEMENT_NODE) {
-          this.watch(node as Element, styles, layoutState as IElementLayoutState);
+          this.watch(node as Element, layoutState as IElementLayoutState);
         }
         layoutState.action = Action.Insert;
         break;
@@ -201,7 +198,7 @@ export default class Layout implements IPlugin {
     return layoutState;
   }
 
-  private watch(element: Element, styles: CSSStyleDeclaration, layoutState: IElementLayoutState) {
+  private watch(element: Element, layoutState: IElementLayoutState) {
 
     // We only wish to watch elements once and then wait on the events to push changes
     if (this.watchList[layoutState.index]) {
@@ -209,6 +206,7 @@ export default class Layout implements IPlugin {
     }
 
     // Check if scroll is possible, and if so, bind to scroll event
+    let styles = window.getComputedStyle(element);
     let scrollPossible = (layoutState.layout !== null
                           && (styles["overflow-x"] === "auto"
                               || styles["overflow-x"] === "scroll"

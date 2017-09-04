@@ -6,6 +6,8 @@ export let config: IConfig = {
   uploadUrl: "",
   showText: false,
   showImages: false,
+  showLines: false,
+  fetchColor: false,
   timeToYield: 50,
   instrument: false,
   uploadHandler: null,

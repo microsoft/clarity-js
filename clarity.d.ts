@@ -21,6 +21,12 @@ interface IConfig {
   // If set to false, src of images won't be captured
   showImages?: boolean;
 
+  // If set to false, box model won't capture lines for text nodes
+  showLines?: boolean;
+
+  // If set to false, box model won't capture the foreground color of the element
+  fetchColor?: boolean;
+
   // Maximum number of milliseconds, after which Clarity should yield the thread
   // It is used to avoid freezing the page during large object serialization
   timeToYield?: number;
@@ -86,6 +92,12 @@ interface IDroppedPayloadInfo {
   xhrErrorState: IXhrErrorEventState;
 }
 
+interface IJsProfiler {
+  calls: number;
+  duration: number;
+  start: number;
+}
+
 interface IPlugin {
   activate(): void;
   teardown(): void;
@@ -122,10 +134,11 @@ interface IBoxModel {
   y: number; /* Y coordinate of the element */
   width: number; /* Width of the element */
   height: number; /* Height of the element */
-  color: string; /* Color for visual aid */
   scrollX?: number; /* Scroll left of the element */
   scrollY?: number; /* Scroll top of the element */
-  overflow?: string; /* Overflow property for visualization aid */
+  overflow?: string; /* Overflow property for visualization */
+  visibility?: string; /* Visibility property for visualization */
+  color?: string; /* Color to assist with visualizing box model */
 }
 
 declare const enum Source {
@@ -182,6 +195,7 @@ interface IElementLayoutState extends ILayoutState {
 
 interface ITextLayoutState extends ILayoutState {
   content: string;
+  lines?: IBoxModel[];
 }
 
 interface IIgnoreLayoutState extends ILayoutState {
@@ -295,7 +309,8 @@ declare const enum Instrumentation {
   Teardown,
   ClarityAssertFailed,
   ClarityDuplicated,
-  ShadowDomInconsistent
+  ShadowDomInconsistent,
+  JsProfile
 }
 
 interface IInstrumentationEventState {
@@ -308,6 +323,12 @@ interface IJsErrorEventState extends IInstrumentationEventState {
   stack: string;
   lineno: number;
   colno: number;
+}
+
+interface IJsProfileEventState extends IInstrumentationEventState {
+  label: string;
+  calls: number;
+  duration: number;
 }
 
 interface IMissingFeatureEventState extends IInstrumentationEventState {
