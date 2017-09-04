@@ -42,6 +42,7 @@
     "karma-chrome-launcher": "^0.2.2",
     "karma-coverage": "^0.5.4",
     "karma-detect-browsers": "^2.0.2",
+    "karma-edge-launcher": "^0.4.1",
     "karma-firefox-launcher": "^0.1.7",
     "karma-fixture": "^0.2.6",
     "karma-html2js-preprocessor": "^1.0.0",
