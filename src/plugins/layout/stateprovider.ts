@@ -15,7 +15,7 @@ export function getNodeIndex(node: Node): number {
   return (node && NodeIndex in node) ? node[NodeIndex] : null;
 }
 
-export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutState {
+export function createLayoutState(node: Node, styles: CSSStyleDeclaration, shadowDom: ShadowDom): ILayoutState {
   if (shouldIgnoreNode(node, shadowDom)) {
     return createIgnoreLayoutState(node);
   }
@@ -29,7 +29,7 @@ export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutStat
       layoutState = createTextLayoutState(node as Text);
       break;
     case Node.ELEMENT_NODE:
-      layoutState = createElementLayoutState(node as Element);
+      layoutState = createElementLayoutState(node as Element, styles);
       break;
     default:
       layoutState = createIgnoreLayoutState(node);
@@ -49,7 +49,7 @@ export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLay
   return doctypeState;
 }
 
-export function createElementLayoutState(element: Element): IElementLayoutState {
+export function createElementLayoutState(element: Element, styles: CSSStyleDeclaration): IElementLayoutState {
   let tagName = element.tagName;
   let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
   if (tagName === ScriptTag || tagName === MetaTag) {
@@ -89,12 +89,20 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
 
   elementState.layout = null;
   if (rect) {
-    elementState.layout = {
-      x: Math.round(rect.left),
-      y: Math.round(rect.top),
-      width: Math.round(rect.width),
-      height: Math.round(rect.height)
-    };
+    if (styles["visibility"] !== "hidden") {
+      elementState.layout = {
+        x: Math.round(rect.left),
+        y: Math.round(rect.top),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        color: styles["color"]
+       };
+
+      // Capture overflow style if it's different from default value
+      if (styles["overflow"] !== "visible") {
+        elementState.layout.overflow = styles["overflow"];
+      }
+    }
   }
 
   return elementState;

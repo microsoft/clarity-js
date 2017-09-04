@@ -117,13 +117,15 @@ interface IShadowDomNode extends HTMLDivElement {
   ignore: boolean;  /* Flag to avoid sending data for that node */
 }
 
-interface ILayoutRectangle {
+interface IBoxModel {
   x: number; /* X coordinate of the element */
   y: number; /* Y coordinate of the element */
   width: number; /* Width of the element */
   height: number; /* Height of the element */
+  color: string; /* Color for visual aid */
   scrollX?: number; /* Scroll left of the element */
   scrollY?: number; /* Scroll top of the element */
+  overflow?: string; /* Overflow property for visualization aid */
 }
 
 declare const enum Source {
@@ -175,7 +177,7 @@ interface IDoctypeLayoutState extends ILayoutState {
 
 interface IElementLayoutState extends ILayoutState {
   attributes: IAttributes;  /* Attributes associated with an element */
-  layout: ILayoutRectangle; /* Layout rectangle */
+  layout: IBoxModel; /* Layout rectangle */
 }
 
 interface ITextLayoutState extends ILayoutState {
