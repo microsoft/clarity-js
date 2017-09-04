@@ -13,6 +13,7 @@ export = (config) => {
       "karma-mocha",
       "karma-chai",
       "karma-chrome-launcher",
+      "karma-edge-launcher",
       "karma-firefox-launcher",
       "karma-ie-launcher",
       "karma-safari-launcher",
