@@ -4,7 +4,7 @@ import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
-const version = "0.1.9";
+const version = "0.1.10";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -23,6 +23,7 @@ let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
 let timeout: number;
 let nextPayload: string[];
 let nextPayloadLength: number;
+let profiler: { [label: string]: IJsProfiler };
 export let state: State = State.Loaded;
 
 export function activate() {
@@ -124,6 +125,21 @@ export function instrument(eventState: IInstrumentationEventState) {
   }
 }
 
+export function profile(label) {
+  let now = getPageContextBasedTimestamp();
+  if (label in profiler) {
+    if (profiler[label].start > 0) {
+      profiler[label].calls++;
+      profiler[label].duration += (now - profiler[label].start);
+      profiler[label].start = 0;
+    } else {
+      profiler[label].start = now;
+    }
+  } else {
+    profiler[label] = {calls: 0, duration: 0, start: now};
+  }
+}
+
 function getUnixTimestamp(): number {
   return (window.performance && performance.now && performance.timing)
     ? performance.now() + performance.timing.navigationStart
@@ -176,6 +192,19 @@ function uploadNextPayload() {
       instrument(totalByteLimitExceededEventState);
       teardown();
     }
+
+    // Walk through profiler and instrument existing information
+    for (let label in profiler) {
+      if (profiler[label]) {
+        instrument(<IJsProfileEventState> {
+          type: Instrumentation.JsProfile,
+          label,
+          calls: profiler[label].calls,
+          duration: Math.round(profiler[label].duration)
+        });
+      }
+    }
+    profiler = {};
   }
 }
 
@@ -259,6 +288,7 @@ function init() {
   droppedPayloads = {};
   nextPayloadLength = 0;
   sentBytesCount = 0;
+  profiler = {};
 
   // If CID cookie isn't present, set it now
   if (!cid) {
