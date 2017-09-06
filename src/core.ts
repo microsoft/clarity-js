@@ -62,7 +62,9 @@ export function teardown() {
   }
 
   delete document[ClarityAttribute];
-  compressionWorker.terminate();
+  if (compressionWorker) {
+    compressionWorker.terminate();
+  }
   state = State.Unloaded;
 
   // Instrument teardown and upload residual events
@@ -92,7 +94,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
     event: evt,
     time: getTimestamp()
   };
-  compressionWorker.postMessage(JSON.stringify(addEventMessage));
+  compressionWorker.postMessage(addEventMessage);
   pendingEvents.push(evt);
   if (scheduleUpload) {
     clearTimeout(timeout);
@@ -116,7 +118,7 @@ export function forceUpload() {
     type: WorkerMessageType.ForceUpload,
     time: getTimestamp()
   };
-  compressionWorker.postMessage(JSON.stringify(forceUploadMessage));
+  compressionWorker.postMessage(forceUploadMessage);
 }
 
 export function getTimestamp(unix?: boolean, raw?: boolean) {
@@ -132,7 +134,7 @@ export function instrument(eventState: IInstrumentationEventState) {
 
 export function onWorkerMessage(evt: MessageEvent) {
   if (state !== State.Unloaded) {
-    let message = JSON.parse(evt.data) as IWorkerMessage;
+    let message = evt.data;
     switch (message.type) {
       case WorkerMessageType.Upload:
         let uploadMsg = message as IUploadMessage;
@@ -259,14 +261,13 @@ function uploadPendingEvents() {
 }
 
 function init() {
+
+  // Variables required to send minimal instrumentation events and teardown in case CheckAPI fails
+  startTime = getUnixTimestamp();
   cid = getCookie(Cookie);
   impressionId = guid();
   sequence = 0;
   eventCount = 0;
-  startTime = getUnixTimestamp();
-  activePlugins = [];
-  bindings = {};
-  droppedPayloads = {};
   pendingEvents = [];
   sentBytesCount = 0;
   envelope = {
@@ -275,18 +276,17 @@ function init() {
     url: window.location.href,
     version
   };
-  compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
-
-  // If critical API is missing, don't activate Clarity
-  if (!checkFeatures()) {
-    teardown();
-    return false;
-  }
 
   // If CID cookie isn't present, set it now
   if (!cid) {
     cid = guid();
     setCookie(Cookie, cid);
+  }
+
+  // If critical API is missing, don't activate Clarity
+  if (!checkFeatures()) {
+    teardown();
+    return false;
   }
 
   // Check that no other instance of Clarity is already running on the page
@@ -299,6 +299,12 @@ function init() {
     teardown();
     return false;
   }
+
+  // Remaining local variablse
+  activePlugins = [];
+  bindings = {};
+  droppedPayloads = {};
+  compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
 
   return true;
 }

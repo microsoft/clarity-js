@@ -9,6 +9,7 @@ import * as chai from "chai";
 type TestWorkerMessageHandler = (message: IWorkerMessage) => void;
 
 const InstrumentationEventName = "Instrumentation";
+const WorkerMessageWaitTime = 1000;
 let assert = chai.assert;
 
 describe("Compression Worker Tests", () => {
@@ -36,10 +37,10 @@ describe("Compression Worker Tests", () => {
     let forceUploadMessage = createForceUploadMessage();
 
     messageHandlers.push(messageHandler);
-    worker.postMessage(JSON.stringify(addEventMessage));
+    worker.postMessage(addEventMessage);
     addEventMessage.event = secondMockEvent;
-    worker.postMessage(JSON.stringify(addEventMessage));
-    worker.postMessage(JSON.stringify(forceUploadMessage));
+    worker.postMessage(addEventMessage);
+    worker.postMessage(forceUploadMessage);
 
     function messageHandler(message: IWorkerMessage) {
       assert.equal(message.type, WorkerMessageType.Upload);
@@ -66,11 +67,11 @@ describe("Compression Worker Tests", () => {
     let forceUploadMessage = createForceUploadMessage();
 
     messageHandlers.push(messageHandler);
-    worker.postMessage(JSON.stringify(addEventMessage));
+    worker.postMessage(addEventMessage);
     addEventMessage.event = secondMockEvent;
-    worker.postMessage(JSON.stringify(addEventMessage));
-    worker.postMessage(JSON.stringify(forceUploadMessage));
-    scheduleTestFailureTimeout();
+    worker.postMessage(addEventMessage);
+    worker.postMessage(forceUploadMessage);
+    scheduleTestFailureTimeout(done, "Worker has not responded in allocated time");
 
     let handlerInvocationCount = 0;
     let payloads: any[] = [];
@@ -102,8 +103,8 @@ describe("Compression Worker Tests", () => {
     let addEventMessage = createAddEventMessage(mockEvent);
 
     messageHandlers.push(messageHandler);
-    worker.postMessage(JSON.stringify(addEventMessage));
-    scheduleTestFailureTimeout();
+    worker.postMessage(addEventMessage);
+    scheduleTestFailureTimeout(done, "Worker has not responded in allocated time");
 
     function messageHandler(message: IWorkerMessage) {
       assert.equal(message.type, WorkerMessageType.Upload);
@@ -124,14 +125,14 @@ describe("Compression Worker Tests", () => {
     mockXhrErrorEvent.state = mockXhrErrorEventState;
     let addEventMessage: IAddEventMessage = {
       type: WorkerMessageType.AddEvent,
-      time: new Date().getTime(),
+      time: -1,
       event: mockXhrErrorEvent
     };
     let forceUploadMessage = createForceUploadMessage();
 
     messageHandlers.push(messageHandler);
-    worker.postMessage(JSON.stringify(addEventMessage));
-    worker.postMessage(JSON.stringify(forceUploadMessage));
+    worker.postMessage(addEventMessage);
+    worker.postMessage(forceUploadMessage);
     scheduleTestSuccessTimeout(done);
 
     function messageHandler(message: IWorkerMessage) {
@@ -142,7 +143,7 @@ describe("Compression Worker Tests", () => {
   });
 
   function onWorkerMessage(evt: MessageEvent) {
-    let message = JSON.parse(evt.data) as IWorkerMessage;
+    let message = evt.data;
     workerMessages.push(message);
     for (let i = 0; i < messageHandlers.length; i++) {
       messageHandlers[i](message);
@@ -155,33 +156,26 @@ describe("Compression Worker Tests", () => {
     return worker;
   }
 
-  function endTestByTimeout(endWithSuccess: boolean, done?: DoneFn) {
-    assert.equal(true, !!endWithSuccess);
-    if (done) {
-      done();
-    }
-  }
-
   function scheduleTestSuccessTimeout(done: DoneFn) {
     jasmine.clock().uninstall();
     testFailureTimeout = setTimeout(() => {
-      endTestByTimeout(true, done);
-    }, 1000);
+      done();
+    }, WorkerMessageWaitTime);
     jasmine.clock().install();
   }
 
-  function scheduleTestFailureTimeout() {
+  function scheduleTestFailureTimeout(done: DoneFn, failureMessage: string) {
     jasmine.clock().uninstall();
     testFailureTimeout = setTimeout(() => {
-      endTestByTimeout(false);
-    }, 1000);
+      done.fail(failureMessage);
+    }, WorkerMessageWaitTime);
     jasmine.clock().install();
   }
 
   function createAddEventMessage(event: IEvent): IAddEventMessage {
     let addEventMessage: IAddEventMessage = {
       type: WorkerMessageType.AddEvent,
-      time: new Date().getTime(),
+      time: -1,
       event
     };
     return addEventMessage;
@@ -190,7 +184,7 @@ describe("Compression Worker Tests", () => {
   function createForceUploadMessage(): ITimestampedWorkerMessage {
     let forceUploadMessage: ITimestampedWorkerMessage = {
       type: WorkerMessageType.ForceUpload,
-      time: new Date().getTime()
+      time: -1
     };
     return forceUploadMessage;
   }

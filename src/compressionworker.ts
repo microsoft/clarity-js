@@ -6,13 +6,10 @@ export function createCompressionWorker(
   onMessage?: (e: MessageEvent) => void,
   onError?: (e: ErrorEvent) => void
 ): Worker {
-  let worker = null;
-  if (Worker) {
-    let workerUrl = createWorkerUrl(envelope);
-    worker = new Worker(workerUrl);
-    worker.onmessage = onMessage || null;
-    worker.onerror = onError || null;
-  }
+  let workerUrl = createWorkerUrl(envelope);
+  let worker = new Worker(workerUrl);
+  worker.onmessage = onMessage || null;
+  worker.onerror = onError || null;
   return worker;
 }
 
@@ -31,7 +28,7 @@ function workerContext() {
   let nextPayloadIsSingleXhrErrorEvent: boolean =  false;
 
   onmessage = (evt: MessageEvent) => {
-    let message = JSON.parse(evt.data) as IWorkerMessage;
+    let message = evt.data;
     switch (message.type) {
       case WorkerMessageType.AddEvent:
         let addEventMsg = message as IAddEventMessage;
@@ -46,20 +43,26 @@ function workerContext() {
     }
   };
 
-  function addEvent(event: IEvent, time: number) {
+  function addEvent(event: IEvent, time: number): void {
     let eventStr = JSON.stringify(event);
+
+    // If appending new event to next payload would exceed batch limit, then flush next payload first
     if (nextPayloadBytes > 0 && nextPayloadBytes + eventStr.length > config.batchLimit) {
       uploadNextPayload(time);
     }
-    nextPayloadBytes += eventStr.length;
+
+    // Append new event to the next payload
     nextPayloadEvents.push(event);
+    nextPayloadBytes += eventStr.length;
     nextPayloadIsSingleXhrErrorEvent = (nextPayloadEvents.length === 1 && event.state && event.state.type === Instrumentation.XhrError);
+
+    // Even if we just flushed next payload, it is possible that a single new event exceeds batch limit itself, so we need to check again
     if (nextPayloadBytes >= config.batchLimit) {
       uploadNextPayload(time);
     }
   }
 
-  function uploadNextPayload(time: number) {
+  function uploadNextPayload(time: number): void {
     if (nextPayloadBytes > 0 && !nextPayloadIsSingleXhrErrorEvent) {
       envelope.sequenceNumber = sequence++;
       envelope.time = time;
@@ -72,18 +75,25 @@ function workerContext() {
     }
   }
 
-  function upload(compressed: string, uncompressed: string, eventCount: number) {
+  function upload(compressed: string, uncompressed: string, eventCount: number): void {
     let message: IUploadMessage = {
       type: WorkerMessageType.Upload,
       compressedData: compressed,
       rawData: uncompressed,
       eventCount
     };
-    workerGlobalScope.postMessage(JSON.stringify(message));
+
+    // Post message to the main thread
+    workerGlobalScope.postMessage(message);
   }
 }
 
 function createWorkerUrl(envelope: IEnvelope): string {
+  // Workers are initialized with a URL, pointing to the code which is going to be executed within worker's scope.
+  // URL can point to file, however we don't want to load a file with worker's code separately, so we create a Blob
+  // with a string containing worker's code. To build such string, we stitch together string representations of
+  // all functions and objects that are going to be required within the worker's scope.
+  // Once Blob is created, we create a URL pointing to it, which can be passed to worker's constructor.
   let workerContextStr = workerContext.toString();
   let workerStr = workerContextStr.substring(workerContextStr.indexOf("{") + 1, workerContextStr.lastIndexOf("}"));
   let compressStr = `self.compress=${compress.toString()};`;

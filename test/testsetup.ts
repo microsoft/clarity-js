@@ -56,12 +56,11 @@ function waitForStartupAcvitityToFinish() {
   }
 }
 
-function mockWorkerOnMessage(data: any) {
-  let message = JSON.parse(data) as IWorkerMessage;
+function mockWorkerOnMessage(message: any) {
   let thisWorker = this as Worker;
   if (this.isTestWorker) {
     workerPostMessageSpy.and.callThrough();
-    thisWorker.postMessage(data);
+    thisWorker.postMessage(message);
     workerPostMessageSpy.and.callFake(mockWorkerOnMessage);
   } else {
     switch (message.type) {
