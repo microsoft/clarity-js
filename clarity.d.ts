@@ -111,10 +111,10 @@ type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: U
 declare const enum WorkerMessageType {
   /* Main thread to Worker messages */
   AddEvent,
-  ForceUpload,
+  ForceCompression,
 
   /* Worker to main thread messages */
-  Upload
+  CompressedBatch
 }
 
 interface IWorkerMessage {
@@ -129,7 +129,7 @@ interface IAddEventMessage extends ITimestampedWorkerMessage {
   event: IEvent;
 }
 
-interface IUploadMessage extends IWorkerMessage {
+interface ICompressedBatchMessage extends IWorkerMessage {
   compressedData: string;
   rawData: string;
   eventCount: number;

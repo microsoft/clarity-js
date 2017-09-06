@@ -20,11 +20,18 @@ let eventCount: number;
 let startTime: number;
 let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
-let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
-let pendingEvents: IEvent[] = [];
 let timeout: number;
 let compressionWorker: Worker;
 let envelope: IEnvelope;
+
+// Storage for payloads that were not delivered for re-upload
+let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
+
+// Storage for events that were posted to compression worker, but have not returned to core as compressed batches yet.
+// When page is unloaded, keeping such event copies in core allows us to terminate compression worker safely and then
+// compress and upload remaining events synchronously from the main thread.
+let pendingEvents: IEvent[] = [];
+
 export let state: State = State.Loaded;
 
 export function activate() {
@@ -98,7 +105,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   pendingEvents.push(evt);
   if (scheduleUpload) {
     clearTimeout(timeout);
-    timeout = setTimeout(forceUpload, config.delay);
+    timeout = setTimeout(forceCompression, config.delay);
   }
 }
 
@@ -113,12 +120,12 @@ export function addMultipleEvents(events: IEventData[]) {
   }
 }
 
-export function forceUpload() {
-  let forceUploadMessage: ITimestampedWorkerMessage = {
-    type: WorkerMessageType.ForceUpload,
+export function forceCompression() {
+  let forceCompressionMessage: ITimestampedWorkerMessage = {
+    type: WorkerMessageType.ForceCompression,
     time: getTimestamp()
   };
-  compressionWorker.postMessage(forceUploadMessage);
+  compressionWorker.postMessage(forceCompressionMessage);
 }
 
 export function getTimestamp(unix?: boolean, raw?: boolean) {
@@ -136,8 +143,8 @@ export function onWorkerMessage(evt: MessageEvent) {
   if (state !== State.Unloaded) {
     let message = evt.data;
     switch (message.type) {
-      case WorkerMessageType.Upload:
-        let uploadMsg = message as IUploadMessage;
+      case WorkerMessageType.CompressedBatch:
+        let uploadMsg = message as ICompressedBatchMessage;
         let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
         let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uploadMsg.rawData, uploadMsg.compressedData); };
         upload(uploadMsg.compressedData, onSuccess, onFailure);

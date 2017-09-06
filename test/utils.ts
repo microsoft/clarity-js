@@ -28,24 +28,24 @@ export function getEventsByType(events: IEvent[], eventType: string): IEvent[] {
   return events.filter((event) => event.type === eventType);
 }
 
-export function uploadEvents(events: IEvent[], envelope?: IEnvelope) {
-  let mockNextPayload: string[] = [];
+export function postCompressedBatch(events: IEvent[], envelope?: IEnvelope) {
+  let mockNextBatch: string[] = [];
   for (let i = 0; i < events.length; i++) {
-    mockNextPayload.push(JSON.stringify(events[i]));
+    mockNextBatch.push(JSON.stringify(events[i]));
   }
   envelope = envelope || getMockEnvelope();
-  let mockRawData = `{"envelope":${JSON.stringify(envelope)},"events":[${mockNextPayload.join()}]}`;
+  let mockRawData = `{"envelope":${JSON.stringify(envelope)},"events":[${mockNextBatch.join()}]}`;
   let mockCompressedData = compress(mockRawData);
-  let mockUploadMessage: IUploadMessage = {
-    type: WorkerMessageType.Upload,
+  let mockCompressedBatchMessage: ICompressedBatchMessage = {
+    type: WorkerMessageType.CompressedBatch,
     compressedData: mockCompressedData,
     rawData: mockRawData,
     eventCount: events.length
   };
-  let mockUploadMessageEvent = {
-    data: mockUploadMessage
+  let mockCompressedBatchMessageEvent = {
+    data: mockCompressedBatchMessage
   } as MessageEvent;
-  onWorkerMessage(mockUploadMessageEvent);
+  onWorkerMessage(mockCompressedBatchMessageEvent);
 }
 
 export function getMockEnvelope(sequenceNumber?: number) {

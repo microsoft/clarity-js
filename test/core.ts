@@ -2,7 +2,7 @@ import { config } from "../src/config";
 import * as core from "../src/core";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, uploadEvents } from "./utils";
+import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, postCompressedBatch } from "./utils";
 
 import * as chai from "chai";
 
@@ -45,7 +45,7 @@ describe("Core Tests", () => {
 
     let stopObserving = observeEvents();
     let mockEvent = getMockEvent();
-    uploadEvents([mockEvent]);
+    postCompressedBatch([mockEvent]);
 
     assert.equal(sendCount, 1);
     done();
@@ -59,7 +59,7 @@ describe("Core Tests", () => {
 
     let stopObserving = observeEvents();
     let mockEvent = getMockEvent();
-    uploadEvents([mockEvent]);
+    postCompressedBatch([mockEvent]);
 
     let events = stopObserving();
     assert.equal(events.length, 1);
@@ -91,7 +91,7 @@ describe("Core Tests", () => {
     let firstMockEventName = "FirstMockEvent";
     let firstMockEvent = getMockEvent(firstMockEventName);
     let firstEnvelope = getMockEnvelope(0);
-    uploadEvents([firstMockEvent], firstEnvelope);
+    postCompressedBatch([firstMockEvent], firstEnvelope);
 
     // Ensure XHR failure is logged
     let events = stopObserving();
@@ -104,7 +104,7 @@ describe("Core Tests", () => {
     let secondMockEventName = "SecondMockEvent";
     let secondMockEvent = getMockEvent(secondMockEventName);
     let secondEnvelope = getMockEnvelope(1);
-    uploadEvents([secondMockEvent], secondEnvelope);
+    postCompressedBatch([secondMockEvent], secondEnvelope);
 
     // Upload invocations: First payload, second payload, first payload re-upload
     assert.equal(attemptedPayloads.length, 3);
@@ -192,7 +192,7 @@ describe("Core Tests", () => {
     let stopObserving = observeEvents("Instrumentation");
     config.totalLimit = 0;
     let mockEvent = getMockEvent();
-    uploadEvents([mockEvent]);
+    postCompressedBatch([mockEvent]);
 
     let events = stopObserving();
     assert.equal(core.state, State.Unloaded);
@@ -236,7 +236,7 @@ describe("Core Tests", () => {
 
     let workerMessages = stopObserving();
     assert.equal(workerMessages.length, 1);
-    assert.equal(workerMessages[0].type, WorkerMessageType.ForceUpload);
+    assert.equal(workerMessages[0].type, WorkerMessageType.ForceCompression);
     done();
   });
 
@@ -256,7 +256,7 @@ describe("Core Tests", () => {
     for (let i = 0; i < eventCount; i++) {
       assert.equal(workerMessages[i].type, WorkerMessageType.AddEvent);
     }
-    assert.equal(workerMessages[eventCount].type, WorkerMessageType.ForceUpload);
+    assert.equal(workerMessages[eventCount].type, WorkerMessageType.ForceCompression);
     done();
   });
 

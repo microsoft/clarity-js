@@ -34,18 +34,18 @@ describe("Compression Worker Tests", () => {
     let firstMockEvent = getMockEvent(firstMockEventName);
     let secondMockEvent = getMockEvent(secondMockEventName);
     let addEventMessage = createAddEventMessage(firstMockEvent);
-    let forceUploadMessage = createForceUploadMessage();
+    let forceCompressionMsg = createForceCompressionMessage();
 
     messageHandlers.push(messageHandler);
     worker.postMessage(addEventMessage);
     addEventMessage.event = secondMockEvent;
     worker.postMessage(addEventMessage);
-    worker.postMessage(forceUploadMessage);
+    worker.postMessage(forceCompressionMsg);
 
     function messageHandler(message: IWorkerMessage) {
-      assert.equal(message.type, WorkerMessageType.Upload);
-      let uploadMessage = message as IUploadMessage;
-      let payload = JSON.parse(uploadMessage.rawData);
+      assert.equal(message.type, WorkerMessageType.CompressedBatch);
+      let compressedBatchMessage = message as ICompressedBatchMessage;
+      let payload = JSON.parse(compressedBatchMessage.rawData);
       assert.equal(payload.events.length, 2);
       assert.equal(payload.events[0].type, firstMockEventName);
       assert.equal(payload.events[1].type, secondMockEventName);
@@ -64,20 +64,20 @@ describe("Compression Worker Tests", () => {
     firstMockEvent.state = { data: firstMockData };
     secondMockEvent.state = { data: secondMockData };
     let addEventMessage = createAddEventMessage(firstMockEvent);
-    let forceUploadMessage = createForceUploadMessage();
+    let forceCompressionMsg = createForceCompressionMessage();
 
     messageHandlers.push(messageHandler);
     worker.postMessage(addEventMessage);
     addEventMessage.event = secondMockEvent;
     worker.postMessage(addEventMessage);
-    worker.postMessage(forceUploadMessage);
+    worker.postMessage(forceCompressionMsg);
     scheduleTestFailureTimeout(done, "Worker has not responded in allocated time");
 
     let handlerInvocationCount = 0;
     let payloads: any[] = [];
     function messageHandler(message: IWorkerMessage) {
-      let uploadMessage = message as IUploadMessage;
-      let payload = JSON.parse(uploadMessage.rawData);
+      let compressedBatchMessage = message as ICompressedBatchMessage;
+      let payload = JSON.parse(compressedBatchMessage.rawData);
       payloads.push(payload);
       handlerInvocationCount++;
       if (handlerInvocationCount > 1) {
@@ -107,9 +107,9 @@ describe("Compression Worker Tests", () => {
     scheduleTestFailureTimeout(done, "Worker has not responded in allocated time");
 
     function messageHandler(message: IWorkerMessage) {
-      assert.equal(message.type, WorkerMessageType.Upload);
-      let uploadMessage = message as IUploadMessage;
-      let payload = JSON.parse(uploadMessage.rawData);
+      assert.equal(message.type, WorkerMessageType.CompressedBatch);
+      let compressedBatchMessage = message as ICompressedBatchMessage;
+      let payload = JSON.parse(compressedBatchMessage.rawData);
       assert.equal(payload.events.length, 1);
       assert.equal(payload.events[0].type, MockEventName);
       done();
@@ -128,11 +128,11 @@ describe("Compression Worker Tests", () => {
       time: -1,
       event: mockXhrErrorEvent
     };
-    let forceUploadMessage = createForceUploadMessage();
+    let forceCompressionMsg = createForceCompressionMessage();
 
     messageHandlers.push(messageHandler);
     worker.postMessage(addEventMessage);
-    worker.postMessage(forceUploadMessage);
+    worker.postMessage(forceCompressionMsg);
     scheduleTestSuccessTimeout(done);
 
     function messageHandler(message: IWorkerMessage) {
@@ -181,11 +181,11 @@ describe("Compression Worker Tests", () => {
     return addEventMessage;
   }
 
-  function createForceUploadMessage(): ITimestampedWorkerMessage {
-    let forceUploadMessage: ITimestampedWorkerMessage = {
-      type: WorkerMessageType.ForceUpload,
+  function createForceCompressionMessage(): ITimestampedWorkerMessage {
+    let forceCompressionMessage: ITimestampedWorkerMessage = {
+      type: WorkerMessageType.ForceCompression,
       time: -1
     };
-    return forceUploadMessage;
+    return forceCompressionMessage;
   }
 });
