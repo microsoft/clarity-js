@@ -6,21 +6,21 @@ import { getMockEnvelope, getMockEvent, MockEventName, observeEvents } from "./u
 
 import * as chai from "chai";
 
-type TestWorkerMessageHandler = (message: IWorkerMessage) => void;
-
 const InstrumentationEventName = "Instrumentation";
 const WorkerMessageWaitTime = 1000;
 let assert = chai.assert;
 
 describe("Compression Worker Tests", () => {
   let workerMessages: IWorkerMessage[] = [];
-  let messageHandlers: TestWorkerMessageHandler[] = [];
   let testFailureTimeout: number = null;
+  let processMessage: (message: IWorkerMessage) => void = null;
 
   beforeEach(() => {
     setupFixture([]);
     workerMessages = [];
-    messageHandlers = [];
+    processMessage = (message: IWorkerMessage) => {
+      // Default handler is empty
+    };
   });
   afterEach(() => {
     cleanupFixture();
@@ -36,13 +36,12 @@ describe("Compression Worker Tests", () => {
     let addEventMessage = createAddEventMessage(firstMockEvent);
     let forceCompressionMsg = createForceCompressionMessage();
 
-    messageHandlers.push(messageHandler);
     worker.postMessage(addEventMessage);
     addEventMessage.event = secondMockEvent;
     worker.postMessage(addEventMessage);
     worker.postMessage(forceCompressionMsg);
 
-    function messageHandler(message: IWorkerMessage) {
+    processMessage = (message: IWorkerMessage) => {
       assert.equal(message.type, WorkerMessageType.CompressedBatch);
       let compressedBatchMessage = message as ICompressedBatchMessage;
       let payload = JSON.parse(compressedBatchMessage.rawData);
@@ -50,7 +49,7 @@ describe("Compression Worker Tests", () => {
       assert.equal(payload.events[0].type, firstMockEventName);
       assert.equal(payload.events[1].type, secondMockEventName);
       done();
-    }
+    };
   });
 
   it("validates that events are batched for upload correctly when total length is above the limit", (done: DoneFn) => {
@@ -66,7 +65,6 @@ describe("Compression Worker Tests", () => {
     let addEventMessage = createAddEventMessage(firstMockEvent);
     let forceCompressionMsg = createForceCompressionMessage();
 
-    messageHandlers.push(messageHandler);
     worker.postMessage(addEventMessage);
     addEventMessage.event = secondMockEvent;
     worker.postMessage(addEventMessage);
@@ -75,7 +73,7 @@ describe("Compression Worker Tests", () => {
 
     let handlerInvocationCount = 0;
     let payloads: any[] = [];
-    function messageHandler(message: IWorkerMessage) {
+    processMessage = (message: IWorkerMessage) => {
       let compressedBatchMessage = message as ICompressedBatchMessage;
       let payload = JSON.parse(compressedBatchMessage.rawData);
       payloads.push(payload);
@@ -83,7 +81,7 @@ describe("Compression Worker Tests", () => {
       if (handlerInvocationCount > 1) {
         performAssertions();
       }
-    }
+    };
 
     function performAssertions() {
       assert.equal(payloads.length, 2);
@@ -102,18 +100,17 @@ describe("Compression Worker Tests", () => {
     mockEvent.state = { data: mockEventData };
     let addEventMessage = createAddEventMessage(mockEvent);
 
-    messageHandlers.push(messageHandler);
     worker.postMessage(addEventMessage);
     scheduleTestFailureTimeout(done, "Worker has not responded in allocated time");
 
-    function messageHandler(message: IWorkerMessage) {
+    processMessage = (message: IWorkerMessage) => {
       assert.equal(message.type, WorkerMessageType.CompressedBatch);
       let compressedBatchMessage = message as ICompressedBatchMessage;
       let payload = JSON.parse(compressedBatchMessage.rawData);
       assert.equal(payload.events.length, 1);
       assert.equal(payload.events[0].type, MockEventName);
       done();
-    }
+    };
   });
 
   it("validates that payloads consisting of a single XHR error event are not uploaded", (done: DoneFn) => {
@@ -130,24 +127,20 @@ describe("Compression Worker Tests", () => {
     };
     let forceCompressionMsg = createForceCompressionMessage();
 
-    messageHandlers.push(messageHandler);
     worker.postMessage(addEventMessage);
     worker.postMessage(forceCompressionMsg);
     scheduleTestSuccessTimeout(done);
 
-    function messageHandler(message: IWorkerMessage) {
-      // This handler should NOT be invoked, so intentional assertion failure in this path
-      assert.equal(true, false);
-      done();
-    }
+    processMessage = (message: IWorkerMessage) => {
+      // This handler should NOT be invoked, so explicitly failing test in this path
+      done.fail("Received batch consisting of a single XHR event");
+    };
   });
 
   function onWorkerMessage(evt: MessageEvent) {
     let message = evt.data;
     workerMessages.push(message);
-    for (let i = 0; i < messageHandlers.length; i++) {
-      messageHandlers[i](message);
-    }
+    processMessage(message);
   }
 
   function createTestWorker() {
