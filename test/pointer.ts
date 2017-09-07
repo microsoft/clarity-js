@@ -1,7 +1,7 @@
 import { config } from "../src/config";
-import * as core from "../src/core";
-import uncompress from "./uncompress";
-import { cleanupFixture, observeEvents, setupFixture, triggerSend } from "./utils";
+import { getTimestamp } from "../src/core";
+import { cleanupFixture, setupFixture } from "./testsetup";
+import { observeEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -12,10 +12,12 @@ let assert = chai.assert;
 
 describe("Pointer Tests", () => {
 
-  beforeEach(setupFixture);
+  beforeEach(() => {
+    setupFixture(["pointer"]);
+  });
   afterEach(cleanupFixture);
 
-  it("validates that mouse events are processed by clarity", (done) => {
+  it("validates that mouse events are processed by clarity", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
     let stopObserving = observeEvents(eventName);
     document.addEventListener("click", callback);
@@ -29,11 +31,8 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "click", 260, 100);
 
     function callback() {
-      triggerSend();
-
-      // Uncompress recent data from mutations
+      document.removeEventListener("click", callback);
       let events = stopObserving();
-
       assert.equal(events.length, 4);
       assert.equal(events[0].state.event, "mousemove");
       assert.equal(events[0].state.x, x);
@@ -42,14 +41,12 @@ describe("Pointer Tests", () => {
       assert.equal(events[2].state.event, "mousemove");
       assert.equal(events[2].state.x, x + (xDelta * 2));
       assert.equal(events[3].state.event, "click");
-
-      document.removeEventListener("click", callback);
       done();
     }
   });
 
   // Make sure that we don't record mouse events that are too close to each other
-  it("validates that mouse events are throttled by distance", (done) => {
+  it("validates that mouse events are throttled by distance", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
     let stopObserving = observeEvents(eventName);
     document.addEventListener("click", callback);
@@ -63,25 +60,20 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "click", 260, 100);
 
     function callback() {
-      triggerSend();
-
-      // Uncompress recent data from mutations
+      document.removeEventListener("click", callback);
       let events = stopObserving();
-
       assert.equal(events.length, 3);
       assert.equal(events[0].state.event, "mousemove");
       assert.equal(events[0].state.x, x);
       assert.equal(events[1].state.event, "mousemove");
       assert.equal(events[1].state.x, x + (xDelta * 2));
       assert.equal(events[2].state.event, "click");
-
-      document.removeEventListener("click", callback);
       done();
     }
   });
 
   // Make sure that we don't record mouse events that are too close to each other
-  it("validates that mouse events are throttled by time", (done) => {
+  it("validates that mouse events are throttled by time", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
     let stopObserving = observeEvents(eventName);
     document.addEventListener("click", callback);
@@ -91,8 +83,8 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "mousemove", x, 100);
     triggerMouseEvent(dom, "mousemove", x, 100);
 
-    let thresholdTs = core.getTimestamp(true) + (timeThreshold * 2);
-    while (core.getTimestamp(true) < thresholdTs) {
+    let thresholdTs = getTimestamp(true) + (timeThreshold * 2);
+    while (getTimestamp(true) < thresholdTs) {
       // Wait for time threadhold to expire
     }
 
@@ -100,19 +92,14 @@ describe("Pointer Tests", () => {
     triggerMouseEvent(dom, "click", 260, 100);
 
     function callback() {
-      triggerSend();
-
-      // Uncompress recent data from mutations
+      document.removeEventListener("click", callback);
       let events = stopObserving();
-
       assert.equal(events.length, 3);
       assert.equal(events[0].state.event, "mousemove");
       assert.equal(events[0].state.x, x);
       assert.equal(events[1].state.event, "mousemove");
       assert.equal(events[1].state.x, x);
       assert.equal(events[2].state.event, "click");
-
-      document.removeEventListener("click", callback);
       done();
     }
   });

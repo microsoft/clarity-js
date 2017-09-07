@@ -56,6 +56,12 @@ declare const enum State {
   Unloaded
 }
 
+interface IPlugin {
+  activate(): void;
+  teardown(): void;
+  reset(): void;
+}
+
 interface IPayload {
   envelope: IEnvelope;
   events: IEvent[];
@@ -66,8 +72,8 @@ interface IEnvelope {
   impressionId: string;
   url: string;
   version: string;
-  time: number;
-  sequenceNumber: number;
+  time?: number;
+  sequenceNumber?: number;
 }
 
 interface IEventData {
@@ -86,12 +92,6 @@ interface IDroppedPayloadInfo {
   xhrErrorState: IXhrErrorEventState;
 }
 
-interface IPlugin {
-  activate(): void;
-  teardown(): void;
-  reset(): void;
-}
-
 interface IEventBindingPair {
   target: EventTarget;
   listener: EventListener;
@@ -103,6 +103,37 @@ interface IBindingContainer {
 
 type UploadCallback = (status: number) => void;
 type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) => void;
+
+/* ##################################### */
+/* ######   COMPRESSION WORKER   ####### */
+/* ##################################### */
+
+declare const enum WorkerMessageType {
+  /* Main thread to Worker messages */
+  AddEvent,
+  ForceCompression,
+
+  /* Worker to main thread messages */
+  CompressedBatch
+}
+
+interface IWorkerMessage {
+  type: WorkerMessageType;
+}
+
+interface ITimestampedWorkerMessage extends IWorkerMessage {
+  time: number;
+}
+
+interface IAddEventMessage extends ITimestampedWorkerMessage {
+  event: IEvent;
+}
+
+interface ICompressedBatchMessage extends IWorkerMessage {
+  compressedData: string;
+  rawData: string;
+  eventCount: number;
+}
 
 /* ##################################### */
 /* ############   LAYOUT   ############# */
@@ -381,6 +412,7 @@ interface IPerformanceResourceTiming {
 /* ##################################### */
 /* ############   LIBRARY   ############ */
 /* ##################################### */
+
 interface IClarity {
   start(config?: IConfig): void;
   stop(): void;

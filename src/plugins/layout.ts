@@ -13,8 +13,8 @@ export default class Layout implements IPlugin {
   private observer: MutationObserver;
   private watchList: boolean[];
   private mutationSequence: number;
-  private domDiscoverComplete: boolean;
   private domPreDiscoverMutations: ILayoutEventInfo[][];
+  private domDiscoverComplete: boolean;
   private lastConsistentDomJson: NumberJson;
   private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventState;
   private layoutStates: ILayoutState[];

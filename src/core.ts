@@ -1,10 +1,11 @@
 import compress from "./compress";
+import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
-const version = "0.1.9";
+const version = "0.1.10";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -19,10 +20,18 @@ let eventCount: number;
 let startTime: number;
 let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
-let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
 let timeout: number;
-let nextPayload: string[];
-let nextPayloadLength: number;
+let compressionWorker: Worker;
+let envelope: IEnvelope;
+
+// Storage for payloads that were not delivered for re-upload
+let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
+
+// Storage for events that were posted to compression worker, but have not returned to core as compressed batches yet.
+// When page is unloaded, keeping such event copies in core allows us to terminate compression worker safely and then
+// compress and upload remaining events synchronously from the main thread.
+let pendingEvents: IEvent[] = [];
+
 export let state: State = State.Loaded;
 
 export function activate() {
@@ -60,11 +69,18 @@ export function teardown() {
   }
 
   delete document[ClarityAttribute];
+  if (compressionWorker) {
+    // Immediately terminate the worker and kill its thread.
+    // Any possible pending incoming messages from the worker will be ignored in the 'Unloaded' state.
+    // Copies of all the events that were sent to the worker, but have not been returned as a compressed batch yet,
+    // are stored in the 'pendingEvents' queue, so we will compress and upload them synchronously in this thread.
+    compressionWorker.terminate();
+  }
   state = State.Unloaded;
 
-  // Upload residual events
+  // Instrument teardown and upload residual events
   instrument({ type: Instrumentation.Teardown });
-  uploadNextPayload();
+  uploadPendingEvents();
 }
 
 export function bind(target: EventTarget, event: string, listener: EventListener) {
@@ -84,21 +100,16 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
     type: event.type,
     state: event.state
   };
-  let eventStr = JSON.stringify(evt);
-  if (nextPayloadLength > 0 && nextPayloadLength + eventStr.length > config.batchLimit) {
-    uploadNextPayload();
-  }
-  nextPayload.push(eventStr);
-  nextPayloadLength += eventStr.length;
-
-  // Edge case:
-  // Don't schedule next upload when next payload consists of exactly one XhrError instrumentation event.
-  // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
-  // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
-  let payloadIsSingleXhrErrorEvent = event.state && event.state.type === Instrumentation.XhrError && nextPayload.length === 1;
-  if (scheduleUpload && !payloadIsSingleXhrErrorEvent) {
+  let addEventMessage: IAddEventMessage = {
+    type: WorkerMessageType.AddEvent,
+    event: evt,
+    time: getTimestamp()
+  };
+  compressionWorker.postMessage(addEventMessage);
+  pendingEvents.push(evt);
+  if (scheduleUpload) {
     clearTimeout(timeout);
-    timeout = setTimeout(uploadNextPayload, config.delay);
+    timeout = setTimeout(forceCompression, config.delay);
   }
 }
 
@@ -113,6 +124,14 @@ export function addMultipleEvents(events: IEventData[]) {
   }
 }
 
+export function forceCompression() {
+  let forceCompressionMessage: ITimestampedWorkerMessage = {
+    type: WorkerMessageType.ForceCompression,
+    time: getTimestamp()
+  };
+  compressionWorker.postMessage(forceCompressionMessage);
+}
+
 export function getTimestamp(unix?: boolean, raw?: boolean) {
   let time = unix ? getUnixTimestamp() : getPageContextBasedTimestamp();
   return (raw ? time : Math.round(time));
@@ -121,6 +140,35 @@ export function getTimestamp(unix?: boolean, raw?: boolean) {
 export function instrument(eventState: IInstrumentationEventState) {
   if (config.instrument) {
     addEvent({type: "Instrumentation", state: eventState});
+  }
+}
+
+export function onWorkerMessage(evt: MessageEvent) {
+  if (state !== State.Unloaded) {
+    let message = evt.data;
+    switch (message.type) {
+      case WorkerMessageType.CompressedBatch:
+        let uploadMsg = message as ICompressedBatchMessage;
+        let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
+        let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uploadMsg.rawData, uploadMsg.compressedData); };
+        upload(uploadMsg.compressedData, onSuccess, onFailure);
+
+        // Clear local copies for the events that just came in a compressed batch from the worker.
+        // Since the order of messages is guaranteed, events will be coming from the worker in the
+        // exact same order as they were pushed on the pendingEvents queue and sent to the worker.
+        // This means that we can just pop 'eventCount' number of events from the front of the queue.
+        pendingEvents.splice(0, uploadMsg.eventCount);
+        sequence++;
+        if (config.debug) {
+          let env = JSON.parse(uploadMsg.rawData).envelope as IEnvelope;
+          let compressedKb = Math.ceil(uploadMsg.compressedData.length / 1024.0);
+          let rawKb = Math.ceil(uploadMsg.rawData.length / 1024.0);
+          debug(`** Clarity #${env.sequenceNumber}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
+        }
+        break;
+      default:
+        break;
+    }
   }
 }
 
@@ -140,45 +188,6 @@ function getPageContextBasedTimestamp(): number {
     : new Date().getTime() - startTime;
 }
 
-function envelope(): IEnvelope {
-  return {
-    clarityId: cid,
-    impressionId,
-    url: window.location.href,
-    version,
-    time: Math.round(getPageContextBasedTimestamp()),
-    sequenceNumber: sequence++
-  };
-}
-
-function uploadNextPayload() {
-  if (nextPayloadLength > 0) {
-    let uncompressed = `{"envelope":${JSON.stringify(envelope())},"events":[${nextPayload.join()}]}`;
-    let compressed = compress(uncompressed);
-    let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
-    let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uncompressed, compressed); };
-
-    nextPayload = [];
-    nextPayloadLength = 0;
-    upload(compressed, onSuccess, onFailure);
-
-    if (config.debug && localStorage) {
-      let compressedKb = Math.ceil(compressed.length / 1024.0);
-      let rawKb = Math.ceil(uncompressed.length / 1024.0);
-      debug(`** Clarity #${sequence}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
-    }
-
-    if (state === State.Activated && sentBytesCount > config.totalLimit) {
-      let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
-        type: Instrumentation.TotalByteLimitExceeded,
-        bytes: sentBytesCount
-      };
-      instrument(totalByteLimitExceededEventState);
-      teardown();
-    }
-  }
-}
-
 function uploadDroppedPayloadsMappingFunction(sequenceNumber: string, droppedPayloadInfo: IDroppedPayloadInfo) {
   let onSuccess = (status: number) => { onResendDeliverySuccess(droppedPayloadInfo); };
   let onFailure = (status: number) => { onResendDeliveryFailure(status, droppedPayloadInfo); };
@@ -192,6 +201,14 @@ function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadC
     defaultUpload(payload, onSuccess, onFailure);
   }
   sentBytesCount += payload.length;
+  if (state === State.Activated && sentBytesCount > config.totalLimit) {
+    let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
+      type: Instrumentation.TotalByteLimitExceeded,
+      bytes: sentBytesCount
+    };
+    instrument(totalByteLimitExceededEventState);
+    teardown();
+  }
 }
 
 function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
@@ -247,23 +264,45 @@ function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
   delete droppedPayloads[droppedPayloadInfo.xhrErrorState.sequenceNumber];
 }
 
+function uploadPendingEvents() {
+  if (pendingEvents.length > 0) {
+    envelope.sequenceNumber = sequence++;
+    envelope.time = getTimestamp();
+    let raw = JSON.stringify({ envelope, events: pendingEvents });
+    let compressed = compress(raw);
+    let onSuccess = (status: number) => { /* Do nothing */ };
+    let onFailure = (status: number) => { /* Do nothing */ };
+    upload(compressed, onSuccess, onFailure);
+  }
+}
+
 function init() {
+
+  // Variables required to send minimal instrumentation events and teardown in case CheckAPI fails
+  startTime = getUnixTimestamp();
   cid = getCookie(Cookie);
   impressionId = guid();
   sequence = 0;
   eventCount = 0;
-  startTime = getUnixTimestamp();
-  activePlugins = [];
-  bindings = {};
-  nextPayload = [];
-  droppedPayloads = {};
-  nextPayloadLength = 0;
+  pendingEvents = [];
   sentBytesCount = 0;
+  envelope = {
+    clarityId: cid,
+    impressionId,
+    url: window.location.href,
+    version
+  };
 
   // If CID cookie isn't present, set it now
   if (!cid) {
     cid = guid();
     setCookie(Cookie, cid);
+  }
+
+  // If critical API is missing, don't activate Clarity
+  if (!checkFeatures()) {
+    teardown();
+    return false;
   }
 
   // Check that no other instance of Clarity is already running on the page
@@ -277,11 +316,11 @@ function init() {
     return false;
   }
 
-  // If critical API is missing, don't activate Clarity
-  if (!checkFeatures()) {
-    teardown();
-    return false;
-  }
+  // Remaining local variablse
+  activePlugins = [];
+  bindings = {};
+  droppedPayloads = {};
+  compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
 
   return true;
 }
@@ -291,7 +330,8 @@ function checkFeatures() {
   let expectedFeatures = [
     "document.implementation.createHTMLDocument",
     "document.documentElement.classList",
-    "Function.prototype.bind"
+    "Function.prototype.bind",
+    "window.Worker"
   ];
 
   for (let feature of expectedFeatures) {

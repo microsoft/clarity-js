@@ -1,6 +1,7 @@
 import { config } from "../src/config";
 import * as core from "../src/core";
-import { cleanupFixture, getAllSentEvents, getEventsByType, observeEvents, setupFixture, triggerSend } from "./utils";
+import { cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
+import { getEventsByType, observeEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -8,6 +9,7 @@ let assert = chai.assert;
 let resourceTimingEventName = "ResourceTiming";
 let stateErrorEventName = "PerformanceStateError";
 let navigationTimingEventName = "NavigationTiming";
+let performancePollTimeoutLength = 1000;
 
 describe("Performance Tests", () => {
   let originalPerformance: Performance;
@@ -18,7 +20,7 @@ describe("Performance Tests", () => {
     resetDummies();
     originalPerformance = window.performance;
     setWindowProperty("performance", dummyPerformance);
-    setupFixture();
+    setupFixture(["performance"]);
   });
 
   afterEach(() => {
@@ -26,10 +28,10 @@ describe("Performance Tests", () => {
     cleanupFixture();
   });
 
-  it("checks that w3c performance timing is logged by clarity", (done) => {
+  it("checks that w3c performance timing is logged by clarity", (done: DoneFn) => {
     // Timings are checked in an interval, so it needs additional time to re-invoke the check
-    triggerSend();
-    let events = getEventsByType(getAllSentEvents(), navigationTimingEventName);
+    fastForwardToNextPerformancePoll();
+    let events = getEventsByType(getSentEvents(), navigationTimingEventName);
     assert.equal(events.length, 1);
 
     let timing = events[0].state && events[0].state.timing;
@@ -39,11 +41,11 @@ describe("Performance Tests", () => {
     done();
   });
 
-  it("checks that network resource timings are logged by clarity", (done) => {
+  it("checks that network resource timings are logged by clarity", (done: DoneFn) => {
     let stopObserving = observeEvents(resourceTimingEventName);
     let dummyEntry = { initiatorType: "dummy", responseEnd: 1 };
     dummyResourceTimings.push(dummyEntry);
-    triggerSend();
+    fastForwardToNextPerformancePoll();
 
     let events = stopObserving();
     assert.equal(events.length, 1);
@@ -56,13 +58,13 @@ describe("Performance Tests", () => {
     done();
   });
 
-  it("checks that multiple network resource timings are logged together", (done) => {
+  it("checks that multiple network resource timings are logged together", (done: DoneFn) => {
     let stopObserving = observeEvents(resourceTimingEventName);
     dummyResourceTimings.push({ responseEnd: 1 });
     dummyResourceTimings.push({ responseEnd: 1 });
 
     // Timings are checked in an interval, so it needs additional time to re-invoke the check
-    triggerSend();
+    fastForwardToNextPerformancePoll();
     let events = stopObserving();
     assert.equal(events.length, 1);
 
@@ -72,17 +74,17 @@ describe("Performance Tests", () => {
     done();
   });
 
-  it("checks that error is logged when entries are cleared", (done) => {
+  it("checks that error is logged when entries are cleared", (done: DoneFn) => {
     let stopObserving = observeEvents(resourceTimingEventName);
     dummyResourceTimings.push({ responseEnd: 1 });
-    triggerSend();
+    fastForwardToNextPerformancePoll();
 
     let events = stopObserving();
     assert.equal(events.length, 1);
 
     stopObserving = observeEvents(stateErrorEventName);
     dummyResourceTimings = [];
-    triggerSend();
+    fastForwardToNextPerformancePoll();
 
     events = stopObserving();
     assert.equal(events.length, 1);
@@ -90,13 +92,13 @@ describe("Performance Tests", () => {
     done();
   });
 
-  it("checks that incomplete entries are not logged initially, but then revisited", (done) => {
+  it("checks that incomplete entries are not logged initially, but then revisited", (done: DoneFn) => {
     let completeEntry = { responseEnd: 1, initiatorType: "completeEntry" };
     let incompleteEntry = { responseEnd: 0, initiatorType: "incompleteEntry" };
     let stopObserving = observeEvents(resourceTimingEventName);
     dummyResourceTimings.push(completeEntry);
     dummyResourceTimings.push(incompleteEntry);
-    triggerSend();
+    fastForwardToNextPerformancePoll();
 
     let events = stopObserving();
     assert.equal(events.length, 1);
@@ -108,7 +110,7 @@ describe("Performance Tests", () => {
     // Adjust the entry to have a valid response end time and wait for snapshot to propagate
     stopObserving = observeEvents(resourceTimingEventName);
     incompleteEntry.responseEnd = 1;
-    triggerSend();
+    fastForwardToNextPerformancePoll();
 
     events = stopObserving();
     assert.equal(events.length, 1);
@@ -140,5 +142,9 @@ describe("Performance Tests", () => {
       getEntriesByType: dummyGetEntriesByType
     };
     dummyResourceTimings = [];
+  }
+
+  function fastForwardToNextPerformancePoll() {
+    jasmine.clock().tick(performancePollTimeoutLength + 1);
   }
 });

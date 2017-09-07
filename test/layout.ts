@@ -2,8 +2,9 @@ import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { IgnoreTag, NodeIndex } from "../src/plugins/layout/stateprovider";
+import { cleanupFixture, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { cleanupFixture, getEventsByType, observeEvents, setupFixture, triggerSend } from "./utils";
+import { getEventsByType, observeEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -12,10 +13,12 @@ let assert = chai.assert;
 
 describe("Layout Tests", () => {
 
-  beforeEach(setupFixture);
+  beforeEach(() => {
+    setupFixture(["layout"]);
+  });
   afterEach(cleanupFixture);
 
-  it("checks that dom additions are captured by clarity", (done) => {
+  it("checks that dom additions are captured by clarity", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -29,25 +32,17 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 3);
       assert.equal(events[0].state.tag, "DIV");
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[1].state.tag, "SPAN");
       assert.equal(events[2].state.tag, "*TXT*");
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that dom removals are captured by clarity", (done) => {
+  it("checks that dom removals are captured by clarity", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -58,23 +53,15 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "DIV");
       assert.equal(events[0].state.action, Action.Remove);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that dom moves are captured correctly by clarity", (done) => {
+  it("checks that dom moves are captured correctly by clarity", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -86,22 +73,14 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Move);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that insertBefore works correctly", (done) => {
+  it("checks that insertBefore works correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -115,19 +94,11 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Move);
       assert.equal(events[0].state.parent, domIndex);
       assert.equal(events[0].state.next, firstChildIndex);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -150,7 +121,7 @@ describe("Layout Tests", () => {
   //  state and stop processing mutations.
   // Solution:
   //  Wait for 2 consequtive mutations that bring ShadowDOM to the inconsistent state before disabling mutation processing.
-  it("checks that inserting script, which inserts an element, works correctly", (done) => {
+  it("checks that inserting script, which inserts an element, works correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -164,9 +135,6 @@ describe("Layout Tests", () => {
     document.body.appendChild(script);
 
     function callback() {
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
       // Uncompress recent data from mutations
       let newEvents = stopObserving();
       events = events.concat(newEvents);
@@ -179,7 +147,6 @@ describe("Layout Tests", () => {
         } else {
           // Non-IE path: Both div and script are reported in the first callback
           observer.disconnect();
-
           assert.equal(events.length, 3);
           assert.equal(events[0].state.action, Action.Insert);
           assert.equal(events[0].state.tag, IgnoreTag);
@@ -187,8 +154,6 @@ describe("Layout Tests", () => {
           assert.equal(events[1].state.tag, IgnoreTag);
           assert.equal(events[2].state.action, Action.Insert);
           assert.equal(events[2].state.tag, "DIV");
-
-          // Explicitly signal that we are done here
           done();
         }
       } else if (callbackCount === 1) {
@@ -208,15 +173,13 @@ describe("Layout Tests", () => {
         assert.equal(events[2].state.tag, IgnoreTag);
         assert.equal(events[3].state.action, Action.Insert);
         assert.equal(events[3].state.tag, "SPAN");
-
-        // Explicitly signal that we are done here
         done();
       }
       callbackCount++;
     }
   });
 
-  it("checks that moving two known nodes to a new location such that they are siblings works correctly", (done) => {
+  it("checks that moving two known nodes to a new location such that they are siblings works correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -232,15 +195,9 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, "SPAN");
 
@@ -252,7 +209,6 @@ describe("Layout Tests", () => {
       assert.equal(events[2].state.index, backup[NodeIndex]);
       assert.equal(events[2].state.next, null);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -260,7 +216,7 @@ describe("Layout Tests", () => {
   //  Currently we stopped capturing CSS rule modifications, so disabling this test
   //  Keeping it in code to use it again, once CSS rule modification capturing is restored
   //
-  //  it('ensures we capture css rule modifications via javascript', (done) => {
+  //  it('ensures we capture css rule modifications via javascript', (done: DoneFn) => {
   //    let observer = new MutationObserver(callback);
   //    observer.observe(document, {"childList": true,"subtree": true});
 
@@ -294,7 +250,7 @@ describe("Layout Tests", () => {
   //    };
   //  });
 
-  it("checks dom changes are captured accurately when multiple siblings are moved to another parent", (done) => {
+  it("checks dom changes are captured accurately when multiple siblings are moved to another parent", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -309,25 +265,17 @@ describe("Layout Tests", () => {
     }
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, childrenCount);
       assert.equal(events[0].state.action, Action.Move);
       assert.equal(events[0].state.parent, backupIndex);
       assert.equal(events[4].state.parent, backupIndex);
       assert.equal(events[4].state.next, events[5].state.index);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that insertion of multiple nodes in the same mutation record is handled correctly", (done) => {
+  it("checks that insertion of multiple nodes in the same mutation record is handled correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
     let stopObserving = observeEvents(eventName);
@@ -346,14 +294,9 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-
-      // Check DIV insert event
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, "DIV");
       assert.equal(events[0].state.previous, backupPrevious[NodeIndex]);
@@ -369,12 +312,11 @@ describe("Layout Tests", () => {
       assert.equal(events[2].state.tag, "A");
       assert.equal(events[2].state.next, backup[NodeIndex]);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that removal of multiple nodes in the same mutation record is handled correctly", (done) => {
+  it("checks that removal of multiple nodes in the same mutation record is handled correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
     let stopObserving = observeEvents(eventName);
@@ -394,9 +336,6 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       // Make sure that there is a remove event for every child
@@ -412,7 +351,6 @@ describe("Layout Tests", () => {
         assert.equal(NodeIndex in children[i], false);
       }
 
-      // Explicitly signal that we are done here
       done();
     }
   });
@@ -420,7 +358,7 @@ describe("Layout Tests", () => {
   // Nodes that are inserted and then removed in the same mutation don't produce any events and their mutations are ignored
   // However, it's possible that some other observed node can be appended to the ignored node and then get removed from the
   // DOM as a part of the ignored node's subtree. This test makes sure that removing observed node this way is captured correctly.
-  it("checks that removal of a known node through a subtree of its ignored parent is handled correctly", (done) => {
+  it("checks that removal of a known node through a subtree of its ignored parent is handled correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
     let stopObserving = observeEvents(eventName);
@@ -436,11 +374,8 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      triggerSend();
 
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Remove);
       assert.equal(events[0].state.index, backupNodeIndex);
@@ -449,12 +384,11 @@ describe("Layout Tests", () => {
       assert.equal(NodeIndex in tempNode, false);
       assert.equal(NodeIndex in backupNode, false);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that dom addition with the follow-up attribute change captures the 'Update' action", (done) => {
+  it("checks that dom addition with the follow-up attribute change captures the 'Update' action", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -468,25 +402,17 @@ describe("Layout Tests", () => {
       div.setAttribute("data-clarity", "test");
       if (count++ > 0) {
         observer.disconnect();
-
-        // Following jasmine feature fast forwards the async delay in setTimeout calls
-        triggerSend();
-
-        // Uncompress recent data from mutations
         let events = stopObserving();
-
         assert.equal(events.length, 2);
         assert.equal(events[0].state.action, Action.Insert);
         assert.equal(events[0].state.tag, "DIV");
         assert.equal(events[1].state.action, Action.Update);
-
-        // Explicitly signal that we are done here
         done();
       }
     }
   });
 
-  it("checks that dom addition with immediate attribute change ignores the 'Update' action", (done) => {
+  it("checks that dom addition with immediate attribute change ignores the 'Update' action", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -498,23 +424,15 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, "DIV");
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that dom addition with immediate move ignores the 'Move' action", (done) => {
+  it("checks that dom addition with immediate move ignores the 'Move' action", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -527,24 +445,16 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, "DIV");
       assert.equal(events[0].state.parent, clarity[NodeIndex]);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that nodes that are added and removed in the same mutation don't create index gaps in event logs ", (done) => {
+  it("checks that nodes that are added and removed in the same mutation don't create index gaps in event logs ", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -561,26 +471,18 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 2);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.index, div1[NodeIndex]);
       assert.equal(events[1].state.action, Action.Insert);
       assert.equal(events[1].state.index, div2[NodeIndex]);
       assert.equal(div1[NodeIndex], div2[NodeIndex] - 1);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that we do not instrument disconnected dom tree", (done) => {
+  it("checks that we do not instrument disconnected dom tree", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -592,11 +494,6 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       // Prove that we didn't send any extra instrumentation back for no-op mutation
@@ -605,12 +502,11 @@ describe("Layout Tests", () => {
       // Make sure that clarity index is cleared from all removed nodes
       assert.equal(NodeIndex in div, false);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that we do not instrument child nodes within disconnected dom tree", (done) => {
+  it("checks that we do not instrument child nodes within disconnected dom tree", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -624,8 +520,6 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-      triggerSend();
-
       let events = stopObserving();
 
       // Prove that we didn't send any extra instrumentation back for no-op mutation
@@ -635,12 +529,11 @@ describe("Layout Tests", () => {
       assert.equal(NodeIndex in div, false);
       assert.equal(NodeIndex in span, false);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that we do not instrument child nodes within a previously observed disconnected dom tree", (done) => {
+  it("checks that we do not instrument child nodes within a previously observed disconnected dom tree", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
@@ -653,9 +546,6 @@ describe("Layout Tests", () => {
 
     function callback(mutations) {
       observer.disconnect();
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       // Prove that we didn't send any extra instrumentation back for no-op mutation
@@ -667,12 +557,11 @@ describe("Layout Tests", () => {
       assert.equal(NodeIndex in clarityDiv, false);
       assert.equal(NodeIndex in span, false);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that we do not instrument inserted nodes twice", (done) => {
+  it("checks that we do not instrument inserted nodes twice", (done: DoneFn) => {
     // Edge case scenario for the test:
     // 1. Node n1 is added to the page
     // 2. Immediately node n2 is appended to n1
@@ -692,11 +581,8 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-      triggerSend();
 
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 2);
 
       // Check DIV insert event
@@ -709,12 +595,11 @@ describe("Layout Tests", () => {
       assert.equal(events[1].state.parent, n1[NodeIndex]);
       assert.equal(events[1].state.tag, "SPAN");
 
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that all kinds of mutations within the same batch have the same mutation sequence", (done) => {
+  it("checks that all kinds of mutations within the same batch have the same mutation sequence", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -730,11 +615,6 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       assert.equal(events.length, 4);
@@ -751,12 +631,11 @@ describe("Layout Tests", () => {
       assert.equal(events[2].state.mutationSequence, mutationSequence);
       assert.equal(events[3].state.mutationSequence, mutationSequence);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that mutation sequence number is incremented between mutation callbacks", (done) => {
+  it("checks that mutation sequence number is incremented between mutation callbacks", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -769,9 +648,7 @@ describe("Layout Tests", () => {
     function callback() {
       if (callbackNumber === 1) {
         observer.disconnect();
-        triggerSend();
 
-        // Uncompress recent data from mutations
         let events = stopObserving();
         assert.equal(events.length, 2);
 
@@ -779,7 +656,6 @@ describe("Layout Tests", () => {
         assert.isTrue(firstEventSequence >= 0);
         assert.equal(events[1].state.mutationSequence, firstEventSequence + 1);
 
-        // Explicitly signal that we are done here
         done();
       } else {
         document.body.appendChild(divTwo);
@@ -788,7 +664,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that images source is not captured if the config disallows it", (done) => {
+  it("checks that images source is not captured if the config disallows it", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -803,23 +679,16 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "IMG");
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal("src" in events[0].state.attributes, false);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that images source is captured if the config allows it", (done) => {
+  it("checks that images source is captured if the config allows it", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -835,24 +704,16 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "IMG");
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.attributes["src"], src);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that input value is masked if the config is set to not show text", (done) => {
+  it("checks that input value is masked if the config is set to not show text", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -867,24 +728,16 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.tag, "INPUT");
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.attributes["value"], "*******");
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that script element and its text are ignored", (done) => {
+  it("checks that script element and its text are ignored", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -897,10 +750,6 @@ describe("Layout Tests", () => {
     function callback() {
       observer.disconnect();
 
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
 
       assert.equal(events.length, 2);
@@ -912,12 +761,11 @@ describe("Layout Tests", () => {
       assert.equal(events[1].state.tag, IgnoreTag);
       assert.equal(events[1].state.nodeType, Node.TEXT_NODE);
 
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that meta element is ignored", (done) => {
+  it("checks that meta element is ignored", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -928,24 +776,16 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, IgnoreTag);
       assert.equal(events[0].state.nodeType, Node.ELEMENT_NODE);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that comment node is ignored", (done) => {
+  it("checks that comment node is ignored", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -956,24 +796,16 @@ describe("Layout Tests", () => {
 
     function callback() {
       observer.disconnect();
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[0].state.tag, IgnoreTag);
       assert.equal(events[0].state.nodeType, Node.COMMENT_NODE);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that scroll capturing works on inserted element", (done) => {
+  it("checks that scroll capturing works on inserted element", (done: DoneFn) => {
     let stopObserving = null;
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
@@ -989,9 +821,6 @@ describe("Layout Tests", () => {
     document.body.appendChild(outerDiv);
 
     function callback() {
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
       observer.disconnect();
 
       // Add a node to the document and observe Clarity events
@@ -1003,23 +832,16 @@ describe("Layout Tests", () => {
     }
 
     function scrollCallback() {
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
       outerDiv.removeEventListener("scroll", scrollCallback);
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Update);
       assert.equal(events[0].state.source, Source.Scroll);
-
-      // Explicitly signal that we are done here
       done();
     }
   });
 
-  it("checks that input change capturing works on inserted element", (done) => {
+  it("checks that input change capturing works on inserted element", (done: DoneFn) => {
     let stopObserving = null;
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
@@ -1029,9 +851,6 @@ describe("Layout Tests", () => {
     document.body.appendChild(input);
 
     function callback() {
-
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
       observer.disconnect();
 
       // Add a node to the document and observe Clarity events
@@ -1048,19 +867,12 @@ describe("Layout Tests", () => {
     }
 
     function inputChangeCallback() {
-      // Following jasmine feature fast forwards the async delay in setTimeout calls
-      triggerSend();
       input.removeEventListener("change", inputChangeCallback);
-
-      // Uncompress recent data from mutations
       let events = stopObserving();
-
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Update);
       assert.equal(events[0].state.source, Source.Input);
       assert.equal(events[0].state.attributes.value, newValueString);
-
-      // Explicitly signal that we are done here
       done();
     }
   });

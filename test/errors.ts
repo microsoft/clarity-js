@@ -1,4 +1,5 @@
-import { activateCore, cleanupFixture, getAllSentEvents, setupFixture, triggerSend } from "./utils";
+import { cleanupFixture, setupFixture } from "./testsetup";
+import { observeEvents } from "./utils";
 
 import * as chai from "chai";
 import * as errors from "../src/plugins/errors";
@@ -6,10 +7,13 @@ import * as errors from "../src/plugins/errors";
 let assert = chai.assert;
 
 describe("Error Tests", () => {
-    beforeEach(setupFixture);
+    beforeEach(() => {
+        setupFixture(["errors"]);
+    });
     afterEach(cleanupFixture);
 
-    it("checks that a single error event is logged", (done) => {
+    it("checks that a single error event is logged", (done: DoneFn) => {
+        let stopObserving = observeEvents();
         let syntheticEvent = document.createEvent("CustomEvent");
         let message = "sample error text";
         let filename = "sample filename";
@@ -21,19 +25,18 @@ describe("Error Tests", () => {
         syntheticEvent["lineno"] = lineno;
         syntheticEvent["colno"] = colno;
         errors.logError(syntheticEvent);
-        triggerSend();
-        let events = getAllSentEvents();
-        let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
-        assert.equal(errorEvents.length, 1);
-        assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
-        assert.equal(errorEvents[0].state.message, message);
-        assert.equal(errorEvents[0].state.source, filename);
-        assert.equal(errorEvents[0].state.lineno, lineno);
-        assert.equal(errorEvents[0].state.colno, colno);
+        let events = stopObserving();
+        assert.equal(events.length, 1);
+        assert.equal(events[0].state.type, Instrumentation.JsError);
+        assert.equal(events[0].state.message, message);
+        assert.equal(events[0].state.source, filename);
+        assert.equal(events[0].state.lineno, lineno);
+        assert.equal(events[0].state.colno, colno);
         done();
      });
 
-    it("checks empty message when not passed", (done) => {
+    it("checks empty message when not passed", (done: DoneFn) => {
+        let stopObserving = observeEvents();
         let syntheticEvent = document.createEvent("CustomEvent");
         let message = null;
         let filename = "sample filename";
@@ -44,19 +47,18 @@ describe("Error Tests", () => {
         syntheticEvent["lineno"] = lineno;
         syntheticEvent["colno"] = colno;
         errors.logError(syntheticEvent);
-        triggerSend();
-        let events = getAllSentEvents();
-        let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
-        assert.equal(errorEvents.length, 1);
-        assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
-        assert.equal(errorEvents[0].state.message, message);
-        assert.equal(errorEvents[0].state.source, filename);
-        assert.equal(errorEvents[0].state.lineno, lineno);
-        assert.equal(errorEvents[0].state.colno, colno);
+        let events = stopObserving();
+        assert.equal(events.length, 1);
+        assert.equal(events[0].state.type, Instrumentation.JsError);
+        assert.equal(events[0].state.message, message);
+        assert.equal(events[0].state.source, filename);
+        assert.equal(events[0].state.lineno, lineno);
+        assert.equal(events[0].state.colno, colno);
         done();
     });
 
-    it("checks that multiple error events are logged", (done) => {
+    it("checks that multiple error events are logged", (done: DoneFn) => {
+        let stopObserving = observeEvents();
         let syntheticEvent = document.createEvent("CustomEvent");
         let message = "sample error text";
         syntheticEvent.initEvent("error", true, true);
@@ -64,26 +66,23 @@ describe("Error Tests", () => {
         errors.logError(syntheticEvent);
         errors.logError(syntheticEvent);
         errors.logError(syntheticEvent);
-        triggerSend();
-        let events = getAllSentEvents();
-        let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
-        assert.equal(errorEvents.length, 3);
-        assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
-        assert.equal(errorEvents[0].state.message, message);
+        let events = stopObserving();
+        assert.equal(events.length, 3);
+        assert.equal(events[0].state.type, Instrumentation.JsError);
+        assert.equal(events[0].state.message, message);
         done();
     });
 
-    it("checks error objects directly passed are parsed", (done) => {
+    it("checks error objects directly passed are parsed", (done: DoneFn) => {
+        let stopObserving = observeEvents();
         let message = "sample error text";
         let syntheticEvent = document.createEvent("CustomEvent");
         syntheticEvent["error"] = new Error(message);
         errors.logError(syntheticEvent);
-        triggerSend();
-        let events = getAllSentEvents();
-        let errorEvents = events.filter((event) => event.state.type === Instrumentation.JsError);
-        assert.equal(errorEvents.length, 1);
-        assert.equal(errorEvents[0].state.type, Instrumentation.JsError);
-        assert.equal(errorEvents[0].state.message, message);
+        let events = stopObserving();
+        assert.equal(events.length, 1);
+        assert.equal(events[0].state.type, Instrumentation.JsError);
+        assert.equal(events[0].state.message, message);
         done();
     });
 });

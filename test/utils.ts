@@ -1,90 +1,71 @@
-import { start, stop } from "../src/clarity";
-import { config } from "../src/config";
-import { addEvent } from "../src/core";
-import { mapProperties } from "../src/utils";
-import { clearSentBytes, getSentBytes } from "./testsetup";
-import uncompress from "./uncompress";
+
+import compress from "../src/compress";
+import { addEvent, onWorkerMessage } from "../src/core";
+import { guid } from "../src/utils";
+import { getSentEvents, getWorkerMessages } from "./testsetup";
 
 export const MockEventName = "ClarityTestMockEvent";
 
-let originalConfig: IConfig = config;
-
-export function triggerMockEvent(eventName?: string) {
-  eventName = eventName || MockEventName;
-  addEvent({type: eventName, state: {}});
-  triggerSend();
-}
-
 export function observeEvents(eventType?: string): () => IEvent[] {
-  triggerSend();
-  let initialSentBytesLength = getSentBytes().length;
+  let initialEventsLength = getSentEvents().length;
   let stopObserving = (): IEvent[] => {
-    triggerSend();
-    let newEvents = getEventsFromSentBytes(getSentBytes().slice(initialSentBytesLength));
+    let newEvents = getSentEvents().slice(initialEventsLength);
     return eventType ? getEventsByType(newEvents, eventType) : newEvents;
   };
   return stopObserving;
 }
 
+export function observeWorkerMessages() {
+  let initialEventsLength = getWorkerMessages().length;
+  let stopObserving = (): IWorkerMessage[] => {
+    let newMessages = getWorkerMessages().slice(initialEventsLength);
+    return newMessages;
+  };
+  return stopObserving;
+}
+
 export function getEventsByType(events: IEvent[], eventType: string): IEvent[] {
-  function checkEventType(event: IEvent): boolean {
-    return (event.type === eventType);
-  }
-  return getEventsByCustomCondition(events, checkEventType);
+  return events.filter((event) => event.type === eventType);
 }
 
-export function getEventsByCustomCondition(events: IEvent[], conditionFunction: (event: IEvent) => boolean): IEvent[] {
-  let matchingEvents: IEvent[] = [];
+export function postCompressedBatch(events: IEvent[], envelope?: IEnvelope) {
+  let mockNextBatch: string[] = [];
   for (let i = 0; i < events.length; i++) {
-    if (conditionFunction(events[i])) {
-      matchingEvents.push(events[i]);
-    }
+    mockNextBatch.push(JSON.stringify(events[i]));
   }
-  return matchingEvents;
+  envelope = envelope || getMockEnvelope();
+  let mockRawData = `{"envelope":${JSON.stringify(envelope)},"events":[${mockNextBatch.join()}]}`;
+  let mockCompressedData = compress(mockRawData);
+  let mockCompressedBatchMessage: ICompressedBatchMessage = {
+    type: WorkerMessageType.CompressedBatch,
+    compressedData: mockCompressedData,
+    rawData: mockRawData,
+    eventCount: events.length
+  };
+  let mockCompressedBatchMessageEvent = {
+    data: mockCompressedBatchMessage
+  } as MessageEvent;
+  onWorkerMessage(mockCompressedBatchMessageEvent);
 }
 
-export function getAllSentEvents(): IEvent[] {
-  return getEventsFromSentBytes(getSentBytes());
+export function getMockEnvelope(sequenceNumber?: number) {
+  let mockEnvelope: IEnvelope = {
+    clarityId: guid(),
+    impressionId: guid(),
+    sequenceNumber: sequenceNumber >= 0 ? sequenceNumber : -1,
+    time: -1,
+    url: window.location.toString(),
+    version: "0.0.0"
+  };
+  return mockEnvelope;
 }
 
-export function getAllSentBytes() {
-  return getSentBytes();
-}
-
-export function setupFixture() {
-  fixture.setBase("test");
-  fixture.load("clarity.fixture.html");
-  jasmine.clock().install();
-  originalConfig = mapProperties(config, null, true);
-  activateCore();
-}
-
-export function cleanupFixture() {
-  fixture.cleanup();
-  stop();
-  jasmine.clock().uninstall();
-  resetConfig();
-}
-
-export function triggerSend() {
-  jasmine.clock().tick(config.delay * 2);
-}
-
-export function activateCore() {
-  clearSentBytes();
-  start();
-  triggerSend();
-}
-
-export function resetConfig() {
-  mapProperties(originalConfig, null, true, config);
-}
-
-function getEventsFromSentBytes(sentBytes: string[]): IEvent[] {
-  let events = [];
-  for (let i = 0; i < sentBytes.length; i++) {
-    let payload: IPayload = JSON.parse(uncompress(JSON.parse(sentBytes[i])));
-    events = events.concat(payload.events);
-  }
-  return events;
+export function getMockEvent(eventName?: string) {
+  let mockEvent: IEvent = {
+    id: -1,
+    state: {},
+    time: -1,
+    type: eventName || MockEventName
+  };
+  return mockEvent;
 }

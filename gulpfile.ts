@@ -58,15 +58,15 @@ gulp.task("uglify", () => {
 
 gulp.task("rollup", () => {
   return rollup({
-      entry: "./src/clarity.ts",
-      format: "umd",
-      moduleName: "clarity",
-      plugins: [
-        (typescript as any)()
-      ]
-    })
-    .pipe(source(bundle))
-    .pipe(gulp.dest("build"));
+    entry: "./src/clarity.ts",
+    format: "umd",
+    moduleName: "clarity",
+    plugins: [
+      (typescript as any)()
+    ]
+  })
+  .pipe(source(bundle))
+  .pipe(gulp.dest("build"));
 });
 
 gulp.task("clean", () => {
@@ -106,7 +106,6 @@ gulp.task("test-debug", (done) => {
 
 gulp.task("coverage", (done) => {
   new karmaServer({
-    configFile: __dirname + "/build/test/coverage.conf.js",
-    singleRun: true
+    configFile: __dirname + "/build/test/coverage.conf.js"
   }, done).start();
 });
