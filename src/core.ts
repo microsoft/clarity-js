@@ -70,6 +70,10 @@ export function teardown() {
 
   delete document[ClarityAttribute];
   if (compressionWorker) {
+    // Immediately terminate the worker and kill its thread.
+    // Any possible pending incoming messages from the worker will be ignored in the 'Unloaded' state.
+    // Copies of all the events that were sent to the worker, but have not been returned as a compressed batch yet,
+    // are stored in the 'pendingEvents' queue, so we will compress and upload them synchronously in this thread.
     compressionWorker.terminate();
   }
   state = State.Unloaded;
@@ -148,6 +152,11 @@ export function onWorkerMessage(evt: MessageEvent) {
         let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
         let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uploadMsg.rawData, uploadMsg.compressedData); };
         upload(uploadMsg.compressedData, onSuccess, onFailure);
+
+        // Clear local copies for the events that just came in a compressed batch from the worker.
+        // Since the order of messages is guaranteed, events will be coming from the worker in the
+        // exact same order as they were pushed on the pendingEvents queue and sent to the worker.
+        // This means that we can just pop 'eventCount' number of events from the front of the queue.
         pendingEvents.splice(0, uploadMsg.eventCount);
         sequence++;
         if (config.debug) {
