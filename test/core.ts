@@ -37,6 +37,27 @@ describe("Core Tests", () => {
     done();
   });
 
+  it("validates that error during clarity activate is caught and logged correctly", (done: DoneFn) => {
+    core.teardown();
+    let stopObserving = observeEvents();
+    let originalWorker = Worker;
+    let mockErrorText = "Mock Worker error!";
+    (Worker as any) = () => {
+      throw new Error(mockErrorText);
+    };
+    activateCore();
+    Worker = originalWorker;
+
+    let events = getSentEvents();
+    assert.equal(events.length, 2);
+    assert.equal(events[0].type, instrumentationEventName);
+    assert.equal(events[0].state.type, Instrumentation.ClarityActivateError);
+    assert.equal(events[0].state.error, mockErrorText);
+    assert.equal(events[1].type, instrumentationEventName);
+    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    done();
+  });
+
   it("validates that custom sendCallback is invoked when passed through config", (done: DoneFn) => {
     let sendCount = 0;
     config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) => {
