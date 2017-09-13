@@ -324,7 +324,8 @@ declare const enum Instrumentation {
   Teardown,
   ClarityAssertFailed,
   ClarityDuplicated,
-  ShadowDomInconsistent
+  ShadowDomInconsistent,
+  ClarityActivateError
 }
 
 interface IInstrumentationEventState {
@@ -384,6 +385,10 @@ interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
   // from consistent to inconsistent state happened on some previous action and there was also an event created for it.
   // That first event is sent in this property.
   firstEvent?: IShadowDomInconsistentEventState;
+}
+
+interface IClarityActivateErrorState extends IInstrumentationEventState {
+  error: string;
 }
 
 /* ##################################### */

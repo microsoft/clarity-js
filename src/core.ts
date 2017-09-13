@@ -35,21 +35,18 @@ let pendingEvents: IEvent[] = [];
 export let state: State = State.Loaded;
 
 export function activate() {
-  if (init()) {
-    document[ClarityAttribute] = impressionId;
-    for (let plugin of config.plugins) {
-      let pluginClass = getPlugin(plugin);
-      if (pluginClass) {
-        let instance = new (pluginClass)();
-        instance.reset();
-        instance.activate();
-        activePlugins.push(instance);
-      }
+  try {
+    if (init()) {
+      activatePlugins();
+      state = State.Activated;
     }
-
-    bind(window, "beforeunload", teardown);
-    bind(window, "unload", teardown);
-    state = State.Activated;
+  } catch (e) {
+    let clarityActivateError: IClarityActivateErrorState = {
+      type: Instrumentation.ClarityActivateError,
+      error: e.message
+    };
+    instrument(clarityActivateError);
+    teardown();
   }
 }
 
@@ -105,7 +102,9 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
     event: evt,
     time: getTimestamp()
   };
-  compressionWorker.postMessage(addEventMessage);
+  if (compressionWorker) {
+    compressionWorker.postMessage(addEventMessage);
+  }
   pendingEvents.push(evt);
   if (scheduleUpload) {
     clearTimeout(timeout);
@@ -125,11 +124,13 @@ export function addMultipleEvents(events: IEventData[]) {
 }
 
 export function forceCompression() {
-  let forceCompressionMessage: ITimestampedWorkerMessage = {
-    type: WorkerMessageType.ForceCompression,
-    time: getTimestamp()
-  };
-  compressionWorker.postMessage(forceCompressionMessage);
+  if (compressionWorker) {
+    let forceCompressionMessage: ITimestampedWorkerMessage = {
+      type: WorkerMessageType.ForceCompression,
+      time: getTimestamp()
+    };
+    compressionWorker.postMessage(forceCompressionMessage);
+  }
 }
 
 export function getTimestamp(unix?: boolean, raw?: boolean) {
@@ -314,15 +315,31 @@ function init() {
     instrument(eventState);
     teardown();
     return false;
+  } else {
+    document[ClarityAttribute] = impressionId;
   }
 
-  // Remaining local variablse
+  // Remaining local variables
   activePlugins = [];
   bindings = {};
   droppedPayloads = {};
   compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
 
+  bind(window, "beforeunload", teardown);
+  bind(window, "unload", teardown);
   return true;
+}
+
+function activatePlugins() {
+  for (let plugin of config.plugins) {
+    let pluginClass = getPlugin(plugin);
+    if (pluginClass) {
+      let instance = new (pluginClass)();
+      instance.reset();
+      instance.activate();
+      activePlugins.push(instance);
+    }
+  }
 }
 
 function checkFeatures() {

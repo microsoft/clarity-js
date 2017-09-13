@@ -27,7 +27,7 @@ function workerContext() {
   // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
   let nextBatchIsSingleXhrErrorEvent: boolean =  false;
 
-  onmessage = (evt: MessageEvent) => {
+  self.onmessage = (evt: MessageEvent) => {
     let message = evt.data;
     switch (message.type) {
       case WorkerMessageType.AddEvent:
