@@ -61,11 +61,6 @@ declare const enum State {
   Unloaded
 }
 
-declare module "*.json" {
-  const value: any;
-  export default value;
-}
-
 interface IPlugin {
   activate(): void;
   teardown(): void;
