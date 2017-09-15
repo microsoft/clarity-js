@@ -5,7 +5,6 @@ import uncompress from "./uncompress";
 import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, postCompressedBatch } from "./utils";
 
 import * as chai from "chai";
-
 let assert = chai.assert;
 let instrumentationEventName = "Instrumentation";
 
@@ -296,6 +295,41 @@ describe("Core Tests", () => {
     assert.equal(events[0].type, MockEventName);
     assert.equal(events[1].type, "Instrumentation");
     assert.equal(events[1].state.type, Instrumentation.Teardown);
+    done();
+
+    function mockUploadHandler(payload: string) {
+      sentBytes.push(payload);
+    }
+  });
+
+  it("validates that pending uploads are sent when Clarity trigger is fired", (done: DoneFn) => {
+    let sentBytes: string[] = [];
+    let mockEvent = getMockEvent();
+    let mockCompressedData = "MockCompressedData";
+    let mockRawData = "MockRawData";
+    let mockCompressedBatchMessage: ICompressedBatchMessage = {
+      type: WorkerMessageType.CompressedBatch,
+      compressedData: mockCompressedData,
+      rawData: mockRawData,
+      eventCount: 1
+    };
+    let mockCompressedMessageEvent = {
+      data: mockCompressedBatchMessage
+    };
+    core.teardown();
+
+    // Set up test config
+    config.waitForTrigger = true;
+    config.uploadHandler = mockUploadHandler;
+    activateCore();
+
+    // This even should not get sent until trigger is fired
+    core.onWorkerMessage(mockCompressedMessageEvent as MessageEvent);
+    assert.equal(sentBytes.length, 0);
+
+    core.onTrigger();
+    assert.equal(sentBytes.length, 1);
+    assert.equal(sentBytes[0], mockCompressedData);
     done();
 
     function mockUploadHandler(payload: string) {

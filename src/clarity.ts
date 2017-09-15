@@ -1,5 +1,5 @@
 import { config } from "./config";
-import { activate, state, teardown } from "./core";
+import { activate, onTrigger, state, teardown } from "./core";
 import { mapProperties } from "./utils";
 
 export function start(customConfig?: IConfig) {
@@ -11,4 +11,8 @@ export function start(customConfig?: IConfig) {
 
 export function stop() {
   teardown();
+}
+
+export function trigger() {
+  onTrigger();
 }
