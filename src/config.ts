@@ -1,9 +1,10 @@
 // Default configuration
 export let config: IConfig = {
+  plugins: ["viewport", "layout", "pointer", "performance", "errors"],
+  uploadUrl: "",
   delay: 500,
   batchLimit: 100 * 1024, // 100 kilobytes
   totalLimit: 20 * 1024 * 1024,  // 20 megabytes
-  uploadUrl: "",
   showText: false,
   showImages: false,
   timeToYield: 50,
@@ -11,5 +12,5 @@ export let config: IConfig = {
   uploadHandler: null,
   debug: false,
   validateConsistency: false,
-  plugins: ["viewport", "layout", "pointer", "performance", "errors"]
+  waitForTrigger: false
 };

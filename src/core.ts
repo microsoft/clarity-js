@@ -5,7 +5,7 @@ import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Constants
-const version = "0.1.10";
+const version = "0.1.11";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -16,6 +16,7 @@ let sentBytesCount: number;
 let cid: string;
 let impressionId: string;
 let sequence: number;
+let uploadCount: number;
 let eventCount: number;
 let startTime: number;
 let activePlugins: IPlugin[];
@@ -31,6 +32,11 @@ let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
 // When page is unloaded, keeping such event copies in core allows us to terminate compression worker safely and then
 // compress and upload remaining events synchronously from the main thread.
 let pendingEvents: IEvent[] = [];
+
+// Storage for payloads that are compressed and are ready to be sent, but are waiting for Clarity trigger.
+// Once trigger is fired, all payloads from this array will be sent in the order they were generated.
+let pendingUploads: IUploadInfo[];
+let queueUploads: boolean;
 
 export let state: State = State.Loaded;
 
@@ -123,6 +129,17 @@ export function addMultipleEvents(events: IEventData[]) {
   }
 }
 
+export function onTrigger() {
+  if (state === State.Activated) {
+    queueUploads = false;
+    for (let i = 0; i < pendingUploads.length; i++) {
+      let uploadInfo = pendingUploads[i];
+      upload(uploadInfo.payload, uploadInfo.onSuccess, uploadInfo.onFailure);
+    }
+    pendingUploads = [];
+  }
+}
+
 export function forceCompression() {
   if (compressionWorker) {
     let forceCompressionMessage: ITimestampedWorkerMessage = {
@@ -152,7 +169,16 @@ export function onWorkerMessage(evt: MessageEvent) {
         let uploadMsg = message as ICompressedBatchMessage;
         let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
         let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uploadMsg.rawData, uploadMsg.compressedData); };
-        upload(uploadMsg.compressedData, onSuccess, onFailure);
+        if (queueUploads) {
+          let uploadInfo: IUploadInfo = {
+            payload: uploadMsg.compressedData,
+            onSuccess,
+            onFailure
+          };
+          pendingUploads.push(uploadInfo);
+        } else {
+          upload(uploadMsg.compressedData, onSuccess, onFailure);
+        }
 
         // Clear local copies for the events that just came in a compressed batch from the worker.
         // Since the order of messages is guaranteed, events will be coming from the worker in the
@@ -160,12 +186,6 @@ export function onWorkerMessage(evt: MessageEvent) {
         // This means that we can just pop 'eventCount' number of events from the front of the queue.
         pendingEvents.splice(0, uploadMsg.eventCount);
         sequence++;
-        if (config.debug) {
-          let env = JSON.parse(uploadMsg.rawData).envelope as IEnvelope;
-          let compressedKb = Math.ceil(uploadMsg.compressedData.length / 1024.0);
-          let rawKb = Math.ceil(uploadMsg.rawData.length / 1024.0);
-          debug(`** Clarity #${env.sequenceNumber}: Uploading ${compressedKb}KB (raw: ${rawKb}KB). **`);
-        }
         break;
       default:
         break;
@@ -196,11 +216,12 @@ function uploadDroppedPayloadsMappingFunction(sequenceNumber: string, droppedPay
 }
 
 function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
-  if (config.uploadHandler) {
-    config.uploadHandler(payload, onSuccess, onFailure);
-  } else {
-    defaultUpload(payload, onSuccess, onFailure);
-  }
+  let uploadHandler = config.uploadHandler || defaultUpload;
+  uploadHandler(payload, onSuccess, onFailure);
+  debug(`** Clarity #${uploadCount}: Uploading ${Math.round(payload.length / 1024.0)}KB (Compressed). **`);
+
+  // Increment counters and make sure we don't exceed the byte limit
+  uploadCount++;
   sentBytesCount += payload.length;
   if (state === State.Activated && sentBytesCount > config.totalLimit) {
     let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
@@ -284,6 +305,7 @@ function init() {
   cid = getCookie(Cookie);
   impressionId = guid();
   sequence = 0;
+  uploadCount = 0;
   eventCount = 0;
   pendingEvents = [];
   sentBytesCount = 0;
@@ -324,6 +346,8 @@ function init() {
   bindings = {};
   droppedPayloads = {};
   compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
+  pendingUploads = [];
+  queueUploads = config.waitForTrigger;
 
   bind(window, "beforeunload", teardown);
   bind(window, "unload", teardown);

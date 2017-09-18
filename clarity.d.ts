@@ -3,6 +3,9 @@
 /* ##################################### */
 
 interface IConfig {
+  // Active plugins
+  plugins?: string[];
+
   // Endpoint, to which data will be uploaded
   uploadUrl?: string;
 
@@ -42,8 +45,10 @@ interface IConfig {
   // interpreted correctly and data is reliable.
   validateConsistency?: boolean;
 
-  // Active plugins
-  plugins?: string[];
+  // If this flag is enabled, Clarity will not send any data until trigger function is called.
+  // Clarity will still run in the background collecting events and compressing them into batches,
+  // but actual sending will only be done one the trigger is fired.
+  waitForTrigger?: boolean;
 }
 
 /* ##################################### */
@@ -90,6 +95,12 @@ interface IEvent extends IEventData {
 interface IDroppedPayloadInfo {
   payload: string;
   xhrErrorState: IXhrErrorEventState;
+}
+
+interface IUploadInfo {
+  payload: string;
+  onSuccess?: UploadCallback;
+  onFailure?: UploadCallback;
 }
 
 interface IEventBindingPair {
