@@ -41,10 +41,10 @@ let timeout: number;
 export let state: State = State.Loaded;
 
 export function activate() {
-  // First, try to initalize core variables to allow Clarity perform minimal logging and safe teardown
+  // First, try to initalize core variables to allow Clarity perform minimal logging and safe teardowns.
   // If this step fails, attempt a potentially unsafe logging and teardown.
   try {
-    initSelf();
+    init();
   } catch (e) {
     onActivateErrorUnsafe(e);
   }
@@ -52,7 +52,7 @@ export function activate() {
   // Next, prepare for activation and activate available plugins.
   // If anything goes wrong at this stage, we should be able to perform a safe teardown.
   try {
-    let readyToActivatePlugins = prepareSelf();
+    let readyToActivatePlugins = prepare();
     if (readyToActivatePlugins) {
       activatePlugins();
       state = State.Activated;
@@ -306,7 +306,7 @@ function uploadPendingEvents() {
   }
 }
 
-function initSelf() {
+function init() {
   // Set ClarityID cookie, if it's not set already
   if (!getCookie(Cookie)) {
     setCookie(Cookie, guid());
@@ -336,7 +336,7 @@ function initSelf() {
   compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
 }
 
-function prepareSelf() {
+function prepare() {
   // If critical API is missing, don't activate Clarity
   if (!checkFeatures()) {
     return false;
