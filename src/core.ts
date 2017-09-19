@@ -4,26 +4,24 @@ import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-// Constants
-const version = "0.1.11";
+const version = "0.1.12";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
 export const ClarityAttribute = "clarity-iid";
 
-// Variables
-let sentBytesCount: number;
+let startTime: number;
 let cid: string;
 let impressionId: string;
 let sequence: number;
-let uploadCount: number;
-let eventCount: number;
-let startTime: number;
+let envelope: IEnvelope;
 let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
-let timeout: number;
-let compressionWorker: Worker;
-let envelope: IEnvelope;
+
+// Counters
+let sentBytesCount: number;
+let uploadCount: number;
+let eventCount: number;
 
 // Storage for payloads that were not delivered for re-upload
 let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
@@ -37,22 +35,32 @@ let pendingEvents: IEvent[] = [];
 // Once trigger is fired, all payloads from this array will be sent in the order they were generated.
 let pendingUploads: IUploadInfo[];
 let queueUploads: boolean;
+let compressionWorker: Worker;
+let timeout: number;
 
 export let state: State = State.Loaded;
 
 export function activate() {
+  // First, try to initalize core variables to allow Clarity perform minimal logging and safe teardown
+  // If this step fails, attempt a potentially unsafe logging and teardown.
   try {
-    if (init()) {
+    initSelf();
+  } catch (e) {
+    onActivateErrorUnsafe(e);
+  }
+
+  // Next, prepare for activation and activate available plugins.
+  // If anything goes wrong at this stage, we should be able to perform a safe teardown.
+  try {
+    let readyToActivatePlugins = prepareSelf();
+    if (readyToActivatePlugins) {
       activatePlugins();
       state = State.Activated;
+    } else {
+      teardown();
     }
   } catch (e) {
-    let clarityActivateError: IClarityActivateErrorState = {
-      type: Instrumentation.ClarityActivateError,
-      error: e.message
-    };
-    instrument(clarityActivateError);
-    teardown();
+    onActivateError(e);
   }
 }
 
@@ -298,17 +306,15 @@ function uploadPendingEvents() {
   }
 }
 
-function init() {
-
-  // Variables required to send minimal instrumentation events and teardown in case CheckAPI fails
-  startTime = getUnixTimestamp();
+function initSelf() {
+  // Set ClarityID cookie, if it's not set already
+  if (!getCookie(Cookie)) {
+    setCookie(Cookie, guid());
+  }
   cid = getCookie(Cookie);
   impressionId = guid();
+  startTime = getUnixTimestamp();
   sequence = 0;
-  uploadCount = 0;
-  eventCount = 0;
-  pendingEvents = [];
-  sentBytesCount = 0;
   envelope = {
     clarityId: cid,
     impressionId,
@@ -316,15 +322,23 @@ function init() {
     version
   };
 
-  // If CID cookie isn't present, set it now
-  if (!cid) {
-    cid = guid();
-    setCookie(Cookie, cid);
-  }
+  activePlugins = [];
+  bindings = {};
+  droppedPayloads = {};
+  pendingEvents = [];
+  pendingUploads = [];
+  queueUploads = config.waitForTrigger;
 
+  sentBytesCount = 0;
+  uploadCount = 0;
+  eventCount = 0;
+
+  compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
+}
+
+function prepareSelf() {
   // If critical API is missing, don't activate Clarity
   if (!checkFeatures()) {
-    teardown();
     return false;
   }
 
@@ -335,20 +349,10 @@ function init() {
       currentImpressionId: document[ClarityAttribute]
     };
     instrument(eventState);
-    teardown();
     return false;
-  } else {
-    document[ClarityAttribute] = impressionId;
   }
 
-  // Remaining local variables
-  activePlugins = [];
-  bindings = {};
-  droppedPayloads = {};
-  compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
-  pendingUploads = [];
-  queueUploads = config.waitForTrigger;
-
+  document[ClarityAttribute] = impressionId;
   bind(window, "beforeunload", teardown);
   bind(window, "unload", teardown);
   return true;
@@ -364,6 +368,23 @@ function activatePlugins() {
       activePlugins.push(instance);
     }
   }
+}
+
+function onActivateErrorUnsafe(e: Error) {
+  try {
+    onActivateError(e);
+  } catch (e) {
+    // If there is an error at this stage, there is not much we can do any more, so just ignore and exit.
+  }
+}
+
+function onActivateError(e: Error) {
+  let clarityActivateError: IClarityActivateErrorState = {
+    type: Instrumentation.ClarityActivateError,
+    error: e.message
+  };
+  instrument(clarityActivateError);
+  teardown();
 }
 
 function checkFeatures() {

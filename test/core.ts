@@ -20,6 +20,7 @@ describe("Core Tests", () => {
   it("validates that missing feature event is sent when required feature is missing", (done: DoneFn) => {
     core.teardown();
     let stopObserving = observeEvents();
+
     // Function.prototype.bind is a required API for Clarity to work
     // Mocking a browser that doesn't support it by temporarily deleting it
     let originalBind = Function.prototype.bind;
