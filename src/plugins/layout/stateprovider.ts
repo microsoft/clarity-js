@@ -102,7 +102,8 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
 
 export function createTextLayoutState(textNode: Text): ITextLayoutState {
   // Text nodes that are children of the STYLE elements contain CSS code, so we don't want to hide it
-  let showText = (textNode.parentElement && textNode.parentElement.tagName === "STYLE") ? true : config.showText;
+  // Checking parentNode, instead of parentElement, because in IE textNode.parentElement returns 'undefined'.
+  let showText = (textNode.parentNode && (textNode.parentNode as Element).tagName === "STYLE") ? true : config.showText;
   let textState = createGenericLayoutState(textNode, TextTag) as ITextLayoutState;
   textState.content = showText ? textNode.textContent : textNode.textContent.replace(/\S/gi, "*");
   return textState;
