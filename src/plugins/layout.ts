@@ -205,16 +205,11 @@ export default class Layout implements IPlugin {
       return;
     }
 
-    // Check if scroll is possible, and if so, bind to scroll event
-    let styles = window.getComputedStyle(element);
-    let scrollPossible = (layoutState.layout !== null
-                          && (styles["overflow-x"] === "auto"
-                              || styles["overflow-x"] === "scroll"
-                              || styles["overflow-y"] === "auto"
-                              || styles["overflow-y"] === "scroll"));
+    let scrollPossible = (layoutState.layout
+                          && ("scrollX" in layoutState.layout
+                          || "scrollY" in layoutState.layout));
+
     if (scrollPossible) {
-      layoutState.layout.scrollX = Math.round(element.scrollLeft);
-      layoutState.layout.scrollY = Math.round(element.scrollTop);
       bind(element, "scroll", this.layoutHandler.bind(this, element, Source.Scroll));
       this.watchList[layoutState.index] = true;
     }

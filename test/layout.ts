@@ -841,6 +841,50 @@ describe("Layout Tests", () => {
     }
   });
 
+  it("checks that scroll capturing works on overflow hidden element after a mutation update", (done: DoneFn) => {
+    let stopObserving = null;
+    let observer = new MutationObserver(callback);
+    let mutationCount = 0;
+    observer.observe(document, { childList: true, subtree: true, attributes: true });
+
+    // Add a scrollable DIV
+    let outerDiv = document.createElement("div");
+    let innerDiv = document.createElement("div");
+    outerDiv.style.overflowY = "hidden";
+    outerDiv.style.width = "200px";
+    outerDiv.style.maxHeight = "100px";
+    innerDiv.style.height = "300px";
+    outerDiv.appendChild(innerDiv);
+    document.body.appendChild(outerDiv);
+
+    function callback() {
+      mutationCount++;
+
+      if (mutationCount === 1) {
+        // Force a mutation to ensure that layout updates also capture scroll position
+        outerDiv.setAttribute("data-attribute", "1");
+      } else {
+        observer.disconnect();
+
+        // Add a node to the document and observe Clarity events
+        stopObserving = observeEvents(eventName);
+
+        // Trigger scroll after a mutation update
+        outerDiv.addEventListener("scroll", scrollCallback);
+        outerDiv.scrollTop = 100;
+      }
+    }
+
+    function scrollCallback() {
+      outerDiv.removeEventListener("scroll", scrollCallback);
+      let events = stopObserving();
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Update);
+      assert.equal(events[0].state.source, Source.Scroll);
+      done();
+    }
+  });
+
   it("checks that input change capturing works on inserted element", (done: DoneFn) => {
     let stopObserving = null;
     let observer = new MutationObserver(callback);
