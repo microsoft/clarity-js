@@ -98,7 +98,7 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
       height: Math.round(rect.height)
     };
 
-    // Check if scroll is possible, and if so, bind to scroll event
+    // Check if scroll is possible
     if (styles["overflow-x"] === "auto"
                               || styles["overflow-x"] === "scroll"
                               || styles["overflow-x"] === "hidden"
