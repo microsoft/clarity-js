@@ -89,12 +89,25 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
 
   elementState.layout = null;
   if (rect) {
+    let styles = window.getComputedStyle(element);
+
     elementState.layout = {
       x: Math.round(rect.left),
       y: Math.round(rect.top),
       width: Math.round(rect.width),
       height: Math.round(rect.height)
     };
+
+    // Check if scroll is possible, and if so, bind to scroll event
+    if (styles["overflow-x"] === "auto"
+                              || styles["overflow-x"] === "scroll"
+                              || styles["overflow-x"] === "hidden"
+                              || styles["overflow-y"] === "auto"
+                              || styles["overflow-y"] === "scroll"
+                              || styles["overflow-y"] === "hidden") {
+      elementState.layout.scrollX = Math.round(element.scrollLeft);
+      elementState.layout.scrollY = Math.round(element.scrollTop);
+    }
   }
 
   return elementState;
