@@ -58,9 +58,9 @@ gulp.task("uglify", () => {
 
 gulp.task("rollup", () => {
   return rollup({
-    entry: "./src/clarity.ts",
+    input: "./src/clarity.ts",
     format: "umd",
-    moduleName: "clarity",
+    name: "clarity",
     plugins: [
       (typescript as any)()
     ]
