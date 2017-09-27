@@ -7,6 +7,3 @@ before_script:
 script:
   - gulp build
   - gulp coverage
-cache:
-  directories:
-    - "node_modules"
