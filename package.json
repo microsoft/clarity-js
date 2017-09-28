@@ -1,6 +1,6 @@
 {
   "name": "clarity-js",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "An analytics library that uses web page interactions to generate aggregated insights",
   "author": "Microsoft Corp.",
   "license": "MIT",
@@ -50,6 +50,7 @@
     "karma-jasmine": "^1.0.2",
     "karma-safari-launcher": "^0.1.1",
     "karma-sauce-launcher": "^0.3.1",
+    "rollup": "^0.50.0",
     "rollup-plugin-typescript2": "^0.4.1",
     "rollup-stream": "^1.19.0",
     "run-sequence": "^1.2.2",
