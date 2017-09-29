@@ -167,15 +167,16 @@ export default class Layout implements IPlugin {
   private createEventState<T extends ILayoutEventInfo>(eventInfo: T): ILayoutState {
     let node = eventInfo.node;
     let layoutState: ILayoutState = createLayoutState(node, this.shadowDom);
+
     switch (eventInfo.action) {
       case Action.Insert:
         // Watch element for scroll and input change events
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          this.watch(node as Element, layoutState as IElementLayoutState);
-        }
+        this.watch(node, layoutState);
         layoutState.action = Action.Insert;
         break;
       case Action.Update:
+        // Watch element for scroll and input change events
+        this.watch(node, layoutState);
         layoutState.action = Action.Update;
         break;
       case Action.Remove:
@@ -198,13 +199,15 @@ export default class Layout implements IPlugin {
     return layoutState;
   }
 
-  private watch(element: Element, layoutState: IElementLayoutState) {
+  private watch(node: Node, nodeLayoutState: ILayoutState) {
 
     // We only wish to watch elements once and then wait on the events to push changes
-    if (this.watchList[layoutState.index]) {
+    if (node.nodeType !== Node.ELEMENT_NODE || this.watchList[nodeLayoutState.index]) {
       return;
     }
 
+    let element = node as Element;
+    let layoutState = nodeLayoutState as IElementLayoutState;
     let scrollPossible = (layoutState.layout
                           && ("scrollX" in layoutState.layout
                           || "scrollY" in layoutState.layout));
