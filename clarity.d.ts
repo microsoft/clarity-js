@@ -150,9 +150,7 @@ interface ICompressedBatchMessage extends IWorkerMessage {
 /* ############   LAYOUT   ############# */
 /* ##################################### */
 
-type NumberJson = {
-  [key: number]: NumberJson;
-};
+type NumberJson = Array<number | number[]>;
 
 interface IShadowDomNode extends HTMLDivElement {
   node: Node; /* Reference to the node in the real DOM */

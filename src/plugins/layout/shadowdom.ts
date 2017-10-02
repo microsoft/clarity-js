@@ -252,7 +252,7 @@ export class ShadowDom {
   }
 
   public createIndexJson(rootNode: Node, getIndexFromNode: (node: Node) => number): NumberJson {
-    let indexJson: NumberJson = {};
+    let indexJson: NumberJson = [];
     this.writeIndexToJson(rootNode, indexJson, getIndexFromNode);
     return indexJson;
   }
@@ -263,9 +263,12 @@ export class ShadowDom {
 
   private writeIndexToJson(node: Node, json: NumberJson, getIndexFromNode: (node: Node) => number) {
     let index = getIndexFromNode(node);
-    let childJson: NumberJson = {};
+    let childJson: number[] = [];
     let nextChild = node.firstChild;
-    json[index] = nextChild ? childJson : null;
+    json.push(index);
+    if (nextChild) {
+      json.push(childJson);
+    }
     while (nextChild) {
       this.writeIndexToJson(nextChild, childJson, getIndexFromNode);
       nextChild = nextChild.nextSibling as IShadowDomNode;
