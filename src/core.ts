@@ -15,7 +15,6 @@ let startTime: number;
 let cid: string;
 let impressionId: string;
 let sequence: number;
-let envelope: IEnvelope;
 let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
 
@@ -303,8 +302,11 @@ function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
 
 function uploadPendingEvents() {
   if (pendingEvents.length > 0) {
-    envelope.sequenceNumber = sequence++;
-    envelope.time = getTimestamp();
+    let envelope: IEnvelope = {
+      impressionId,
+      sequenceNumber: sequence++,
+      time: getTimestamp()
+    };
     let raw = JSON.stringify({ envelope, events: pendingEvents });
     let compressed = compress(raw);
     let onSuccess = (status: number) => { /* Do nothing */ };
@@ -322,7 +324,6 @@ function init() {
   impressionId = guid();
   startTime = getUnixTimestamp();
   sequence = 0;
-  envelope = { impressionId };
 
   activePlugins = [];
   bindings = {};
@@ -335,7 +336,7 @@ function init() {
   uploadCount = 0;
   eventCount = 0;
 
-  compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
+  compressionWorker = createCompressionWorker(impressionId, onWorkerMessage);
 }
 
 function prepare() {

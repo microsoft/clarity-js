@@ -2,13 +2,13 @@ import compress from "./compress";
 import { config } from "./config";
 
 export function createCompressionWorker(
-  envelope: IEnvelope,
+  impressionId: string,
   onMessage?: (e: MessageEvent) => void,
   onError?: (e: ErrorEvent) => void
 ): Worker {
   let worker = null;
   if (Worker) {
-    let workerUrl = createWorkerUrl(envelope);
+    let workerUrl = createWorkerUrl(impressionId);
     worker = new Worker(workerUrl);
     worker.onmessage = onMessage || null;
     worker.onerror = onError || null;
@@ -20,7 +20,7 @@ function workerContext() {
   let workerGlobalScope = self as any;
   let compress = workerGlobalScope.compress;
   let config = workerGlobalScope.config;
-  let envelope: IEnvelope = workerGlobalScope.envelope;
+  let impressionId: string = workerGlobalScope.impressionId;
   let nextBatchEvents: IEvent[] = [];
   let nextBatchBytes = 0;
   let sequence = 0;
@@ -67,8 +67,11 @@ function workerContext() {
 
   function postNextBatchToCore(time: number): void {
     if (nextBatchBytes > 0 && !nextBatchIsSingleXhrErrorEvent) {
-      envelope.sequenceNumber = sequence++;
-      envelope.time = time;
+      let envelope: IEnvelope = {
+        impressionId,
+        sequenceNumber: sequence++,
+        time
+      };
       let raw = JSON.stringify({ envelope, events: nextBatchEvents });
       let compressed = compress(raw);
       let eventCount = nextBatchEvents.length;
@@ -96,12 +99,12 @@ function workerContext() {
 // with a string containing worker's code. To build such string, we stitch together string representations of
 // all functions and objects that are going to be required within the worker's scope.
 // Once Blob is created, we create a URL pointing to it, which can be passed to worker's constructor.
-function createWorkerUrl(envelope: IEnvelope): string {
+function createWorkerUrl(impressionId: string): string {
   let workerContextStr = workerContext.toString();
   let workerStr = workerContextStr.substring(workerContextStr.indexOf("{") + 1, workerContextStr.lastIndexOf("}"));
   let code = `self.compress=${compress.toString()};`
             + `self.config=${JSON.stringify(config)};`
-            + `self.envelope=${JSON.stringify(envelope)};`
+            + `self.impressionId=${JSON.stringify(impressionId)};`
             + workerStr;
   let blob = new Blob([code], {type: "application/javascript"});
   return URL.createObjectURL(blob);
