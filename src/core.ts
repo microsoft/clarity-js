@@ -4,10 +4,11 @@ import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-const version = "0.2.0";
+const Version = "0.2.0";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
+const ClientInfoEventName = "ClientInfo";
 export const ClarityAttribute = "clarity-iid";
 
 let startTime: number;
@@ -49,6 +50,9 @@ export function activate() {
     onActivateErrorUnsafe(e);
     return;
   }
+
+  // Send client information as the first event
+  sendClientInfo();
 
   // Next, prepare for activation and activate available plugins.
   // If anything goes wrong at this stage, we should be able to perform a safe teardown.
@@ -318,12 +322,7 @@ function init() {
   impressionId = guid();
   startTime = getUnixTimestamp();
   sequence = 0;
-  envelope = {
-    clarityId: cid,
-    impressionId,
-    url: window.location.href,
-    version
-  };
+  envelope = { impressionId };
 
   activePlugins = [];
   bindings = {};
@@ -359,6 +358,20 @@ function prepare() {
   bind(window, "beforeunload", teardown);
   bind(window, "unload", teardown);
   return true;
+}
+
+function sendClientInfo() {
+  let clientInfo: IClientInfo = {
+    clarityId: cid,
+    impressionId,
+    url: window.location.href,
+    version: Version
+  };
+  let clientInfoEvent: IEventData = {
+    type: ClientInfoEventName,
+    state: clientInfo
+  };
+  addEvent(clientInfoEvent);
 }
 
 function activatePlugins() {

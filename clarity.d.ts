@@ -73,12 +73,16 @@ interface IPayload {
 }
 
 interface IEnvelope {
+  impressionId: string;
+  time?: number;
+  sequenceNumber?: number;
+}
+
+interface IClientInfo {
   clarityId: string;
   impressionId: string;
   url: string;
   version: string;
-  time?: number;
-  sequenceNumber?: number;
 }
 
 interface IEventData {
