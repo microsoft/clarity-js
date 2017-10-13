@@ -4,7 +4,7 @@ import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-const version = "0.1.17";
+const version = "0.1.18";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -47,6 +47,7 @@ export function activate() {
     init();
   } catch (e) {
     onActivateErrorUnsafe(e);
+    return;
   }
 
   // Next, prepare for activation and activate available plugins.
@@ -58,9 +59,11 @@ export function activate() {
       state = State.Activated;
     } else {
       teardown();
+      return;
     }
   } catch (e) {
     onActivateError(e);
+    return;
   }
 }
 
