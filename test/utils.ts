@@ -57,6 +57,16 @@ export function getMockEnvelope(sequenceNumber?: number) {
   return mockEnvelope;
 }
 
+export function getMockMetadata() {
+  let mockMetadata: IImpressionMetadata = {
+    clarityId: guid(),
+    impressionId: guid(),
+    url: window.location.toString(),
+    version: "0.0.0"
+  };
+  return mockMetadata;
+}
+
 export function getMockEvent(eventName?: string) {
   let mockEvent: IEvent = {
     id: -1,

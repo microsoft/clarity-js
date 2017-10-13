@@ -1,9 +1,8 @@
-import { guid } from "../src/utils";
 import { createCompressionWorker } from "./../src/compressionworker";
 import { config } from "./../src/config";
 import * as core from "./../src/core";
 import { cleanupFixture, setupFixture } from "./testsetup";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents } from "./utils";
+import { getMockEnvelope, getMockEvent, getMockMetadata, MockEventName, observeEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -145,7 +144,7 @@ describe("Compression Worker Tests", () => {
   }
 
   function createTestWorker() {
-    let worker = createCompressionWorker(guid(), onWorkerMessage);
+    let worker = createCompressionWorker(getMockMetadata(), onWorkerMessage);
     (worker as any).isTestWorker = true;
     return worker;
   }

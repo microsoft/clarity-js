@@ -15,6 +15,7 @@ let startTime: number;
 let cid: string;
 let impressionId: string;
 let sequence: number;
+let metadata: IImpressionMetadata;
 let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
 
@@ -49,9 +50,6 @@ export function activate() {
     onActivateErrorUnsafe(e);
     return;
   }
-
-  // Send client information as the first event
-  sendClientInfo();
 
   // Next, prepare for activation and activate available plugins.
   // If anything goes wrong at this stage, we should be able to perform a safe teardown.
@@ -307,7 +305,14 @@ function uploadPendingEvents() {
       sequenceNumber: sequence++,
       time: getTimestamp()
     };
-    let raw = JSON.stringify({ envelope, events: pendingEvents });
+    let payload: IPayload = {
+      envelope,
+      events: pendingEvents
+    };
+    if (envelope.sequenceNumber === 0) {
+      payload.metadata = metadata;
+    }
+    let raw = JSON.stringify(payload);
     let compressed = compress(raw);
     let onSuccess = (status: number) => { /* Do nothing */ };
     let onFailure = (status: number) => { /* Do nothing */ };
@@ -324,6 +329,12 @@ function init() {
   impressionId = guid();
   startTime = getUnixTimestamp();
   sequence = 0;
+  metadata = {
+    clarityId: cid,
+    impressionId,
+    url: window.location.href,
+    version: Version
+  };
 
   activePlugins = [];
   bindings = {};
@@ -336,7 +347,7 @@ function init() {
   uploadCount = 0;
   eventCount = 0;
 
-  compressionWorker = createCompressionWorker(impressionId, onWorkerMessage);
+  compressionWorker = createCompressionWorker(metadata, onWorkerMessage);
 }
 
 function prepare() {
@@ -359,20 +370,6 @@ function prepare() {
   bind(window, "beforeunload", teardown);
   bind(window, "unload", teardown);
   return true;
-}
-
-function sendClientInfo() {
-  let clientInfo: IClientInfo = {
-    clarityId: cid,
-    impressionId,
-    url: window.location.href,
-    version: Version
-  };
-  let clientInfoEvent: IEventData = {
-    type: ClientInfoEventName,
-    state: clientInfo
-  };
-  addEvent(clientInfoEvent);
 }
 
 function activatePlugins() {

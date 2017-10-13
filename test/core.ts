@@ -7,7 +7,6 @@ import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWor
 import * as chai from "chai";
 let assert = chai.assert;
 let instrumentationEventName = "Instrumentation";
-let clientInfoEventname = "ClientInfo";
 
 describe("Core Tests", () => {
   let limit = config.batchLimit;
@@ -30,12 +29,11 @@ describe("Core Tests", () => {
     Function.prototype.bind = originalBind;
 
     let events = getSentEvents();
-    assert.equal(events.length, 3);
-    assert.equal(events[0].type, clientInfoEventname);
+    assert.equal(events.length, 2);
+    assert.equal(events[0].type, instrumentationEventName);
+    assert.equal(events[0].state.type, Instrumentation.MissingFeature);
     assert.equal(events[1].type, instrumentationEventName);
-    assert.equal(events[1].state.type, Instrumentation.MissingFeature);
-    assert.equal(events[2].type, instrumentationEventName);
-    assert.equal(events[2].state.type, Instrumentation.Teardown);
+    assert.equal(events[1].state.type, Instrumentation.Teardown);
     done();
   });
 
@@ -240,13 +238,12 @@ describe("Core Tests", () => {
     activateCore();
 
     let events = getSentEvents();
-    assert.equal(events.length, 3);
-    assert.equal(events[0].type, clientInfoEventname);
+    assert.equal(events.length, 2);
+    assert.equal(events[0].type, instrumentationEventName);
+    assert.equal(events[0].state.type, Instrumentation.ClarityDuplicated);
+    assert.equal(events[0].state.currentImpressionId, mockExistingImpressionId);
     assert.equal(events[1].type, instrumentationEventName);
-    assert.equal(events[1].state.type, Instrumentation.ClarityDuplicated);
-    assert.equal(events[1].state.currentImpressionId, mockExistingImpressionId);
-    assert.equal(events[2].type, instrumentationEventName);
-    assert.equal(events[2].state.type, Instrumentation.Teardown);
+    assert.equal(events[1].state.type, Instrumentation.Teardown);
     done();
   });
 
@@ -295,11 +292,10 @@ describe("Core Tests", () => {
 
     let uncompressedPayload = JSON.parse(uncompress(sentBytes[0]));
     let events = uncompressedPayload.events as IEvent[];
-    assert.equal(events.length, 3);
-    assert.equal(events[0].type, clientInfoEventname);
-    assert.equal(events[1].type, MockEventName);
-    assert.equal(events[2].type, "Instrumentation");
-    assert.equal(events[2].state.type, Instrumentation.Teardown);
+    assert.equal(events.length, 2);
+    assert.equal(events[0].type, MockEventName);
+    assert.equal(events[1].type, "Instrumentation");
+    assert.equal(events[1].state.type, Instrumentation.Teardown);
     done();
 
     function mockUploadHandler(payload: string) {

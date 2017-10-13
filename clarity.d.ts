@@ -70,6 +70,7 @@ interface IPlugin {
 interface IPayload {
   envelope: IEnvelope;
   events: IEvent[];
+  metadata?: IImpressionMetadata;
 }
 
 interface IEnvelope {
@@ -78,7 +79,7 @@ interface IEnvelope {
   sequenceNumber?: number;
 }
 
-interface IClientInfo {
+interface IImpressionMetadata {
   clarityId: string;
   impressionId: string;
   url: string;
