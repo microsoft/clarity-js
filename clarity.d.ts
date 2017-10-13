@@ -75,8 +75,8 @@ interface IPayload {
 
 interface IEnvelope {
   impressionId: string;
-  time?: number;
-  sequenceNumber?: number;
+  time: number;
+  sequenceNumber: number;
 }
 
 interface IImpressionMetadata {
