@@ -217,9 +217,12 @@ export default class Layout implements IPlugin {
       this.watchList[layoutState.index] = true;
     }
 
-    // Check if we need to monitor changes to input fields
-    if (element.tagName === "INPUT") {
+    // Check if we need to monitor changes on input fields
+    if (element.tagName === "INPUT" || element.tagName === "SELECT") {
       bind(element, "change", this.layoutHandler.bind(this, element, Source.Input));
+      this.watchList[layoutState.index] = true;
+    } else if (element.tagName === "TEXTAREA") {
+      bind(element, "input", this.layoutHandler.bind(this, element, Source.Input));
       this.watchList[layoutState.index] = true;
     }
   }
