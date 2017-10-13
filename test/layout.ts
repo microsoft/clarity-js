@@ -966,4 +966,40 @@ describe("Layout Tests", () => {
       done();
     }
   });
+
+  it("checks that input change capturing works on inserted textarea element", (done: DoneFn) => {
+    let stopObserving = null;
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    let newValueString = "new value";
+    let textarea = document.createElement("textarea");
+    document.body.appendChild(textarea);
+
+    function callback() {
+      observer.disconnect();
+
+      // Add a node to the document and observe Clarity events
+      stopObserving = observeEvents(eventName);
+
+      // Trigger scroll
+      textarea.addEventListener("input", inputChangeCallback);
+      textarea.value = newValueString;
+
+      // Programmatic value change doesn't trigger "onchange" event, so we need to trigger it manually
+      let onInputEvent = document.createEvent("HTMLEvents");
+      onInputEvent.initEvent("input", false, true);
+      textarea.dispatchEvent(onInputEvent);
+    }
+
+    function inputChangeCallback() {
+      textarea.removeEventListener("input", inputChangeCallback);
+      let events = stopObserving();
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Update);
+      assert.equal(events[0].state.source, Source.Input);
+      assert.equal(events[0].state.attributes.value, newValueString);
+      done();
+    }
+  });
 });
