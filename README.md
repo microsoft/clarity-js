@@ -1,9 +1,9 @@
 # Clarity
-Clarity is a client-side JavaScript library that helps you understand how users view and use your webpage across all devices and browsers. 
-Understanding how the users navigates, interacts and browses your website can provide new insights about your users.  Empathizing with your users and see where features fail or succeed can help improve your product/site, grow revenue and user retention.
+Clarity is a client-side JavaScript library that helps you understand how users view and use your webpage across all modern devices and browsers. 
+Understanding how users navigate, interact and browse your website can provide new insights about your users.  Empathizing with your users and seeing where features fail or succeed can help improve your product/site, grow revenue and user retention.
 
 Clarity provides you all these insights by:
-* Observing content layout, view port, and user's interactions with the page
+* Observing content layout, viewport, and user's interactions with the page
 * Inspecting network requests on the page
 * Logging the information by sending JSON objects to a specified endpoint
 
