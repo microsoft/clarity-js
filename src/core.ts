@@ -8,17 +8,18 @@ import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-const version = "0.2.0";
+const Version = "0.2.0";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
+const ClientInfoEventName = "ClientInfo";
 export const ClarityAttribute = "clarity-iid";
 
 let startTime: number;
 let cid: string;
 let impressionId: string;
 let sequence: number;
-let envelope: IEnvelope;
+let metadata: IImpressionMetadata;
 let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
 
@@ -314,9 +315,19 @@ function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
 
 function uploadPendingEvents() {
   if (pendingEvents.length > 0) {
-    envelope.sequenceNumber = sequence++;
-    envelope.time = getTimestamp();
-    let raw = JSON.stringify({ envelope, events: pendingEvents });
+    let envelope: IEnvelope = {
+      impressionId,
+      sequenceNumber: sequence++,
+      time: getTimestamp()
+    };
+    let payload: IPayload = {
+      envelope,
+      events: pendingEvents
+    };
+    if (envelope.sequenceNumber === 0) {
+      payload.metadata = metadata;
+    }
+    let raw = JSON.stringify(payload);
     let compressed = compress(raw);
     let onSuccess = (status: number) => { /* Do nothing */ };
     let onFailure = (status: number) => { /* Do nothing */ };
@@ -338,11 +349,11 @@ function init() {
   impressionId = config.getImpressionId ? config.getImpressionId() : guid();
   startTime = getUnixTimestamp();
   sequence = 0;
-  envelope = {
+  metadata = {
     clarityId: cid,
     impressionId,
     url: window.location.href,
-    version
+    version: Version
   };
 
   activePlugins = [];
@@ -356,7 +367,7 @@ function init() {
   uploadCount = 0;
   eventCount = 0;
 
-  compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
+  compressionWorker = createCompressionWorker(metadata, onWorkerMessage);
 }
 
 function prepare() {

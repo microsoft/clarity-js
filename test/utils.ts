@@ -51,14 +51,21 @@ export function postCompressedBatch(events: IEvent[], envelope?: IEnvelope) {
 
 export function getMockEnvelope(sequenceNumber?: number) {
   let mockEnvelope: IEnvelope = {
-    clarityId: guid(),
     impressionId: guid(),
     sequenceNumber: sequenceNumber >= 0 ? sequenceNumber : -1,
     time: -1,
+  };
+  return mockEnvelope;
+}
+
+export function getMockMetadata() {
+  let mockMetadata: IImpressionMetadata = {
+    clarityId: guid(),
+    impressionId: guid(),
     url: window.location.toString(),
     version: "0.0.0"
   };
-  return mockEnvelope;
+  return mockMetadata;
 }
 
 export function getMockEvent(eventName?: string) {
