@@ -9,6 +9,13 @@ Clarity provides you all these insights by:
 
 Clarity is a project in active development. While it's not yet ready for production use, we continue making improvements and encourage the community to join us in the process!
 
+Here are some example sessions on popular websites visualized to demonstrate the telemetry captured:
+1. CNN (Web)
+</br><a href="https://thumbs.gfycat.com/DenseMenacingBandicoot-size_restricted.gif"><img src="https://thumbs.gfycat.com/DenseMenacingBandicoot-size_restricted.gif" title="Clarity JS CNN Example"/></a>
+
+2. Pinterest (Mobile)
+</br><a href="https://thumbs.gfycat.com/IlliterateComposedKid-size_restricted.gif"><img src="https://thumbs.gfycat.com/IlliterateComposedKid-size_restricted.gif" title="Clarity JS Pinterest Example"/></a>
+
 ## Project Goals
 * Enable a generic solution that is able to capture telemetry from third-party web-sites
 * Encourage participation from open-source community
@@ -19,7 +26,7 @@ Clarity is a project in active development. While it's not yet ready for product
 Clarity handles sensitive data with care. By default content on the page is masked before upload, so no actual text from the page is sent to the server.
 All data collection is performed solely with the purpose of providing better insights into customers' pages interactions and improving their users' experiences.
 
-# Improving Clarity
+## Improving Clarity
 If you haven't already done so, start contributing by following instructions in CONTRIBUTING.md.
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
