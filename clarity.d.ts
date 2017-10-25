@@ -183,13 +183,6 @@ interface ILayoutRectangle {
   scrollY?: number; /* Scroll top of the element */
 }
 
-declare const enum Source {
-  Discover,
-  Mutation,
-  Scroll,
-  Input
-}
-
 declare const enum Action {
   Insert,
   Update,
@@ -201,25 +194,59 @@ interface IAttributes {
   [key: string]: string;
 }
 
-// Generic storage of various data pieces that can be passed along with
-// different layout events originating from different actions
-interface ILayoutEventInfo {
-  node: Node;
+interface ILayoutEvent {
   index: number;
-  source: Source;
   action: Action;
   time?: number;
 }
 
-interface ILayoutState {
-  index: number;  /* Index of the layout element */
-  tag: string;  /* Tag name of the element */
-  source: Source; /* Source of discovery */
-  action: Action; /* Reflect the action with respect to DOM */
+interface IMutation extends ILayoutEvent {
+  mutationSequence: number;
+}
+
+interface IInsert extends IMutation {
+  state: ILayoutState;
+}
+
+interface IDiscover extends IInsert {
+  // No extra properties. Differs from Insert only in 'action' property
+}
+
+interface IUpdate extends IMutation {
+  new: IAttributes;
+  removed: string[];
+}
+
+interface IRemove extends IMutation {
+  // No extra properties required
+}
+
+interface IMove extends IMutation {
   parent: number; /* Index of the parent element */
   previous: number; /* Index of the previous sibling, if known */
   next: number; /* Index of the next sibling, if known */
-  mutationSequence?: number;  /* Sequence number of the mutation batch */
+}
+
+interface IScroll extends ILayoutEvent {
+  // TODO: Fill
+}
+
+interface IInput extends ILayoutEvent {
+  // TODO: Fill
+}
+
+// Generic storage of various data pieces that can be passed along with
+// different layout events originating from different actions
+interface ILayoutEventInfo extends ILayoutEvent {
+  node: Node;
+}
+
+interface ILayoutState  {
+  index: number;  /* Index of the layout element */
+  tag: string;  /* Tag name of the element */
+  parent: number; /* Index of the parent element */
+  previous: number; /* Index of the previous sibling, if known */
+  next: number; /* Index of the next sibling, if known */
 }
 
 interface IDoctypeLayoutState extends ILayoutState {

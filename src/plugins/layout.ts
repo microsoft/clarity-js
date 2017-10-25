@@ -169,12 +169,13 @@ export default class Layout implements IPlugin {
 
   private createEventState<T extends ILayoutEventInfo>(eventInfo: T): ILayoutState {
     let node = eventInfo.node;
-    let layoutState: ILayoutState = createLayoutState(node, this.shadowDom);
+    let layoutEvent: ILayoutEvent = createLayoutState(node, this.shadowDom);
 
     switch (eventInfo.action) {
       case Action.Insert:
         // Watch element for scroll and input change events
         this.watch(node, layoutState);
+        createLayoutState(node, this.shadowDom);
         layoutState.action = Action.Insert;
         break;
       case Action.Update:
