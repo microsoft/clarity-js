@@ -167,7 +167,25 @@ interface ICompressedBatchMessage extends IWorkerMessage {
 /* ############   LAYOUT   ############# */
 /* ##################################### */
 
+type InputElement = HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement;
+type CharacterDataNode = Text | Comment | ProcessingInstruction;
 type NumberJson = Array<number | number[]>;
+
+declare const enum Action {
+  Discover,
+  Insert,
+  Remove,
+  Move,
+  AttributeUpdate,
+  CharacterDataUpdate,
+  Scroll,
+  Input
+}
+
+declare const enum LayoutRoutine {
+  DiscoverDom,
+  Mutation
+}
 
 interface IShadowDomNode extends HTMLDivElement {
   node: Node; /* Reference to the node in the real DOM */
@@ -183,17 +201,6 @@ interface ILayoutRectangle {
   scrollY?: number; /* Scroll top of the element */
 }
 
-declare const enum Action {
-  Discover,
-  Insert,
-  Remove,
-  Move,
-  AttributeUpdate,
-  CharacterDataUpdate,
-  Scroll,
-  Input
-}
-
 interface IAttributes {
   [key: string]: string;
 }
@@ -204,15 +211,15 @@ interface ILayoutEvent {
   time?: number;
 }
 
+interface IDiscover extends ILayoutEvent {
+  state: ILayoutState;
+}
+
 interface IMutation extends ILayoutEvent {
   mutationSequence: number;
 }
 
 interface IInsert extends IMutation {
-  state: ILayoutState;
-}
-
-interface IDiscover extends ILayoutEvent {
   state: ILayoutState;
 }
 
@@ -236,7 +243,8 @@ interface ICharacterDataUpdate extends IMutation {
 }
 
 interface IScroll extends ILayoutEvent {
-  // TODO: Fill
+  scrollX: number;
+  scrollY: number;
 }
 
 interface IInput extends ILayoutEvent {
@@ -274,9 +282,6 @@ interface IInputLayoutState extends IElementLayoutState {
   value: string;
 }
 
-type InputElement = HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement;
-type CharacterDataNode = Text | Comment | ProcessingInstruction;
-
 interface ITextLayoutState extends ILayoutState {
   content: string;
 }
@@ -292,11 +297,6 @@ interface IMutationEntry {
   parent?: Node;
   previous?: Node;
   next?: Node;
-}
-
-declare const enum LayoutRoutine {
-  DiscoverDom,
-  Mutation
 }
 
 interface ILayoutRoutineInfo {

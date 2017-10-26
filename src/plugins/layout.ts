@@ -249,12 +249,12 @@ export default class Layout implements IPlugin {
   private onScroll(element: Element) {
     let index = getNodeIndex(element);
     let layoutState = this.layoutStates[index] as IElementLayoutState;
+    let event = eventProvider.createScroll(element);
     let newScrollX = Math.round(element.scrollLeft);
     let newScrollY = Math.round(element.scrollTop);
-    if (this.checkDistance(layoutState.layout.scrollX, layoutState.layout.scrollY, newScrollX, newScrollY)) {
+    if (this.checkDistance(layoutState.layout.scrollX, layoutState.layout.scrollY, event.scrollX, event.scrollY)) {
       layoutState.layout.scrollX = newScrollX;
       layoutState.layout.scrollY = newScrollY;
-      let event = eventProvider.createScroll(element);
       addEvent({type: this.eventName, state: event});
     }
   }

@@ -85,7 +85,9 @@ export function createCharacterDataUpdate(node: CharacterDataNode, lastContent: 
 export function createScroll(element: Element): IScroll {
   return {
     index: getNodeIndex(element),
-    action: Action.Scroll
+    action: Action.Scroll,
+    scrollX: Math.round(element.scrollLeft),
+    scrollY: Math.round(element.scrollTop)
   };
 }
 
