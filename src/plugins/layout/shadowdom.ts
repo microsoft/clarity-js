@@ -125,7 +125,7 @@ export class ShadowDom {
       switch (mutation.type) {
         case "attributes":
         case "characterData":
-          this.applyUpdate(target, mutation.attributeName, mutation.oldValue);
+          this.applyUpdate(target);
           break;
         case "childList":
 
@@ -334,7 +334,7 @@ export class ShadowDom {
     }
   }
 
-  private applyUpdate(updatedNode: Node, attrName: string, oldValue: string) {
+  private applyUpdate(updatedNode: Node) {
     let updatedNodeIndex = getNodeIndex(updatedNode);
     if (updatedNodeIndex != null) {
       this.updateShadowNode(updatedNodeIndex);

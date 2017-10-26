@@ -35,10 +35,10 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 3);
-      assert.equal(events[0].state.tag, "DIV");
       assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[1].state.tag, "SPAN");
-      assert.equal(events[2].state.tag, "*TXT*");
+      assert.equal(events[0].state.state.tag, "DIV");
+      assert.equal(events[1].state.state.tag, "SPAN");
+      assert.equal(events[2].state.state.tag, "*TXT*");
       done();
     }
   });
@@ -56,8 +56,8 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.tag, "DIV");
       assert.equal(events[0].state.action, Action.Remove);
+      assert.equal(events[0].state.tag, "DIV");
       done();
     }
   });
@@ -76,7 +76,7 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Move);
+      assert.equal(events[0].state.state.action, Action.Move);
       done();
     }
   });
@@ -97,9 +97,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Move);
-      assert.equal(events[0].state.parent, domIndex);
-      assert.equal(events[0].state.next, firstChildIndex);
+      assert.equal(events[0].state.state.action, Action.Move);
+      assert.equal(events[0].state.state.parent, domIndex);
+      assert.equal(events[0].state.state.next, firstChildIndex);
       done();
     }
   });
@@ -149,12 +149,12 @@ describe("Layout Tests", () => {
           // Non-IE path: Both div and script are reported in the first callback
           observer.disconnect();
           assert.equal(events.length, 3);
-          assert.equal(events[0].state.action, Action.Insert);
-          assert.equal(events[0].state.tag, IgnoreTag);
-          assert.equal(events[1].state.action, Action.Insert);
-          assert.equal(events[1].state.tag, IgnoreTag);
-          assert.equal(events[2].state.action, Action.Insert);
-          assert.equal(events[2].state.tag, "DIV");
+          assert.equal(events[0].state.state.action, Action.Insert);
+          assert.equal(events[0].state.state.tag, IgnoreTag);
+          assert.equal(events[1].state.state.action, Action.Insert);
+          assert.equal(events[1].state.state.tag, IgnoreTag);
+          assert.equal(events[2].state.state.action, Action.Insert);
+          assert.equal(events[2].state.state.tag, "DIV");
           done();
         }
       } else if (callbackCount === 1) {
@@ -166,14 +166,14 @@ describe("Layout Tests", () => {
       } else {
         observer.disconnect();
         assert.equal(events.length, 4);
-        assert.equal(events[0].state.action, Action.Insert);
-        assert.equal(events[0].state.tag, "DIV");
-        assert.equal(events[1].state.action, Action.Insert);
-        assert.equal(events[1].state.tag, IgnoreTag);
-        assert.equal(events[2].state.action, Action.Insert);
-        assert.equal(events[2].state.tag, IgnoreTag);
-        assert.equal(events[3].state.action, Action.Insert);
-        assert.equal(events[3].state.tag, "SPAN");
+        assert.equal(events[0].state.state.action, Action.Insert);
+        assert.equal(events[0].state.state.tag, "DIV");
+        assert.equal(events[1].state.state.action, Action.Insert);
+        assert.equal(events[1].state.state.tag, IgnoreTag);
+        assert.equal(events[2].state.state.action, Action.Insert);
+        assert.equal(events[2].state.state.tag, IgnoreTag);
+        assert.equal(events[3].state.state.action, Action.Insert);
+        assert.equal(events[3].state.state.tag, "SPAN");
         done();
       }
       callbackCount++;
@@ -199,16 +199,16 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, "SPAN");
+      assert.equal(events[0].state.state.action, Action.Insert);
+      assert.equal(events[0].state.state.tag, "SPAN");
 
-      assert.equal(events[1].state.action, Action.Move);
-      assert.equal(events[1].state.index, dom[NodeIndex]);
-      assert.equal(events[1].state.next, backup[NodeIndex]);
+      assert.equal(events[1].state.state.action, Action.Move);
+      assert.equal(events[1].state.state.index, dom[NodeIndex]);
+      assert.equal(events[1].state.state.next, backup[NodeIndex]);
 
-      assert.equal(events[2].state.action, Action.Move);
-      assert.equal(events[2].state.index, backup[NodeIndex]);
-      assert.equal(events[2].state.next, null);
+      assert.equal(events[2].state.state.action, Action.Move);
+      assert.equal(events[2].state.state.index, backup[NodeIndex]);
+      assert.equal(events[2].state.state.next, null);
 
       done();
     }
@@ -268,10 +268,10 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, childrenCount);
-      assert.equal(events[0].state.action, Action.Move);
-      assert.equal(events[0].state.parent, backupIndex);
-      assert.equal(events[4].state.parent, backupIndex);
-      assert.equal(events[4].state.next, events[5].state.index);
+      assert.equal(events[0].state.state.action, Action.Move);
+      assert.equal(events[0].state.state.parent, backupIndex);
+      assert.equal(events[4].state.state.parent, backupIndex);
+      assert.equal(events[4].state.state.next, events[5].state.state.index);
       done();
     }
   });
@@ -298,20 +298,20 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, "DIV");
-      assert.equal(events[0].state.previous, backupPrevious[NodeIndex]);
-      assert.equal(events[0].state.next, n2[NodeIndex]);
+      assert.equal(events[0].state.state.action, Action.Insert);
+      assert.equal(events[0].state.state.tag, "DIV");
+      assert.equal(events[0].state.state.previous, backupPrevious[NodeIndex]);
+      assert.equal(events[0].state.state.next, n2[NodeIndex]);
 
       // Check SPAN insert event
-      assert.equal(events[1].state.action, Action.Insert);
-      assert.equal(events[1].state.tag, "SPAN");
-      assert.equal(events[1].state.next, n3[NodeIndex]);
+      assert.equal(events[1].state.state.action, Action.Insert);
+      assert.equal(events[1].state.state.tag, "SPAN");
+      assert.equal(events[1].state.state.next, n3[NodeIndex]);
 
       // Check A insert event
-      assert.equal(events[2].state.action, Action.Insert);
-      assert.equal(events[2].state.tag, "A");
-      assert.equal(events[2].state.next, backup[NodeIndex]);
+      assert.equal(events[2].state.state.action, Action.Insert);
+      assert.equal(events[2].state.state.tag, "A");
+      assert.equal(events[2].state.state.next, backup[NodeIndex]);
 
       done();
     }
@@ -406,8 +406,8 @@ describe("Layout Tests", () => {
         let events = stopObserving();
         assert.equal(events.length, 2);
         assert.equal(events[0].state.action, Action.Insert);
-        assert.equal(events[0].state.tag, "DIV");
-        assert.equal(events[1].state.action, Action.Update);
+        assert.equal(events[0].state.state.tag, "DIV");
+        assert.equal(events[1].state.action, Action.AttributeUpdate);
         done();
       }
     }
@@ -428,7 +428,7 @@ describe("Layout Tests", () => {
       let events = stopObserving();
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, "DIV");
+      assert.equal(events[0].state.state.tag, "DIV");
       done();
     }
   });
@@ -449,8 +449,8 @@ describe("Layout Tests", () => {
       let events = stopObserving();
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, "DIV");
-      assert.equal(events[0].state.parent, clarity[NodeIndex]);
+      assert.equal(events[0].state.state.tag, "DIV");
+      assert.equal(events[0].state.state.parent, clarity[NodeIndex]);
       done();
     }
   });
@@ -621,7 +621,7 @@ describe("Layout Tests", () => {
       assert.equal(events.length, 4);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(events[1].state.action, Action.Move);
-      assert.equal(events[2].state.action, Action.Update);
+      assert.equal(events[2].state.action, Action.AttributeUpdate);
       assert.equal(events[3].state.action, Action.Remove);
 
       // Make sure all events have the same mutation sequence
@@ -836,8 +836,7 @@ describe("Layout Tests", () => {
       outerDiv.removeEventListener("scroll", scrollCallback);
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Update);
-      assert.equal(events[0].state.source, Source.Scroll);
+      assert.equal(events[0].state.action, Action.Scroll);
       done();
     }
   });
@@ -880,8 +879,7 @@ describe("Layout Tests", () => {
       outerDiv.removeEventListener("scroll", scrollCallback);
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Update);
-      assert.equal(events[0].state.source, Source.Scroll);
+      assert.equal(events[0].state.action, Action.Scroll);
       done();
     }
   });
@@ -926,8 +924,7 @@ describe("Layout Tests", () => {
       outerDiv.removeEventListener("scroll", scrollCallback);
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Update);
-      assert.equal(events[0].state.source, Source.Scroll);
+      assert.equal(events[0].state.action, Action.Scroll);
       done();
     }
   });
@@ -961,8 +958,7 @@ describe("Layout Tests", () => {
       input.removeEventListener("change", inputChangeCallback);
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Update);
-      assert.equal(events[0].state.source, Source.Input);
+      assert.equal(events[0].state.action, Action.Input);
       assert.equal(events[0].state.attributes.value, newValueString);
       done();
     }
@@ -997,8 +993,7 @@ describe("Layout Tests", () => {
       textarea.removeEventListener("input", inputChangeCallback);
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Update);
-      assert.equal(events[0].state.source, Source.Input);
+      assert.equal(events[0].state.action, Action.Input);
       assert.equal(events[0].state.attributes.value, newValueString);
       done();
     }

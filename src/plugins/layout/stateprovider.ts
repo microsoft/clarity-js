@@ -54,30 +54,14 @@ export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLay
 export function createElementLayoutState(element: Element): IElementLayoutState {
   let tagName = element.tagName;
   let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
+
+  // TODO: This should not be necessary here, look into removing this
   if (tagName === ScriptTag || tagName === MetaTag) {
     elementState.tag = IgnoreTag;
     return elementState;
   }
 
-  let elementAttributes = element.attributes;
-  let stateAttributes: IAttributes = {};
-  for (let i = 0; i < elementAttributes.length; i++) {
-    let attr = elementAttributes[i];
-    let attrName = attr.name.toLowerCase();
-
-    // If it's an image and configuration disallows capturing images then skip src attribute
-    if (tagName === "IMG" && !config.showImages && attrName === "src") {
-      continue;
-    }
-
-    // If we are masking text, also mask it from input boxes as well as alt description
-    if (!config.showText && attributeMaskList.indexOf(attrName) >= 0) {
-      stateAttributes[attr.name] = attr.value.replace(/\S/gi, "*");
-    } else {
-      stateAttributes[attr.name] = attr.value;
-    }
-  }
-  elementState.attributes = stateAttributes;
+  elementState.attributes = getElementAttributes(element);
 
   // In IE, calling getBoundingClientRect on a node that is disconnected
   // from a DOM tree, sometimes results in a 'Unspecified Error'
@@ -173,4 +157,38 @@ export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {
     }
   }
   return ignore;
+}
+
+export function getElementAttributes(element: Element): IAttributes {
+  let attributes: IAttributes = {};
+  for (let i = 0; i < element.attributes.length; i++) {
+    attributes[element.attributes[i].name] = element.attributes[i].value;
+  }
+  return attributes;
+}
+
+export function maskAttributes(attributes: IAttributes, element: Element): IAttributes {
+  let maskedAttributes: IAttributes = JSON.parse(JSON.stringify(attributes));
+  let names = Object.keys(maskedAttributes);
+  for (let i = 0; i < names.length; i++) {
+    let name = names[i];
+    if (shouldMaskAttribute(name, element)) {
+      maskedAttributes[name] = maskedAttributes[name].replace(/\S/gi, "*");
+    }
+  }
+  return maskedAttributes;
+}
+
+function shouldMaskAttribute(attrName: string, element: Element): boolean {
+  // Mask text from input boxes and alt descriptions, if config disallows showing text
+  if (!config.showText && attributeMaskList.indexOf(attrName) > -1) {
+    return true;
+  }
+
+  // Mask image sources, if config disallows showing images
+  if (!config.showImages && element.tagName === "IMG" && attrName.toLowerCase() === "src") {
+    return true;
+  }
+
+  return false;
 }
