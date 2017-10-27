@@ -27,7 +27,7 @@ export function logError(errorToLog: Event) {
     let message = error.message;
     let stack = error.stack;
 
-    let jsErrorEventState: IJsErrorEventState = {
+    let jsErrorEventData: IJsErrorEventData = {
         type: Instrumentation.JsError,
         message,
         stack,
@@ -35,5 +35,5 @@ export function logError(errorToLog: Event) {
         colno,
         source
     };
-    instrument(jsErrorEventState);
+    instrument(jsErrorEventData);
 }

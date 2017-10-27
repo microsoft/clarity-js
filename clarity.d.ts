@@ -1,4 +1,13 @@
 /* ##################################### */
+/* ############   LIBRARY   ############ */
+/* ##################################### */
+
+interface IClarity {
+  start(config?: IConfig): void;
+  stop(): void;
+}
+
+/* ##################################### */
 /* ############   CONFIG   ############# */
 /* ##################################### */
 
@@ -65,6 +74,8 @@ export interface IConfig {
 /* #############   CORE   ############## */
 /* ##################################### */
 
+type ClarityEventData = IViewportEventData | ILayoutEventData | IPointerEventData | IInstrumentationEventData;
+
 declare const enum State {
   Loaded,
   Activated,
@@ -100,7 +111,7 @@ interface IImpressionMetadata {
 
 interface IEventData {
   type: string;
-  state: any;
+  data: any;
   time?: number;
 }
 
@@ -111,7 +122,7 @@ interface IEvent extends IEventData {
 
 interface IDroppedPayloadInfo {
   payload: string;
-  xhrErrorState: IXhrErrorEventState;
+  xhrError: IXhrErrorEventData;
 }
 
 interface IUploadInfo {
@@ -205,17 +216,17 @@ interface IAttributes {
   [key: string]: string;
 }
 
-interface ILayoutEvent {
+interface ILayoutEventData {
   index: number;
   action: Action;
   time?: number;
 }
 
-interface IDiscover extends ILayoutEvent {
+interface IDiscover extends ILayoutEventData {
   state: ILayoutState;
 }
 
-interface IMutation extends ILayoutEvent {
+interface IMutation extends ILayoutEventData {
   mutationSequence: number;
 }
 
@@ -242,18 +253,18 @@ interface ICharacterDataUpdate extends IMutation {
   content: string;
 }
 
-interface IScroll extends ILayoutEvent {
+interface IScroll extends ILayoutEventData {
   scrollX: number;
   scrollY: number;
 }
 
-interface IInput extends ILayoutEvent {
+interface IInput extends ILayoutEventData {
   value: string;
 }
 
 // Generic storage of various data pieces that can be passed along with
 // different layout events originating from different actions
-interface ILayoutEventInfo extends ILayoutEvent {
+interface ILayoutEventInfo extends ILayoutEventData {
   node: Node;
 }
 
@@ -328,18 +339,18 @@ interface IShadowDomMutationSummary {
 /* ###########   POINTER   ############# */
 /* ##################################### */
 
-interface IPointerEvent extends IEvent {
-  state: IPointerState;
+interface IPointerModule {
+  transform(evt: Event): IPointerEventState[];
 }
 
-interface IPointerModule {
-  transform(evt: Event): IPointerState[];
+interface IPointerEventData {
+  state: IPointerEventState;
 }
 
 /* Spec: https://www.w3.org/TR/pointerevents/#pointerevent-interface */
-interface IPointerState {
+interface IPointerEventState {
   index: number; /* Pointer ID */
-  event: string; /* Original event that is mapped to pointer event */
+  type: string; /* Original event that is mapped to pointer event */
   pointer: string; /* pointerType: mouse, pen, touch */
   x: number; /* X-Axis */
   y: number; /* Y-Axis */
@@ -356,10 +367,6 @@ interface IPointerState {
 /* ##########   VIEWPORT   ############# */
 /* ##################################### */
 
-interface IViewportEvent extends IEvent {
-  state: IViewportState;
-}
-
 interface IViewportRectangle {
   x: number; /* X coordinate of the element */
   y: number; /* Y coordinate of the element */
@@ -372,12 +379,12 @@ interface IDocumentSize {
   height: number; /* Document height */
 }
 
-interface IViewportState {
+interface IViewportEventData {
   viewport: IViewportRectangle; /* Viewport rectangle */
   document: IDocumentSize; /* Document size */
   dpi: number; /* DPI */
   visibility: string; /* Visibility state of the page */
-  event: string; /* Source event */
+  type: string; /* Source event */
 }
 
 /* ##################################### */
@@ -397,11 +404,11 @@ declare const enum Instrumentation {
   Trigger
 }
 
-interface IInstrumentationEventState {
+interface IInstrumentationEventData {
   type: Instrumentation;
 }
 
-interface IJsErrorEventState extends IInstrumentationEventState {
+interface IJsErrorEventData extends IInstrumentationEventData {
   source: string;
   message: string;
   stack: string;
@@ -409,11 +416,11 @@ interface IJsErrorEventState extends IInstrumentationEventState {
   colno: number;
 }
 
-interface IMissingFeatureEventState extends IInstrumentationEventState {
+interface IMissingFeatureEventData extends IInstrumentationEventData {
   missingFeatures: string[];
 }
 
-interface IXhrErrorEventState extends IInstrumentationEventState {
+interface IXhrErrorEventData extends IInstrumentationEventData {
   requestStatus: number;
   sequenceNumber: number;
   compressedLength: number;
@@ -423,20 +430,20 @@ interface IXhrErrorEventState extends IInstrumentationEventState {
   attemptNumber: number;
 }
 
-interface ITotalByteLimitExceededEventState extends IInstrumentationEventState {
+interface ITotalByteLimitExceededEventData extends IInstrumentationEventData {
   bytes: number;
 }
 
-interface IClarityAssertFailedEventState extends IInstrumentationEventState {
+interface IClarityAssertFailedEventData extends IInstrumentationEventData {
   source: string;
   comment: string;
 }
 
-interface IClarityDuplicatedEventState extends IInstrumentationEventState {
+interface IClarityDuplicatedEventData extends IInstrumentationEventData {
   currentImpressionId: string;
 }
 
-interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
+interface IShadowDomInconsistentEventData extends IInstrumentationEventData {
   // JSON of node indicies, representing the DOM
   dom: NumberJson;
 
@@ -453,10 +460,10 @@ interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
   // before we stop processing mutations and send ShadowDomInconsistentEvent. This means that the actual transition
   // from consistent to inconsistent state happened on some previous action and there was also an event created for it.
   // That first event is sent in this property.
-  firstEvent?: IShadowDomInconsistentEventState;
+  firstEvent?: IShadowDomInconsistentEventData;
 }
 
-interface IClarityActivateErrorState extends IInstrumentationEventState {
+interface IClarityActivateErrorEventData extends IInstrumentationEventData {
   error: string;
 }
 
@@ -490,6 +497,5 @@ interface IPerformanceResourceTiming {
 /* ##################################### */
 /* ############   LIBRARY   ############ */
 /* ##################################### */
-
 export function start(config?: IConfig): void;
 export function stop(): void;

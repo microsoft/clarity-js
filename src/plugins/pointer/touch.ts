@@ -1,15 +1,15 @@
 import { IPointerState } from "../../../clarity";
 import { NodeIndex } from "../layout/stateprovider";
 
-export function transform(evt: TouchEvent): IPointerState[] {
-  let states: IPointerState[] = [];
+export function transform(evt: TouchEvent): IPointerEventState[] {
+  let states: IPointerEventState[] = [];
   let de = document.documentElement;
   let buttons = (evt.type === "touchstart" || evt.type === "touchmove") ? 1 : 0;
   for (let i = 0; i < evt.changedTouches.length; i++) {
     let touch = evt.changedTouches[i];
     states.push({
       index: touch.identifier + 2, /* Avoid conflict with mouse index of 1 */
-      event: evt.type,
+      type: evt.type,
       pointer: "touch",
       x: "clientX" in touch ? touch.clientX + de.scrollLeft : null,
       y: "clientY" in touch ? touch.clientY + de.scrollTop : null,

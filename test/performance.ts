@@ -34,7 +34,7 @@ describe("Performance Tests", () => {
     let events = getEventsByType(getSentEvents(), navigationTimingEventName);
     assert.equal(events.length, 1);
 
-    let timing = events[0].state && events[0].state.timing;
+    let timing = events[0].data && events[0].data.timing;
     assert.equal(!!timing, true);
     assert.equal(timing.dummyResponseEnd, dummyPerformance.timing.dummyResponseEnd);
 
@@ -50,7 +50,7 @@ describe("Performance Tests", () => {
     let events = stopObserving();
     assert.equal(events.length, 1);
 
-    let entries = events[0].state && events[0].state.entries;
+    let entries = events[0].data && events[0].data.entries;
     assert.equal(!!entries, true);
     assert.equal(entries.length, 1);
     assert.equal(entries[0].initiatorType, dummyEntry.initiatorType);
@@ -68,7 +68,7 @@ describe("Performance Tests", () => {
     let events = stopObserving();
     assert.equal(events.length, 1);
 
-    let entries = events[0].state.entries;
+    let entries = events[0].data.entries;
     assert.equal(entries.length, 2);
 
     done();
@@ -103,7 +103,7 @@ describe("Performance Tests", () => {
     let events = stopObserving();
     assert.equal(events.length, 1);
 
-    let entries = events[0].state.entries;
+    let entries = events[0].data.entries;
     assert.equal(entries.length, 1);
     assert.equal(entries[0].initiatorType, "completeEntry");
 
@@ -115,7 +115,7 @@ describe("Performance Tests", () => {
     events = stopObserving();
     assert.equal(events.length, 1);
 
-    entries = events[0].state.entries;
+    entries = events[0].data.entries;
     assert.equal(entries.length, 1);
     assert.equal(entries[0].initiatorType, "incompleteEntry");
 

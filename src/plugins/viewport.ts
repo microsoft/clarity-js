@@ -4,7 +4,7 @@ import { addEvent, bind } from "../core";
 export default class Viewport implements IPlugin {
   private eventName = "Viewport";
   private distanceThreshold = 20;
-  private lastViewportState: IViewportState;
+  private lastViewportState: IViewportEventData;
 
   public activate() {
     this.processState(this.getViewport("discover"));
@@ -28,10 +28,10 @@ export default class Viewport implements IPlugin {
     this.processState(viewportState);
   }
 
-  private getViewport(type: string): IViewportState {
+  private getViewport(type: string): IViewportEventData {
     let de = document.documentElement;
     let body = document.body;
-    let viewport: IViewportState = {
+    let viewport: IViewportEventData = {
       viewport: {
         x: "pageXOffset" in window ? window.pageXOffset : de.scrollLeft,
         y: "pageYOffset" in window ? window.pageYOffset : de.scrollTop,
@@ -44,25 +44,25 @@ export default class Viewport implements IPlugin {
       },
       dpi: "devicePixelRatio" in window ? window.devicePixelRatio : -1,
       visibility: "visibilityState" in document ? document.visibilityState : "default",
-      event: type
+      type
     };
     return viewport;
   }
 
-  private processState(state: IViewportState) {
+  private processState(data: IViewportEventData) {
     let recordState = true;
-    if (state.event === "scroll"
+    if (data.type === "scroll"
       && this.lastViewportState !== null
-      && !this.checkDistance(this.lastViewportState, state)) {
+      && !this.checkDistance(this.lastViewportState, data)) {
       recordState = false;
     }
     if (recordState) {
-      this.lastViewportState = state;
-      addEvent({type: this.eventName, state});
+      this.lastViewportState = data;
+      addEvent({type: this.eventName, data});
     }
   }
 
-  private checkDistance(stateOne: IViewportState, stateTwo: IViewportState) {
+  private checkDistance(stateOne: IViewportEventData, stateTwo: IViewportEventData) {
     let dx = stateOne.viewport.x - stateTwo.viewport.x;
     let dy = stateOne.viewport.y - stateTwo.viewport.y;
     return (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold);

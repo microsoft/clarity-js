@@ -35,10 +35,10 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 3);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.state.tag, "DIV");
-      assert.equal(events[1].state.state.tag, "SPAN");
-      assert.equal(events[2].state.state.tag, "*TXT*");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "DIV");
+      assert.equal(events[1].data.state.tag, "SPAN");
+      assert.equal(events[2].data.state.tag, "*TXT*");
       done();
     }
   });
@@ -56,8 +56,8 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Remove);
-      assert.equal(events[0].state.tag, "DIV");
+      assert.equal(events[0].data.action, Action.Remove);
+      assert.equal(events[0].data.tag, "DIV");
       done();
     }
   });
@@ -76,7 +76,7 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.state.action, Action.Move);
+      assert.equal(events[0].data.state.action, Action.Move);
       done();
     }
   });
@@ -97,9 +97,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.state.action, Action.Move);
-      assert.equal(events[0].state.state.parent, domIndex);
-      assert.equal(events[0].state.state.next, firstChildIndex);
+      assert.equal(events[0].data.state.action, Action.Move);
+      assert.equal(events[0].data.state.parent, domIndex);
+      assert.equal(events[0].data.state.next, firstChildIndex);
       done();
     }
   });
@@ -149,12 +149,12 @@ describe("Layout Tests", () => {
           // Non-IE path: Both div and script are reported in the first callback
           observer.disconnect();
           assert.equal(events.length, 3);
-          assert.equal(events[0].state.state.action, Action.Insert);
-          assert.equal(events[0].state.state.tag, IgnoreTag);
-          assert.equal(events[1].state.state.action, Action.Insert);
-          assert.equal(events[1].state.state.tag, IgnoreTag);
-          assert.equal(events[2].state.state.action, Action.Insert);
-          assert.equal(events[2].state.state.tag, "DIV");
+          assert.equal(events[0].data.state.action, Action.Insert);
+          assert.equal(events[0].data.state.tag, IgnoreTag);
+          assert.equal(events[1].data.state.action, Action.Insert);
+          assert.equal(events[1].data.state.tag, IgnoreTag);
+          assert.equal(events[2].data.state.action, Action.Insert);
+          assert.equal(events[2].data.state.tag, "DIV");
           done();
         }
       } else if (callbackCount === 1) {
@@ -166,14 +166,14 @@ describe("Layout Tests", () => {
       } else {
         observer.disconnect();
         assert.equal(events.length, 4);
-        assert.equal(events[0].state.state.action, Action.Insert);
-        assert.equal(events[0].state.state.tag, "DIV");
-        assert.equal(events[1].state.state.action, Action.Insert);
-        assert.equal(events[1].state.state.tag, IgnoreTag);
-        assert.equal(events[2].state.state.action, Action.Insert);
-        assert.equal(events[2].state.state.tag, IgnoreTag);
-        assert.equal(events[3].state.state.action, Action.Insert);
-        assert.equal(events[3].state.state.tag, "SPAN");
+        assert.equal(events[0].data.state.action, Action.Insert);
+        assert.equal(events[0].data.state.tag, "DIV");
+        assert.equal(events[1].data.state.action, Action.Insert);
+        assert.equal(events[1].data.state.tag, IgnoreTag);
+        assert.equal(events[2].data.state.action, Action.Insert);
+        assert.equal(events[2].data.state.tag, IgnoreTag);
+        assert.equal(events[3].data.state.action, Action.Insert);
+        assert.equal(events[3].data.state.tag, "SPAN");
         done();
       }
       callbackCount++;
@@ -199,16 +199,16 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-      assert.equal(events[0].state.state.action, Action.Insert);
-      assert.equal(events[0].state.state.tag, "SPAN");
+      assert.equal(events[0].data.state.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "SPAN");
 
-      assert.equal(events[1].state.state.action, Action.Move);
-      assert.equal(events[1].state.state.index, dom[NodeIndex]);
-      assert.equal(events[1].state.state.next, backup[NodeIndex]);
+      assert.equal(events[1].data.state.action, Action.Move);
+      assert.equal(events[1].data.state.index, dom[NodeIndex]);
+      assert.equal(events[1].data.state.next, backup[NodeIndex]);
 
-      assert.equal(events[2].state.state.action, Action.Move);
-      assert.equal(events[2].state.state.index, backup[NodeIndex]);
-      assert.equal(events[2].state.state.next, null);
+      assert.equal(events[2].data.state.action, Action.Move);
+      assert.equal(events[2].data.state.index, backup[NodeIndex]);
+      assert.equal(events[2].data.state.next, null);
 
       done();
     }
@@ -268,10 +268,10 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, childrenCount);
-      assert.equal(events[0].state.state.action, Action.Move);
-      assert.equal(events[0].state.state.parent, backupIndex);
-      assert.equal(events[4].state.state.parent, backupIndex);
-      assert.equal(events[4].state.state.next, events[5].state.state.index);
+      assert.equal(events[0].data.state.action, Action.Move);
+      assert.equal(events[0].data.state.parent, backupIndex);
+      assert.equal(events[4].data.state.parent, backupIndex);
+      assert.equal(events[4].data.state.next, events[5].data.state.index);
       done();
     }
   });
@@ -298,20 +298,20 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-      assert.equal(events[0].state.state.action, Action.Insert);
-      assert.equal(events[0].state.state.tag, "DIV");
-      assert.equal(events[0].state.state.previous, backupPrevious[NodeIndex]);
-      assert.equal(events[0].state.state.next, n2[NodeIndex]);
+      assert.equal(events[0].data.state.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "DIV");
+      assert.equal(events[0].data.state.previous, backupPrevious[NodeIndex]);
+      assert.equal(events[0].data.state.next, n2[NodeIndex]);
 
       // Check SPAN insert event
-      assert.equal(events[1].state.state.action, Action.Insert);
-      assert.equal(events[1].state.state.tag, "SPAN");
-      assert.equal(events[1].state.state.next, n3[NodeIndex]);
+      assert.equal(events[1].data.state.action, Action.Insert);
+      assert.equal(events[1].data.state.tag, "SPAN");
+      assert.equal(events[1].data.state.next, n3[NodeIndex]);
 
       // Check A insert event
-      assert.equal(events[2].state.state.action, Action.Insert);
-      assert.equal(events[2].state.state.tag, "A");
-      assert.equal(events[2].state.state.next, backup[NodeIndex]);
+      assert.equal(events[2].data.state.action, Action.Insert);
+      assert.equal(events[2].data.state.tag, "A");
+      assert.equal(events[2].data.state.next, backup[NodeIndex]);
 
       done();
     }
@@ -341,8 +341,8 @@ describe("Layout Tests", () => {
 
       // Make sure that there is a remove event for every child
       for (let i = 0; i < events.length; i++) {
-        let index = events[i].state.index;
-        assert.equal(events[i].state.action, Action.Remove);
+        let index = events[i].data.index;
+        assert.equal(events[i].data.action, Action.Remove);
         assert.equal(childIndices[index], true);
         delete childIndices[index];
       }
@@ -378,8 +378,8 @@ describe("Layout Tests", () => {
 
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Remove);
-      assert.equal(events[0].state.index, backupNodeIndex);
+      assert.equal(events[0].data.action, Action.Remove);
+      assert.equal(events[0].data.index, backupNodeIndex);
 
       // Make sure that clarity index is cleared from all removed nodes
       assert.equal(NodeIndex in tempNode, false);
@@ -405,9 +405,9 @@ describe("Layout Tests", () => {
         observer.disconnect();
         let events = stopObserving();
         assert.equal(events.length, 2);
-        assert.equal(events[0].state.action, Action.Insert);
-        assert.equal(events[0].state.state.tag, "DIV");
-        assert.equal(events[1].state.action, Action.AttributeUpdate);
+        assert.equal(events[0].data.action, Action.Insert);
+        assert.equal(events[0].data.state.tag, "DIV");
+        assert.equal(events[1].data.action, Action.AttributeUpdate);
         done();
       }
     }
@@ -427,8 +427,8 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.state.tag, "DIV");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "DIV");
       done();
     }
   });
@@ -448,9 +448,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.state.tag, "DIV");
-      assert.equal(events[0].state.state.parent, clarity[NodeIndex]);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "DIV");
+      assert.equal(events[0].data.state.parent, clarity[NodeIndex]);
       done();
     }
   });
@@ -474,10 +474,10 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 2);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.index, div1[NodeIndex]);
-      assert.equal(events[1].state.action, Action.Insert);
-      assert.equal(events[1].state.index, div2[NodeIndex]);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.index, div1[NodeIndex]);
+      assert.equal(events[1].data.action, Action.Insert);
+      assert.equal(events[1].data.index, div2[NodeIndex]);
       assert.equal(div1[NodeIndex], div2[NodeIndex] - 1);
       done();
     }
@@ -551,8 +551,8 @@ describe("Layout Tests", () => {
 
       // Prove that we didn't send any extra instrumentation back for no-op mutation
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Remove);
-      assert.equal(events[0].state.index, clarityDivIndex);
+      assert.equal(events[0].data.action, Action.Remove);
+      assert.equal(events[0].data.index, clarityDivIndex);
 
       // Make sure that clarity index is cleared from all removed nodes
       assert.equal(NodeIndex in clarityDiv, false);
@@ -587,14 +587,14 @@ describe("Layout Tests", () => {
       assert.equal(events.length, 2);
 
       // Check DIV insert event
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.parent, bodyIndex);
-      assert.equal(events[0].state.tag, "DIV");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.parent, bodyIndex);
+      assert.equal(events[0].data.tag, "DIV");
 
       // Check SPAN insert event
-      assert.equal(events[1].state.action, Action.Insert);
-      assert.equal(events[1].state.parent, n1[NodeIndex]);
-      assert.equal(events[1].state.tag, "SPAN");
+      assert.equal(events[1].data.action, Action.Insert);
+      assert.equal(events[1].data.parent, n1[NodeIndex]);
+      assert.equal(events[1].data.tag, "SPAN");
 
       done();
     }
@@ -619,18 +619,18 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 4);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[1].state.action, Action.Move);
-      assert.equal(events[2].state.action, Action.AttributeUpdate);
-      assert.equal(events[3].state.action, Action.Remove);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[1].data.action, Action.Move);
+      assert.equal(events[2].data.action, Action.AttributeUpdate);
+      assert.equal(events[3].data.action, Action.Remove);
 
       // Make sure all events have the same mutation sequence
-      let mutationSequence = events[0].state.mutationSequence;
+      let mutationSequence = events[0].data.mutationSequence;
       assert.isTrue(mutationSequence >= 0);
-      assert.equal(events[0].state.mutationSequence, mutationSequence);
-      assert.equal(events[1].state.mutationSequence, mutationSequence);
-      assert.equal(events[2].state.mutationSequence, mutationSequence);
-      assert.equal(events[3].state.mutationSequence, mutationSequence);
+      assert.equal(events[0].data.mutationSequence, mutationSequence);
+      assert.equal(events[1].data.mutationSequence, mutationSequence);
+      assert.equal(events[2].data.mutationSequence, mutationSequence);
+      assert.equal(events[3].data.mutationSequence, mutationSequence);
 
       done();
     }
@@ -653,9 +653,9 @@ describe("Layout Tests", () => {
         let events = stopObserving();
         assert.equal(events.length, 2);
 
-        let firstEventSequence = events[0].state.mutationSequence;
+        let firstEventSequence = events[0].data.mutationSequence;
         assert.isTrue(firstEventSequence >= 0);
-        assert.equal(events[1].state.mutationSequence, firstEventSequence + 1);
+        assert.equal(events[1].data.mutationSequence, firstEventSequence + 1);
 
         done();
       } else {
@@ -682,9 +682,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.tag, "IMG");
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal("src" in events[0].state.attributes, false);
+      assert.equal(events[0].data.tag, "IMG");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal("src" in events[0].data.attributes, false);
       done();
     }
   });
@@ -707,9 +707,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.tag, "IMG");
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.attributes["src"], src);
+      assert.equal(events[0].data.tag, "IMG");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.attributes["src"], src);
       done();
     }
   });
@@ -731,9 +731,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.tag, "INPUT");
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.attributes["value"], "*******");
+      assert.equal(events[0].data.tag, "INPUT");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.attributes["value"], "*******");
       done();
     }
   });
@@ -754,13 +754,13 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 2);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, IgnoreTag);
-      assert.equal(events[0].state.nodeType, Node.ELEMENT_NODE);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.tag, IgnoreTag);
+      assert.equal(events[0].data.nodeType, Node.ELEMENT_NODE);
 
-      assert.equal(events[1].state.action, Action.Insert);
-      assert.equal(events[1].state.tag, IgnoreTag);
-      assert.equal(events[1].state.nodeType, Node.TEXT_NODE);
+      assert.equal(events[1].data.action, Action.Insert);
+      assert.equal(events[1].data.tag, IgnoreTag);
+      assert.equal(events[1].data.nodeType, Node.TEXT_NODE);
 
       done();
     }
@@ -779,9 +779,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, IgnoreTag);
-      assert.equal(events[0].state.nodeType, Node.ELEMENT_NODE);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.tag, IgnoreTag);
+      assert.equal(events[0].data.nodeType, Node.ELEMENT_NODE);
       done();
     }
   });
@@ -799,9 +799,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, IgnoreTag);
-      assert.equal(events[0].state.nodeType, Node.COMMENT_NODE);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.tag, IgnoreTag);
+      assert.equal(events[0].data.nodeType, Node.COMMENT_NODE);
       done();
     }
   });

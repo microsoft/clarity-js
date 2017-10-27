@@ -59,7 +59,7 @@ function workerContext() {
     // Append new event to the next batch
     nextBatchEvents.push(event);
     nextBatchBytes += eventStr.length;
-    nextBatchIsSingleXhrErrorEvent = (nextBatchEvents.length === 1 && event.state && event.state.type === Instrumentation.XhrError);
+    nextBatchIsSingleXhrErrorEvent = (nextBatchEvents.length === 1 && event.data && event.data.type === Instrumentation.XhrError);
 
     // Even if we just posted next batch, it is possible that a single new event exceeds batch limit by itself, so we need to check again
     if (nextBatchBytes >= config.batchLimit) {

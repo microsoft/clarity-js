@@ -20,7 +20,7 @@ export default class Layout implements IPlugin {
   private domPreDiscoverMutations: ILayoutEventInfo[][];
   private domDiscoverComplete: boolean;
   private lastConsistentDomJson: NumberJson;
-  private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventState;
+  private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventData;
   private layoutStates: ILayoutState[];
   private originalLayouts: Array<{
     node: Node;
@@ -134,7 +134,7 @@ export default class Layout implements IPlugin {
 
       events.push({
         type: this.eventName,
-        state: event,
+        data: event,
         time
       });
       this.layoutStates[index] = currentLayoutState;
@@ -162,19 +162,19 @@ export default class Layout implements IPlugin {
   private processMultipleNodeEvents<T extends ILayoutEventInfo>(eventInfos: T[]) {
     let eventsData: IEventData[] = [];
     for (let i = 0; i < eventInfos.length; i++) {
-      let eventState = this.createEvent(eventInfos[i]);
-      if (eventState) {
+      let eventData = this.createEvent(eventInfos[i]);
+      if (eventData) {
         eventsData.push({
           type: this.eventName,
-          state: eventState
+          data: eventData
         });
       }
     }
     addMultipleEvents(eventsData);
   }
 
-  private createEvent<T extends ILayoutEventInfo>(eventInfo: T): ILayoutEvent {
-    let event: ILayoutEvent = null;
+  private createEvent<T extends ILayoutEventInfo>(eventInfo: T): ILayoutEventData {
+    let event: ILayoutEventData = null;
     let index = eventInfo.index;
     switch (eventInfo.action) {
       case Action.Insert:
@@ -255,14 +255,14 @@ export default class Layout implements IPlugin {
     if (this.checkDistance(layoutState.layout.scrollX, layoutState.layout.scrollY, event.scrollX, event.scrollY)) {
       layoutState.layout.scrollX = newScrollX;
       layoutState.layout.scrollY = newScrollY;
-      addEvent({type: this.eventName, state: event});
+      addEvent({type: this.eventName, data: event});
     }
   }
 
   private onInput(inputElement: InputElement) {
     let event = eventProvider.createInput(inputElement);
     (this.layoutStates[getNodeIndex(inputElement)] as IInputLayoutState).value  = event.value;
-    addEvent({type: this.eventName, state: event});
+    addEvent({type: this.eventName, data: event});
   }
 
   private checkDistance(lastScrollX: number, lastScrollY: number, newScrollX: number, newScrollY: number) {
@@ -374,7 +374,7 @@ export default class Layout implements IPlugin {
         let shadowDomJson = this.shadowDom.createIndexJson(this.shadowDom.shadowDocument, (node: Node) => {
           return parseInt((node as IShadowDomNode).id, 10);
         });
-        let evt: IShadowDomInconsistentEventState = {
+        let evt: IShadowDomInconsistentEventData = {
           type: Instrumentation.ShadowDomInconsistent,
           dom: domJson,
           shadowDom: shadowDomJson,

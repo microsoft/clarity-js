@@ -68,10 +68,10 @@ export default class PerformanceProfiler implements IPlugin {
       formattedTiming = mapProperties(formattedTiming, (name: string, value) => {
         return (formattedTiming[name] === 0) ? 0 : Math.round(formattedTiming[name] - formattedTiming.navigationStart);
       }, false);
-      let navigationTimingEventState = {
+      let navigationTimingEventData = {
         timing: formattedTiming
       };
-      addEvent({type: "NavigationTiming", state: navigationTimingEventState});
+      addEvent({type: "NavigationTiming", data: navigationTimingEventData});
     } else {
       this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
@@ -86,7 +86,7 @@ export default class PerformanceProfiler implements IPlugin {
     if (entries.length < this.lastInspectedEntryIndex + 1) {
       if (!this.stateError) {
         this.stateError = true;
-        addEvent({type: "PerformanceStateError", state: {}});
+        addEvent({type: "PerformanceStateError", data: {}});
       }
 
       this.lastInspectedEntryIndex = -1;
@@ -117,10 +117,10 @@ export default class PerformanceProfiler implements IPlugin {
     }
 
     if (entryInfos.length > 0) {
-      let resourceTimingEventState = {
+      let resourceTimingEventData = {
         entries: entryInfos
       };
-      addEvent({type: "ResourceTiming", state: resourceTimingEventState});
+      addEvent({type: "ResourceTiming", data: resourceTimingEventData});
     }
 
     this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);

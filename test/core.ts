@@ -86,8 +86,8 @@ describe("Core Tests", () => {
     let events = stopObserving();
     assert.equal(events.length, 1);
     assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.XhrError);
-    assert.equal(events[0].state.requestStatus, 400);
+    assert.equal(events[0].data.type, Instrumentation.XhrError);
+    assert.equal(events[0].data.requestStatus, 400);
     done();
   });
 
@@ -119,8 +119,8 @@ describe("Core Tests", () => {
     let events = stopObserving();
     assert.equal(events.length, 1);
     assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.XhrError);
-    assert.equal(events[0].state.requestStatus, 400);
+    assert.equal(events[0].data.type, Instrumentation.XhrError);
+    assert.equal(events[0].data.requestStatus, 400);
 
     // Part 2: Successfully send second payload, which should trigger re-send of the first payload
     let secondMockEventName = "SecondMockEvent";
@@ -219,8 +219,8 @@ describe("Core Tests", () => {
     let events = stopObserving();
     assert.equal(core.state, State.Unloaded);
     assert.equal(events.length, 2);
-    assert.equal(events[0].state.type, Instrumentation.TotalByteLimitExceeded);
-    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    assert.equal(events[0].data.type, Instrumentation.TotalByteLimitExceeded);
+    assert.equal(events[1].data.type, Instrumentation.Teardown);
     done();
   });
 
@@ -296,7 +296,7 @@ describe("Core Tests", () => {
     assert.equal(events.length, 2);
     assert.equal(events[0].type, MockEventName);
     assert.equal(events[1].type, "Instrumentation");
-    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    assert.equal(events[1].data.type, Instrumentation.Teardown);
     done();
 
     function mockUploadHandler(payload: string) {

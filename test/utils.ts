@@ -71,7 +71,7 @@ export function getMockMetadata() {
 export function getMockEvent(eventName?: string) {
   let mockEvent: IEvent = {
     id: -1,
-    state: {},
+    data: {},
     time: -1,
     type: eventName || MockEventName
   };
