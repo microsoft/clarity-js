@@ -245,8 +245,11 @@ interface IMove extends IMutation {
 }
 
 interface IAttributeUpdate extends IMutation {
-  new: IAttributes;
-  removed: string[];
+  new?: IAttributes;
+  removed?: string[];
+  // Attribute updates can resize element or enable scrolling, so layout can change
+  // Note: This might require a separate event
+  layout?: ILayoutRectangle;
 }
 
 interface ICharacterDataUpdate extends IMutation {

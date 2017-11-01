@@ -62,39 +62,7 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
   }
 
   elementState.attributes = getElementAttributes(element);
-
-  // In IE, calling getBoundingClientRect on a node that is disconnected
-  // from a DOM tree, sometimes results in a 'Unspecified Error'
-  // Wrapping this in try/catch is faster than checking whether element is connected to DOM
-  let rect = null;
-  try {
-    rect = element.getBoundingClientRect();
-  } catch (e) {
-    // Ignore
-  }
-
-  elementState.layout = null;
-  if (rect) {
-    let styles = window.getComputedStyle(element);
-
-    elementState.layout = {
-      x: Math.round(rect.left),
-      y: Math.round(rect.top),
-      width: Math.round(rect.width),
-      height: Math.round(rect.height)
-    };
-
-    // Check if scroll is possible
-    if (styles["overflow-x"] === "auto"
-                              || styles["overflow-x"] === "scroll"
-                              || styles["overflow-x"] === "hidden"
-                              || styles["overflow-y"] === "auto"
-                              || styles["overflow-y"] === "scroll"
-                              || styles["overflow-y"] === "hidden") {
-      elementState.layout.scrollX = Math.round(element.scrollLeft);
-      elementState.layout.scrollY = Math.round(element.scrollTop);
-    }
-  }
+  elementState.layout = getElementLayoutRectangle(element);
 
   return elementState;
 }
@@ -159,24 +127,62 @@ export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {
   return ignore;
 }
 
+export function getElementLayoutRectangle(element: Element): ILayoutRectangle {
+  let layoutRect = null;
+  // In IE, calling getBoundingClientRect on a node that is disconnected
+  // from a DOM tree, sometimes results in a 'Unspecified Error'
+  // Wrapping this in try/catch is faster than checking whether element is connected to DOM
+  let rect = null;
+  try {
+    rect = element.getBoundingClientRect();
+  } catch (e) {
+    // Ignore
+  }
+
+  if (rect) {
+    let styles = window.getComputedStyle(element);
+
+    layoutRect = {
+      x: Math.round(rect.left),
+      y: Math.round(rect.top),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+
+    // Check if scroll is possible
+    if (styles["overflow-x"] === "auto"
+                              || styles["overflow-x"] === "scroll"
+                              || styles["overflow-x"] === "hidden"
+                              || styles["overflow-y"] === "auto"
+                              || styles["overflow-y"] === "scroll"
+                              || styles["overflow-y"] === "hidden") {
+      layoutRect.scrollX = Math.round(element.scrollLeft);
+      layoutRect.scrollY = Math.round(element.scrollTop);
+    }
+  }
+
+  return layoutRect;
+}
+
 export function getElementAttributes(element: Element): IAttributes {
   let attributes: IAttributes = {};
   for (let i = 0; i < element.attributes.length; i++) {
-    attributes[element.attributes[i].name] = element.attributes[i].value;
+    let name = element.attributes[i].name;
+    let value = element.attributes[i].value;
+
+    // Skip image sources, if config disallows showing images
+    if (element.tagName === "IMG" && !config.showImages && name === "src") {
+      continue;
+    }
+
+    // Mask text from input boxes and alt descriptions, if config disallows showing text
+    if (!config.showText && attributeMaskList.indexOf(name) > -1) {
+      value = value.replace(/\S/gi, "*");
+    }
+
+    attributes[name] = value;
   }
   return attributes;
-}
-
-export function maskAttributes(attributes: IAttributes, element: Element): IAttributes {
-  let maskedAttributes: IAttributes = JSON.parse(JSON.stringify(attributes));
-  let names = Object.keys(maskedAttributes);
-  for (let i = 0; i < names.length; i++) {
-    let name = names[i];
-    if (shouldMaskAttribute(name, element)) {
-      maskedAttributes[name] = maskedAttributes[name].replace(/\S/gi, "*");
-    }
-  }
-  return maskedAttributes;
 }
 
 function shouldMaskAttribute(attrName: string, element: Element): boolean {
@@ -185,7 +191,7 @@ function shouldMaskAttribute(attrName: string, element: Element): boolean {
     return true;
   }
 
-  // Mask image sources, if config disallows showing images
+  // Skip image sources, if config disallows showing images
   if (!config.showImages && element.tagName === "IMG" && attrName.toLowerCase() === "src") {
     return true;
   }

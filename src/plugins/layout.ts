@@ -6,7 +6,8 @@ import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./.
 import { debug, isNumber, traverseNodeTree } from "./../utils";
 import * as eventProvider from "./layout/eventprovider";
 import { ShadowDom } from "./layout/shadowdom";
-import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState, getElementAttributes } from "./layout/stateprovider";
+import { getElementAttributes, getElementLayoutRectangle } from "./layout/stateprovider";
+import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
 import { getNodeIndex, IgnoreTag, NodeIndex, shouldIgnoreNode } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
@@ -198,8 +199,10 @@ export default class Layout implements IPlugin {
         let updatedElement = eventInfo.node as Element;
         if (previousElementState.tag !== IgnoreTag) {
           let currentAttributes = getElementAttributes(updatedElement);
-          event = eventProvider.createAttributeUpdate(updatedElement, previousElementState.attributes, this.mutationSequence);
+          let currentLayout = getElementLayoutRectangle(updatedElement);
+          event = eventProvider.createAttributeUpdate(updatedElement, previousElementState, this.mutationSequence);
           previousElementState.attributes = currentAttributes;
+          previousElementState.layout = currentLayout;
         }
         // Watch element for scroll and input change events
         this.watch(updatedElement);

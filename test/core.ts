@@ -32,9 +32,9 @@ describe("Core Tests", () => {
     let events = getSentEvents();
     assert.equal(events.length, 2);
     assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.MissingFeature);
+    assert.equal(events[0].data.type, Instrumentation.MissingFeature);
     assert.equal(events[1].type, instrumentationEventName);
-    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    assert.equal(events[1].data.type, Instrumentation.Teardown);
     done();
   });
 
@@ -52,10 +52,10 @@ describe("Core Tests", () => {
     let events = getSentEvents();
     assert.equal(events.length, 2);
     assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.ClarityActivateError);
-    assert.equal(events[0].state.error, mockErrorText);
+    assert.equal(events[0].data.type, Instrumentation.ClarityActivateError);
+    assert.equal(events[0].data.error, mockErrorText);
     assert.equal(events[1].type, instrumentationEventName);
-    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    assert.equal(events[1].data.type, Instrumentation.Teardown);
     done();
   });
 
@@ -241,10 +241,10 @@ describe("Core Tests", () => {
     let events = getSentEvents();
     assert.equal(events.length, 2);
     assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.ClarityDuplicated);
-    assert.equal(events[0].state.currentImpressionId, mockExistingImpressionId);
+    assert.equal(events[0].data.type, Instrumentation.ClarityDuplicated);
+    assert.equal(events[0].data.currentImpressionId, mockExistingImpressionId);
     assert.equal(events[1].type, instrumentationEventName);
-    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    assert.equal(events[1].data.type, Instrumentation.Teardown);
     done();
   });
 

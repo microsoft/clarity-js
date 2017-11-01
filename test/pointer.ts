@@ -34,13 +34,13 @@ describe("Pointer Tests", () => {
       document.removeEventListener("click", callback);
       let events = stopObserving();
       assert.equal(events.length, 4);
-      assert.equal(events[0].data.type, "mousemove");
-      assert.equal(events[0].data.x, x);
-      assert.equal(events[1].data.type, "mousemove");
-      assert.equal(events[1].data.x, x + xDelta);
-      assert.equal(events[2].data.type, "mousemove");
-      assert.equal(events[2].data.x, x + (xDelta * 2));
-      assert.equal(events[3].data.type, "click");
+      assert.equal(events[0].data.state.type, "mousemove");
+      assert.equal(events[0].data.state.x, x);
+      assert.equal(events[1].data.state.type, "mousemove");
+      assert.equal(events[1].data.state.x, x + xDelta);
+      assert.equal(events[2].data.state.type, "mousemove");
+      assert.equal(events[2].data.state.x, x + (xDelta * 2));
+      assert.equal(events[3].data.state.type, "click");
       done();
     }
   });
@@ -63,11 +63,11 @@ describe("Pointer Tests", () => {
       document.removeEventListener("click", callback);
       let events = stopObserving();
       assert.equal(events.length, 3);
-      assert.equal(events[0].data.type, "mousemove");
-      assert.equal(events[0].data.x, x);
-      assert.equal(events[1].data.type, "mousemove");
-      assert.equal(events[1].data.x, x + (xDelta * 2));
-      assert.equal(events[2].data.type, "click");
+      assert.equal(events[0].data.state.type, "mousemove");
+      assert.equal(events[0].data.state.x, x);
+      assert.equal(events[1].data.state.type, "mousemove");
+      assert.equal(events[1].data.state.x, x + (xDelta * 2));
+      assert.equal(events[2].data.state.type, "click");
       done();
     }
   });
@@ -95,11 +95,11 @@ describe("Pointer Tests", () => {
       document.removeEventListener("click", callback);
       let events = stopObserving();
       assert.equal(events.length, 3);
-      assert.equal(events[0].data.type, "mousemove");
-      assert.equal(events[0].data.x, x);
-      assert.equal(events[1].data.type, "mousemove");
-      assert.equal(events[1].data.x, x);
-      assert.equal(events[2].data.type, "click");
+      assert.equal(events[0].data.state.type, "mousemove");
+      assert.equal(events[0].data.state.x, x);
+      assert.equal(events[1].data.state.type, "mousemove");
+      assert.equal(events[1].data.state.x, x);
+      assert.equal(events[2].data.state.type, "click");
       done();
     }
   });

@@ -1,5 +1,5 @@
 import { ShadowDom } from "./shadowdom";
-import { createLayoutState, getNodeIndex } from "./stateprovider";
+import { createLayoutState, getElementLayoutRectangle, getNodeIndex } from "./stateprovider";
 
 export function createInsert(node: Node, shadowDom: ShadowDom, mutationSequence: number): IInsert {
   return {
@@ -29,11 +29,14 @@ export function createMove(node: Node, mutationSequence: number): IMove {
   };
 }
 
-export function createAttributeUpdate(element: Element, previousAttributes: IAttributes, mutationSequence: number): IAttributeUpdate {
+export function createAttributeUpdate(element: Element, previousState: IElementLayoutState, mutationSequence: number): IAttributeUpdate {
+  let previousAttributes = previousState.attributes;
   let newAttributes: IAttributes = {};
   let removedAttributes: string[] = [];
   let elementAttributes = element.attributes;
   let event: IAttributeUpdate = null;
+  let previousLayoutRect = previousState.layout;
+  let layoutRect = getElementLayoutRectangle(element);
 
   // Check new attributes for new and updated values
   for (let i = 0; i < elementAttributes.length; i++) {
@@ -55,14 +58,22 @@ export function createAttributeUpdate(element: Element, previousAttributes: IAtt
     }
   }
 
-  if (Object.keys(newAttributes).length > 0 || removedAttributes.length > 0) {
-    event = {
-      index: getNodeIndex(element),
-      action: Action.AttributeUpdate,
-      new: newAttributes,
-      removed: removedAttributes,
-      mutationSequence
-    };
+  event = {
+    index: getNodeIndex(element),
+    action: Action.AttributeUpdate,
+    mutationSequence
+  };
+
+  if (Object.keys(newAttributes).length > 0) {
+    event.new = newAttributes;
+  }
+
+  if (removedAttributes.length > 0) {
+    event.removed = removedAttributes;
+  }
+
+  if (JSON.stringify(layoutRect) !== JSON.stringify(previousLayoutRect)) {
+    event.layout = layoutRect;
   }
 
   return event;
@@ -91,10 +102,10 @@ export function createScroll(element: Element): IScroll {
   };
 }
 
-export function createInput(textarea: InputElement): IInput {
+export function createInput(inputElement: InputElement): IInput {
   return {
-    index: getNodeIndex(textarea),
+    index: getNodeIndex(inputElement),
     action: Action.Input,
-    value: textarea.value
+    value: inputElement.value
   };
 }
