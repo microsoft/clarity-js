@@ -2,44 +2,41 @@ import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRouti
   Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode, LayoutRoutine,
   NumberJson, Source } from "../../clarity";
 import { config } from "./../config";
+import DiscoverConverter from "./../converters/discover";
+import * as InstrumentationCoverters from "./../converters/instrumentation";
+import * as LayoutConverters from "./../converters/layout";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
 import { debug, isNumber, traverseNodeTree } from "./../utils";
-import * as eventProvider from "./layout/eventprovider";
+import { documentToArray } from "./layout/discover";
+import * as EventProvider from "./layout/eventprovider";
 import { ShadowDom } from "./layout/shadowdom";
+import StateManager from "./layout/statemanager";
 import { getElementAttributes, getElementLayoutRectangle } from "./layout/stateprovider";
 import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
 import { getNodeIndex, IgnoreTag, NodeIndex, shouldIgnoreNode } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
   private eventName = "Layout";
+  private discoverEventName = "Discover";
   private distanceThreshold = 5;
   private shadowDom: ShadowDom;
+  private states: StateManager;
   private inconsistentShadowDomCount: number;
   private observer: MutationObserver;
   private watchList: boolean[];
   private mutationSequence: number;
-  private domPreDiscoverMutations: ILayoutEventInfo[][];
-  private domDiscoverComplete: boolean;
   private lastConsistentDomJson: NumberJson;
   private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventData;
-  private layoutStates: ILayoutState[];
-  private originalLayouts: Array<{
-    node: Node;
-    layout: ILayoutState;
-  }>;
 
   public reset(): void {
     this.shadowDom = new ShadowDom();
+    this.states = new StateManager();
     this.inconsistentShadowDomCount = 0;
     this.watchList = [];
     this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
     this.mutationSequence = 0;
-    this.domDiscoverComplete = false;
-    this.domPreDiscoverMutations = [];
     this.lastConsistentDomJson = null;
     this.firstShadowDomInconsistentEvent = null;
-    this.layoutStates = [];
-    this.originalLayouts = [];
   }
 
   public activate(): void {
@@ -75,99 +72,49 @@ export default class Layout implements IPlugin {
     }
   }
 
-  // Recording full layouts of all elements on the page at once is an expensive operation
-  // and can impact user's experience by hanging the page due to occupying the thread for too long
-  // To avoid this, we only assign indices to all elements and build a ShadowDom with dummy layouts
-  // just to have a valid DOM skeleton. After that, we can come back to dummy layouts and populate
-  // them with real data asynchronously (if it takes too long to do at once) by yielding a thread
-  // and returning to it later through a set timeout
   private discoverDom() {
     let discoverTime = getTimestamp();
-    traverseNodeTree(document, this.discoverNode.bind(this));
+    this.discover(document, this.shadowDom, this.states);
+
+    let discover: IDiscover = {
+      dom: documentToArray(this.states)
+    };
+    let discoverEventData: IEventInfo = {
+      type: this.discoverEventName,
+      data: discover,
+      converter: DiscoverConverter
+    };
+    addEvent(discoverEventData);
+
     this.checkConsistency({
       action: LayoutRoutine.DiscoverDom
     });
-    setTimeout(() => {
-      this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
-    }, 0);
+  }
+
+  private discover(root: Node, shadowDom: ShadowDom, states: StateManager): void {
+    let children = root.childNodes;
+    let state = this.discoverNode(root, shadowDom);
+    states.add(state);
+    for (let i = 0; i < children.length; i++) {
+      this.discover(children[i], shadowDom, states);
+    }
   }
 
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
-  private discoverNode(node: Node) {
-    this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
-    let index = getNodeIndex(node);
-    let layout = createGenericLayoutState(node, null);
-    this.layoutStates[index] = layout;
-    this.originalLayouts.push({
-      node,
-      layout
-    });
-  }
-
-  // Go back to the nodes that were stored with a dummy layout during the DOM discovery
-  // and compute valid layouts for those nodes. Since there can be many layouts to process,
-  // this function will yield a thread, if it is taking too long and will return to processing
-  // remaining layouts ASAP through the setTimeout call.
-  // Because of its potential async nature, it is possible that by the time we get to processing
-  // a layout of some element, there has been a mutation on it, so its properties could have changed.
-  // To handle this, until we record all initial layouts, MutationObserver's callback function will
-  // evaluate whether some mutation changes node's attributes/characterData for the first time and,
-  // if it does, store original values. Then, when we record the layout of the mutated node,
-  // we can adjust the current layout JSON with the original values to mimic its initial state.
-  private backfillLayoutsAsync(time: number, onDomDiscoverComplete: () => void) {
-    let yieldTime = getTimestamp(true) + config.timeToYield;
-    let events: IEventData[] = [];
-    while (this.originalLayouts.length > 0 && getTimestamp(true) < yieldTime) {
-      let originalLayout = this.originalLayouts.shift();
-      let originalLayoutState = originalLayout.layout;
-      let currentLayoutState = createLayoutState(originalLayout.node, this.shadowDom);
-      let index = originalLayout.layout.index;
-      currentLayoutState.index = index;
-      currentLayoutState.parent = originalLayoutState.parent;
-      currentLayoutState.previous = originalLayoutState.previous;
-      currentLayoutState.next = originalLayoutState.next;
-
-      let event: IDiscover = {
-        index,
-        action: Action.Discover,
-        state: currentLayoutState
-      };
-
-      events.push({
-        type: this.eventName,
-        data: event,
-        time
-      });
-      this.layoutStates[index] = currentLayoutState;
-    }
-    addMultipleEvents(events);
-
-    // If there are more elements that need to be processed, yield the thread and return ASAP
-    if (this.originalLayouts.length > 0) {
-      setTimeout(() => {
-        this.backfillLayoutsAsync(time, onDomDiscoverComplete);
-      }, 0);
-    } else {
-      onDomDiscoverComplete();
-    }
-  }
-
-  // Mark dom discovery process completed and process mutations that happened on the page up to this point
-  private onDomDiscoverComplete() {
-    this.domDiscoverComplete = true;
-    for (let i = 0; i < this.domPreDiscoverMutations.length; i++) {
-      this.processMultipleNodeEvents(this.domPreDiscoverMutations[i]);
-    }
+  private discoverNode(node: Node, shadowDom: ShadowDom): ILayoutState {
+    shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
+    return createLayoutState(node, shadowDom);
   }
 
   private processMultipleNodeEvents<T extends ILayoutEventInfo>(eventInfos: T[]) {
-    let eventsData: IEventData[] = [];
+    let eventsData: IEventInfo[] = [];
     for (let i = 0; i < eventInfos.length; i++) {
       let eventData = this.createEvent(eventInfos[i]);
       if (eventData) {
         eventsData.push({
           type: this.eventName,
-          data: eventData
+          data: eventData,
+          converter: eventInfos[i].converter
         });
       }
     }
@@ -180,27 +127,27 @@ export default class Layout implements IPlugin {
     switch (eventInfo.action) {
       case Action.Insert:
         let insertedElement = eventInfo.node as Element;
-        let insertEvent = event = eventProvider.createInsert(insertedElement, this.shadowDom, this.mutationSequence);
-        this.layoutStates[index] = insertEvent.state;
+        let insertEvent = event = EventProvider.createInsert(insertedElement, this.shadowDom, this.mutationSequence);
+        this.states.add(insertEvent.state);
         // Watch element for scroll and input change events
         this.watch(insertedElement);
         break;
       case Action.Remove:
         // Index is passed explicitly because indices on removed nodes are cleared,
         // so at this point we can't obtain node's index from the node itself
-        event = eventProvider.createRemove(index, this.mutationSequence);
+        event = EventProvider.createRemove(index, this.mutationSequence);
         break;
       case Action.Move:
         let movedNode = eventInfo.node;
-        event = eventProvider.createMove(movedNode, this.mutationSequence);
+        event = EventProvider.createMove(movedNode, this.mutationSequence);
         break;
       case Action.AttributeUpdate:
-        let previousElementState = this.layoutStates[index] as IElementLayoutState;
+        let previousElementState = this.states.get(index) as IElementLayoutState;
         let updatedElement = eventInfo.node as Element;
         if (previousElementState.tag !== IgnoreTag) {
           let currentAttributes = getElementAttributes(updatedElement);
           let currentLayout = getElementLayoutRectangle(updatedElement);
-          event = eventProvider.createAttributeUpdate(updatedElement, previousElementState, this.mutationSequence);
+          event = EventProvider.createAttributeUpdate(updatedElement, previousElementState, this.mutationSequence);
           previousElementState.attributes = currentAttributes;
           previousElementState.layout = currentLayout;
         }
@@ -208,9 +155,9 @@ export default class Layout implements IPlugin {
         this.watch(updatedElement);
         break;
       case Action.CharacterDataUpdate:
-        let previousTextState = this.layoutStates[index] as ITextLayoutState;
+        let previousTextState = this.states.get(index) as ITextLayoutState;
         let updatedNode = eventInfo.node as CharacterDataNode;
-        event = eventProvider.createCharacterDataUpdate(updatedNode, previousTextState.content , this.mutationSequence);
+        event = EventProvider.createCharacterDataUpdate(updatedNode, previousTextState.content , this.mutationSequence);
         break;
       case Action.Scroll:
       case Action.Input:
@@ -231,7 +178,7 @@ export default class Layout implements IPlugin {
       return;
     }
 
-    let layoutState = this.layoutStates[index] as IElementLayoutState;
+    let layoutState = this.states.get(index) as IElementLayoutState;
     let layout = layoutState.layout;
     let scrollPossible = (layout && ("scrollX" in layout || "scrollY" in layout));
     if (scrollPossible) {
@@ -251,21 +198,21 @@ export default class Layout implements IPlugin {
 
   private onScroll(element: Element) {
     let index = getNodeIndex(element);
-    let layoutState = this.layoutStates[index] as IElementLayoutState;
-    let event = eventProvider.createScroll(element);
+    let layoutState = this.states.get(index) as IElementLayoutState;
+    let event = EventProvider.createScroll(element);
     let newScrollX = Math.round(element.scrollLeft);
     let newScrollY = Math.round(element.scrollTop);
     if (this.checkDistance(layoutState.layout.scrollX, layoutState.layout.scrollY, event.scrollX, event.scrollY)) {
       layoutState.layout.scrollX = newScrollX;
       layoutState.layout.scrollY = newScrollY;
-      addEvent({type: this.eventName, data: event});
+      addEvent({type: this.eventName, data: event, converter: LayoutConverters.scrollToArray});
     }
   }
 
   private onInput(inputElement: InputElement) {
-    let event = eventProvider.createInput(inputElement);
-    (this.layoutStates[getNodeIndex(inputElement)] as IInputLayoutState).value  = event.value;
-    addEvent({type: this.eventName, data: event});
+    let event = EventProvider.createInput(inputElement);
+    (this.states.get(getNodeIndex(inputElement)) as IInputLayoutState).value  = event.value;
+    addEvent({type: this.eventName, data: event, converter: LayoutConverters.inputToArray});
   }
 
   private checkDistance(lastScrollX: number, lastScrollY: number, newScrollX: number, newScrollY: number) {
@@ -295,11 +242,7 @@ export default class Layout implements IPlugin {
 
       if (this.allowMutation()) {
         let events = this.processMutations(summary, time);
-        if (this.domDiscoverComplete) {
-          this.processMultipleNodeEvents(events);
-        } else {
-          this.domPreDiscoverMutations.push(events);
-        }
+        this.processMultipleNodeEvents(events);
       } else {
         debug(`>>> ShadowDom doesn't match PageDOM after mutation batch #${this.mutationSequence}!`);
       }
@@ -322,7 +265,8 @@ export default class Layout implements IPlugin {
         node,
         index: getNodeIndex(node),
         action: Action.Insert,
-        time
+        time,
+        converter: LayoutConverters.insertToArray
       });
     }
 
@@ -333,7 +277,8 @@ export default class Layout implements IPlugin {
         node,
         index: getNodeIndex(node),
         action: Action.Move,
-        time
+        time,
+        converter: LayoutConverters.moveToArray
       });
     }
 
@@ -341,11 +286,13 @@ export default class Layout implements IPlugin {
     for (let i = 0; i < summary.updatedNodes.length; i++) {
       let node = summary.updatedNodes[i].node;
       let action = node.nodeType === Node.ELEMENT_NODE ? Action.AttributeUpdate : Action.CharacterDataUpdate;
+      let converter = node.nodeType === Node.ELEMENT_NODE ? LayoutConverters.attributeUpdateToArray : LayoutConverters.cdataUpdateToArray;
       events.push({
         node,
         index: getNodeIndex(node),
         action,
-        time
+        time,
+        converter
       });
     }
 
@@ -356,7 +303,8 @@ export default class Layout implements IPlugin {
         node: shadowNode.node,
         index: getNodeIndex(shadowNode.node),
         action: Action.Remove,
-        time
+        time,
+        converter: LayoutConverters.removeToArray
       });
       traverseNodeTree(shadowNode, (removedShadowNode: IShadowDomNode) => {
         delete removedShadowNode.node[NodeIndex];
@@ -388,7 +336,7 @@ export default class Layout implements IPlugin {
           this.firstShadowDomInconsistentEvent = evt;
         } else {
           evt.firstEvent = this.firstShadowDomInconsistentEvent;
-          instrument(evt);
+          instrument(evt, InstrumentationCoverters.inconsistentShadowDomToArray);
         }
       } else {
         this.inconsistentShadowDomCount = 0;

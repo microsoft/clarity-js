@@ -7,7 +7,7 @@ export default class Pointer implements IPlugin {
   private eventName = "Pointer";
   private distanceThreshold = 20;
   private timeThreshold = 500;
-  private lastMoveState: IPointerEventState;
+  private lastMoveState: IPointerState;
   private lastMoveTime: number;
 
   public activate() {
@@ -38,7 +38,7 @@ export default class Pointer implements IPlugin {
     }
   }
 
-  private processState(state: IPointerEventState, time: number) {
+  private processState(state: IPointerState, time: number) {
     switch (state.type) {
       case "mousemove":
       case "touchmove":
@@ -48,17 +48,17 @@ export default class Pointer implements IPlugin {
           this.lastMoveState = state;
           this.lastMoveTime = time;
           let eventData: IPointerEventData = { state };
-          addEvent({type: this.eventName, data: eventData});
+          addEvent({type: this.eventName, data: eventData, converter: PointerConverter});
         }
         break;
       default:
         let eventData: IPointerEventData = { state };
-        addEvent({type: this.eventName, data: eventData});
+        addEvent({type: this.eventName, data: eventData, converter: PointerConverter});
         break;
     }
   }
 
-  private checkDistance(stateOne: IPointerEventState, stateTwo: IPointerEventState) {
+  private checkDistance(stateOne: IPointerState, stateTwo: IPointerState) {
     let dx = stateOne.x - stateTwo.x;
     let dy = stateOne.y - stateTwo.y;
     return (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold);

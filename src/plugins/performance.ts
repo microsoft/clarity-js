@@ -1,5 +1,7 @@
 import { IPerformanceResourceTiming, IPlugin } from "../../clarity";
 import { config } from "../config";
+import * as InstrumentationCoverters from "../converters/instrumentation";
+import * as PerformanceConverters from "../converters/performance";
 import { addEvent, instrument } from "../core";
 import { mapProperties } from "../utils";
 
@@ -68,10 +70,10 @@ export default class PerformanceProfiler implements IPlugin {
       formattedTiming = mapProperties(formattedTiming, (name: string, value) => {
         return (formattedTiming[name] === 0) ? 0 : Math.round(formattedTiming[name] - formattedTiming.navigationStart);
       }, false);
-      let navigationTimingEventData = {
+      let navigationTimingEventData: INavigationTimingEventData = {
         timing: formattedTiming
       };
-      addEvent({type: "NavigationTiming", data: navigationTimingEventData});
+      addEvent({type: "NavigationTiming", data: navigationTimingEventData, converter: PerformanceConverters.navigationTimingToArray});
     } else {
       this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
@@ -86,7 +88,7 @@ export default class PerformanceProfiler implements IPlugin {
     if (entries.length < this.lastInspectedEntryIndex + 1) {
       if (!this.stateError) {
         this.stateError = true;
-        addEvent({type: "PerformanceStateError", data: {}});
+        instrument({ type: Instrumentation.PerformanceStateError }, InstrumentationCoverters.instrumentationToArray);
       }
 
       this.lastInspectedEntryIndex = -1;
@@ -120,7 +122,7 @@ export default class PerformanceProfiler implements IPlugin {
       let resourceTimingEventData = {
         entries: entryInfos
       };
-      addEvent({type: "ResourceTiming", data: resourceTimingEventData});
+      addEvent({type: "ResourceTiming", data: resourceTimingEventData, converter: PerformanceConverters.resourceTimingsToArray});
     }
 
     this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);

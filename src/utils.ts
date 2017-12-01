@@ -1,5 +1,6 @@
 import { IClarityAssertFailedEventState, Instrumentation } from "../clarity";
 import { config } from "./config";
+import * as InstrumentationConverters from "./converters/instrumentation";
 import { instrument } from "./core";
 
 // Credit: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
@@ -90,7 +91,7 @@ export function assert(condition: boolean, source: string, comment: string) {
       source,
       comment
     };
-    instrument(eventState);
+    instrument(eventState, InstrumentationConverters.assertFailedToArray);
   }
 }
 

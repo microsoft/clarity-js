@@ -1,5 +1,6 @@
 import { IJsErrorEventState, Instrumentation, IPlugin } from "../../clarity";
 import { bind, instrument } from "../core";
+import * as instrumentationCoverters from "./../converters/instrumentation";
 
 export default class ErrorMonitor implements IPlugin {
 
@@ -35,5 +36,5 @@ export function logError(errorToLog: Event) {
         colno,
         source
     };
-    instrument(jsErrorEventData);
+    instrument(jsErrorEventData, instrumentationCoverters.jsErrorToArray);
 }

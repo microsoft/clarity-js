@@ -85,7 +85,7 @@ export function createCharacterDataUpdate(node: CharacterDataNode, lastContent: 
   if (content !== lastContent) {
     event = {
       index: getNodeIndex(node),
-      action: Action.AttributeUpdate,
+      action: Action.CharacterDataUpdate,
       content,
       mutationSequence
     };
