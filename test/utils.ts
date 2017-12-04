@@ -3,6 +3,8 @@ import { ICompressedBatchMessage, IEnvelope, IEvent, IWorkerMessage, WorkerMessa
 import compress from "../src/compress";
 import { addEvent, onWorkerMessage } from "../src/core";
 import { guid } from "../src/utils";
+import { mockDataToArray } from "./convert";
+import EventFromArrayConverter from "./convert";
 import { getSentEvents, getWorkerMessages } from "./testsetup";
 
 export const MockEventName = "ClarityTestMockEvent";
@@ -30,9 +32,10 @@ export function getEventsByType(events: IEvent[], eventType: string): IEvent[] {
 }
 
 export function postCompressedBatch(events: IEvent[], envelope?: IEnvelope) {
+  let eventArrays = events.map((e) => EventToArray(e));
   let mockNextBatch: string[] = [];
-  for (let i = 0; i < events.length; i++) {
-    mockNextBatch.push(JSON.stringify(events[i]));
+  for (let i = 0; i < eventArrays.length; i++) {
+    mockNextBatch.push(JSON.stringify(eventArrays[i]));
   }
   envelope = envelope || getMockEnvelope();
   let mockRawData = `{"envelope":${JSON.stringify(envelope)},"events":[${mockNextBatch.join()}]}`;
@@ -41,7 +44,7 @@ export function postCompressedBatch(events: IEvent[], envelope?: IEnvelope) {
     type: WorkerMessageType.CompressedBatch,
     compressedData: mockCompressedData,
     rawData: mockRawData,
-    eventCount: events.length
+    eventCount: eventArrays.length
   };
   let mockCompressedBatchMessageEvent = {
     data: mockCompressedBatchMessage
@@ -68,12 +71,34 @@ export function getMockMetadata() {
   return mockMetadata;
 }
 
-export function getMockEvent(eventName?: string) {
-  let mockEvent: IEvent = {
-    id: -1,
-    data: {},
+export function getMockEventInfo(data?: any): IEventInfo {
+  let mockEvent: IEventInfo = {
+    type: MockEventName,
+    data: data || {},
     time: -1,
-    type: eventName || MockEventName
+    converter: mockDataToArray
   };
   return mockEvent;
+}
+
+export function getMockEvent(data?: any): IEvent {
+  let mockEventInfo = getMockEventInfo(data);
+  let mockEvent: IEvent = {
+    type: mockEventInfo.type,
+    id: -1,
+    data: mockEventInfo.data,
+    time: mockEventInfo.time,
+    converter: mockEventInfo.converter
+  };
+  return mockEvent;
+}
+
+export function payloadToEvents(payload: IPayload): IEvent[] {
+  let eventArrays = payload.events;
+  let events: IEvent[] = [];
+  for (let i = 0; i < eventArrays.length; i++) {
+    let event = EventFromArrayConverter(eventArrays[i]);
+    events.push(event);
+  }
+  return events;
 }

@@ -1,6 +1,5 @@
 import { IJsErrorEventState, Instrumentation, IPlugin } from "../../clarity";
 import { bind, instrument } from "../core";
-import * as instrumentationCoverters from "./../converters/instrumentation";
 
 export default class ErrorMonitor implements IPlugin {
 

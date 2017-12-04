@@ -7,8 +7,8 @@ import * as chai from "chai";
 
 let assert = chai.assert;
 let resourceTimingEventName = "ResourceTiming";
-let stateErrorEventName = "PerformanceStateError";
 let navigationTimingEventName = "NavigationTiming";
+let instrumentationEventName = "Instrumentation";
 let performancePollTimeoutLength = 1000;
 
 describe("Performance Tests", () => {
@@ -36,7 +36,7 @@ describe("Performance Tests", () => {
 
     let timing = events[0].data && events[0].data.timing;
     assert.equal(!!timing, true);
-    assert.equal(timing.dummyResponseEnd, dummyPerformance.timing.dummyResponseEnd);
+    assert.equal(timing.responseEnd, dummyPerformance.timing.responseEnd);
 
     done();
   });
@@ -82,7 +82,7 @@ describe("Performance Tests", () => {
     let events = stopObserving();
     assert.equal(events.length, 1);
 
-    stopObserving = observeEvents(stateErrorEventName);
+    stopObserving = observeEvents(instrumentationEventName);
     dummyResourceTimings = [];
     fastForwardToNextPerformancePoll();
 
@@ -136,7 +136,7 @@ describe("Performance Tests", () => {
     dummyPerformance = {
       timing: {
         loadEventEnd: 1,
-        dummyResponseEnd: -1,
+        responseEnd: -1,
         navigationStart: 0,
       },
       getEntriesByType: dummyGetEntriesByType

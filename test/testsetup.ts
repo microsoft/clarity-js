@@ -1,10 +1,12 @@
 import { IAddEventMessage, IConfig, IWorkerMessage, WorkerMessageType } from "../clarity";
 import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
+import { addEvent } from "../src/core";
 import { guid, mapProperties } from "../src/utils";
 import { testConfig } from "./clarity";
+import EventConverter from "./convert";
 
-let sentEvents = [];
+let sentEvents: IEvent[] = [];
 let workerMessages: IWorkerMessage[] = [];
 let workerPostMessageSpy: jasmine.Spy = null;
 let originalConfig: IConfig = config;
@@ -33,7 +35,7 @@ export function activateCore(config?: IConfig) {
   waitForStartupAcvitityToFinish();
 }
 
-export function getSentEvents() {
+export function getSentEvents(): IEvent[] {
   return sentEvents;
 }
 
@@ -67,7 +69,10 @@ function mockWorkerOnMessage(message: any) {
     switch (message.type) {
       case WorkerMessageType.AddEvent:
         let addEventMsg = message as IAddEventMessage;
-        sentEvents.push(addEventMsg.event);
+
+        // Events are passed to the worker in the array form, so we need to convert them back to JSON here
+        let originalEvent = EventConverter(addEventMsg.event);
+        sentEvents.push(originalEvent);
         break;
       default:
         break;

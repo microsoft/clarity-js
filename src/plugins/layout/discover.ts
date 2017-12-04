@@ -1,4 +1,4 @@
-import { layoutStateToArray } from "../../converters/layout";
+import { layoutStateToArray } from "../../../converters/toarray/layout";
 import StateManager from "./statemanager";
 import { getNodeIndex } from "./stateprovider";
 

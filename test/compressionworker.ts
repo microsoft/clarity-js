@@ -3,8 +3,9 @@ import { IAddEventMessage, ICompressedBatchMessage, IEvent, Instrumentation,
 import { createCompressionWorker } from "./../src/compressionworker";
 import { config } from "./../src/config";
 import * as core from "./../src/core";
+import { mockDataToArray } from "./convert";
 import { cleanupFixture, setupFixture } from "./testsetup";
-import { getMockEnvelope, getMockEvent, getMockMetadata, MockEventName, observeEvents } from "./utils";
+import { getMockEnvelope, getMockEvent, getMockMetadata, MockEventName, observeEvents, payloadToEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -31,15 +32,15 @@ describe("Compression Worker Tests", () => {
 
   it("validates that events are batched for upload correctly when total length is below the limit", (done: DoneFn) => {
     let worker = createTestWorker();
-    let firstMockEventName = "FirstMockEvent";
-    let secondMockEventName = "SecondMockEvent";
-    let firstMockEvent = getMockEvent(firstMockEventName);
-    let secondMockEvent = getMockEvent(secondMockEventName);
+    let firstMockData = "FirstMockEvent";
+    let secondMockData = "SecondMockEvent";
+    let firstMockEvent = getMockEvent(firstMockData);
+    let secondMockEvent = getMockEvent(secondMockData);
     let addEventMessage = createAddEventMessage(firstMockEvent);
     let forceCompressionMsg = createForceCompressionMessage();
 
     worker.postMessage(addEventMessage);
-    addEventMessage.event = secondMockEvent;
+    addEventMessage.event = EventToArrayConverter(secondMockEvent);
     worker.postMessage(addEventMessage);
     worker.postMessage(forceCompressionMsg);
 
@@ -47,28 +48,25 @@ describe("Compression Worker Tests", () => {
       assert.equal(message.type, WorkerMessageType.CompressedBatch);
       let compressedBatchMessage = message as ICompressedBatchMessage;
       let payload = JSON.parse(compressedBatchMessage.rawData);
-      assert.equal(payload.events.length, 2);
-      assert.equal(payload.events[0].type, firstMockEventName);
-      assert.equal(payload.events[1].type, secondMockEventName);
+      let events = payloadToEvents(payload);
+      assert.equal(events.length, 2);
+      assert.equal(events[0].data, firstMockData);
+      assert.equal(events[1].data, secondMockData);
       done();
     };
   });
 
   it("validates that events are batched for upload correctly when total length is above the limit", (done: DoneFn) => {
     let worker = createTestWorker();
-    let firstMockEventName = "FirstMockEvent";
-    let secondMockEventName = "SecondMockEvent";
-    let firstMockEvent = getMockEvent(firstMockEventName);
-    let secondMockEvent = getMockEvent(secondMockEventName);
-    let firstMockData = Array(Math.round(config.batchLimit * (2 / 3))).join("1");
-    let secondMockData = Array(Math.round(config.batchLimit / 2)).join("2");
-    firstMockEvent.data = { data: firstMockData };
-    secondMockEvent.data = { data: secondMockData };
+    let firstMockEventData = Array(Math.round(config.batchLimit * (2 / 3))).join("1");
+    let secondMockEventData = Array(Math.round(config.batchLimit / 2)).join("2");
+    let firstMockEvent = getMockEvent(firstMockEventData);
+    let secondMockEvent = getMockEvent(secondMockEventData);
     let addEventMessage = createAddEventMessage(firstMockEvent);
     let forceCompressionMsg = createForceCompressionMessage();
 
     worker.postMessage(addEventMessage);
-    addEventMessage.event = secondMockEvent;
+    addEventMessage.event = EventToArrayConverter(secondMockEvent);
     worker.postMessage(addEventMessage);
     worker.postMessage(forceCompressionMsg);
     scheduleTestFailureTimeout(done, "Worker has not responded in allocated time");
@@ -87,10 +85,12 @@ describe("Compression Worker Tests", () => {
 
     function performAssertions() {
       assert.equal(payloads.length, 2);
-      assert.equal(payloads[0].events.length, 1);
-      assert.equal(payloads[0].events[0].type, firstMockEventName);
-      assert.equal(payloads[1].events.length, 1);
-      assert.equal(payloads[1].events[0].type, secondMockEventName);
+      let firstPayloadEvents = payloadToEvents(payloads[0]);
+      let secondPayloadEvents = payloadToEvents(payloads[1]);
+      assert.equal(firstPayloadEvents.length, 1);
+      assert.equal(firstPayloadEvents[0].data, firstMockEventData);
+      assert.equal(secondPayloadEvents.length, 1);
+      assert.equal(secondPayloadEvents[0].data, secondMockEventData);
       done();
     }
   });
@@ -109,23 +109,26 @@ describe("Compression Worker Tests", () => {
       assert.equal(message.type, WorkerMessageType.CompressedBatch);
       let compressedBatchMessage = message as ICompressedBatchMessage;
       let payload = JSON.parse(compressedBatchMessage.rawData);
-      assert.equal(payload.events.length, 1);
-      assert.equal(payload.events[0].type, MockEventName);
+      let events = payloadToEvents(payload);
+      assert.equal(events.length, 1);
+      assert.equal(events[0].type, MockEventName);
       done();
     };
   });
 
   it("validates that payloads consisting of a single XHR error event are not uploaded", (done: DoneFn) => {
     let worker = createTestWorker();
-    let mockXhrErrorEvent = getMockEvent(InstrumentationEventName);
+    let mockXhrErrorEvent = getMockEvent();
     let mockXhrErrorEventState = {
       type: Instrumentation.XhrError
     } as IXhrErrorEventData;
+    mockXhrErrorEvent.type = InstrumentationEventName;
     mockXhrErrorEvent.data = mockXhrErrorEventState;
+    mockXhrErrorEvent.converter = xhrErrorToArray;
     let addEventMessage: IAddEventMessage = {
       type: WorkerMessageType.AddEvent,
       time: -1,
-      event: mockXhrErrorEvent
+      event: EventToArrayConverter(mockXhrErrorEvent)
     };
     let forceCompressionMsg = createForceCompressionMessage();
 
@@ -145,7 +148,7 @@ describe("Compression Worker Tests", () => {
     processMessage(message);
   }
 
-  function createTestWorker() {
+  function createTestWorker(): Worker {
     let worker = createCompressionWorker(getMockMetadata(), onWorkerMessage);
     (worker as any).isTestWorker = true;
     return worker;
@@ -171,7 +174,7 @@ describe("Compression Worker Tests", () => {
     let addEventMessage: IAddEventMessage = {
       type: WorkerMessageType.AddEvent,
       time: -1,
-      event
+      event: EventToArrayConverter(event)
     };
     return addEventMessage;
   }

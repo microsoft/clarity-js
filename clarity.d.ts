@@ -116,11 +116,9 @@ interface IEventInfo {
   time?: number;
 }
 
-interface IEvent {
-  type: string; /* Event type */
+interface IEvent extends IEventInfo {
   id: number; /* Event ID */
   time: number; /* Time relative to page start */
-  data: any;  /* Verbose data JSON converted to a non-verbose array */
 }
 
 // IEvent object converted to a value array representation

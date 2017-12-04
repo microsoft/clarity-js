@@ -3,7 +3,8 @@ import { config } from "../src/config";
 import * as core from "../src/core";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, postCompressedBatch } from "./utils";
+import { getMockEnvelope, getMockEvent, getMockEventInfo, MockEventName } from "./utils";
+import { observeEvents, observeWorkerMessages, payloadToEvents, postCompressedBatch } from "./utils";
 
 import * as chai from "chai";
 let assert = chai.assert;
@@ -110,8 +111,8 @@ describe("Core Tests", () => {
 
     // Part 1: Mock an XHR failure, so that dropped payload is stored for re-delivery
     let stopObserving = observeEvents();
-    let firstMockEventName = "FirstMockEvent";
-    let firstMockEvent = getMockEvent(firstMockEventName);
+    let firstMockEventData = "FirstMockEvent";
+    let firstMockEvent = getMockEvent(firstMockEventData);
     let firstEnvelope = getMockEnvelope(0);
     postCompressedBatch([firstMockEvent], firstEnvelope);
 
@@ -123,8 +124,8 @@ describe("Core Tests", () => {
     assert.equal(events[0].data.requestStatus, 400);
 
     // Part 2: Successfully send second payload, which should trigger re-send of the first payload
-    let secondMockEventName = "SecondMockEvent";
-    let secondMockEvent = getMockEvent(secondMockEventName);
+    let secondMockEventData = "SecondMockEvent";
+    let secondMockEvent = getMockEvent(secondMockEventData);
     let secondEnvelope = getMockEnvelope(1);
     postCompressedBatch([secondMockEvent], secondEnvelope);
 
@@ -134,21 +135,24 @@ describe("Core Tests", () => {
     let firstPayload = JSON.parse(uncompress(attemptedPayloads[0]));
     let secondPayload = JSON.parse(uncompress(attemptedPayloads[1]));
     let thirdPayload = JSON.parse(uncompress(attemptedPayloads[2]));
+    let firstPayloadEvents = payloadToEvents(firstPayload);
+    let secondPayloadEvents = payloadToEvents(secondPayload);
+    let thirdPayloadEvents = payloadToEvents(thirdPayload);
 
     // Verify first payload
     assert.equal(firstPayload.envelope.sequenceNumber, 0);
-    assert.equal(firstPayload.events.length, 1);
-    assert.equal(firstPayload.events[0].type, firstMockEventName);
+    assert.equal(firstPayloadEvents.length, 1);
+    assert.equal(firstPayloadEvents[0].data, firstMockEventData);
 
     // Verify second payload
     assert.equal(secondPayload.envelope.sequenceNumber, 1);
-    assert.equal(secondPayload.events.length, 1);
-    assert.equal(secondPayload.events[0].type, secondMockEventName);
+    assert.equal(secondPayloadEvents.length, 1);
+    assert.equal(secondPayloadEvents[0].data, secondMockEventData);
 
     // Verify third payload
     assert.equal(thirdPayload.envelope.sequenceNumber, 0);
-    assert.equal(thirdPayload.events.length, 1);
-    assert.equal(thirdPayload.events[0].type, firstMockEventName);
+    assert.equal(thirdPayloadEvents.length, 1);
+    assert.equal(thirdPayloadEvents[0].data, firstMockEventData);
 
     done();
   });
@@ -249,8 +253,8 @@ describe("Core Tests", () => {
   });
 
   it("validates that force upload message is sent after config.delay milliseconds without new events", (done: DoneFn) => {
-    let mockEvent = getMockEvent();
-    core.addEvent(mockEvent);
+    let mockEventInfo = getMockEventInfo();
+    core.addEvent(mockEventInfo);
 
     let stopObserving = observeWorkerMessages();
     // Fast forward to force upload
@@ -263,12 +267,12 @@ describe("Core Tests", () => {
   });
 
   it("validates that force upload timeout is pushed back with each new event", (done: DoneFn) => {
-    let mockEvent = getMockEvent();
+    let mockEventInfo = getMockEventInfo();
     let eventCount = 10;
     let stopObserving = observeWorkerMessages();
 
     for (let i = 0; i < eventCount; i++) {
-      core.addEvent(mockEvent);
+      core.addEvent(mockEventInfo);
       jasmine.clock().tick(config.delay * (2 / 3));
     }
     jasmine.clock().tick(config.delay * (1 / 3));
@@ -284,15 +288,15 @@ describe("Core Tests", () => {
 
   it("validates that pending events are sent on teardown", (done: DoneFn) => {
     let sentBytes: string[] = [];
-    let mockEvent = getMockEvent();
+    let mockEventInfo = getMockEventInfo();
     config.uploadHandler = mockUploadHandler;
-    core.addEvent(mockEvent);
+    core.addEvent(mockEventInfo);
     core.teardown();
 
     assert.equal(sentBytes.length, 1);
 
     let uncompressedPayload = JSON.parse(uncompress(sentBytes[0]));
-    let events = uncompressedPayload.events as IEvent[];
+    let events = payloadToEvents(uncompressedPayload);
     assert.equal(events.length, 2);
     assert.equal(events[0].type, MockEventName);
     assert.equal(events[1].type, "Instrumentation");
