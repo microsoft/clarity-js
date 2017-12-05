@@ -28,12 +28,11 @@ export function logError(errorToLog: Event) {
     let stack = error.stack;
 
     let jsErrorEventData: IJsErrorEventData = {
-        type: Instrumentation.JsError,
         message,
         stack,
         lineno,
         colno,
         source
     };
-    instrument(jsErrorEventData, instrumentationCoverters.jsErrorToArray);
+    instrument(Instrumentation.JsError, jsErrorEventData);
 }

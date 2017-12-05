@@ -1,12 +1,19 @@
-import { attributeUpdateToArray } from "./layout";
+let instrumentationConverters = [];
+instrumentationConverters[Instrumentation.JsError] = jsErrorToArray;
+instrumentationConverters[Instrumentation.MissingFeature] = missingFeatureToArray;
+instrumentationConverters[Instrumentation.XhrError] = xhrErrorToArray;
+instrumentationConverters[Instrumentation.TotalByteLimitExceeded] = byteLimitExceededToArray;
+instrumentationConverters[Instrumentation.Teardown] = noDataToArray;
+instrumentationConverters[Instrumentation.PerformanceStateError] = noDataToArray;
+instrumentationConverters[Instrumentation.ClarityAssertFailed] = assertFailedToArray;
+instrumentationConverters[Instrumentation.ClarityDuplicated] = clarityDuplicatedToArray;
+instrumentationConverters[Instrumentation.ClarityActivateError] = clarityActivateErrorToArray;
+instrumentationConverters[Instrumentation.ShadowDomInconsistent] = inconsistentShadowDomToArray;
 
-export function instrumentationToArray(instrumentationData: IInstrumentationEventData) {
-  return [instrumentationData.type];
-}
+export default instrumentationConverters;
 
-export function jsErrorToArray(jsErrorData: IJsErrorEventData) {
+function jsErrorToArray(jsErrorData: IJsErrorEventData) {
   let data = [
-    jsErrorData.type,
     jsErrorData.source,
     jsErrorData.message,
     jsErrorData.stack,
@@ -16,17 +23,15 @@ export function jsErrorToArray(jsErrorData: IJsErrorEventData) {
   return data;
 }
 
-export function missingFeatureToArray(missingFeatureData: IMissingFeatureEventData) {
+function missingFeatureToArray(missingFeatureData: IMissingFeatureEventData) {
   let data = [
-    missingFeatureData.type,
     missingFeatureData.missingFeatures
   ];
   return data;
 }
 
-export function xhrErrorToArray(xhrErrorData: IXhrErrorEventData) {
+function xhrErrorToArray(xhrErrorData: IXhrErrorEventData) {
   let data = [
-    xhrErrorData.type,
     xhrErrorData.requestStatus,
     xhrErrorData.sequenceNumber,
     xhrErrorData.compressedLength,
@@ -38,34 +43,41 @@ export function xhrErrorToArray(xhrErrorData: IXhrErrorEventData) {
   return data;
 }
 
-export function byteLimitExceededToArray(byteLimitData: ITotalByteLimitExceededEventData) {
+function byteLimitExceededToArray(byteLimitData: ITotalByteLimitExceededEventData) {
   let data = [
-    byteLimitData.type,
     byteLimitData.bytes
   ];
   return data;
 }
 
-export function assertFailedToArray(failedAssertData: IClarityAssertFailedEventData) {
+function noDataToArray() {
+  return null;
+}
+
+function assertFailedToArray(failedAssertData: IClarityAssertFailedEventData) {
   let data = [
-    failedAssertData.type,
     failedAssertData.source,
     failedAssertData.comment
   ];
   return data;
 }
 
-export function clarityDuplicatedToArray(clarityDuplicatedData: IClarityDuplicatedEventData) {
+function clarityDuplicatedToArray(clarityDuplicatedData: IClarityDuplicatedEventData) {
   let data = [
-    clarityDuplicatedData.type,
     clarityDuplicatedData.currentImpressionId
   ];
   return data;
 }
 
-export function inconsistentShadowDomToArray(inconsistentShadowDomData: IShadowDomInconsistentEventData) {
+function clarityActivateErrorToArray(clarityActivateErrorData: IClarityActivateErrorEventData) {
   let data = [
-    inconsistentShadowDomData.type,
+    clarityActivateErrorData.error
+  ];
+  return data;
+}
+
+function inconsistentShadowDomToArray(inconsistentShadowDomData: IShadowDomInconsistentEventData) {
+  let data = [
     inconsistentShadowDomData.dom,
     inconsistentShadowDomData.shadowDom,
     inconsistentShadowDomData.lastConsistentShadowDom,
@@ -73,14 +85,6 @@ export function inconsistentShadowDomToArray(inconsistentShadowDomData: IShadowD
     "firstEvent" in inconsistentShadowDomData
       ? inconsistentShadowDomToArray(inconsistentShadowDomData.firstEvent)
       : null
-  ];
-  return data;
-}
-
-export function clarityActivateErrorToArray(clarityActivateErrorData: IClarityActivateErrorEventData) {
-  let data = [
-    clarityActivateErrorData.type,
-    clarityActivateErrorData.error
   ];
   return data;
 }

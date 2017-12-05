@@ -1,5 +1,10 @@
-export function navigationTimingToArray(timingData: INavigationTimingEventData) {
-  let timing = timingData.timing;
+let performanceConverters = [];
+performanceConverters[PerformanceEventType.NavigationTiming] = navigationTimingToArray;
+performanceConverters[PerformanceEventType.ResourceTiming] = resourceTimingsToArray;
+
+export default performanceConverters;
+
+function navigationTimingToArray(timing: IPerformanceNavigationTiming) {
   let timingArray = [timing.connectEnd,
     timing.connectStart,
     timing.domainLookupEnd,
@@ -23,17 +28,16 @@ export function navigationTimingToArray(timingData: INavigationTimingEventData) 
     timing.unloadEventStart,
     timing.secureConnectionStart
   ];
-  let data = [timingArray];
+  let data = timingArray;
   return data;
 }
 
-export function resourceTimingsToArray(resourceTimings: IPerformanceResourceTimingEventData) {
-  let entries = resourceTimings.entries;
+function resourceTimingsToArray(entries: IPerformanceResourceTiming[]) {
   let entriesArray = [];
-  for (let i = 0; i < resourceTimings.entries.length; i++) {
-    entriesArray.push(resourceTimingEntryToArray(resourceTimings.entries[i]));
+  for (let i = 0; i < entries.length; i++) {
+    entriesArray.push(resourceTimingEntryToArray(entries[i]));
   }
-  let data = [entriesArray];
+  let data = entriesArray;
   return data;
 }
 

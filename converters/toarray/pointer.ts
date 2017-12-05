@@ -1,8 +1,9 @@
-export default function(pointerData: IPointerEventData) {
-  return pointerStateToArray(pointerData.state);
-}
+let pointerConverters = [];
+pointerConverters[PointerEventType.Pointer] = pointerToArray;
 
-function pointerStateToArray(pointerState: IPointerState) {
+export default pointerConverters;
+
+function pointerToArray(pointerState: IPointerState) {
   let data = [
     pointerState.index,
     pointerState.type,

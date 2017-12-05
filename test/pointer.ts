@@ -6,7 +6,6 @@ import { observeEvents } from "./utils";
 import * as chai from "chai";
 
 let distanceThreshold = 20;
-let eventName = "Pointer";
 let timeThreshold = 500;
 let assert = chai.assert;
 
@@ -19,7 +18,7 @@ describe("Pointer Tests", () => {
 
   it("validates that mouse events are processed by clarity", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Pointer);
     document.addEventListener("click", callback);
 
     // Trigger mousemove events followed by a click event
@@ -34,13 +33,13 @@ describe("Pointer Tests", () => {
       document.removeEventListener("click", callback);
       let events = stopObserving();
       assert.equal(events.length, 4);
-      assert.equal(events[0].data.state.type, "mousemove");
-      assert.equal(events[0].data.state.x, x);
-      assert.equal(events[1].data.state.type, "mousemove");
-      assert.equal(events[1].data.state.x, x + xDelta);
-      assert.equal(events[2].data.state.type, "mousemove");
-      assert.equal(events[2].data.state.x, x + (xDelta * 2));
-      assert.equal(events[3].data.state.type, "click");
+      assert.equal(events[0].data.type, "mousemove");
+      assert.equal(events[0].data.x, x);
+      assert.equal(events[1].data.type, "mousemove");
+      assert.equal(events[1].data.x, x + xDelta);
+      assert.equal(events[2].data.type, "mousemove");
+      assert.equal(events[2].data.x, x + (xDelta * 2));
+      assert.equal(events[3].data.type, "click");
       done();
     }
   });
@@ -48,7 +47,7 @@ describe("Pointer Tests", () => {
   // Make sure that we don't record mouse events that are too close to each other
   it("validates that mouse events are throttled by distance", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Pointer);
     document.addEventListener("click", callback);
 
     // Trigger mousemove events followed by a click event
@@ -63,11 +62,11 @@ describe("Pointer Tests", () => {
       document.removeEventListener("click", callback);
       let events = stopObserving();
       assert.equal(events.length, 3);
-      assert.equal(events[0].data.state.type, "mousemove");
-      assert.equal(events[0].data.state.x, x);
-      assert.equal(events[1].data.state.type, "mousemove");
-      assert.equal(events[1].data.state.x, x + (xDelta * 2));
-      assert.equal(events[2].data.state.type, "click");
+      assert.equal(events[0].data.type, "mousemove");
+      assert.equal(events[0].data.x, x);
+      assert.equal(events[1].data.type, "mousemove");
+      assert.equal(events[1].data.x, x + (xDelta * 2));
+      assert.equal(events[2].data.type, "click");
       done();
     }
   });
@@ -75,7 +74,7 @@ describe("Pointer Tests", () => {
   // Make sure that we don't record mouse events that are too close to each other
   it("validates that mouse events are throttled by time", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Pointer);
     document.addEventListener("click", callback);
 
     // Trigger mousemove events followed by a click event
@@ -95,11 +94,11 @@ describe("Pointer Tests", () => {
       document.removeEventListener("click", callback);
       let events = stopObserving();
       assert.equal(events.length, 3);
-      assert.equal(events[0].data.state.type, "mousemove");
-      assert.equal(events[0].data.state.x, x);
-      assert.equal(events[1].data.state.type, "mousemove");
-      assert.equal(events[1].data.state.x, x);
-      assert.equal(events[2].data.state.type, "click");
+      assert.equal(events[0].data.type, "mousemove");
+      assert.equal(events[0].data.x, x);
+      assert.equal(events[1].data.type, "mousemove");
+      assert.equal(events[1].data.x, x);
+      assert.equal(events[2].data.type, "click");
       done();
     }
   });

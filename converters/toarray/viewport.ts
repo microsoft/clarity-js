@@ -1,4 +1,9 @@
-export default function(viewportData: IViewportEventData) {
+let viewportConverters = [];
+viewportConverters[ViewportEventType.Viewport] = viewportToArray;
+
+export default viewportConverters;
+
+function viewportToArray(viewportData: IViewportEventData) {
   let data = [
     viewportRectangleToArray(viewportData.viewport),
     documentSizeToArray(viewportData.document),

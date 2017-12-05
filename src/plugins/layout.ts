@@ -1,7 +1,6 @@
 import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
   Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode, LayoutRoutine,
   NumberJson, Source } from "../../clarity";
-import * as LayoutConverters from "../../converters/toarray/layout";
 import { config } from "../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "../core";
 import { debug, isNumber, traverseNodeTree } from "../utils";
@@ -14,8 +13,6 @@ import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } 
 import { getNodeIndex, IgnoreTag, NodeIndex, shouldIgnoreNode } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
-  private eventName = "Layout";
-  private discoverEventName = "Discover";
   private distanceThreshold = 5;
   private shadowDom: ShadowDom;
   private states: StateManager;
@@ -78,9 +75,9 @@ export default class Layout implements IPlugin {
       dom: documentToArray(this.states)
     };
     let discoverEventData: IEventInfo = {
-      type: this.discoverEventName,
-      data: discover,
-      converter: DiscoverConverter
+      origin: Origin.Discover,
+      type: DiscoverEventType.Discover,
+      data: discover
     };
     addEvent(discoverEventData);
 
@@ -110,9 +107,9 @@ export default class Layout implements IPlugin {
       let eventData = this.createEvent(eventInfos[i]);
       if (eventData) {
         eventsData.push({
-          type: this.eventName,
+          origin: Origin.Layout,
+          type: eventInfos[i].action,
           data: eventData,
-          converter: eventInfos[i].converter
         });
       }
     }
@@ -203,14 +200,14 @@ export default class Layout implements IPlugin {
     if (this.checkDistance(layoutState.layout.scrollX, layoutState.layout.scrollY, event.scrollX, event.scrollY)) {
       layoutState.layout.scrollX = newScrollX;
       layoutState.layout.scrollY = newScrollY;
-      addEvent({type: this.eventName, data: event, converter: LayoutConverters.scrollToArray});
+      addEvent({origin: Origin.Layout, type: Action.Scroll, data: event });
     }
   }
 
   private onInput(inputElement: InputElement) {
     let event = EventProvider.createInput(inputElement);
     (this.states.get(getNodeIndex(inputElement)) as IInputLayoutState).value  = event.value;
-    addEvent({type: this.eventName, data: event, converter: LayoutConverters.inputToArray});
+    addEvent({origin: Origin.Layout, type: Action.Input, data: event});
   }
 
   private checkDistance(lastScrollX: number, lastScrollY: number, newScrollX: number, newScrollY: number) {
@@ -263,8 +260,7 @@ export default class Layout implements IPlugin {
         node,
         index: getNodeIndex(node),
         action: Action.Insert,
-        time,
-        converter: LayoutConverters.insertToArray
+        time
       });
     }
 
@@ -275,8 +271,7 @@ export default class Layout implements IPlugin {
         node,
         index: getNodeIndex(node),
         action: Action.Move,
-        time,
-        converter: LayoutConverters.moveToArray
+        time
       });
     }
 
@@ -284,13 +279,11 @@ export default class Layout implements IPlugin {
     for (let i = 0; i < summary.updatedNodes.length; i++) {
       let node = summary.updatedNodes[i].node;
       let action = node.nodeType === Node.ELEMENT_NODE ? Action.AttributeUpdate : Action.CharacterDataUpdate;
-      let converter = node.nodeType === Node.ELEMENT_NODE ? LayoutConverters.attributeUpdateToArray : LayoutConverters.cdataUpdateToArray;
       events.push({
         node,
         index: getNodeIndex(node),
         action,
-        time,
-        converter
+        time
       });
     }
 
@@ -301,8 +294,7 @@ export default class Layout implements IPlugin {
         node: shadowNode.node,
         index: getNodeIndex(shadowNode.node),
         action: Action.Remove,
-        time,
-        converter: LayoutConverters.removeToArray
+        time
       });
       traverseNodeTree(shadowNode, (removedShadowNode: IShadowDomNode) => {
         delete removedShadowNode.node[NodeIndex];
@@ -324,7 +316,6 @@ export default class Layout implements IPlugin {
           return parseInt((node as IShadowDomNode).id, 10);
         });
         let evt: IShadowDomInconsistentEventData = {
-          type: Instrumentation.ShadowDomInconsistent,
           dom: domJson,
           shadowDom: shadowDomJson,
           lastConsistentShadowDom: this.lastConsistentDomJson,
@@ -334,7 +325,7 @@ export default class Layout implements IPlugin {
           this.firstShadowDomInconsistentEvent = evt;
         } else {
           evt.firstEvent = this.firstShadowDomInconsistentEvent;
-          instrument(evt, InstrumentationCoverters.inconsistentShadowDomToArray);
+          instrument(Instrumentation.ShadowDomInconsistent, evt);
         }
       } else {
         this.inconsistentShadowDomCount = 0;

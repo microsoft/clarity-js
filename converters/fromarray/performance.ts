@@ -1,51 +1,39 @@
-export default function(performanceData: any[], type: string): INavigationTimingEventData | IPerformanceResourceTimingEventData {
-  let data: INavigationTimingEventData | IPerformanceResourceTimingEventData = null;
-  switch (type) {
-    case "NavigationTiming":
-      data = {
-        timing: navigationTimingFromArray(performanceData[0])
-      };
-      break;
-    case "ResourceTiming":
-      data = {
-        entries: resourceTimingsFromArray(performanceData[0])
-      };
-      break;
-    default:
-      console.warn("Unknown performance event type: " + type);
-  }
-  return data;
-}
 
-function navigationTimingFromArray(timing: any[]): IPerformanceTiming {
-  let data: IPerformanceTiming = {
-    connectEnd:                 timing[0],
-    connectStart:               timing[1],
-    domainLookupEnd:            timing[2],
-    domainLookupStart:          timing[3],
-    domComplete:                timing[4],
-    domContentLoadedEventEnd:   timing[5],
-    domContentLoadedEventStart: timing[6],
-    domInteractive:             timing[7],
-    domLoading:                 timing[8],
-    fetchStart:                 timing[9],
-    loadEventEnd:               timing[10],
-    loadEventStart:             timing[11],
-    msFirstPaint:               timing[12],
-    navigationStart:            timing[13],
-    redirectEnd:                timing[14],
-    redirectStart:              timing[15],
-    requestStart:               timing[16],
-    responseEnd:                timing[17],
-    responseStart:              timing[18],
-    unloadEventEnd:             timing[19],
-    unloadEventStart:           timing[20],
-    secureConnectionStart:      timing[21]
+let performanceConverters = [];
+performanceConverters[PerformanceEventType.NavigationTiming] = navigationTimingFromArray;
+performanceConverters[PerformanceEventType.ResourceTiming] = resourceTimingsFromArray;
+
+export default performanceConverters;
+
+function navigationTimingFromArray(timing: any[]): IPerformanceNavigationTiming {
+  let data: IPerformanceNavigationTiming = {
+    connectEnd                  : timing[0],
+    connectStart                : timing[1],
+    domainLookupEnd             : timing[2],
+    domainLookupStart           : timing[3],
+    domComplete                 : timing[4],
+    domContentLoadedEventEnd    : timing[5],
+    domContentLoadedEventStart  : timing[6],
+    domInteractive              : timing[7],
+    domLoading                  : timing[8],
+    fetchStart                  : timing[9],
+    loadEventEnd                : timing[10],
+    loadEventStart              : timing[11],
+    msFirstPaint                : timing[12],
+    navigationStart             : timing[13],
+    redirectEnd                 : timing[14],
+    redirectStart               : timing[15],
+    requestStart                : timing[16],
+    responseEnd                 : timing[17],
+    responseStart               : timing[18],
+    unloadEventEnd              : timing[19],
+    unloadEventStart            : timing[20],
+    secureConnectionStart       : timing[21]
   };
   return data;
 }
 
-function resourceTimingsFromArray(resourceTimings: any[]): IPerformanceResourceTiming[] {
+function resourceTimingsFromArray(resourceTimings: any[][]): IPerformanceResourceTiming[] {
   let entries: IPerformanceResourceTiming[] = [];
   for (let i = 0; i < resourceTimings.length; i++) {
     entries.push(resourceTimingEntryFromArray(resourceTimings[i]));
@@ -55,15 +43,15 @@ function resourceTimingsFromArray(resourceTimings: any[]): IPerformanceResourceT
 
 function resourceTimingEntryFromArray(resource: any[]): IPerformanceResourceTiming {
   let data: IPerformanceResourceTiming = {
-    duration:       resource[0],
-    initiatorType:  resource[1],
-    startTime:      resource[2],
-    connectStart:   resource[3],
-    connectEnd:     resource[4],
-    requestStart:   resource[5],
-    responseStart:  resource[6],
-    responseEnd:    resource[7],
-    name:           resource[8]
+    duration        : resource[0],
+    initiatorType   : resource[1],
+    startTime       : resource[2],
+    connectStart    : resource[3],
+    connectEnd      : resource[4],
+    requestStart    : resource[5],
+    responseStart   : resource[6],
+    responseEnd     : resource[7],
+    name            : resource[8]
   };
   if (resource[9] != null) {
     data.transferSize = resource[9];

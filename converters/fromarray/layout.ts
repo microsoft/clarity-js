@@ -1,33 +1,13 @@
-export default function(layoutData: any[]): ILayoutEventData {
-  let data = layoutDataFromArray(layoutData);
-  switch (data.action) {
-    case Action.Insert:
-      data = insertFromArray(layoutData);
-      break;
-    case Action.Remove:
-      data = removeFromArray(layoutData);
-      break;
-    case Action.Move:
-      data = moveFromArray(layoutData);
-      break;
-    case Action.AttributeUpdate:
-      data = attributeUpdateFromArray(layoutData);
-      break;
-    case Action.CharacterDataUpdate:
-      data = cdataUpdateFromArray(layoutData);
-      break;
-    case Action.Scroll:
-      data = scrollFromArray(layoutData);
-      break;
-    case Action.Input:
-      data = inputFromArray(layoutData);
-      break;
-    default:
-      console.warn("Unknown layout action: " + data.action);
-      break;
-  }
-  return data;
-}
+let layoutConverters = [];
+layoutConverters[Action.Insert] = insertFromArray;
+layoutConverters[Action.Remove] = removeFromArray;
+layoutConverters[Action.Move] = moveFromArray;
+layoutConverters[Action.AttributeUpdate] = attributeUpdateFromArray;
+layoutConverters[Action.CharacterDataUpdate] = cdataUpdateFromArray;
+layoutConverters[Action.Scroll] = scrollFromArray;
+layoutConverters[Action.Input] = inputFromArray;
+
+export default layoutConverters;
 
 export function layoutStateFromArray(state: any[]): ILayoutState {
   let data: ILayoutState = null;
@@ -49,7 +29,7 @@ export function layoutStateFromArray(state: any[]): ILayoutState {
   return data;
 }
 
-export function attributeUpdateFromArray(update: any[]): IAttributeUpdate {
+function attributeUpdateFromArray(update: any[]): IAttributeUpdate {
   let data = mutationFromArray(update) as IAttributeUpdate;
   if (update[4] !== null) {
     data.new = update[4];
@@ -76,9 +56,9 @@ function removeFromArray(remove: any[]): IRemove {
 
 function moveFromArray(move: any[]): IMove {
   let data = mutationFromArray(move) as IMove;
-  data.parent = move[4];
+  data.parent   = move[4];
   data.previous = move[5];
-  data.next = move[6];
+  data.next     = move[6];
   return data;
 }
 
@@ -109,10 +89,10 @@ function inputFromArray(input: any[]): IInput {
 
 function layoutRectangleFromArray(layout: any[]): ILayoutRectangle {
   let data: ILayoutRectangle = {
-    x: layout[0],
-    y: layout[1],
-    width: layout[2],
-    height: layout[3]
+    x       : layout[0],
+    y       : layout[1],
+    width   : layout[2],
+    height  : layout[3]
   };
   if (layout[4] !== undefined) {
     data.scrollX = layout[4];
@@ -163,8 +143,8 @@ function elementStateFromArray(state: any[]): IElementLayoutState  {
 
 function layoutDataFromArray(layoutData: any[]): ILayoutEventData {
   let data: ILayoutEventData = {
-    index: layoutData[0],
-    action: layoutData[1]
+    index   : layoutData[0],
+    action  : layoutData[1]
   };
   if (layoutData[2] !== null) {
     data.time = layoutData[2];

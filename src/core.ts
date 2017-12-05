@@ -12,7 +12,6 @@ const Version = "0.2.0";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
-const ClientInfoEventName = "ClientInfo";
 export const ClarityAttribute = "clarity-iid";
 
 let startTime: number;
@@ -122,9 +121,9 @@ export function addEvent(info: IEventInfo, scheduleUpload: boolean = true) {
   let evtJson: IEvent = {
     id: eventCount++,
     time: isNumber(info.time) ? info.time : getTimestamp(),
+    origin: info.origin,
     type: info.type,
-    data: info.data,
-    converter: info.converter
+    data: info.data
   };
   let evt = EventConverter(evtJson);
   let addEventMessage: IAddEventMessage = {
@@ -184,9 +183,9 @@ export function getTimestamp(unix?: boolean, raw?: boolean) {
   return (raw ? time : Math.round(time));
 }
 
-export function instrument(instrumentationData: IInstrumentationEventData, converter: (data: IInstrumentationEventData) => any[]) {
+export function instrument(type: Instrumentation, data?: any) {
   if (config.instrument) {
-    addEvent({type: "Instrumentation", data: instrumentationData, converter});
+    addEvent({ origin: Origin.Instrumentation, type, data: data || null });
   }
 }
 
@@ -254,10 +253,9 @@ function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadC
   sentBytesCount += payload.length;
   if (state === State.Activated && sentBytesCount > config.totalLimit) {
     let totalByteLimitExceededEventState: ITotalByteLimitExceededEventData = {
-      type: Instrumentation.TotalByteLimitExceeded,
       bytes: sentBytesCount
     };
-    instrument(totalByteLimitExceededEventState, InstrumentationCoverters.byteLimitExceededToArray);
+    instrument(Instrumentation.TotalByteLimitExceeded, totalByteLimitExceededEventState);
     teardown();
   }
 }
@@ -288,7 +286,6 @@ function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, 
 function onFirstSendDeliveryFailure(status: number, rawPayload: string, compressedPayload: string) {
   let sentObj: IPayload = JSON.parse(rawPayload);
   let xhrErrorEventData: IXhrErrorEventData = {
-    type: Instrumentation.XhrError,
     requestStatus: status,
     sequenceNumber: sentObj.envelope.sequenceNumber,
     compressedLength: compressedPayload.length,
@@ -301,14 +298,14 @@ function onFirstSendDeliveryFailure(status: number, rawPayload: string, compress
     payload: compressedPayload,
     xhrError: xhrErrorEventData
   };
-  instrument(xhrErrorEventData, InstrumentationCoverters.xhrErrorToArray);
+  instrument(Instrumentation.XhrError, xhrErrorEventData);
   sentBytesCount -= compressedPayload.length;
 }
 
 function onResendDeliveryFailure(status: number, droppedPayloadInfo: IDroppedPayloadInfo) {
   droppedPayloadInfo.xhrError.requestStatus = status;
   droppedPayloadInfo.xhrError.attemptNumber++;
-  instrument(droppedPayloadInfo.xhrError, InstrumentationCoverters.xhrErrorToArray);
+  instrument(Instrumentation.XhrError, droppedPayloadInfo.xhrError);
 }
 
 function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
@@ -381,10 +378,9 @@ function prepare() {
   // Check that no other instance of Clarity is already running on the page
   if (document[ClarityAttribute]) {
     let eventData: IClarityDuplicatedEventData = {
-      type: Instrumentation.ClarityDuplicated,
       currentImpressionId: document[ClarityAttribute]
     };
-    instrument(eventData, InstrumentationCoverters.clarityDuplicatedToArray);
+    instrument(Instrumentation.ClarityDuplicated, eventData);
     return false;
   }
 
@@ -416,10 +412,9 @@ function onActivateErrorUnsafe(e: Error) {
 
 function onActivateError(e: Error) {
   let clarityActivateError: IClarityActivateErrorEventData = {
-    type: Instrumentation.ClarityActivateError,
     error: e.message
   };
-  instrument(clarityActivateError, InstrumentationCoverters.clarityActivateErrorToArray);
+  instrument(Instrumentation.ClarityActivateError, clarityActivateError);
   teardown();
 }
 
@@ -446,10 +441,9 @@ function checkFeatures() {
 
   if (missingFeatures.length > 0) {
     let eventData: IMissingFeatureEventData = {
-      type: Instrumentation.MissingFeature,
       missingFeatures
     };
-    instrument(eventData, InstrumentationCoverters.missingFeatureToArray);
+    instrument(Instrumentation.MissingFeature, eventData);
     return false;
   }
 

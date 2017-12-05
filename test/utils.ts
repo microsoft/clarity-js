@@ -3,17 +3,15 @@ import { ICompressedBatchMessage, IEnvelope, IEvent, IWorkerMessage, WorkerMessa
 import compress from "../src/compress";
 import { addEvent, onWorkerMessage } from "../src/core";
 import { guid } from "../src/utils";
-import { mockDataToArray } from "./convert";
-import EventFromArrayConverter from "./convert";
+import EventFromArray from "./fromarray";
 import { getSentEvents, getWorkerMessages } from "./testsetup";
+import EventToArray from "./toarray";
 
-export const MockEventName = "ClarityTestMockEvent";
-
-export function observeEvents(eventType?: string): () => IEvent[] {
+export function observeEvents(eventOrigin?: Origin): () => IEvent[] {
   let initialEventsLength = getSentEvents().length;
   let stopObserving = (): IEvent[] => {
     let newEvents = getSentEvents().slice(initialEventsLength);
-    return eventType ? getEventsByType(newEvents, eventType) : newEvents;
+    return eventOrigin ? getEventsByOrigin(newEvents, eventOrigin) : newEvents;
   };
   return stopObserving;
 }
@@ -27,8 +25,8 @@ export function observeWorkerMessages() {
   return stopObserving;
 }
 
-export function getEventsByType(events: IEvent[], eventType: string): IEvent[] {
-  return events.filter((event) => event.type === eventType);
+export function getEventsByOrigin(events: IEvent[], origin: Origin): IEvent[] {
+  return events.filter((event) => event.origin === origin);
 }
 
 export function postCompressedBatch(events: IEvent[], envelope?: IEnvelope) {
@@ -73,10 +71,10 @@ export function getMockMetadata() {
 
 export function getMockEventInfo(data?: any): IEventInfo {
   let mockEvent: IEventInfo = {
-    type: MockEventName,
+    origin: TestConstants.MockOrigin,
+    type: TestConstants.MockEventType,
     data: data || {},
-    time: -1,
-    converter: mockDataToArray
+    time: TestConstants.MockEventTime
   };
   return mockEvent;
 }
@@ -84,11 +82,11 @@ export function getMockEventInfo(data?: any): IEventInfo {
 export function getMockEvent(data?: any): IEvent {
   let mockEventInfo = getMockEventInfo(data);
   let mockEvent: IEvent = {
-    type: mockEventInfo.type,
     id: -1,
+    origin: mockEventInfo.origin,
+    type: mockEventInfo.type,
     data: mockEventInfo.data,
-    time: mockEventInfo.time,
-    converter: mockEventInfo.converter
+    time: mockEventInfo.time
   };
   return mockEvent;
 }
@@ -97,7 +95,7 @@ export function payloadToEvents(payload: IPayload): IEvent[] {
   let eventArrays = payload.events;
   let events: IEvent[] = [];
   for (let i = 0; i < eventArrays.length; i++) {
-    let event = EventFromArrayConverter(eventArrays[i]);
+    let event = EventFromArray(eventArrays[i]);
     events.push(event);
   }
   return events;

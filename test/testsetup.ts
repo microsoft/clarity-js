@@ -4,7 +4,7 @@ import { config } from "../src/config";
 import { addEvent } from "../src/core";
 import { guid, mapProperties } from "../src/utils";
 import { testConfig } from "./clarity";
-import EventConverter from "./convert";
+import EventFromArray from "./fromarray";
 
 let sentEvents: IEvent[] = [];
 let workerMessages: IWorkerMessage[] = [];
@@ -71,7 +71,7 @@ function mockWorkerOnMessage(message: any) {
         let addEventMsg = message as IAddEventMessage;
 
         // Events are passed to the worker in the array form, so we need to convert them back to JSON here
-        let originalEvent = EventConverter(addEventMsg.event);
+        let originalEvent = EventFromArray(addEventMsg.event);
         sentEvents.push(originalEvent);
         break;
       default:

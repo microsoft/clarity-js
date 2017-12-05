@@ -1,5 +1,4 @@
 import { IPerformanceResourceTiming, IPlugin } from "../../clarity";
-import * as PerformanceConverters from "../../converters/toarray/performance";
 import { config } from "../config";
 import { addEvent, instrument } from "../core";
 import { mapProperties } from "../utils";
@@ -65,14 +64,11 @@ export default class PerformanceProfiler implements IPlugin {
 
   private logTiming() {
     if (this.timing.loadEventEnd > 0) {
-      let formattedTiming = this.timing.toJSON ? this.timing.toJSON() : this.timing;
-      formattedTiming = mapProperties(formattedTiming, (name: string, value) => {
-        return (formattedTiming[name] === 0) ? 0 : Math.round(formattedTiming[name] - formattedTiming.navigationStart);
-      }, false);
-      let navigationTimingEventData: INavigationTimingEventData = {
-        timing: formattedTiming
-      };
-      addEvent({type: "NavigationTiming", data: navigationTimingEventData, converter: PerformanceConverters.navigationTimingToArray});
+      let timing = this.timing.toJSON ? this.timing.toJSON() : this.timing;
+      let formattedTiming = mapProperties(timing, (name: string, value) => {
+        return (timing[name] === 0) ? 0 : Math.round(timing[name] - timing.navigationStart);
+      }, false) as IPerformanceNavigationTiming;
+      addEvent({ origin: Origin.Performance, type: PerformanceEventType.NavigationTiming, data: formattedTiming });
     } else {
       this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
@@ -87,7 +83,7 @@ export default class PerformanceProfiler implements IPlugin {
     if (entries.length < this.lastInspectedEntryIndex + 1) {
       if (!this.stateError) {
         this.stateError = true;
-        instrument({ type: Instrumentation.PerformanceStateError }, InstrumentationCoverters.instrumentationToArray);
+        instrument(Instrumentation.PerformanceStateError);
       }
 
       this.lastInspectedEntryIndex = -1;
@@ -118,10 +114,7 @@ export default class PerformanceProfiler implements IPlugin {
     }
 
     if (entryInfos.length > 0) {
-      let resourceTimingEventData = {
-        entries: entryInfos
-      };
-      addEvent({type: "ResourceTiming", data: resourceTimingEventData, converter: PerformanceConverters.resourceTimingsToArray});
+      addEvent({ origin: Origin.Performance, type: PerformanceEventType.ResourceTiming, data: entryInfos });
     }
 
     this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);

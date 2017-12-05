@@ -4,7 +4,6 @@ import * as mouse from "./pointer/mouse";
 import * as touch from "./pointer/touch";
 
 export default class Pointer implements IPlugin {
-  private eventName = "Pointer";
   private distanceThreshold = 20;
   private timeThreshold = 500;
   private lastMoveState: IPointerState;
@@ -47,13 +46,11 @@ export default class Pointer implements IPlugin {
           || this.checkTime(time)) {
           this.lastMoveState = state;
           this.lastMoveTime = time;
-          let eventData: IPointerEventData = { state };
-          addEvent({type: this.eventName, data: eventData, converter: PointerConverter});
+          addEvent({origin: Origin.Pointer, type: PointerEventType.Pointer, data: state});
         }
         break;
       default:
-        let eventData: IPointerEventData = { state };
-        addEvent({type: this.eventName, data: eventData, converter: PointerConverter});
+        addEvent({origin: Origin.Pointer, type: PointerEventType.Pointer, data: state});
         break;
     }
   }

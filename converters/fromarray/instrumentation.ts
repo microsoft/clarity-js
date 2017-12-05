@@ -1,129 +1,90 @@
-import { attributeUpdateFromArray } from "./layout";
+let instrumentationConverters = [];
+instrumentationConverters[Instrumentation.JsError] = jsErrorFromArray;
+instrumentationConverters[Instrumentation.MissingFeature] = missingFeatureFromArray;
+instrumentationConverters[Instrumentation.XhrError] = xhrErrorFromArray;
+instrumentationConverters[Instrumentation.TotalByteLimitExceeded] = byteLimitExceededFromArray;
+instrumentationConverters[Instrumentation.Teardown] = noDataFromArray;
+instrumentationConverters[Instrumentation.PerformanceStateError] = noDataFromArray;
+instrumentationConverters[Instrumentation.ClarityAssertFailed] = assertFailedFromArray;
+instrumentationConverters[Instrumentation.ClarityDuplicated] = clarityDuplicatedFromArray;
+instrumentationConverters[Instrumentation.ClarityActivateError] = clarityActivateErrorFromArray;
+instrumentationConverters[Instrumentation.ShadowDomInconsistent] = inconsistentShadowDomFromArray;
 
-export default function(instrumentationData: any[]): IInstrumentationEventData {
-  let data: IInstrumentationEventData = instrumentationFromArray(instrumentationData);
-  switch (data.type) {
-    case Instrumentation.JsError:
-      data = jsErrorFromArray(instrumentationData);
-      break;
-    case Instrumentation.MissingFeature:
-      data = missingFeatureFromArray(instrumentationData);
-      break;
-    case Instrumentation.XhrError:
-      data = xhrErrorFromArray(instrumentationData);
-      break;
-    case Instrumentation.TotalByteLimitExceeded:
-      data = byteLimitExceededFromArray(instrumentationData);
-      break;
-    case Instrumentation.Teardown:
-      // No extra properties. Keep data as is.
-      break;
-    case Instrumentation.ClarityAssertFailed:
-      data = assertFailedFromArray(instrumentationData);
-      break;
-    case Instrumentation.ClarityDuplicated:
-      data = clarityDuplicatedFromArray(instrumentationData);
-      break;
-    case Instrumentation.ShadowDomInconsistent:
-      data = inconsistentShadowDomFromArray(instrumentationData);
-      break;
-    case Instrumentation.ClarityActivateError:
-      data = clarityActivateErrorFromArray(instrumentationData);
-      break;
-    case Instrumentation.PerformanceStateError:
-      // No extra properties. Keep data as is.
-      break;
-    default:
-      console.warn("Unknown instrumentation type: " + data.type);
-      break;
-  }
-  return data;
-}
+export default instrumentationConverters;
 
-export function instrumentationFromArray(instrumentationData: any[]): IInstrumentationEventData {
-  let data: IInstrumentationEventData = {
-    type: instrumentationData[0]
-  };
-  return data;
-}
-
-export function jsErrorFromArray(jsErrorData: any[]): IJsErrorEventData {
+function jsErrorFromArray(jsErrorData: any[]): IJsErrorEventData {
   let data: IJsErrorEventData = {
-    type    : jsErrorData[0],
-    source  : jsErrorData[1],
-    message : jsErrorData[2],
-    stack   : jsErrorData[3],
-    lineno  : jsErrorData[4],
-    colno   : jsErrorData[5]
+    source  : jsErrorData[0],
+    message : jsErrorData[1],
+    stack   : jsErrorData[2],
+    lineno  : jsErrorData[3],
+    colno   : jsErrorData[4]
   };
   return data;
 }
 
-export function missingFeatureFromArray(missingFeatureData: any[]): IMissingFeatureEventData {
+function missingFeatureFromArray(missingFeatureData: any[]): IMissingFeatureEventData {
   let data: IMissingFeatureEventData = {
-    type            : missingFeatureData[0],
-    missingFeatures : missingFeatureData[1]
+    missingFeatures : missingFeatureData[0]
   };
   return data;
 }
 
-export function xhrErrorFromArray(xhrErrorData: any[]): IXhrErrorEventData {
+function xhrErrorFromArray(xhrErrorData: any[]): IXhrErrorEventData {
   let data: IXhrErrorEventData = {
-    type              : xhrErrorData[0],
-    requestStatus     : xhrErrorData[1],
-    sequenceNumber    : xhrErrorData[2],
-    compressedLength  : xhrErrorData[3],
-    rawLength         : xhrErrorData[4],
-    firstEventId      : xhrErrorData[5],
-    lastEventId       : xhrErrorData[6],
-    attemptNumber     : xhrErrorData[7]
+    requestStatus     : xhrErrorData[0],
+    sequenceNumber    : xhrErrorData[1],
+    compressedLength  : xhrErrorData[2],
+    rawLength         : xhrErrorData[3],
+    firstEventId      : xhrErrorData[4],
+    lastEventId       : xhrErrorData[5],
+    attemptNumber     : xhrErrorData[6]
   };
   return data;
 }
 
-export function byteLimitExceededFromArray(byteLimitData: any[]): ITotalByteLimitExceededEventData {
+function byteLimitExceededFromArray(byteLimitData: any[]): ITotalByteLimitExceededEventData {
   let data: ITotalByteLimitExceededEventData = {
-    type  : byteLimitData[0],
-    bytes : byteLimitData[1]
+    bytes : byteLimitData[0]
   };
   return data;
 }
 
-export function assertFailedFromArray(failedAssertData: any[]): IClarityAssertFailedEventData {
+function noDataFromArray() {
+  return null;
+}
+
+function assertFailedFromArray(failedAssertData: any[]): IClarityAssertFailedEventData {
   let data: IClarityAssertFailedEventData = {
-    type    : failedAssertData[0],
-    source  : failedAssertData[1],
-    comment : failedAssertData[2]
+    source  : failedAssertData[0],
+    comment : failedAssertData[1]
   };
   return data;
 }
 
-export function clarityDuplicatedFromArray(clarityDuplicatedData: any[]): IClarityDuplicatedEventData {
+function clarityDuplicatedFromArray(clarityDuplicatedData: any[]): IClarityDuplicatedEventData {
   let data: IClarityDuplicatedEventData = {
-    type                : clarityDuplicatedData[0],
-    currentImpressionId : clarityDuplicatedData[1]
+    currentImpressionId : clarityDuplicatedData[0]
   };
   return data;
 }
 
-export function inconsistentShadowDomFromArray(inconsistentShadowDomData: any[]): IShadowDomInconsistentEventData {
+function clarityActivateErrorFromArray(clarityActivateErrorData: any[]): IClarityActivateErrorEventData {
+  let data: IClarityActivateErrorEventData = {
+    error : clarityActivateErrorData[0]
+  };
+  return data;
+}
+
+function inconsistentShadowDomFromArray(inconsistentShadowDomData: any[]): IShadowDomInconsistentEventData {
   let data: IShadowDomInconsistentEventData = {
-    type                    : inconsistentShadowDomData[0],
-    dom                     : inconsistentShadowDomData[1],
-    shadowDom               : inconsistentShadowDomData[2],
-    lastConsistentShadowDom : inconsistentShadowDomData[3],
-    lastAction              : inconsistentShadowDomData[4]
+    dom                     : inconsistentShadowDomData[0],
+    shadowDom               : inconsistentShadowDomData[1],
+    lastConsistentShadowDom : inconsistentShadowDomData[2],
+    lastAction              : inconsistentShadowDomData[3]
   };
   if (inconsistentShadowDomData[5] != null) {
-    data.firstEvent = inconsistentShadowDomData[5];
+    data.firstEvent = inconsistentShadowDomData[4];
   }
-  return data;
-}
-
-export function clarityActivateErrorFromArray(clarityActivateErrorData: any[]): IClarityActivateErrorEventData {
-  let data: IClarityActivateErrorEventData = {
-    type  : clarityActivateErrorData[0],
-    error : clarityActivateErrorData[1]
-  };
   return data;
 }

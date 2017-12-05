@@ -74,8 +74,6 @@ export interface IConfig {
 /* #############   CORE   ############## */
 /* ##################################### */
 
-type ClarityEventData = IViewportEventData | ILayoutEventData | IPointerEventData | IInstrumentationEventData;
-
 declare const enum State {
   Loaded,
   Activated,
@@ -84,7 +82,15 @@ declare const enum State {
   Unloading
 }
 
-export interface IPlugin {
+declare const enum Origin {
+  Discover,
+  Instrumentation,
+  Layout,
+  Performance,
+  Pointer,
+  Viewport
+}
+
   activate(): void;
   teardown(): void;
   reset(): void;
@@ -110,9 +116,9 @@ interface IImpressionMetadata {
 }
 
 interface IEventInfo {
-  type: string;
+  origin: number;
+  type: number;
   data: any;
-  converter: (data: any) => any[];
   time?: number;
 }
 
@@ -123,8 +129,9 @@ interface IEvent extends IEventInfo {
 
 // IEvent object converted to a value array representation
 type IEventArray = [
-  string, // type
   number, // id
+  Origin, // origin
+  number, // type
   number, // time
   any[]   // data, converted to a value array
 ];
@@ -192,14 +199,18 @@ type CharacterDataNode = Text | Comment | ProcessingInstruction;
 type NumberJson = Array<number | number[]>;
 
 declare const enum Action {
-  Discover,
-  Insert,
-  Remove,
-  Move,
-  AttributeUpdate,
-  CharacterDataUpdate,
-  Scroll,
-  Input
+  /* 0 */ Discover,
+  /* 1 */ Insert,
+  /* 2 */ Remove,
+  /* 3 */ Move,
+  /* 4 */ AttributeUpdate,
+  /* 5 */ CharacterDataUpdate,
+  /* 6 */ Scroll,
+  /* 7 */ Input
+}
+
+declare const enum DiscoverEventType {
+  Discover
 }
 
 declare const enum LayoutRoutine {
@@ -276,10 +287,9 @@ interface IInput extends ILayoutEventData {
 // different layout events originating from different actions
 interface ILayoutEventInfo extends ILayoutEventData {
   node: Node;
-  converter: (data: any) => any[];
 }
 
-interface ILayoutState  {
+interface ILayoutState {
   index: number;  /* Index of the layout element */
   parent: number; /* Index of the parent element */
   previous: number; /* Index of the previous sibling, if known */
@@ -350,6 +360,10 @@ interface IShadowDomMutationSummary {
 /* ###########   POINTER   ############# */
 /* ##################################### */
 
+declare const enum PointerEventType {
+  Pointer
+}
+
 interface IPointerModule {
   transform(evt: Event): IPointerState[];
 }
@@ -377,6 +391,10 @@ interface IPointerState {
 /* ##################################### */
 /* ##########   VIEWPORT   ############# */
 /* ##################################### */
+
+declare const enum ViewportEventType {
+  Viewport
+}
 
 interface IViewportRectangle {
   x: number; /* X coordinate of the element */
@@ -415,11 +433,7 @@ declare const enum Instrumentation {
   Trigger
 }
 
-interface IInstrumentationEventData {
-  type: Instrumentation;
-}
-
-interface IJsErrorEventData extends IInstrumentationEventData {
+interface IJsErrorEventData {
   source: string;
   message: string;
   stack: string;
@@ -427,11 +441,11 @@ interface IJsErrorEventData extends IInstrumentationEventData {
   colno: number;
 }
 
-interface IMissingFeatureEventData extends IInstrumentationEventData {
+interface IMissingFeatureEventData {
   missingFeatures: string[];
 }
 
-interface IXhrErrorEventData extends IInstrumentationEventData {
+interface IXhrErrorEventData {
   requestStatus: number;
   sequenceNumber: number;
   compressedLength: number;
@@ -441,20 +455,20 @@ interface IXhrErrorEventData extends IInstrumentationEventData {
   attemptNumber: number;
 }
 
-interface ITotalByteLimitExceededEventData extends IInstrumentationEventData {
+interface ITotalByteLimitExceededEventData {
   bytes: number;
 }
 
-interface IClarityAssertFailedEventData extends IInstrumentationEventData {
+interface IClarityAssertFailedEventData {
   source: string;
   comment: string;
 }
 
-interface IClarityDuplicatedEventData extends IInstrumentationEventData {
+interface IClarityDuplicatedEventData {
   currentImpressionId: string;
 }
 
-interface IShadowDomInconsistentEventData extends IInstrumentationEventData {
+interface IShadowDomInconsistentEventData {
   // JSON of node indicies, representing the DOM
   dom: NumberJson;
 
@@ -474,7 +488,7 @@ interface IShadowDomInconsistentEventData extends IInstrumentationEventData {
   firstEvent?: IShadowDomInconsistentEventData;
 }
 
-interface IClarityActivateErrorEventData extends IInstrumentationEventData {
+interface IClarityActivateErrorEventData {
   error: string;
 }
 
@@ -486,8 +500,13 @@ interface ITriggerState extends IInstrumentationEventState {
 /* #########   PERFORMANCE   ########### */
 /* ##################################### */
 
+declare const enum PerformanceEventType {
+  NavigationTiming,
+  ResourceTiming
+}
+
 // Replicates PerformanceTiming interface, but without toJSON property
-interface IPerformanceTiming {
+interface IPerformanceNavigationTiming {
   connectEnd: number;
   connectStart: number;
   domainLookupEnd: number;
@@ -525,14 +544,6 @@ interface IPerformanceResourceTiming {
   transferSize?: number;
   encodedBodySize?: number;
   decodedBodySize?: number;
-}
-
-interface INavigationTimingEventData {
-  timing: IPerformanceTiming;
-}
-
-interface IPerformanceResourceTimingEventData {
-  entries: IPerformanceResourceTiming[];
 }
 
 /* ##################################### */
