@@ -1,9 +1,9 @@
-import DiscoverConverters from "./discover";
-import InstrumentationConverters from "./instrumentation";
-import LayoutConverters from "./layout";
-import PerformanceConverters from "./performance";
-import PointerConverters from "./pointer";
-import ViewportConverters from "./viewport";
+import DiscoverConverters from "./fromarray/discover";
+import InstrumentationConverters from "./fromarray/instrumentation";
+import LayoutConverters from "./fromarray/layout";
+import PerformanceConverters from "./fromarray/performance";
+import PointerConverters from "./fromarray/pointer";
+import ViewportConverters from "./fromarray/viewport";
 
 export default function(eventArray: IEventArray): IEvent {
   let id      = eventArray[0];
@@ -14,8 +14,6 @@ export default function(eventArray: IEventArray): IEvent {
   let event: IEvent = { origin, type, id, time, data };
   return event;
 }
-
-export { layoutStateFromArray } from "./layout";
 
 let converters = [];
 converters[Origin.Discover] = DiscoverConverters;

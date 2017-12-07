@@ -1,4 +1,4 @@
-import EventToArray from "../converters/toarray/convert";
+import EventToArray from "../converters/toarray";
 
 export default function(event: IEvent): IEventArray {
   let eventArray = null;

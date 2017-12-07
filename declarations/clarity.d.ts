@@ -250,6 +250,10 @@ interface IMutation extends ILayoutEventData {
   mutationSequence: number;
 }
 
+interface IDiscoverInsert extends ILayoutEventData {
+  state: ILayoutState;
+}
+
 interface IInsert extends IMutation {
   state: ILayoutState;
 }

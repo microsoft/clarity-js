@@ -1,9 +1,9 @@
-import DiscoverConverters from "./discover";
-import InstrumentationConverters from "./instrumentation";
-import LayoutConverters from "./layout";
-import PerformanceConverters from "./performance";
-import PointerConverters from "./pointer";
-import ViewportConverters from "./viewport";
+import DiscoverConverters from "./toarray/discover";
+import InstrumentationConverters from "./toarray/instrumentation";
+import LayoutConverters from "./toarray/layout";
+import PerformanceConverters from "./toarray/performance";
+import PointerConverters from "./toarray/pointer";
+import ViewportConverters from "./toarray/viewport";
 
 export default function(event: IEvent): IEventArray {
   let converter = converters[event.origin][event.type];

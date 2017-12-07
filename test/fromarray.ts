@@ -1,4 +1,4 @@
-import EventFromArray from "../converters/fromarray/convert";
+import EventFromArray from "../converters/fromarray";
 
 export default function(eventArray: IEventArray): IEvent {
   let origin = eventArray[0];

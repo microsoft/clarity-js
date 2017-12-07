@@ -1,5 +1,4 @@
-import converter from "../converters/fromarray/convert";
-import { layoutStateFromArray } from "../converters/fromarray/convert";
+import converter from "../converters/convert";
 import * as library from "./clarity";
 
-export default { library, converter, layoutStateFromArray };
+export default { library, converter };
