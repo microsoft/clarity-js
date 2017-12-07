@@ -15,6 +15,8 @@ export default function(eventArray: IEventArray): IEvent {
   return event;
 }
 
+export { layoutStateFromArray } from "./layout";
+
 let converters = [];
 converters[Origin.Discover] = DiscoverConverters;
 converters[Origin.Instrumentation] = InstrumentationConverters;

@@ -3,7 +3,7 @@ pointerConverters[PointerEventType.Pointer] = pointerToArray;
 
 export default pointerConverters;
 
-function pointerToArray(pointerState: IPointerState) {
+function pointerToArray(pointerState: IPointerEventData) {
   let data = [
     pointerState.index,
     pointerState.type,

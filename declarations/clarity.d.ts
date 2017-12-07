@@ -83,12 +83,12 @@ declare const enum State {
 }
 
 declare const enum Origin {
-  Discover,
-  Instrumentation,
-  Layout,
-  Performance,
-  Pointer,
-  Viewport
+  /* 0 */ Discover,
+  /* 1 */ Instrumentation,
+  /* 2 */ Layout,
+  /* 3 */ Performance,
+  /* 4 */ Pointer,
+  /* 5 */ Viewport
 }
 
   activate(): void;
@@ -365,15 +365,11 @@ declare const enum PointerEventType {
 }
 
 interface IPointerModule {
-  transform(evt: Event): IPointerState[];
-}
-
-interface IPointerEventData {
-  state: IPointerState;
+  transform(evt: Event): IPointerEventData[];
 }
 
 /* Spec: https://www.w3.org/TR/pointerevents/#pointerevent-interface */
-interface IPointerState {
+interface IPointerEventData {
   index: number; /* Pointer ID */
   type: string; /* Original event that is mapped to pointer event */
   pointer: string; /* pointerType: mouse, pen, touch */

@@ -3,8 +3,8 @@ pointerConverters[PointerEventType.Pointer] = pointerFromArray;
 
 export default pointerConverters;
 
-function pointerFromArray(pointerState: any[]): IPointerState {
-  let state: IPointerState = {
+function pointerFromArray(pointerState: any[]): IPointerEventData {
+  let state: IPointerEventData = {
     index     : pointerState[0],
     type      : pointerState[1],
     pointer   : pointerState[2],

@@ -1,7 +1,7 @@
 import { IPointerState } from "../../../clarity";
 import { NodeIndex } from "../layout/stateprovider";
 
-export function transform(evt: MouseEvent): IPointerState[] {
+export function transform(evt: MouseEvent): IPointerEventData[] {
   let de = document.documentElement;
   return [{
     index: 1, /* Pointer ID */
