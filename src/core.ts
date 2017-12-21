@@ -41,6 +41,8 @@ let timeout: number;
 export let state: State = State.Loaded;
 
 export function activate() {
+  state = State.Activating;
+
   // First, try to initalize core variables to allow Clarity perform minimal logging and safe teardowns.
   // If this step fails, attempt a potentially unsafe logging and teardown.
   try {
@@ -56,7 +58,6 @@ export function activate() {
     let readyToActivatePlugins = prepare();
     if (readyToActivatePlugins) {
       activatePlugins();
-      state = State.Activated;
     } else {
       teardown();
       return;
@@ -65,36 +66,41 @@ export function activate() {
     onActivateError(e);
     return;
   }
+
+  state = State.Activated;
 }
 
 export function teardown() {
-  for (let plugin of activePlugins) {
-    plugin.teardown();
-  }
+  if (state === State.Activating || state === State.Activated) {
+    state = State.Unloading;
+    for (let plugin of activePlugins) {
+      plugin.teardown();
+    }
 
-  // Walk through existing list of bindings and remove them all
-  for (let evt in bindings) {
-    if (bindings.hasOwnProperty(evt)) {
-      let eventBindings = bindings[evt] as IEventBindingPair[];
-      for (let i = 0; i < eventBindings.length; i++) {
-        (eventBindings[i].target).removeEventListener(evt, eventBindings[i].listener);
+    // Walk through existing list of bindings and remove them all
+    for (let evt in bindings) {
+      if (bindings.hasOwnProperty(evt)) {
+        let eventBindings = bindings[evt] as IEventBindingPair[];
+        for (let i = 0; i < eventBindings.length; i++) {
+          (eventBindings[i].target).removeEventListener(evt, eventBindings[i].listener);
+        }
       }
     }
-  }
 
-  delete document[ClarityAttribute];
-  if (compressionWorker) {
-    // Immediately terminate the worker and kill its thread.
-    // Any possible pending incoming messages from the worker will be ignored in the 'Unloaded' state.
-    // Copies of all the events that were sent to the worker, but have not been returned as a compressed batch yet,
-    // are stored in the 'pendingEvents' queue, so we will compress and upload them synchronously in this thread.
-    compressionWorker.terminate();
-  }
-  state = State.Unloaded;
+    delete document[ClarityAttribute];
+    if (compressionWorker) {
+      // Immediately terminate the worker and kill its thread.
+      // Any possible pending incoming messages from the worker will be ignored in the 'Unloaded' state.
+      // Copies of all the events that were sent to the worker, but have not been returned as a compressed batch yet,
+      // are stored in the 'pendingEvents' queue, so we will compress and upload them synchronously in this thread.
+      compressionWorker.terminate();
+    }
+    state = State.Unloaded;
 
-  // Instrument teardown and upload residual events
-  instrument({ type: Instrumentation.Teardown });
-  uploadPendingEvents();
+    // Instrument teardown and upload residual events
+    instrument({ type: Instrumentation.Teardown });
+    uploadPendingEvents();
+  }
 }
 
 export function bind(target: EventTarget, event: string, listener: EventListener) {
