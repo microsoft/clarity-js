@@ -58,7 +58,9 @@ interface IConfig {
 declare const enum State {
   Loaded,
   Activated,
-  Unloaded
+  Unloaded,
+  Activating,
+  Unloading
 }
 
 interface IPlugin {
