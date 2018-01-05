@@ -35,6 +35,16 @@ interface IConfig {
   // If left unspecified, raw payloads will be uploaded to the uploadUrl endpoint
   uploadHandler?: UploadHandler;
 
+  // Pointer to the function which would be responsible for obtaining a
+  // page level GUID.
+  // If left unspecified, random GUID will be generated
+  igOverride?: () => string;
+
+  // Pointer to the function which would be responsible for obtaining a
+  // user level GUID.
+  // If left unspecified, the ClarityID cookie will be used or randomly generated
+  muidOverride?: () => string;
+
   // Setting to enable debug features (e.g. console.log statements)
   debug?: boolean;
 

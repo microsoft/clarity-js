@@ -10,6 +10,8 @@ export let config: IConfig = {
   timeToYield: 50,
   instrument: false,
   uploadHandler: null,
+  igOverride: null,
+  muidOverride: null,
   debug: false,
   validateConsistency: false,
   waitForTrigger: false
