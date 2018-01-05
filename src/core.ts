@@ -317,8 +317,8 @@ function uploadPendingEvents() {
 
 function init() {
   // Set ClarityID cookie, if it's not set already
-  if (config.muidOverride) {
-    cid = config.muidOverride();
+  if (config.getCid) {
+    cid = config.getCid();
   } else {
     if (!getCookie(Cookie)) {
       setCookie(Cookie, guid());
@@ -326,7 +326,7 @@ function init() {
     cid = getCookie(Cookie);
   }
 
-  impressionId = config.igOverride ? config.igOverride() : guid();
+  impressionId = config.getImpressionId ? config.getImpressionId() : guid();
   startTime = getUnixTimestamp();
   sequence = 0;
   envelope = {
