@@ -10,6 +10,8 @@ export let config: IConfig = {
   timeToYield: 50,
   instrument: false,
   uploadHandler: null,
+  getImpressionId: null,
+  getCid: null,
   debug: false,
   validateConsistency: false,
   waitForTrigger: false

@@ -4,7 +4,7 @@ import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-const version = "0.1.18";
+const version = "0.1.19";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -317,11 +317,16 @@ function uploadPendingEvents() {
 
 function init() {
   // Set ClarityID cookie, if it's not set already
-  if (!getCookie(Cookie)) {
-    setCookie(Cookie, guid());
+  if (config.getCid) {
+    cid = config.getCid();
+  } else {
+    if (!getCookie(Cookie)) {
+      setCookie(Cookie, guid());
+    }
+    cid = getCookie(Cookie);
   }
-  cid = getCookie(Cookie);
-  impressionId = guid();
+
+  impressionId = config.getImpressionId ? config.getImpressionId() : guid();
   startTime = getUnixTimestamp();
   sequence = 0;
   envelope = {
