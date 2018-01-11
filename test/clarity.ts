@@ -1,3 +1,4 @@
+import { IConfig } from "../clarity";
 import { start } from "../src/clarity";
 import { config } from "../src/config";
 

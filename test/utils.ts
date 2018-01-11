@@ -1,4 +1,5 @@
 
+import { ICompressedBatchMessage, IEnvelope, IEvent, IWorkerMessage, WorkerMessageType } from "../clarity";
 import compress from "../src/compress";
 import { addEvent, onWorkerMessage } from "../src/core";
 import { guid } from "../src/utils";

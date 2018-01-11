@@ -1,3 +1,4 @@
+import { ICompressedBatchMessage, IEvent, Instrumentation, State, UploadCallback, WorkerMessageType } from "../clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";

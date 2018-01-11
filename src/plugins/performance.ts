@@ -1,3 +1,4 @@
+import { IPerformanceResourceTiming, IPlugin } from "../../clarity";
 import { config } from "../config";
 import { addEvent, instrument } from "../core";
 import { mapProperties } from "../utils";

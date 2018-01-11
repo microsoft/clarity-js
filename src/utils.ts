@@ -1,3 +1,4 @@
+import { IClarityAssertFailedEventState, Instrumentation } from "../clarity";
 import { config } from "./config";
 import { instrument } from "./core";
 

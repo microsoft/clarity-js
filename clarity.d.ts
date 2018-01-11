@@ -2,7 +2,7 @@
 /* ############   CONFIG   ############# */
 /* ##################################### */
 
-interface IConfig {
+export interface IConfig {
   // Active plugins
   plugins?: string[];
 
@@ -124,8 +124,8 @@ interface IBindingContainer {
   [key: string]: IEventBindingPair[];
 }
 
-type UploadCallback = (status: number) => void;
-type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) => void;
+export type UploadCallback = (status: number) => void;
+export type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) => void;
 
 /* ##################################### */
 /* ######   COMPRESSION WORKER   ####### */
@@ -439,7 +439,7 @@ interface IPerformanceResourceTiming {
 /* ############   LIBRARY   ############ */
 /* ##################################### */
 
-interface IClarity {
+export interface IClarity {
   start(config?: IConfig): void;
   stop(): void;
 }

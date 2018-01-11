@@ -1,3 +1,5 @@
+import { IConfig } from "../clarity";
+
 // Default configuration
 export let config: IConfig = {
   plugins: ["viewport", "layout", "pointer", "performance", "errors"],
