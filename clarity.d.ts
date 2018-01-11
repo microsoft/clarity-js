@@ -73,7 +73,7 @@ declare const enum State {
   Unloading
 }
 
-interface IPlugin {
+export interface IPlugin {
   activate(): void;
   teardown(): void;
   reset(): void;
@@ -439,7 +439,5 @@ interface IPerformanceResourceTiming {
 /* ############   LIBRARY   ############ */
 /* ##################################### */
 
-export interface IClarity {
-  start(config?: IConfig): void;
-  stop(): void;
-}
+export function start(config?: IConfig): void;
+export function stop(): void;
