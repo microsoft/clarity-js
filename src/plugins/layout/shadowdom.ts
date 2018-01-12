@@ -1,3 +1,4 @@
+import { IShadowDomMutationSummary, IShadowDomNode, NumberJson } from "../../../clarity";
 import { assert, isNumber, traverseNodeTree } from "../../utils";
 import { getNodeIndex, NodeIndex, shouldIgnoreNode } from "./stateprovider";
 

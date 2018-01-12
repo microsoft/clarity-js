@@ -1,3 +1,4 @@
+import { IConfig, State } from "../clarity";
 import { config } from "./config";
 import { activate, onTrigger, state, teardown } from "./core";
 import { mapProperties } from "./utils";

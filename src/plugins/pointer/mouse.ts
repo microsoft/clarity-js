@@ -1,3 +1,4 @@
+import { IPointerState } from "../../../clarity";
 import { NodeIndex } from "../layout/stateprovider";
 
 export function transform(evt: MouseEvent): IPointerState[] {

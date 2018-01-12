@@ -1,10 +1,14 @@
+import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, ICompressedBatchMessage,
+  IDroppedPayloadInfo, IEnvelope, IEvent, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
+  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITotalByteLimitExceededEventState, ITriggerState, IUploadInfo,
+  IXhrErrorEventState, State, UploadCallback, WorkerMessageType } from "../clarity";
 import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-const version = "0.1.20";
+const version = "0.1.21";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";

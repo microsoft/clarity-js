@@ -1,3 +1,5 @@
+import { IAddEventMessage, ICompressedBatchMessage, IEvent, Instrumentation,
+  ITimestampedWorkerMessage, IWorkerMessage, IXhrErrorEventState, WorkerMessageType } from "../clarity";
 import { createCompressionWorker } from "./../src/compressionworker";
 import { config } from "./../src/config";
 import * as core from "./../src/core";

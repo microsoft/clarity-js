@@ -1,3 +1,5 @@
+import { IAddEventMessage, ICompressedBatchMessage, IEnvelope, IEvent,
+  Instrumentation, ITimestampedWorkerMessage, WorkerMessageType } from "../clarity";
 import compress from "./compress";
 import { config } from "./config";
 

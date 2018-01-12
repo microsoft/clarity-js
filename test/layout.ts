@@ -1,3 +1,4 @@
+import { Action, IEvent, Source } from "../clarity";
 import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
