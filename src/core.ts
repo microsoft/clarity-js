@@ -4,7 +4,7 @@ import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-const version = "0.1.19";
+const version = "0.1.20";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -146,8 +146,13 @@ export function addMultipleEvents(events: IEventData[]) {
   }
 }
 
-export function onTrigger() {
+export function onTrigger(key: string) {
   if (state === State.Activated) {
+    let triggerState: ITriggerState = {
+      type: Instrumentation.Trigger,
+      key
+    };
+    instrument(triggerState);
     queueUploads = false;
     for (let i = 0; i < pendingUploads.length; i++) {
       let uploadInfo = pendingUploads[i];
