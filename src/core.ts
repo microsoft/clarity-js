@@ -1,7 +1,7 @@
 import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, ICompressedBatchMessage,
   IDroppedPayloadInfo, IEnvelope, IEvent, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
-  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITotalByteLimitExceededEventState, IUploadInfo, IXhrErrorEventState,
-  State, UploadCallback, WorkerMessageType } from "../clarity";
+  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITotalByteLimitExceededEventState, ITriggerState, IUploadInfo,
+  IXhrErrorEventState, State, UploadCallback, WorkerMessageType } from "../clarity";
 import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
