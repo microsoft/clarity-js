@@ -346,7 +346,8 @@ declare const enum Instrumentation {
   ClarityAssertFailed,
   ClarityDuplicated,
   ShadowDomInconsistent,
-  ClarityActivateError
+  ClarityActivateError,
+  Trigger
 }
 
 interface IInstrumentationEventState {
@@ -410,6 +411,10 @@ interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
 
 interface IClarityActivateErrorState extends IInstrumentationEventState {
   error: string;
+}
+
+interface ITriggerState extends IInstrumentationEventState {
+  key: string;
 }
 
 /* ##################################### */

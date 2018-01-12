@@ -14,6 +14,6 @@ export function stop() {
   teardown();
 }
 
-export function trigger() {
-  onTrigger();
+export function trigger(key: string) {
+  onTrigger(key);
 }

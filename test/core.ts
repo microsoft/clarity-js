@@ -329,7 +329,7 @@ describe("Core Tests", () => {
     core.onWorkerMessage(mockCompressedMessageEvent as MessageEvent);
     assert.equal(sentBytes.length, 0);
 
-    core.onTrigger();
+    core.onTrigger("MockTrigger");
     assert.equal(sentBytes.length, 1);
     assert.equal(sentBytes[0], mockCompressedData);
     done();
@@ -337,5 +337,24 @@ describe("Core Tests", () => {
     function mockUploadHandler(payload: string) {
       sentBytes.push(payload);
     }
+  });
+
+  it("validates that trigger instrumentation is logged when Clarity trigger is fired", (done: DoneFn) => {
+    let mockTriggerKey = "MockTrigger";
+    core.teardown();
+
+    // Set up test config
+    config.waitForTrigger = true;
+    activateCore();
+
+    let stopObserving = observeEvents("Instrumentation");
+    core.onTrigger(mockTriggerKey);
+
+    let events = stopObserving();
+    assert.equal(events.length, 1);
+    assert.equal(events[0].type, "Instrumentation");
+    assert.equal(events[0].state.type, Instrumentation.Trigger);
+    assert.equal(events[0].state.key, mockTriggerKey);
+    done();
   });
 });

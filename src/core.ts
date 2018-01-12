@@ -150,8 +150,13 @@ export function addMultipleEvents(events: IEventData[]) {
   }
 }
 
-export function onTrigger() {
+export function onTrigger(key: string) {
   if (state === State.Activated) {
+    let triggerState: ITriggerState = {
+      type: Instrumentation.Trigger,
+      key
+    };
+    instrument(triggerState);
     queueUploads = false;
     for (let i = 0; i < pendingUploads.length; i++) {
       let uploadInfo = pendingUploads[i];
