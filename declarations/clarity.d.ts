@@ -133,7 +133,8 @@ type IEventArray = [
   Origin, // origin
   number, // type
   number, // time
-  any[]   // data, converted to a value array
+  any[],  // data, converted to a value array
+  any[] | string   // data schema, if it's a new one, otherwise - schema hashcode
 ];
 
 interface IDroppedPayloadInfo {
@@ -421,16 +422,17 @@ interface IViewportEventData {
 /* ##################################### */
 
 declare const enum Instrumentation {
-  JsError,
-  MissingFeature,
-  XhrError,
-  TotalByteLimitExceeded,
-  Teardown,
-  ClarityAssertFailed,
-  ClarityDuplicated,
-  ShadowDomInconsistent,
-  ClarityActivateError,
-  Trigger
+  /* 0 */ JsError,
+  /* 1 */ MissingFeature,
+  /* 2 */ XhrError,
+  /* 3 */ TotalByteLimitExceeded,
+  /* 4 */ Teardown,
+  /* 5 */ ClarityAssertFailed,
+  /* 6 */ ClarityDuplicated,
+  /* 7 */ ShadowDomInconsistent,
+  /* 8 */ ClarityActivateError,
+  /* 9 */ PerformanceStateError,
+  /* 10 */ Trigger
 }
 
 interface IJsErrorEventData {
@@ -547,7 +549,12 @@ interface IPerformanceResourceTiming {
 }
 
 /* ##################################### */
-/* ############   LIBRARY   ############ */
+/* ###########   CONVERT   ############# */
 /* ##################################### */
-export function start(config?: IConfig): void;
-export function stop(): void;
+
+declare const enum ObjectType {
+  Object,
+  Array
+}
+
+type ClarityDataSchema = null | string | any[];

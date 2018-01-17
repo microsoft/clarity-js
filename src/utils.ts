@@ -98,3 +98,15 @@ export function debug(text) {
     console.log(text);
   }
 }
+
+export function hashCode(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    let character = str.charCodeAt(i);
+    // tslint:disable:no-bitwise
+    hash = ((hash << 5) - hash) + character;
+    hash = hash & hash; // Convert to 32bit integer
+    // tslint:enable:no-bitwise
+  }
+  return hash.toString();
+}

@@ -16,7 +16,8 @@ function mockEventToArray(event: IEvent) {
     event.origin,
     event.type,
     event.time,
-    mockDataToArray(event.data)
+    mockDataToArray(event.data),
+    null
   ];
   return data;
 }
