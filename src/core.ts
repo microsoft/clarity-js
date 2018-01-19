@@ -8,7 +8,7 @@ import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-const version = "0.1.21";
+const version = "0.1.22";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -345,7 +345,7 @@ function init() {
     let customInst = config.customInstrumentation();
     envelope.extraInfo = {};
     for (let key in customInst) {
-      if (customInst.hasOwnProperty(key)) {
+      if (customInst.hasOwnProperty(key) && customInst[key]) {
         envelope.extraInfo[key] = customInst[key];
       }
     }
