@@ -1,8 +1,6 @@
 import { IDiscoverInsert, IEvent, IEventArray, ILayoutState } from "../declarations/clarity";
 import { Action, ObjectType, Origin } from "../declarations/clarity";
-import { SchemaManager } from "./schema";
-
-let schemas = new SchemaManager();
+import schemas from "./schema";
 
 export default function(eventArray: IEventArray): IEvent {
   let id        = eventArray[0];
