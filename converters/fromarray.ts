@@ -21,44 +21,6 @@ export default function(eventArray: IEventArray): IEvent {
   return event;
 }
 
-function dataFromArray(dataArray: any[], schema: any[]): any {
-  if (typeof schema === "string" || schema === null) {
-    return dataArray;
-  }
-
-  let data = null;
-  let dataType = null;
-  let subschemas = null;
-  if (schema.length === 2) {
-    dataType = schema[0];
-    subschemas = schema[1];
-  } else if (schema.length === 3) {
-    dataType = schema[1];
-    subschemas = schema[2];
-  }
-
-  if (dataType === ObjectType.Object) {
-    data = {};
-    for (let i = 0; i < subschemas.length; i++) {
-      let nextSubschema = subschemas[i];
-      let nextProperty = null;
-      if (typeof nextSubschema === "string") {
-        nextProperty = nextSubschema;
-      } else {
-        nextProperty = nextSubschema[0];
-      }
-      data[nextProperty] = dataFromArray(dataArray[i], nextSubschema);
-    }
-  } else if (dataType === ObjectType.Array) {
-    data = [];
-    for (let i = 0; i < subschemas.length; i++) {
-      let nextSubschema = subschemas[i];
-      data.push(dataFromArray(dataArray[i], nextSubschema));
-    }
-  }
-  return data;
-}
-
 export function eventsFromDiscoverArray(
   id: number, time: number, data: any[], index: number, parent: ILayoutState = null, previous: ILayoutState = null
 ): IEvent[] {
@@ -112,4 +74,42 @@ export function eventsFromDiscoverArray(
   }
 
   return events;
+}
+
+function dataFromArray(dataArray: any[], schema: any[]): any {
+  if (typeof schema === "string" || schema === null) {
+    return dataArray;
+  }
+
+  let data = null;
+  let dataType = null;
+  let subschemas = null;
+  if (schema.length === 2) {
+    dataType = schema[0];
+    subschemas = schema[1];
+  } else if (schema.length === 3) {
+    dataType = schema[1];
+    subschemas = schema[2];
+  }
+
+  if (dataType === ObjectType.Object) {
+    data = {};
+    for (let i = 0; i < subschemas.length; i++) {
+      let nextSubschema = subschemas[i];
+      let nextProperty = null;
+      if (typeof nextSubschema === "string") {
+        nextProperty = nextSubschema;
+      } else {
+        nextProperty = nextSubschema[0];
+      }
+      data[nextProperty] = dataFromArray(dataArray[i], nextSubschema);
+    }
+  } else if (dataType === ObjectType.Array) {
+    data = [];
+    for (let i = 0; i < subschemas.length; i++) {
+      let nextSubschema = subschemas[i];
+      data.push(dataFromArray(dataArray[i], nextSubschema));
+    }
+  }
+  return data;
 }
