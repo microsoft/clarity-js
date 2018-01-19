@@ -1,5 +1,5 @@
 import FromArray from "../converters/fromarray";
-import { createSchema } from "../converters/schema";
+import schemas from "../converters/schema";
 import ToArray from "../converters/toarray";
 
 import * as chai from "chai";
@@ -24,7 +24,7 @@ describe("Core Tests", () => {
       data: mapObj
     };
 
-    let schema = createSchema(mapObj);
+    let schema = schemas.createSchema(mapObj);
     let array = ToArray(evt);
     let original = FromArray(array);
     assert.equal(JSON.stringify(evt).length, JSON.stringify(original).length);

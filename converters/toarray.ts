@@ -1,17 +1,14 @@
 import { hashCode } from "./../src/utils";
 import fromArray from "./fromarray";
-import { addSchema, createSchema, getSchema } from "./schema";
+import schemas from "./schema";
 
 export default function(event: IEvent): IEventArray {
   let keys = Object.keys(event);
-  let schema = createSchema(event.data);
-  let schemaHash = hashCode(JSON.stringify(schema));
-  let firstTimeSchema = (typeof getSchema(schemaHash) === "undefined");
-  if (firstTimeSchema) {
-    addSchema(schema);
-  }
+  let schema = schemas.createSchema(event.data);
+  let newSchema = schemas.addSchema(schema);
   let dataArray = dataToArray(event.data);
-  let array = [event.id, event.origin, event.type, event.time, dataArray, firstTimeSchema ? schema : schemaHash] as IEventArray;
+  let schemaPayload = newSchema ? schema : schemas.getSchemaHashcode(schema);
+  let array = [event.id, event.origin, event.type, event.time, dataArray, schemaPayload] as IEventArray;
 
   let original = fromArray(array);
   if (JSON.stringify(event).length !== JSON.stringify(original).length) {

@@ -75,8 +75,6 @@ export default class Layout implements IPlugin {
       dom: documentToArray(this.states)
     };
 
-    let events = discoverToEvents(-1, -1, discover);
-
     let discoverEventData: IEventInfo = {
       origin: Origin.Discover,
       type: DiscoverEventType.Discover,

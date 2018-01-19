@@ -1,4 +1,4 @@
-import { createSchema } from "../../../converters/schema";
+import schemas from "../../../converters/schema";
 import { dataToArray } from "../../../converters/toarray";
 import StateManager from "./statemanager";
 import { getNodeIndex } from "./stateprovider";
@@ -18,7 +18,8 @@ function treeToArray(root: Node, states: StateManager): any[] {
   delete trimmedState.previous;
   delete trimmedState.next;
 
-  let schema = createSchema(trimmedState);
+  let schema = schemas.createSchema(trimmedState);
+  let newSchema = schemas.addSchema(schema);
   let data = dataToArray(trimmedState);
 
   let childTrees = [];
@@ -26,6 +27,7 @@ function treeToArray(root: Node, states: StateManager): any[] {
     childTrees.push(treeToArray(root.childNodes[i], states));
   }
 
-  let discoverData = [schema, data, childTrees];
+  let schemaPayload = newSchema ? schema : schemas.getSchemaHashcode(schema);
+  let discoverData = [schemaPayload, data, childTrees];
   return discoverData;
 }

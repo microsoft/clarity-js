@@ -1,4 +1,6 @@
-import { getSchema } from "./schema";
+import { SchemaManager } from "./schema";
+
+let schemas = new SchemaManager();
 
 export default function(eventArray: IEventArray): IEvent {
   let id        = eventArray[0];
@@ -9,7 +11,9 @@ export default function(eventArray: IEventArray): IEvent {
   let schema    = eventArray[5];
 
   if (typeof schema === "string") {
-    schema = getSchema(schema);
+    schema = schemas.getSchema(schema);
+  } else {
+    schemas.addSchema(schema);
   }
 
   let data = dataFromArray(dataArray, schema as any[]);

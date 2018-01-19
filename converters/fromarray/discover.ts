@@ -1,4 +1,5 @@
 import { dataFromArray } from "../fromarray";
+import schemas from "../schema";
 
 export function discoverToEvents(id: number, time: number, data: IDiscover): IEvent[] {
   let events = discoverToEventsRecursive(id, time, data.dom, 0, null, null);
@@ -22,6 +23,13 @@ function discoverToEventsRecursive(
   let children = data[data.length - 1];
   let schema = data[0];
   let partialStateData = data[1];
+
+  if (typeof schema === "string") {
+    schema = schemas.getSchema(schema);
+  } else {
+    schemas.addSchema(schema);
+  }
+
   let layoutState = dataFromArray(partialStateData, schema) as ILayoutState;
   layoutState.index = index;
   layoutState.parent = parentIndex;
