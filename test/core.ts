@@ -1,13 +1,15 @@
-import { ICompressedBatchMessage, IEvent, Instrumentation, State, UploadCallback, WorkerMessageType } from "../clarity";
+import { ICompressedBatchMessage, IEvent, UploadCallback, WorkerMessageType } from "../declarations/clarity";
+import { Instrumentation, Origin, State } from "../declarations/clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, postCompressedBatch } from "./utils";
+import { getMockEnvelope, getMockEvent, getMockEventInfo } from "./utils";
+import { observeEvents, observeWorkerMessages, payloadToEvents, postCompressedBatch } from "./utils";
 
 import * as chai from "chai";
+import { instrument } from "../src/core";
 let assert = chai.assert;
-let instrumentationEventName = "Instrumentation";
 
 describe("Core Tests", () => {
   let limit = config.batchLimit;
@@ -31,10 +33,10 @@ describe("Core Tests", () => {
 
     let events = getSentEvents();
     assert.equal(events.length, 2);
-    assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.MissingFeature);
-    assert.equal(events[1].type, instrumentationEventName);
-    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    assert.equal(events[0].origin, Origin.Instrumentation);
+    assert.equal(events[0].type, Instrumentation.MissingFeature);
+    assert.equal(events[1].origin, Origin.Instrumentation);
+    assert.equal(events[1].type, Instrumentation.Teardown);
     done();
   });
 
@@ -51,11 +53,11 @@ describe("Core Tests", () => {
 
     let events = getSentEvents();
     assert.equal(events.length, 2);
-    assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.ClarityActivateError);
-    assert.equal(events[0].state.error, mockErrorText);
-    assert.equal(events[1].type, instrumentationEventName);
-    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    assert.equal(events[0].origin, Origin.Instrumentation);
+    assert.equal(events[0].type, Instrumentation.ClarityActivateError);
+    assert.equal(events[0].data.error, mockErrorText);
+    assert.equal(events[1].origin, Origin.Instrumentation);
+    assert.equal(events[1].type, Instrumentation.Teardown);
     done();
   });
 
@@ -85,9 +87,9 @@ describe("Core Tests", () => {
 
     let events = stopObserving();
     assert.equal(events.length, 1);
-    assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.XhrError);
-    assert.equal(events[0].state.requestStatus, 400);
+    assert.equal(events[0].origin, Origin.Instrumentation);
+    assert.equal(events[0].type, Instrumentation.XhrError);
+    assert.equal(events[0].data.requestStatus, 400);
     done();
   });
 
@@ -110,21 +112,21 @@ describe("Core Tests", () => {
 
     // Part 1: Mock an XHR failure, so that dropped payload is stored for re-delivery
     let stopObserving = observeEvents();
-    let firstMockEventName = "FirstMockEvent";
-    let firstMockEvent = getMockEvent(firstMockEventName);
+    let firstMockEventData = "FirstMockEvent";
+    let firstMockEvent = getMockEvent(firstMockEventData);
     let firstEnvelope = getMockEnvelope(0);
     postCompressedBatch([firstMockEvent], firstEnvelope);
 
     // Ensure XHR failure is logged
     let events = stopObserving();
     assert.equal(events.length, 1);
-    assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.XhrError);
-    assert.equal(events[0].state.requestStatus, 400);
+    assert.equal(events[0].origin, Origin.Instrumentation);
+    assert.equal(events[0].type, Instrumentation.XhrError);
+    assert.equal(events[0].data.requestStatus, 400);
 
     // Part 2: Successfully send second payload, which should trigger re-send of the first payload
-    let secondMockEventName = "SecondMockEvent";
-    let secondMockEvent = getMockEvent(secondMockEventName);
+    let secondMockEventData = "SecondMockEvent";
+    let secondMockEvent = getMockEvent(secondMockEventData);
     let secondEnvelope = getMockEnvelope(1);
     postCompressedBatch([secondMockEvent], secondEnvelope);
 
@@ -134,21 +136,24 @@ describe("Core Tests", () => {
     let firstPayload = JSON.parse(uncompress(attemptedPayloads[0]));
     let secondPayload = JSON.parse(uncompress(attemptedPayloads[1]));
     let thirdPayload = JSON.parse(uncompress(attemptedPayloads[2]));
+    let firstPayloadEvents = payloadToEvents(firstPayload);
+    let secondPayloadEvents = payloadToEvents(secondPayload);
+    let thirdPayloadEvents = payloadToEvents(thirdPayload);
 
     // Verify first payload
     assert.equal(firstPayload.envelope.sequenceNumber, 0);
-    assert.equal(firstPayload.events.length, 1);
-    assert.equal(firstPayload.events[0].type, firstMockEventName);
+    assert.equal(firstPayloadEvents.length, 1);
+    assert.equal(firstPayloadEvents[0].data, firstMockEventData);
 
     // Verify second payload
     assert.equal(secondPayload.envelope.sequenceNumber, 1);
-    assert.equal(secondPayload.events.length, 1);
-    assert.equal(secondPayload.events[0].type, secondMockEventName);
+    assert.equal(secondPayloadEvents.length, 1);
+    assert.equal(secondPayloadEvents[0].data, secondMockEventData);
 
     // Verify third payload
     assert.equal(thirdPayload.envelope.sequenceNumber, 0);
-    assert.equal(thirdPayload.events.length, 1);
-    assert.equal(thirdPayload.events[0].type, firstMockEventName);
+    assert.equal(thirdPayloadEvents.length, 1);
+    assert.equal(thirdPayloadEvents[0].data, firstMockEventData);
 
     done();
   });
@@ -211,7 +216,7 @@ describe("Core Tests", () => {
   it("validates that Clarity tears down and logs instrumentation when total byte limit is exceeded", (done: DoneFn) => {
     assert.equal(core.state, State.Activated);
 
-    let stopObserving = observeEvents("Instrumentation");
+    let stopObserving = observeEvents(Origin.Instrumentation);
     config.totalLimit = 0;
     let mockEvent = getMockEvent();
     postCompressedBatch([mockEvent]);
@@ -219,8 +224,8 @@ describe("Core Tests", () => {
     let events = stopObserving();
     assert.equal(core.state, State.Unloaded);
     assert.equal(events.length, 2);
-    assert.equal(events[0].state.type, Instrumentation.TotalByteLimitExceeded);
-    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    assert.equal(events[0].type, Instrumentation.TotalByteLimitExceeded);
+    assert.equal(events[1].type, Instrumentation.Teardown);
     done();
   });
 
@@ -240,17 +245,17 @@ describe("Core Tests", () => {
 
     let events = getSentEvents();
     assert.equal(events.length, 2);
-    assert.equal(events[0].type, instrumentationEventName);
-    assert.equal(events[0].state.type, Instrumentation.ClarityDuplicated);
-    assert.equal(events[0].state.currentImpressionId, mockExistingImpressionId);
-    assert.equal(events[1].type, instrumentationEventName);
-    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    assert.equal(events[0].origin, Origin.Instrumentation);
+    assert.equal(events[0].type, Instrumentation.ClarityDuplicated);
+    assert.equal(events[0].data.currentImpressionId, mockExistingImpressionId);
+    assert.equal(events[1].origin, Origin.Instrumentation);
+    assert.equal(events[1].type, Instrumentation.Teardown);
     done();
   });
 
   it("validates that force upload message is sent after config.delay milliseconds without new events", (done: DoneFn) => {
-    let mockEvent = getMockEvent();
-    core.addEvent(mockEvent);
+    // Trigger some event
+    instrument(Instrumentation.Teardown);
 
     let stopObserving = observeWorkerMessages();
     // Fast forward to force upload
@@ -263,12 +268,12 @@ describe("Core Tests", () => {
   });
 
   it("validates that force upload timeout is pushed back with each new event", (done: DoneFn) => {
-    let mockEvent = getMockEvent();
     let eventCount = 10;
     let stopObserving = observeWorkerMessages();
 
     for (let i = 0; i < eventCount; i++) {
-      core.addEvent(mockEvent);
+      // Add a sample event
+      instrument(Instrumentation.Teardown);
       jasmine.clock().tick(config.delay * (2 / 3));
     }
     jasmine.clock().tick(config.delay * (1 / 3));
@@ -284,19 +289,21 @@ describe("Core Tests", () => {
 
   it("validates that pending events are sent on teardown", (done: DoneFn) => {
     let sentBytes: string[] = [];
-    let mockEvent = getMockEvent();
     config.uploadHandler = mockUploadHandler;
-    core.addEvent(mockEvent);
+
+    // Add a sample event
+    instrument(Instrumentation.PerformanceStateError);
     core.teardown();
 
     assert.equal(sentBytes.length, 1);
 
     let uncompressedPayload = JSON.parse(uncompress(sentBytes[0]));
-    let events = uncompressedPayload.events as IEvent[];
+    let events = payloadToEvents(uncompressedPayload);
     assert.equal(events.length, 2);
-    assert.equal(events[0].type, MockEventName);
-    assert.equal(events[1].type, "Instrumentation");
-    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    assert.equal(events[0].origin, Origin.Instrumentation);
+    assert.equal(events[0].type, Instrumentation.PerformanceStateError);
+    assert.equal(events[1].origin, Origin.Instrumentation);
+    assert.equal(events[1].type, Instrumentation.Teardown);
     done();
 
     function mockUploadHandler(payload: string) {
@@ -347,14 +354,14 @@ describe("Core Tests", () => {
     config.waitForTrigger = true;
     activateCore();
 
-    let stopObserving = observeEvents("Instrumentation");
+    let stopObserving = observeEvents(Origin.Instrumentation);
     core.onTrigger(mockTriggerKey);
 
     let events = stopObserving();
     assert.equal(events.length, 1);
-    assert.equal(events[0].type, "Instrumentation");
-    assert.equal(events[0].state.type, Instrumentation.Trigger);
-    assert.equal(events[0].state.key, mockTriggerKey);
+    assert.equal(events[0].origin, Origin.Instrumentation);
+    assert.equal(events[0].type, Instrumentation.Trigger);
+    assert.equal(events[0].data.key, mockTriggerKey);
     done();
   });
 });

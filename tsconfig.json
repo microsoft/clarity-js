@@ -18,7 +18,8 @@
         "types" : ["jasmine", "karma-fixture"]
     },
     "include":[
-       "clarity.d.ts",
+       "declarations/**/*.d.ts",
+       "converters/**/*.ts",
        "src/**/*.ts",
        "test/**/*.ts"
     ],

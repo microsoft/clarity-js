@@ -11,8 +11,9 @@ import * as source from "vinyl-source-stream";
 
 declare const __dirname;
 const tsProject = ts.createProject("tsconfig.json");
-const bundle = "clarity.js";
-const minifiedBundle = "clarity.min.js";
+const lib = "clarity.js";
+const minifiedLib = "clarity.min.js";
+const clarityModule = "module.js";
 const karmaServer = karma.Server;
 
 gulp.task("build", () => {
@@ -20,7 +21,8 @@ gulp.task("build", () => {
     "clean",
     "compile",
     "place-fixture",
-    "rollup",
+    "rollup-lib",
+    "rollup-module",
     "uglify"
   );
 });
@@ -31,7 +33,8 @@ gulp.task("bnc", () => {
     "clean",
     "compile",
     "place-fixture",
-    "rollup",
+    "rollup-lib",
+    "rollup-module",
     "uglify",
     "coverage"
   );
@@ -43,29 +46,39 @@ gulp.task("bnt", () => {
     "clean",
     "compile",
     "place-fixture",
-    "rollup",
+    "rollup-lib",
+    "rollup-module",
     "uglify",
     "test"
   );
 });
 
 gulp.task("uglify", () => {
-  return gulp.src("build/" + bundle)
+  return gulp.src("build/" + lib)
     .pipe(uglify())
-    .pipe(rename(minifiedBundle))
+    .pipe(rename(minifiedLib))
     .pipe(gulp.dest("build"));
 });
 
-gulp.task("rollup", () => {
+gulp.task("rollup-lib", () => {
   return rollup({
     input: "./src/clarity.ts",
     format: "umd",
     name: "clarity",
-    plugins: [
-      (typescript as any)()
-    ]
+    plugins: [ (typescript as any)() ]
   })
-  .pipe(source(bundle))
+  .pipe(source(lib))
+  .pipe(gulp.dest("build"));
+});
+
+gulp.task("rollup-module", () => {
+  return rollup({
+    input: "./src/module.ts",
+    format: "umd",
+    name: "clarity",
+    plugins: [ (typescript as any)() ]
+  })
+  .pipe(source(clarityModule))
   .pipe(gulp.dest("build"));
 });
 

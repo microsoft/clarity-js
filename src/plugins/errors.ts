@@ -1,4 +1,4 @@
-import { IJsErrorEventState, Instrumentation, IPlugin } from "../../clarity";
+import { IJsErrorEventData, Instrumentation, IPlugin } from "../../declarations/clarity";
 import { bind, instrument } from "../core";
 
 export default class ErrorMonitor implements IPlugin {
@@ -27,13 +27,12 @@ export function logError(errorToLog: Event) {
     let message = error.message;
     let stack = error.stack;
 
-    let jsErrorEventState: IJsErrorEventState = {
-        type: Instrumentation.JsError,
+    let jsErrorEventData: IJsErrorEventData = {
         message,
         stack,
         lineno,
         colno,
         source
     };
-    instrument(jsErrorEventState);
+    instrument(Instrumentation.JsError, jsErrorEventData);
 }

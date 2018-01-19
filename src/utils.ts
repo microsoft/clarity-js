@@ -1,4 +1,4 @@
-import { IClarityAssertFailedEventState, Instrumentation } from "../clarity";
+import { IClarityAssertFailedEventData, Instrumentation } from "../declarations/clarity";
 import { config } from "./config";
 import { instrument } from "./core";
 
@@ -85,12 +85,11 @@ export function isNumber(value: any): boolean {
 export function assert(condition: boolean, source: string, comment: string) {
   if (condition === false) {
     debug(`>>> Clarity Assert failed\nSource: ${source}\nComment: ${comment}`);
-    let eventState: IClarityAssertFailedEventState = {
-      type: Instrumentation.ClarityAssertFailed,
+    let eventState: IClarityAssertFailedEventData = {
       source,
       comment
     };
-    instrument(eventState);
+    instrument(Instrumentation.ClarityAssertFailed, eventState);
   }
 }
 
@@ -98,4 +97,16 @@ export function debug(text) {
   if (config.debug && console.log) {
     console.log(text);
   }
+}
+
+export function hashCode(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    let character = str.charCodeAt(i);
+    // tslint:disable:no-bitwise
+    hash = ((hash << 5) - hash) + character;
+    hash = hash & hash; // Convert to 32bit integer
+    // tslint:enable:no-bitwise
+  }
+  return hash.toString();
 }

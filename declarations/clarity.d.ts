@@ -1,4 +1,13 @@
 /* ##################################### */
+/* ############   LIBRARY   ############ */
+/* ##################################### */
+
+interface IClarity {
+  start(config?: IConfig): void;
+  stop(): void;
+}
+
+/* ##################################### */
 /* ############   CONFIG   ############# */
 /* ##################################### */
 
@@ -73,6 +82,15 @@ declare const enum State {
   Unloading
 }
 
+declare const enum Origin {
+  /* 0 */ Discover,
+  /* 1 */ Instrumentation,
+  /* 2 */ Layout,
+  /* 3 */ Performance,
+  /* 4 */ Pointer,
+  /* 5 */ Viewport
+}
+
 export interface IPlugin {
   activate(): void;
   teardown(): void;
@@ -81,7 +99,7 @@ export interface IPlugin {
 
 interface IPayload {
   envelope: IEnvelope;
-  events: IEvent[];
+  events: IEventArray[];
   metadata?: IImpressionMetadata;
 }
 
@@ -98,20 +116,31 @@ interface IImpressionMetadata {
   version: string;
 }
 
-interface IEventData {
-  type: string;
-  state: any;
+interface IEventInfo {
+  origin: number;
+  type: number;
+  data: any;
   time?: number;
 }
 
-interface IEvent extends IEventData {
+interface IEvent extends IEventInfo {
   id: number; /* Event ID */
   time: number; /* Time relative to page start */
 }
 
+// IEvent object converted to a value array representation
+type IEventArray = [
+  number, // id
+  Origin, // origin
+  number, // type
+  number, // time
+  any[],  // data, converted to a value array
+  any[] | string   // data schema, if it's a new one, otherwise - schema hashcode
+];
+
 interface IDroppedPayloadInfo {
   payload: string;
-  xhrErrorState: IXhrErrorEventState;
+  xhrError: IXhrErrorEventData;
 }
 
 interface IUploadInfo {
@@ -154,7 +183,7 @@ interface ITimestampedWorkerMessage extends IWorkerMessage {
 }
 
 interface IAddEventMessage extends ITimestampedWorkerMessage {
-  event: IEvent;
+  event: IEventArray;
 }
 
 interface ICompressedBatchMessage extends IWorkerMessage {
@@ -167,7 +196,29 @@ interface ICompressedBatchMessage extends IWorkerMessage {
 /* ############   LAYOUT   ############# */
 /* ##################################### */
 
+type InputElement = HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement;
+type CharacterDataNode = Text | Comment | ProcessingInstruction;
 type NumberJson = Array<number | number[]>;
+
+declare const enum Action {
+  /* 0 */ Discover,
+  /* 1 */ Insert,
+  /* 2 */ Remove,
+  /* 3 */ Move,
+  /* 4 */ AttributeUpdate,
+  /* 5 */ CharacterDataUpdate,
+  /* 6 */ Scroll,
+  /* 7 */ Input
+}
+
+declare const enum DiscoverEventType {
+  Discover
+}
+
+declare const enum LayoutRoutine {
+  DiscoverDom,
+  Mutation
+}
 
 interface IShadowDomNode extends HTMLDivElement {
   node: Node; /* Reference to the node in the real DOM */
@@ -183,43 +234,73 @@ interface ILayoutRectangle {
   scrollY?: number; /* Scroll top of the element */
 }
 
-declare const enum Source {
-  Discover,
-  Mutation,
-  Scroll,
-  Input
-}
-
-declare const enum Action {
-  Insert,
-  Update,
-  Remove,
-  Move
-}
-
 interface IAttributes {
   [key: string]: string;
 }
 
+interface IDiscover {
+  dom: any[];
+}
+
+interface ILayoutEventData {
+  action: Action;
+  index: number;
+  time?: number;
+}
+
+interface IMutation extends ILayoutEventData {
+  mutationSequence: number;
+}
+
+interface IDiscoverInsert extends ILayoutEventData {
+  state: ILayoutState;
+}
+
+interface IInsert extends IMutation {
+  state: ILayoutState;
+}
+
+interface IRemove extends IMutation {
+  // No extra properties required
+}
+
+interface IMove extends IMutation {
+  parent: number; /* Index of the parent element */
+  previous: number; /* Index of the previous sibling, if known */
+  next: number; /* Index of the next sibling, if known */
+}
+
+interface IAttributeUpdate extends IMutation {
+  new?: IAttributes;
+  removed?: string[];
+  layout?: ILayoutRectangle;  // Attribute updates can resize element or enable scrolling, so layout can change
+}
+
+interface ICharacterDataUpdate extends IMutation {
+  content: string;
+}
+
+interface IScroll extends ILayoutEventData {
+  scrollX: number;
+  scrollY: number;
+}
+
+interface IInput extends ILayoutEventData {
+  value: string;
+}
+
 // Generic storage of various data pieces that can be passed along with
 // different layout events originating from different actions
-interface ILayoutEventInfo {
+interface ILayoutEventInfo extends ILayoutEventData {
   node: Node;
-  index: number;
-  source: Source;
-  action: Action;
-  time?: number;
 }
 
 interface ILayoutState {
   index: number;  /* Index of the layout element */
-  tag: string;  /* Tag name of the element */
-  source: Source; /* Source of discovery */
-  action: Action; /* Reflect the action with respect to DOM */
   parent: number; /* Index of the parent element */
   previous: number; /* Index of the previous sibling, if known */
   next: number; /* Index of the next sibling, if known */
-  mutationSequence?: number;  /* Sequence number of the mutation batch */
+  tag: string;  /* Tag name of the element */
 }
 
 interface IDoctypeLayoutState extends ILayoutState {
@@ -233,6 +314,10 @@ interface IDoctypeLayoutState extends ILayoutState {
 interface IElementLayoutState extends ILayoutState {
   attributes: IAttributes;  /* Attributes associated with an element */
   layout: ILayoutRectangle; /* Layout rectangle */
+}
+
+interface IInputLayoutState extends IElementLayoutState {
+  value: string;
 }
 
 interface ITextLayoutState extends ILayoutState {
@@ -250,11 +335,6 @@ interface IMutationEntry {
   parent?: Node;
   previous?: Node;
   next?: Node;
-}
-
-declare const enum LayoutRoutine {
-  DiscoverDom,
-  Mutation
 }
 
 interface ILayoutRoutineInfo {
@@ -286,18 +366,18 @@ interface IShadowDomMutationSummary {
 /* ###########   POINTER   ############# */
 /* ##################################### */
 
-interface IPointerEvent extends IEvent {
-  state: IPointerState;
+declare const enum PointerEventType {
+  Pointer
 }
 
 interface IPointerModule {
-  transform(evt: Event): IPointerState[];
+  transform(evt: Event): IPointerEventData[];
 }
 
 /* Spec: https://www.w3.org/TR/pointerevents/#pointerevent-interface */
-interface IPointerState {
+interface IPointerEventData {
   index: number; /* Pointer ID */
-  event: string; /* Original event that is mapped to pointer event */
+  type: string; /* Original event that is mapped to pointer event */
   pointer: string; /* pointerType: mouse, pen, touch */
   x: number; /* X-Axis */
   y: number; /* Y-Axis */
@@ -314,8 +394,8 @@ interface IPointerState {
 /* ##########   VIEWPORT   ############# */
 /* ##################################### */
 
-interface IViewportEvent extends IEvent {
-  state: IViewportState;
+declare const enum ViewportEventType {
+  Viewport
 }
 
 interface IViewportRectangle {
@@ -330,12 +410,12 @@ interface IDocumentSize {
   height: number; /* Document height */
 }
 
-interface IViewportState {
+interface IViewportEventData {
   viewport: IViewportRectangle; /* Viewport rectangle */
   document: IDocumentSize; /* Document size */
   dpi: number; /* DPI */
   visibility: string; /* Visibility state of the page */
-  event: string; /* Source event */
+  type: string; /* Source event */
 }
 
 /* ##################################### */
@@ -343,23 +423,20 @@ interface IViewportState {
 /* ##################################### */
 
 declare const enum Instrumentation {
-  JsError,
-  MissingFeature,
-  XhrError,
-  TotalByteLimitExceeded,
-  Teardown,
-  ClarityAssertFailed,
-  ClarityDuplicated,
-  ShadowDomInconsistent,
-  ClarityActivateError,
-  Trigger
+  /* 0 */ JsError,
+  /* 1 */ MissingFeature,
+  /* 2 */ XhrError,
+  /* 3 */ TotalByteLimitExceeded,
+  /* 4 */ Teardown,
+  /* 5 */ ClarityAssertFailed,
+  /* 6 */ ClarityDuplicated,
+  /* 7 */ ShadowDomInconsistent,
+  /* 8 */ ClarityActivateError,
+  /* 9 */ PerformanceStateError,
+  /* 10 */ Trigger
 }
 
-interface IInstrumentationEventState {
-  type: Instrumentation;
-}
-
-interface IJsErrorEventState extends IInstrumentationEventState {
+interface IJsErrorEventData {
   source: string;
   message: string;
   stack: string;
@@ -367,11 +444,11 @@ interface IJsErrorEventState extends IInstrumentationEventState {
   colno: number;
 }
 
-interface IMissingFeatureEventState extends IInstrumentationEventState {
+interface IMissingFeatureEventData {
   missingFeatures: string[];
 }
 
-interface IXhrErrorEventState extends IInstrumentationEventState {
+interface IXhrErrorEventData {
   requestStatus: number;
   sequenceNumber: number;
   compressedLength: number;
@@ -381,20 +458,20 @@ interface IXhrErrorEventState extends IInstrumentationEventState {
   attemptNumber: number;
 }
 
-interface ITotalByteLimitExceededEventState extends IInstrumentationEventState {
+interface ITotalByteLimitExceededEventData {
   bytes: number;
 }
 
-interface IClarityAssertFailedEventState extends IInstrumentationEventState {
+interface IClarityAssertFailedEventData {
   source: string;
   comment: string;
 }
 
-interface IClarityDuplicatedEventState extends IInstrumentationEventState {
+interface IClarityDuplicatedEventData {
   currentImpressionId: string;
 }
 
-interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
+interface IShadowDomInconsistentEventData {
   // JSON of node indicies, representing the DOM
   dom: NumberJson;
 
@@ -411,14 +488,14 @@ interface IShadowDomInconsistentEventState extends IInstrumentationEventState {
   // before we stop processing mutations and send ShadowDomInconsistentEvent. This means that the actual transition
   // from consistent to inconsistent state happened on some previous action and there was also an event created for it.
   // That first event is sent in this property.
-  firstEvent?: IShadowDomInconsistentEventState;
+  firstEvent?: IShadowDomInconsistentEventData;
 }
 
-interface IClarityActivateErrorState extends IInstrumentationEventState {
+interface IClarityActivateErrorEventData {
   error: string;
 }
 
-interface ITriggerState extends IInstrumentationEventState {
+interface ITriggerState {
   key: string;
 }
 
@@ -426,8 +503,35 @@ interface ITriggerState extends IInstrumentationEventState {
 /* #########   PERFORMANCE   ########### */
 /* ##################################### */
 
-interface IPerformanceTiming extends PerformanceTiming {
-  // We send back all properties from performance.timing object
+declare const enum PerformanceEventType {
+  NavigationTiming,
+  ResourceTiming
+}
+
+// Replicates PerformanceTiming interface, but without toJSON property
+interface IPerformanceNavigationTiming {
+  connectEnd: number;
+  connectStart: number;
+  domainLookupEnd: number;
+  domainLookupStart: number;
+  domComplete: number;
+  domContentLoadedEventEnd: number;
+  domContentLoadedEventStart: number;
+  domInteractive: number;
+  domLoading: number;
+  fetchStart: number;
+  loadEventEnd: number;
+  loadEventStart: number;
+  msFirstPaint: number;
+  navigationStart: number;
+  redirectEnd: number;
+  redirectStart: number;
+  requestStart: number;
+  responseEnd: number;
+  responseStart: number;
+  unloadEventEnd: number;
+  unloadEventStart: number;
+  secureConnectionStart: number;
 }
 
 interface IPerformanceResourceTiming {
@@ -446,8 +550,12 @@ interface IPerformanceResourceTiming {
 }
 
 /* ##################################### */
-/* ############   LIBRARY   ############ */
+/* ###########   CONVERT   ############# */
 /* ##################################### */
 
-export function start(config?: IConfig): void;
-export function stop(): void;
+declare const enum ObjectType {
+  Object,
+  Array
+}
+
+type ClarityDataSchema = null | string | any[];

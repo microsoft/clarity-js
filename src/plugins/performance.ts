@@ -1,4 +1,5 @@
-import { IPerformanceResourceTiming, IPlugin } from "../../clarity";
+import { Instrumentation, IPerformanceNavigationTiming, IPerformanceResourceTiming, IPlugin, Origin,
+  PerformanceEventType } from "../../declarations/clarity";
 import { config } from "../config";
 import { addEvent, instrument } from "../core";
 import { mapProperties } from "../utils";
@@ -64,14 +65,11 @@ export default class PerformanceProfiler implements IPlugin {
 
   private logTiming() {
     if (this.timing.loadEventEnd > 0) {
-      let formattedTiming = this.timing.toJSON ? this.timing.toJSON() : this.timing;
-      formattedTiming = mapProperties(formattedTiming, (name: string, value) => {
-        return (formattedTiming[name] === 0) ? 0 : Math.round(formattedTiming[name] - formattedTiming.navigationStart);
-      }, false);
-      let navigationTimingEventState = {
-        timing: formattedTiming
-      };
-      addEvent({type: "NavigationTiming", state: navigationTimingEventState});
+      let timing = this.timing.toJSON ? this.timing.toJSON() : this.timing;
+      let formattedTiming = mapProperties(timing, (name: string, value) => {
+        return (timing[name] === 0) ? 0 : Math.round(timing[name] - timing.navigationStart);
+      }, false) as IPerformanceNavigationTiming;
+      addEvent({ origin: Origin.Performance, type: PerformanceEventType.NavigationTiming, data: formattedTiming });
     } else {
       this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
@@ -86,7 +84,7 @@ export default class PerformanceProfiler implements IPlugin {
     if (entries.length < this.lastInspectedEntryIndex + 1) {
       if (!this.stateError) {
         this.stateError = true;
-        addEvent({type: "PerformanceStateError", state: {}});
+        instrument(Instrumentation.PerformanceStateError);
       }
 
       this.lastInspectedEntryIndex = -1;
@@ -117,10 +115,7 @@ export default class PerformanceProfiler implements IPlugin {
     }
 
     if (entryInfos.length > 0) {
-      let resourceTimingEventState = {
-        entries: entryInfos
-      };
-      addEvent({type: "ResourceTiming", state: resourceTimingEventState});
+      addEvent({ origin: Origin.Performance, type: PerformanceEventType.ResourceTiming, data: entryInfos });
     }
 
     this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);

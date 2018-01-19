@@ -1,15 +1,14 @@
-import { Action, IEvent, Source } from "../clarity";
+import { Action, IEvent, Origin } from "../declarations/clarity";
 import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { IgnoreTag, NodeIndex } from "../src/plugins/layout/stateprovider";
 import { cleanupFixture, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { getEventsByType, observeEvents } from "./utils";
+import { getEventsByOrigin, observeEvents } from "./utils";
 
 import * as chai from "chai";
 
-let eventName = "Layout";
 let assert = chai.assert;
 
 describe("Layout Tests", () => {
@@ -24,7 +23,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true });
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let div = document.createElement("div");
     let span = document.createElement("span");
     span.innerHTML = "Clarity";
@@ -35,10 +34,10 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 3);
-      assert.equal(events[0].state.tag, "DIV");
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[1].state.tag, "SPAN");
-      assert.equal(events[2].state.tag, "*TXT*");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "DIV");
+      assert.equal(events[1].data.state.tag, "SPAN");
+      assert.equal(events[2].data.state.tag, "*TXT*");
       done();
     }
   });
@@ -48,16 +47,17 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true });
 
     // Remove a node from the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let dom = document.getElementById("clarity");
+    let index = dom[NodeIndex];
     dom.parentNode.removeChild(dom);
 
     function callback() {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.tag, "DIV");
-      assert.equal(events[0].state.action, Action.Remove);
+      assert.equal(events[0].data.action, Action.Remove);
+      assert.equal(events[0].data.index, index);
       done();
     }
   });
@@ -67,7 +67,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true });
 
     // Move an existing node in the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let dom = document.getElementById("clarity");
     let backup = document.getElementById("backup");
     backup.appendChild(dom);
@@ -76,7 +76,7 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Move);
+      assert.equal(events[0].data.action, Action.Move);
       done();
     }
   });
@@ -86,7 +86,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true });
 
     // Insert a node before an existing node and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let dom = document.getElementById("clarity");
     let backup = document.getElementById("backup");
     let domIndex = dom[NodeIndex];
@@ -97,9 +97,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Move);
-      assert.equal(events[0].state.parent, domIndex);
-      assert.equal(events[0].state.next, firstChildIndex);
+      assert.equal(events[0].data.action, Action.Move);
+      assert.equal(events[0].data.parent, domIndex);
+      assert.equal(events[0].data.next, firstChildIndex);
       done();
     }
   });
@@ -127,7 +127,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true });
 
     // Insert a node before an existing node and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let events: IEvent[] = [];
     let callbackCount = 0;
     let script = document.createElement("script");
@@ -144,17 +144,17 @@ describe("Layout Tests", () => {
         // IE path: Only div insertion is reported in the first callback
         if (events.length === 1) {
           // Observe more events
-          stopObserving = observeEvents(eventName);
+          stopObserving = observeEvents(Origin.Layout);
         } else {
           // Non-IE path: Both div and script are reported in the first callback
           observer.disconnect();
           assert.equal(events.length, 3);
-          assert.equal(events[0].state.action, Action.Insert);
-          assert.equal(events[0].state.tag, IgnoreTag);
-          assert.equal(events[1].state.action, Action.Insert);
-          assert.equal(events[1].state.tag, IgnoreTag);
-          assert.equal(events[2].state.action, Action.Insert);
-          assert.equal(events[2].state.tag, "DIV");
+          assert.equal(events[0].data.action, Action.Insert);
+          assert.equal(events[0].data.state.tag, IgnoreTag);
+          assert.equal(events[1].data.action, Action.Insert);
+          assert.equal(events[1].data.state.tag, IgnoreTag);
+          assert.equal(events[2].data.action, Action.Insert);
+          assert.equal(events[2].data.state.tag, "DIV");
           done();
         }
       } else if (callbackCount === 1) {
@@ -162,18 +162,18 @@ describe("Layout Tests", () => {
         let span = document.createElement("span");
         document.body.appendChild(span);
         // Observe more events
-        stopObserving = observeEvents(eventName);
+        stopObserving = observeEvents(Origin.Layout);
       } else {
         observer.disconnect();
         assert.equal(events.length, 4);
-        assert.equal(events[0].state.action, Action.Insert);
-        assert.equal(events[0].state.tag, "DIV");
-        assert.equal(events[1].state.action, Action.Insert);
-        assert.equal(events[1].state.tag, IgnoreTag);
-        assert.equal(events[2].state.action, Action.Insert);
-        assert.equal(events[2].state.tag, IgnoreTag);
-        assert.equal(events[3].state.action, Action.Insert);
-        assert.equal(events[3].state.tag, "SPAN");
+        assert.equal(events[0].data.action, Action.Insert);
+        assert.equal(events[0].data.state.tag, "DIV");
+        assert.equal(events[1].data.action, Action.Insert);
+        assert.equal(events[1].data.state.tag, IgnoreTag);
+        assert.equal(events[2].data.action, Action.Insert);
+        assert.equal(events[2].data.state.tag, IgnoreTag);
+        assert.equal(events[3].data.action, Action.Insert);
+        assert.equal(events[3].data.state.tag, "SPAN");
         done();
       }
       callbackCount++;
@@ -185,7 +185,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true });
 
     // Move multiple nodes from one parent to another and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let dom = document.getElementById("clarity");
     let backup = document.getElementById("backup");
     let span = document.createElement("span");
@@ -199,64 +199,27 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, "SPAN");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "SPAN");
 
-      assert.equal(events[1].state.action, Action.Move);
-      assert.equal(events[1].state.index, dom[NodeIndex]);
-      assert.equal(events[1].state.next, backup[NodeIndex]);
+      assert.equal(events[1].data.action, Action.Move);
+      assert.equal(events[1].data.index, dom[NodeIndex]);
+      assert.equal(events[1].data.next, backup[NodeIndex]);
 
-      assert.equal(events[2].state.action, Action.Move);
-      assert.equal(events[2].state.index, backup[NodeIndex]);
-      assert.equal(events[2].state.next, null);
+      assert.equal(events[2].data.action, Action.Move);
+      assert.equal(events[2].data.index, backup[NodeIndex]);
+      assert.equal(events[2].data.next, null);
 
       done();
     }
   });
-
-  //  Currently we stopped capturing CSS rule modifications, so disabling this test
-  //  Keeping it in code to use it again, once CSS rule modification capturing is restored
-  //
-  //  it('ensures we capture css rule modifications via javascript', (done: DoneFn) => {
-  //    let observer = new MutationObserver(callback);
-  //    observer.observe(document, {"childList": true,"subtree": true});
-
-  //    // Add a style tag and later modify styles using javascript
-  //    let dom = document.getElementById("clarity");
-  //    let domIndex = dom[NodeIndex];
-  //    let style = document.createElement("style");
-  //    style.textContent = "body {}";
-  //    dom.appendChild(style);
-  //    let stylesheet = style.sheet;
-  //    let rules = stylesheet["cssRules"] || stylesheet["rules"];
-  //    rules[0].style.background = "red";
-
-  //    function callback() {
-  //      observer.disconnect();
-
-  //      // Following jasmine feature fast forwards the async delay in setTimeout calls
-  //      waitForSend();
-
-  //      // Uncompress recent data from mutations
-  //      let events = getEventsByType(LayoutEventName);
-
-  //      assert.equal(core.bytes.length, 2);
-  //      assert.equal(events.length, 2);
-  //      assert.equal(events[0].state.action, Action.Insert);
-  //      assert.equal(events[0].state.parent, domIndex);
-  //      assert.equal(events[1].state.content.indexOf("red") > 0, true);
-
-  //      // Explicitly signal that we are done here
-  //      done();
-  //    };
-  //  });
 
   it("checks dom changes are captured accurately when multiple siblings are moved to another parent", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
     // Move multiple nodes from one parent to another and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let dom = document.getElementById("clarity");
     let backup = document.getElementById("backup");
     let backupIndex = backup[NodeIndex];
@@ -268,10 +231,10 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, childrenCount);
-      assert.equal(events[0].state.action, Action.Move);
-      assert.equal(events[0].state.parent, backupIndex);
-      assert.equal(events[4].state.parent, backupIndex);
-      assert.equal(events[4].state.next, events[5].state.index);
+      assert.equal(events[0].data.action, Action.Move);
+      assert.equal(events[0].data.parent, backupIndex);
+      assert.equal(events[4].data.parent, backupIndex);
+      assert.equal(events[4].data.next, events[5].data.index);
       done();
     }
   });
@@ -279,7 +242,7 @@ describe("Layout Tests", () => {
   it("checks that insertion of multiple nodes in the same mutation record is handled correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
 
     let df = document.createDocumentFragment();
     let n1 = document.createElement("div");
@@ -298,20 +261,20 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 3);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, "DIV");
-      assert.equal(events[0].state.previous, backupPrevious[NodeIndex]);
-      assert.equal(events[0].state.next, n2[NodeIndex]);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "DIV");
+      assert.equal(events[0].data.state.previous, backupPrevious[NodeIndex]);
+      assert.equal(events[0].data.state.next, n2[NodeIndex]);
 
       // Check SPAN insert event
-      assert.equal(events[1].state.action, Action.Insert);
-      assert.equal(events[1].state.tag, "SPAN");
-      assert.equal(events[1].state.next, n3[NodeIndex]);
+      assert.equal(events[1].data.action, Action.Insert);
+      assert.equal(events[1].data.state.tag, "SPAN");
+      assert.equal(events[1].data.state.next, n3[NodeIndex]);
 
       // Check A insert event
-      assert.equal(events[2].state.action, Action.Insert);
-      assert.equal(events[2].state.tag, "A");
-      assert.equal(events[2].state.next, backup[NodeIndex]);
+      assert.equal(events[2].data.action, Action.Insert);
+      assert.equal(events[2].data.state.tag, "A");
+      assert.equal(events[2].data.state.next, backup[NodeIndex]);
 
       done();
     }
@@ -320,7 +283,7 @@ describe("Layout Tests", () => {
   it("checks that removal of multiple nodes in the same mutation record is handled correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
 
     let dom = document.getElementById("clarity");
     let children = [];
@@ -341,8 +304,8 @@ describe("Layout Tests", () => {
 
       // Make sure that there is a remove event for every child
       for (let i = 0; i < events.length; i++) {
-        let index = events[i].state.index;
-        assert.equal(events[i].state.action, Action.Remove);
+        let index = events[i].data.index;
+        assert.equal(events[i].data.action, Action.Remove);
         assert.equal(childIndices[index], true);
         delete childIndices[index];
       }
@@ -362,7 +325,7 @@ describe("Layout Tests", () => {
   it("checks that removal of a known node through a subtree of its ignored parent is handled correctly", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
 
     let clarityNode = document.getElementById("clarity");
     let backupNode = document.getElementById("backup");
@@ -378,8 +341,8 @@ describe("Layout Tests", () => {
 
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Remove);
-      assert.equal(events[0].state.index, backupNodeIndex);
+      assert.equal(events[0].data.action, Action.Remove);
+      assert.equal(events[0].data.index, backupNodeIndex);
 
       // Make sure that clarity index is cleared from all removed nodes
       assert.equal(NodeIndex in tempNode, false);
@@ -394,7 +357,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let count = 0;
     let div = document.createElement("div");
     document.body.appendChild(div);
@@ -405,9 +368,9 @@ describe("Layout Tests", () => {
         observer.disconnect();
         let events = stopObserving();
         assert.equal(events.length, 2);
-        assert.equal(events[0].state.action, Action.Insert);
-        assert.equal(events[0].state.tag, "DIV");
-        assert.equal(events[1].state.action, Action.Update);
+        assert.equal(events[0].data.action, Action.Insert);
+        assert.equal(events[0].data.state.tag, "DIV");
+        assert.equal(events[1].data.action, Action.AttributeUpdate);
         done();
       }
     }
@@ -418,7 +381,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let div = document.createElement("div");
     document.body.appendChild(div);
     div.setAttribute("data-clarity", "test");
@@ -427,8 +390,8 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, "DIV");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "DIV");
       done();
     }
   });
@@ -438,7 +401,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let clarity = document.getElementById("clarity");
     let div = document.createElement("div");
     document.body.appendChild(div);
@@ -448,9 +411,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, "DIV");
-      assert.equal(events[0].state.parent, clarity[NodeIndex]);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "DIV");
+      assert.equal(events[0].data.state.parent, clarity[NodeIndex]);
       done();
     }
   });
@@ -460,7 +423,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let div1 = document.createElement("div");
     let div2 = document.createElement("div");
     let div3 = document.createElement("div");
@@ -474,10 +437,10 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 2);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.index, div1[NodeIndex]);
-      assert.equal(events[1].state.action, Action.Insert);
-      assert.equal(events[1].state.index, div2[NodeIndex]);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.index, div1[NodeIndex]);
+      assert.equal(events[1].data.action, Action.Insert);
+      assert.equal(events[1].data.index, div2[NodeIndex]);
       assert.equal(div1[NodeIndex], div2[NodeIndex] - 1);
       done();
     }
@@ -488,7 +451,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let div = document.createElement("div");
     document.body.appendChild(div);
     document.body.removeChild(div);
@@ -512,7 +475,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let div = document.createElement("div");
     let span = document.createElement("span");
     document.body.appendChild(div);
@@ -538,7 +501,7 @@ describe("Layout Tests", () => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true, attributes: true });
 
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let clarityDiv = document.getElementById("clarity");
     let span = document.createElement("span");
     let clarityDivIndex = clarityDiv[NodeIndex];
@@ -551,8 +514,8 @@ describe("Layout Tests", () => {
 
       // Prove that we didn't send any extra instrumentation back for no-op mutation
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Remove);
-      assert.equal(events[0].state.index, clarityDivIndex);
+      assert.equal(events[0].data.action, Action.Remove);
+      assert.equal(events[0].data.index, clarityDivIndex);
 
       // Make sure that clarity index is cleared from all removed nodes
       assert.equal(NodeIndex in clarityDiv, false);
@@ -573,7 +536,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true });
 
     // Insert a node before an existing node and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let n1 = document.createElement("div");
     let n2 = document.createElement("span");
     let bodyIndex = document.body[NodeIndex];
@@ -587,14 +550,14 @@ describe("Layout Tests", () => {
       assert.equal(events.length, 2);
 
       // Check DIV insert event
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.parent, bodyIndex);
-      assert.equal(events[0].state.tag, "DIV");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.parent, bodyIndex);
+      assert.equal(events[0].data.state.tag, "DIV");
 
       // Check SPAN insert event
-      assert.equal(events[1].state.action, Action.Insert);
-      assert.equal(events[1].state.parent, n1[NodeIndex]);
-      assert.equal(events[1].state.tag, "SPAN");
+      assert.equal(events[1].data.action, Action.Insert);
+      assert.equal(events[1].data.state.parent, n1[NodeIndex]);
+      assert.equal(events[1].data.state.tag, "SPAN");
 
       done();
     }
@@ -604,7 +567,7 @@ describe("Layout Tests", () => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let divOne = document.createElement("div");
     let divTwo = document.createElement("div");
     let clarityDiv = document.getElementById("clarity");
@@ -619,18 +582,18 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 4);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[1].state.action, Action.Move);
-      assert.equal(events[2].state.action, Action.Update);
-      assert.equal(events[3].state.action, Action.Remove);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[1].data.action, Action.Move);
+      assert.equal(events[2].data.action, Action.AttributeUpdate);
+      assert.equal(events[3].data.action, Action.Remove);
 
       // Make sure all events have the same mutation sequence
-      let mutationSequence = events[0].state.mutationSequence;
+      let mutationSequence = events[0].data.mutationSequence;
       assert.isTrue(mutationSequence >= 0);
-      assert.equal(events[0].state.mutationSequence, mutationSequence);
-      assert.equal(events[1].state.mutationSequence, mutationSequence);
-      assert.equal(events[2].state.mutationSequence, mutationSequence);
-      assert.equal(events[3].state.mutationSequence, mutationSequence);
+      assert.equal(events[0].data.mutationSequence, mutationSequence);
+      assert.equal(events[1].data.mutationSequence, mutationSequence);
+      assert.equal(events[2].data.mutationSequence, mutationSequence);
+      assert.equal(events[3].data.mutationSequence, mutationSequence);
 
       done();
     }
@@ -640,7 +603,7 @@ describe("Layout Tests", () => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let divOne = document.createElement("div");
     let divTwo = document.createElement("div");
     let callbackNumber = 0;
@@ -653,9 +616,9 @@ describe("Layout Tests", () => {
         let events = stopObserving();
         assert.equal(events.length, 2);
 
-        let firstEventSequence = events[0].state.mutationSequence;
+        let firstEventSequence = events[0].data.mutationSequence;
         assert.isTrue(firstEventSequence >= 0);
-        assert.equal(events[1].state.mutationSequence, firstEventSequence + 1);
+        assert.equal(events[1].data.mutationSequence, firstEventSequence + 1);
 
         done();
       } else {
@@ -673,7 +636,7 @@ describe("Layout Tests", () => {
     config.showImages = false;
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let img = document.createElement("img");
     img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAIBTAA7";
     document.body.appendChild(img);
@@ -682,9 +645,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.tag, "IMG");
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal("src" in events[0].state.attributes, false);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "IMG");
+      assert.equal("src" in events[0].data.state.attributes, false);
       done();
     }
   });
@@ -697,7 +660,7 @@ describe("Layout Tests", () => {
     config.showImages = true;
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let img = document.createElement("img");
     let src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAIBTAA7";
     img.src = src;
@@ -707,9 +670,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.tag, "IMG");
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.attributes["src"], src);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "IMG");
+      assert.equal(events[0].data.state.attributes["src"], src);
       done();
     }
   });
@@ -722,7 +685,7 @@ describe("Layout Tests", () => {
     config.showText = false;
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let input = document.createElement("input");
     input.setAttribute("value", "Clarity");
     document.body.appendChild(input);
@@ -731,9 +694,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.tag, "INPUT");
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.attributes["value"], "*******");
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, "INPUT");
+      assert.equal(events[0].data.state.attributes["value"], "*******");
       done();
     }
   });
@@ -743,7 +706,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true });
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let script = document.createElement("script");
     script.innerText = "/*some javascriptcode*/";
     document.body.appendChild(script);
@@ -754,13 +717,13 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       assert.equal(events.length, 2);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, IgnoreTag);
-      assert.equal(events[0].state.nodeType, Node.ELEMENT_NODE);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, IgnoreTag);
+      assert.equal(events[0].data.state.nodeType, Node.ELEMENT_NODE);
 
-      assert.equal(events[1].state.action, Action.Insert);
-      assert.equal(events[1].state.tag, IgnoreTag);
-      assert.equal(events[1].state.nodeType, Node.TEXT_NODE);
+      assert.equal(events[1].data.action, Action.Insert);
+      assert.equal(events[1].data.state.tag, IgnoreTag);
+      assert.equal(events[1].data.state.nodeType, Node.TEXT_NODE);
 
       done();
     }
@@ -771,7 +734,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true });
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let meta = document.createElement("meta");
     document.body.appendChild(meta);
 
@@ -779,9 +742,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, IgnoreTag);
-      assert.equal(events[0].state.nodeType, Node.ELEMENT_NODE);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, IgnoreTag);
+      assert.equal(events[0].data.state.nodeType, Node.ELEMENT_NODE);
       done();
     }
   });
@@ -791,7 +754,7 @@ describe("Layout Tests", () => {
     observer.observe(document, { childList: true, subtree: true });
 
     // Add a node to the document and observe Clarity events
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(Origin.Layout);
     let comment = document.createComment("some explanation");
     document.body.appendChild(comment);
 
@@ -799,9 +762,9 @@ describe("Layout Tests", () => {
       observer.disconnect();
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, IgnoreTag);
-      assert.equal(events[0].state.nodeType, Node.COMMENT_NODE);
+      assert.equal(events[0].data.action, Action.Insert);
+      assert.equal(events[0].data.state.tag, IgnoreTag);
+      assert.equal(events[0].data.state.nodeType, Node.COMMENT_NODE);
       done();
     }
   });
@@ -825,7 +788,7 @@ describe("Layout Tests", () => {
       observer.disconnect();
 
       // Add a node to the document and observe Clarity events
-      stopObserving = observeEvents(eventName);
+      stopObserving = observeEvents(Origin.Layout);
 
       // Trigger scroll
       outerDiv.addEventListener("scroll", scrollCallback);
@@ -836,8 +799,7 @@ describe("Layout Tests", () => {
       outerDiv.removeEventListener("scroll", scrollCallback);
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Update);
-      assert.equal(events[0].state.source, Source.Scroll);
+      assert.equal(events[0].data.action, Action.Scroll);
       done();
     }
   });
@@ -868,7 +830,7 @@ describe("Layout Tests", () => {
         observer.disconnect();
 
         // Add a node to the document and observe Clarity events
-        stopObserving = observeEvents(eventName);
+        stopObserving = observeEvents(Origin.Layout);
 
         // Trigger scroll after a mutation update
         outerDiv.addEventListener("scroll", scrollCallback);
@@ -880,8 +842,7 @@ describe("Layout Tests", () => {
       outerDiv.removeEventListener("scroll", scrollCallback);
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Update);
-      assert.equal(events[0].state.source, Source.Scroll);
+      assert.equal(events[0].data.action, Action.Scroll);
       done();
     }
   });
@@ -914,7 +875,7 @@ describe("Layout Tests", () => {
         observer.disconnect();
 
         // Add a node to the document and observe Clarity events
-        stopObserving = observeEvents(eventName);
+        stopObserving = observeEvents(Origin.Layout);
 
         // Trigger scroll after a mutation update
         outerDiv.addEventListener("scroll", scrollCallback);
@@ -926,8 +887,7 @@ describe("Layout Tests", () => {
       outerDiv.removeEventListener("scroll", scrollCallback);
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Update);
-      assert.equal(events[0].state.source, Source.Scroll);
+      assert.equal(events[0].data.action, Action.Scroll);
       done();
     }
   });
@@ -945,7 +905,7 @@ describe("Layout Tests", () => {
       observer.disconnect();
 
       // Add a node to the document and observe Clarity events
-      stopObserving = observeEvents(eventName);
+      stopObserving = observeEvents(Origin.Layout);
 
       // Trigger scroll
       input.addEventListener("change", inputChangeCallback);
@@ -961,9 +921,8 @@ describe("Layout Tests", () => {
       input.removeEventListener("change", inputChangeCallback);
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Update);
-      assert.equal(events[0].state.source, Source.Input);
-      assert.equal(events[0].state.attributes.value, newValueString);
+      assert.equal(events[0].data.action, Action.Input);
+      assert.equal(events[0].data.value, newValueString);
       done();
     }
   });
@@ -981,7 +940,7 @@ describe("Layout Tests", () => {
       observer.disconnect();
 
       // Add a node to the document and observe Clarity events
-      stopObserving = observeEvents(eventName);
+      stopObserving = observeEvents(Origin.Layout);
 
       // Trigger scroll
       textarea.addEventListener("input", inputChangeCallback);
@@ -997,9 +956,8 @@ describe("Layout Tests", () => {
       textarea.removeEventListener("input", inputChangeCallback);
       let events = stopObserving();
       assert.equal(events.length, 1);
-      assert.equal(events[0].state.action, Action.Update);
-      assert.equal(events[0].state.source, Source.Input);
-      assert.equal(events[0].state.attributes.value, newValueString);
+      assert.equal(events[0].data.action, Action.Input);
+      assert.equal(events[0].data.value, newValueString);
       done();
     }
   });

@@ -1,5 +1,5 @@
-import { IAddEventMessage, ICompressedBatchMessage, IEnvelope, IEvent,
-  Instrumentation, ITimestampedWorkerMessage, WorkerMessageType } from "../clarity";
+import { IAddEventMessage, ICompressedBatchMessage, IConfig, IEnvelope, IEvent, IEventArray, IImpressionMetadata,
+  Instrumentation, IPayload, ITimestampedWorkerMessage, Origin, WorkerMessageType } from "../declarations/clarity";
 import compress from "./compress";
 import { config } from "./config";
 
@@ -23,7 +23,7 @@ function workerContext() {
   let compress = workerGlobalScope.compress;
   let config: IConfig = workerGlobalScope.config;
   let metadata: IImpressionMetadata = workerGlobalScope.metadata;
-  let nextBatchEvents: IEvent[] = [];
+  let nextBatchEvents: IEventArray[] = [];
   let nextBatchBytes = 0;
   let sequence = 0;
 
@@ -48,7 +48,7 @@ function workerContext() {
     }
   };
 
-  function addEvent(event: IEvent, time: number): void {
+  function addEvent(event: IEventArray, time: number): void {
     let eventStr = JSON.stringify(event);
 
     // If appending new event to next batch would exceed batch limit, then post next batch first
@@ -59,7 +59,11 @@ function workerContext() {
     // Append new event to the next batch
     nextBatchEvents.push(event);
     nextBatchBytes += eventStr.length;
-    nextBatchIsSingleXhrErrorEvent = (nextBatchEvents.length === 1 && event.state && event.state.type === Instrumentation.XhrError);
+
+    let origin = event[1];
+    let type = event[2];
+    let length = nextBatchEvents.length;
+    nextBatchIsSingleXhrErrorEvent = (length === 1 && origin === Origin.Instrumentation && type === Instrumentation.XhrError);
 
     // Even if we just posted next batch, it is possible that a single new event exceeds batch limit by itself, so we need to check again
     if (nextBatchBytes >= config.batchLimit) {

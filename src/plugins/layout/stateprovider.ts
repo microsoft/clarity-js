@@ -1,5 +1,5 @@
-import { IAttributes, IDoctypeLayoutState, IElementLayoutState,
-   IIgnoreLayoutState, ILayoutState, ITextLayoutState } from "../../../clarity";
+import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutRectangle, ILayoutState,
+  ITextLayoutState } from "../../../declarations/clarity";
 import { config } from "../../config";
 import { assert } from "../../utils";
 import { ShadowDom } from "./shadowdom";
@@ -54,63 +54,15 @@ export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLay
 export function createElementLayoutState(element: Element): IElementLayoutState {
   let tagName = element.tagName;
   let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
+
+  // TODO: This should not be necessary here, look into removing this
   if (tagName === ScriptTag || tagName === MetaTag) {
     elementState.tag = IgnoreTag;
     return elementState;
   }
 
-  let elementAttributes = element.attributes;
-  let stateAttributes: IAttributes = {};
-  for (let i = 0; i < elementAttributes.length; i++) {
-    let attr = elementAttributes[i];
-    let attrName = attr.name.toLowerCase();
-
-    // If it's an image and configuration disallows capturing images then skip src attribute
-    if (tagName === "IMG" && !config.showImages && attrName === "src") {
-      continue;
-    }
-
-    // If we are masking text, also mask it from input boxes as well as alt description
-    if (!config.showText && attributeMaskList.indexOf(attrName) >= 0) {
-      stateAttributes[attr.name] = attr.value.replace(/\S/gi, "*");
-    } else {
-      stateAttributes[attr.name] = attr.value;
-    }
-  }
-  elementState.attributes = stateAttributes;
-
-  // In IE, calling getBoundingClientRect on a node that is disconnected
-  // from a DOM tree, sometimes results in a 'Unspecified Error'
-  // Wrapping this in try/catch is faster than checking whether element is connected to DOM
-  let rect = null;
-  try {
-    rect = element.getBoundingClientRect();
-  } catch (e) {
-    // Ignore
-  }
-
-  elementState.layout = null;
-  if (rect) {
-    let styles = window.getComputedStyle(element);
-
-    elementState.layout = {
-      x: Math.round(rect.left),
-      y: Math.round(rect.top),
-      width: Math.round(rect.width),
-      height: Math.round(rect.height)
-    };
-
-    // Check if scroll is possible
-    if (styles["overflow-x"] === "auto"
-                              || styles["overflow-x"] === "scroll"
-                              || styles["overflow-x"] === "hidden"
-                              || styles["overflow-y"] === "auto"
-                              || styles["overflow-y"] === "scroll"
-                              || styles["overflow-y"] === "hidden") {
-      elementState.layout.scrollX = Math.round(element.scrollLeft);
-      elementState.layout.scrollY = Math.round(element.scrollTop);
-    }
-  }
+  elementState.attributes = getElementAttributes(element);
+  elementState.layout = getElementLayoutRectangle(element);
 
   return elementState;
 }
@@ -139,8 +91,6 @@ export function createGenericLayoutState(node: Node, tag: string): ILayoutState 
     parent: getNodeIndex(node.parentNode),
     previous: getNodeIndex(node.previousSibling),
     next: getNodeIndex(node.nextSibling),
-    source: null,
-    action: null,
     tag
   };
   return layoutState;
@@ -175,4 +125,76 @@ export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {
     }
   }
   return ignore;
+}
+
+export function getElementLayoutRectangle(element: Element): ILayoutRectangle {
+  let layoutRect = null;
+  // In IE, calling getBoundingClientRect on a node that is disconnected
+  // from a DOM tree, sometimes results in a 'Unspecified Error'
+  // Wrapping this in try/catch is faster than checking whether element is connected to DOM
+  let rect = null;
+  try {
+    rect = element.getBoundingClientRect();
+  } catch (e) {
+    // Ignore
+  }
+
+  if (rect) {
+    let styles = window.getComputedStyle(element);
+
+    layoutRect = {
+      x: Math.round(rect.left),
+      y: Math.round(rect.top),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+
+    // Check if scroll is possible
+    if (styles["overflow-x"] === "auto"
+                              || styles["overflow-x"] === "scroll"
+                              || styles["overflow-x"] === "hidden"
+                              || styles["overflow-y"] === "auto"
+                              || styles["overflow-y"] === "scroll"
+                              || styles["overflow-y"] === "hidden") {
+      layoutRect.scrollX = Math.round(element.scrollLeft);
+      layoutRect.scrollY = Math.round(element.scrollTop);
+    }
+  }
+
+  return layoutRect;
+}
+
+export function getElementAttributes(element: Element): IAttributes {
+  let attributes: IAttributes = {};
+  for (let i = 0; i < element.attributes.length; i++) {
+    let name = element.attributes[i].name;
+    let value = element.attributes[i].value;
+
+    // Skip image sources, if config disallows showing images
+    if (element.tagName === "IMG" && !config.showImages && name === "src") {
+      continue;
+    }
+
+    // Mask text from input boxes and alt descriptions, if config disallows showing text
+    if (!config.showText && attributeMaskList.indexOf(name) > -1) {
+      value = value.replace(/\S/gi, "*");
+    }
+
+    attributes[name] = value;
+  }
+  return attributes;
+}
+
+function shouldMaskAttribute(attrName: string, element: Element): boolean {
+  // Mask text from input boxes and alt descriptions, if config disallows showing text
+  if (!config.showText && attributeMaskList.indexOf(attrName) > -1) {
+    return true;
+  }
+
+  // Skip image sources, if config disallows showing images
+  if (!config.showImages && element.tagName === "IMG" && attrName.toLowerCase() === "src") {
+    return true;
+  }
+
+  return false;
 }

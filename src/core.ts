@@ -1,7 +1,8 @@
-import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, ICompressedBatchMessage,
-  IDroppedPayloadInfo, IEnvelope, IEvent, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
-  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITotalByteLimitExceededEventState, ITriggerState, IUploadInfo,
-  IXhrErrorEventState, State, UploadCallback, WorkerMessageType } from "../clarity";
+import EventToArray from "../converters/toarray";
+import { IAddEventMessage, IBindingContainer, IClarityActivateErrorEventData, IClarityDuplicatedEventData, ICompressedBatchMessage,
+  IDroppedPayloadInfo, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventInfo, IImpressionMetadata, IMissingFeatureEventData,
+  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITotalByteLimitExceededEventData, ITriggerState, IUploadInfo,
+  IXhrErrorEventData, Origin, State, UploadCallback, WorkerMessageType } from "../declarations/clarity";
 import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
@@ -12,7 +13,6 @@ const Version = "0.2.0";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
-const ClientInfoEventName = "ClientInfo";
 export const ClarityAttribute = "clarity-iid";
 
 let startTime: number;
@@ -34,7 +34,7 @@ let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
 // Storage for events that were posted to compression worker, but have not returned to core as compressed batches yet.
 // When page is unloaded, keeping such event copies in core allows us to terminate compression worker safely and then
 // compress and upload remaining events synchronously from the main thread.
-let pendingEvents: IEvent[] = [];
+let pendingEvents: IEventArray[] = [];
 
 // Storage for payloads that are compressed and are ready to be sent, but are waiting for Clarity trigger.
 // Once trigger is fired, all payloads from this array will be sent in the order they were generated.
@@ -103,7 +103,7 @@ export function teardown() {
     state = State.Unloaded;
 
     // Instrument teardown and upload residual events
-    instrument({ type: Instrumentation.Teardown });
+    instrument(Instrumentation.Teardown);
     uploadPendingEvents();
   }
 }
@@ -118,13 +118,15 @@ export function bind(target: EventTarget, event: string, listener: EventListener
   bindings[event] = eventBindings;
 }
 
-export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
-  let evt: IEvent = {
+export function addEvent(info: IEventInfo, scheduleUpload: boolean = true) {
+  let evtJson: IEvent = {
     id: eventCount++,
-    time: isNumber(event.time) ? event.time : getTimestamp(),
-    type: event.type,
-    state: event.state
+    time: isNumber(info.time) ? info.time : getTimestamp(),
+    origin: info.origin,
+    type: info.type,
+    data: info.data
   };
+  let evt = EventToArray(evtJson);
   let addEventMessage: IAddEventMessage = {
     type: WorkerMessageType.AddEvent,
     event: evt,
@@ -140,7 +142,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   }
 }
 
-export function addMultipleEvents(events: IEventData[]) {
+export function addMultipleEvents(events: IEventInfo[]) {
   if (events.length > 0) {
     // Don't schedule upload until we add the last event
     for (let i = 0; i < events.length - 1; i++) {
@@ -154,10 +156,9 @@ export function addMultipleEvents(events: IEventData[]) {
 export function onTrigger(key: string) {
   if (state === State.Activated) {
     let triggerState: ITriggerState = {
-      type: Instrumentation.Trigger,
       key
     };
-    instrument(triggerState);
+    instrument(Instrumentation.Trigger, triggerState);
     queueUploads = false;
     for (let i = 0; i < pendingUploads.length; i++) {
       let uploadInfo = pendingUploads[i];
@@ -182,9 +183,9 @@ export function getTimestamp(unix?: boolean, raw?: boolean) {
   return (raw ? time : Math.round(time));
 }
 
-export function instrument(eventState: IInstrumentationEventState) {
+export function instrument(type: Instrumentation, data?: any) {
   if (config.instrument) {
-    addEvent({type: "Instrumentation", state: eventState});
+    addEvent({ origin: Origin.Instrumentation, type, data: data || null });
   }
 }
 
@@ -251,11 +252,10 @@ function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadC
   uploadCount++;
   sentBytesCount += payload.length;
   if (state === State.Activated && sentBytesCount > config.totalLimit) {
-    let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
-      type: Instrumentation.TotalByteLimitExceeded,
+    let totalByteLimitExceededEventState: ITotalByteLimitExceededEventData = {
       bytes: sentBytesCount
     };
-    instrument(totalByteLimitExceededEventState);
+    instrument(Instrumentation.TotalByteLimitExceeded, totalByteLimitExceededEventState);
     teardown();
   }
 }
@@ -285,32 +285,31 @@ function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, 
 
 function onFirstSendDeliveryFailure(status: number, rawPayload: string, compressedPayload: string) {
   let sentObj: IPayload = JSON.parse(rawPayload);
-  let xhrErrorEventState: IXhrErrorEventState = {
-    type: Instrumentation.XhrError,
+  let xhrErrorEventData: IXhrErrorEventData = {
     requestStatus: status,
     sequenceNumber: sentObj.envelope.sequenceNumber,
     compressedLength: compressedPayload.length,
     rawLength: rawPayload.length,
-    firstEventId: sentObj.events[0].id,
-    lastEventId: sentObj.events[sentObj.events.length - 1].id,
+    firstEventId: sentObj.events[0][1/*id*/],
+    lastEventId: sentObj.events[sentObj.events.length - 1][1/*id*/],
     attemptNumber: 0
   };
-  droppedPayloads[xhrErrorEventState.sequenceNumber] = {
+  droppedPayloads[xhrErrorEventData.sequenceNumber] = {
     payload: compressedPayload,
-    xhrErrorState: xhrErrorEventState
+    xhrError: xhrErrorEventData
   };
-  instrument(xhrErrorEventState);
+  instrument(Instrumentation.XhrError, xhrErrorEventData);
   sentBytesCount -= compressedPayload.length;
 }
 
 function onResendDeliveryFailure(status: number, droppedPayloadInfo: IDroppedPayloadInfo) {
-  droppedPayloadInfo.xhrErrorState.requestStatus = status;
-  droppedPayloadInfo.xhrErrorState.attemptNumber++;
-  instrument(droppedPayloadInfo.xhrErrorState);
+  droppedPayloadInfo.xhrError.requestStatus = status;
+  droppedPayloadInfo.xhrError.attemptNumber++;
+  instrument(Instrumentation.XhrError, droppedPayloadInfo.xhrError);
 }
 
 function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
-  delete droppedPayloads[droppedPayloadInfo.xhrErrorState.sequenceNumber];
+  delete droppedPayloads[droppedPayloadInfo.xhrError.sequenceNumber];
 }
 
 function uploadPendingEvents() {
@@ -378,11 +377,10 @@ function prepare() {
 
   // Check that no other instance of Clarity is already running on the page
   if (document[ClarityAttribute]) {
-    let eventState: IClarityDuplicatedEventState = {
-      type: Instrumentation.ClarityDuplicated,
+    let eventData: IClarityDuplicatedEventData = {
       currentImpressionId: document[ClarityAttribute]
     };
-    instrument(eventState);
+    instrument(Instrumentation.ClarityDuplicated, eventData);
     return false;
   }
 
@@ -413,11 +411,10 @@ function onActivateErrorUnsafe(e: Error) {
 }
 
 function onActivateError(e: Error) {
-  let clarityActivateError: IClarityActivateErrorState = {
-    type: Instrumentation.ClarityActivateError,
+  let clarityActivateError: IClarityActivateErrorEventData = {
     error: e.message
   };
-  instrument(clarityActivateError);
+  instrument(Instrumentation.ClarityActivateError, clarityActivateError);
   teardown();
 }
 
@@ -443,10 +440,10 @@ function checkFeatures() {
   }
 
   if (missingFeatures.length > 0) {
-    instrument({
-      type: Instrumentation.MissingFeature,
+    let eventData: IMissingFeatureEventData = {
       missingFeatures
-    } as IMissingFeatureEventState);
+    };
+    instrument(Instrumentation.MissingFeature, eventData);
     return false;
   }
 

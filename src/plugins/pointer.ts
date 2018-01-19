@@ -1,13 +1,12 @@
-import { IPlugin, IPointerModule, IPointerState } from "../../clarity";
+import { IPlugin, IPointerEventData, IPointerModule, Origin, PointerEventType } from "../../declarations/clarity";
 import { addEvent, bind } from "../core";
 import * as mouse from "./pointer/mouse";
 import * as touch from "./pointer/touch";
 
 export default class Pointer implements IPlugin {
-  private eventName = "Pointer";
   private distanceThreshold = 20;
   private timeThreshold = 500;
-  private lastMoveState: IPointerState;
+  private lastMoveState: IPointerEventData;
   private lastMoveTime: number;
 
   public activate() {
@@ -38,8 +37,8 @@ export default class Pointer implements IPlugin {
     }
   }
 
-  private processState(state: IPointerState, time: number) {
-    switch (state.event) {
+  private processState(state: IPointerEventData, time: number) {
+    switch (state.type) {
       case "mousemove":
       case "touchmove":
         if (this.lastMoveState == null
@@ -47,16 +46,16 @@ export default class Pointer implements IPlugin {
           || this.checkTime(time)) {
           this.lastMoveState = state;
           this.lastMoveTime = time;
-          addEvent({type: this.eventName, state});
+          addEvent({origin: Origin.Pointer, type: PointerEventType.Pointer, data: state});
         }
         break;
       default:
-        addEvent({type: this.eventName, state});
+        addEvent({origin: Origin.Pointer, type: PointerEventType.Pointer, data: state});
         break;
     }
   }
 
-  private checkDistance(stateOne: IPointerState, stateTwo: IPointerState) {
+  private checkDistance(stateOne: IPointerEventData, stateTwo: IPointerEventData) {
     let dx = stateOne.x - stateTwo.x;
     let dy = stateOne.y - stateTwo.y;
     return (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold);
