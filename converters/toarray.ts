@@ -21,7 +21,7 @@ export default function(event: IEvent): IEventArray {
   return array;
 }
 
-function dataToArray(data: any): any[] {
+export function dataToArray(data: any): any[] {
   if (data === null || typeof data !== "object") {
     return data;
   }

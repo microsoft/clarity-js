@@ -1,9 +1,4 @@
-import { layoutStateFromArray } from "./layout";
-
-let discoverConverters = [];
-discoverConverters[DiscoverEventType.Discover] = discoverFromArray;
-
-export default discoverConverters;
+import { dataFromArray } from "../fromarray";
 
 export function discoverToEvents(id: number, time: number, data: IDiscover): IEvent[] {
   let events = discoverToEventsRecursive(id, time, data.dom, 0, null, null);
@@ -25,9 +20,13 @@ function discoverToEventsRecursive(
   let previousIndex = previous ? previous.index : null;
   let parentIndex = parent ? parent.index : null;
   let children = data[data.length - 1];
-  let pureData = data.slice(0, data.length - 1);
-  let layoutStateArray = [index, parentIndex, previousIndex, nextIndex].concat(pureData);
-  let layoutState = layoutStateFromArray(layoutStateArray);
+  let schema = data[0];
+  let partialStateData = data[1];
+  let layoutState = dataFromArray(partialStateData, schema) as ILayoutState;
+  layoutState.index = index;
+  layoutState.parent = parentIndex;
+  layoutState.previous = previousIndex;
+  layoutState.next = nextIndex;
 
   // Generate layouts in the same order as they were indexed on the client - DFS order
   let thisEventData: IDiscoverInsert = {

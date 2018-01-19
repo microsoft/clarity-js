@@ -17,7 +17,7 @@ export default function(eventArray: IEventArray): IEvent {
   return event;
 }
 
-function dataFromArray(dataArray: any[], schema: any[]): any {
+export function dataFromArray(dataArray: any[], schema: any[]): any {
   if (typeof schema === "string" || schema === null) {
     return dataArray;
   }
