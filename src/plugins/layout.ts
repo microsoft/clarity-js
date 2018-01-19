@@ -4,7 +4,6 @@ import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRouti
 import { config } from "../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "../core";
 import { debug, isNumber, traverseNodeTree } from "../utils";
-import { documentToArray } from "./layout/discover";
 import * as EventProvider from "./layout/eventprovider";
 import { ShadowDom } from "./layout/shadowdom";
 import StateManager from "./layout/statemanager";
@@ -72,7 +71,7 @@ export default class Layout implements IPlugin {
     this.discover(document, this.shadowDom, this.states);
 
     let discover: IDiscover = {
-      dom: documentToArray(this.states)
+      dom: treeToDiscoverArray(document, this.states)
     };
 
     let discoverEventData: IEventInfo = {

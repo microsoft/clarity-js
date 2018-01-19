@@ -1,5 +1,5 @@
 import fromarray from "./fromarray";
-import { discoverToEvents } from "./fromarray/discover";
+import { eventsFromDiscoverArray } from "./fromarray";
 import toarray from "./toarray";
 
-export default { fromarray, toarray, discoverToEvents };
+export default { fromarray, toarray, eventsFromDiscoverArray };

@@ -1,5 +1,6 @@
+import StateManager from "./../src/plugins/layout/statemanager";
+import { getNodeIndex } from "./../src/plugins/layout/stateprovider";
 import { hashCode } from "./../src/utils";
-import fromArray from "./fromarray";
 import schemas from "./schema";
 
 export default function(event: IEvent): IEventArray {
@@ -9,12 +10,6 @@ export default function(event: IEvent): IEventArray {
   let dataArray = dataToArray(event.data);
   let schemaPayload = newSchema ? schema : schemas.getSchemaHashcode(schema);
   let array = [event.id, event.origin, event.type, event.time, dataArray, schemaPayload] as IEventArray;
-
-  let original = fromArray(array);
-  if (JSON.stringify(event).length !== JSON.stringify(original).length) {
-    original = fromArray(array);
-  }
-
   return array;
 }
 
@@ -38,4 +33,29 @@ export function dataToArray(data: any): any[] {
   }
 
   return dataArray;
+}
+
+export function treeToDiscoverArray(root: Node, states: StateManager): any[] {
+  let state = states.get(getNodeIndex(root));
+  let trimmedState: ILayoutState = JSON.parse(JSON.stringify(state));
+
+  // Remove four redundant elements at the front: index, parent, previous, next
+  // Trim the object to avoid sending redundant data
+  delete trimmedState.index;
+  delete trimmedState.parent;
+  delete trimmedState.previous;
+  delete trimmedState.next;
+
+  let schema = schemas.createSchema(trimmedState);
+  let newSchema = schemas.addSchema(schema);
+  let data = dataToArray(trimmedState);
+
+  let childTrees = [];
+  for (let i = 0; i < root.childNodes.length; i++) {
+    childTrees.push(treeToDiscoverArray(root.childNodes[i], states));
+  }
+
+  let schemaPayload = newSchema ? schema : schemas.getSchemaHashcode(schema);
+  let discoverData = [schemaPayload, data, childTrees];
+  return discoverData;
 }

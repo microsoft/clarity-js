@@ -21,7 +21,7 @@ export default function(eventArray: IEventArray): IEvent {
   return event;
 }
 
-export function dataFromArray(dataArray: any[], schema: any[]): any {
+function dataFromArray(dataArray: any[], schema: any[]): any {
   if (typeof schema === "string" || schema === null) {
     return dataArray;
   }
@@ -35,8 +35,6 @@ export function dataFromArray(dataArray: any[], schema: any[]): any {
   } else if (schema.length === 3) {
     dataType = schema[1];
     subschemas = schema[2];
-  } else {
-    console.log("Unexpected schema length");
   }
 
   if (dataType === ObjectType.Object) {
@@ -49,7 +47,6 @@ export function dataFromArray(dataArray: any[], schema: any[]): any {
       } else {
         nextProperty = nextSubschema[0];
       }
-
       data[nextProperty] = dataFromArray(dataArray[i], nextSubschema);
     }
   } else if (dataType === ObjectType.Array) {
@@ -60,4 +57,59 @@ export function dataFromArray(dataArray: any[], schema: any[]): any {
     }
   }
   return data;
+}
+
+export function eventsFromDiscoverArray(
+  id: number, time: number, data: any[], index: number, parent: ILayoutState = null, previous: ILayoutState = null
+): IEvent[] {
+  // Next element hasn't been parsed yet at this point, so we don't know its index
+  let nextIndex = null;
+  let previousIndex = previous ? previous.index : null;
+  let parentIndex = parent ? parent.index : null;
+  let children = data[data.length - 1];
+  let schema = data[0];
+  let partialStateData = data[1];
+
+  if (typeof schema === "string") {
+    schema = schemas.getSchema(schema);
+  } else {
+    schemas.addSchema(schema);
+  }
+
+  let layoutState = dataFromArray(partialStateData, schema) as ILayoutState;
+  layoutState.index = index;
+  layoutState.parent = parentIndex;
+  layoutState.previous = previousIndex;
+  layoutState.next = nextIndex;
+
+  // Generate layouts in the same order as they were indexed on the client - DFS order
+  let thisEventData: IDiscoverInsert = {
+    action: Action.Discover,
+    index,
+    time,
+    state: layoutState
+  };
+  let thisEvent: IEvent = {
+    id,
+    origin: Origin.Layout,
+    type: Action.Discover,
+    time,
+    data: thisEventData
+  };
+
+  if (previous) {
+    previous.next = index;
+  }
+  index++;
+
+  let events = [ thisEvent ];
+  let previousChildState: ILayoutState = null;
+  for (let i = 0; i < children.length; i++) {
+    let nextChildEvents = eventsFromDiscoverArray(id, time, children[i], index, thisEvent.data.state, previousChildState);
+    previousChildState = nextChildEvents[0].data.state;
+    index += nextChildEvents.length;
+    events = events.concat(nextChildEvents);
+  }
+
+  return events;
 }
