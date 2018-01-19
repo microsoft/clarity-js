@@ -1,4 +1,5 @@
-import { ICompressedBatchMessage, IEvent, Instrumentation, State, UploadCallback, WorkerMessageType } from "../clarity";
+import { ICompressedBatchMessage, IEvent, UploadCallback, WorkerMessageType } from "../declarations/clarity";
+import { Instrumentation, Origin, State } from "../declarations/clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
@@ -353,14 +354,14 @@ describe("Core Tests", () => {
     config.waitForTrigger = true;
     activateCore();
 
-    let stopObserving = observeEvents("Instrumentation");
+    let stopObserving = observeEvents(Origin.Instrumentation);
     core.onTrigger(mockTriggerKey);
 
     let events = stopObserving();
     assert.equal(events.length, 1);
-    assert.equal(events[0].type, "Instrumentation");
-    assert.equal(events[0].state.type, Instrumentation.Trigger);
-    assert.equal(events[0].state.key, mockTriggerKey);
+    assert.equal(events[0].origin, Origin.Instrumentation);
+    assert.equal(events[0].type, Instrumentation.Trigger);
+    assert.equal(events[0].data.key, mockTriggerKey);
     done();
   });
 });

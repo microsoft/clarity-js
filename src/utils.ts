@@ -1,4 +1,4 @@
-import { IClarityAssertFailedEventState, Instrumentation } from "../clarity";
+import { IClarityAssertFailedEventData, Instrumentation } from "../declarations/clarity";
 import { config } from "./config";
 import { instrument } from "./core";
 

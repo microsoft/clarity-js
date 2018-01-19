@@ -1,3 +1,5 @@
+import { ILayoutState } from "../../../declarations/clarity";
+
 export default class StateManager {
 
   private layoutStates: ILayoutState[];

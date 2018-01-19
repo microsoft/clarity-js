@@ -1,4 +1,4 @@
-import { IPointerState } from "../../../clarity";
+import { IPointerEventData } from "../../../declarations/clarity";
 import { NodeIndex } from "../layout/stateprovider";
 
 export function transform(evt: TouchEvent): IPointerEventData[] {

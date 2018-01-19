@@ -1,5 +1,5 @@
-import { IAttributes, IDoctypeLayoutState, IElementLayoutState,
-   IIgnoreLayoutState, ILayoutState, ITextLayoutState } from "../../../clarity";
+import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutRectangle, ILayoutState,
+  ITextLayoutState } from "../../../declarations/clarity";
 import { config } from "../../config";
 import { assert } from "../../utils";
 import { ShadowDom } from "./shadowdom";

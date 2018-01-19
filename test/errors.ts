@@ -2,7 +2,7 @@ import { cleanupFixture, setupFixture } from "./testsetup";
 import { observeEvents } from "./utils";
 
 import * as chai from "chai";
-import { Instrumentation } from "../clarity";
+import { Instrumentation } from "../declarations/clarity";
 import * as errors from "../src/plugins/errors";
 
 let assert = chai.assert;

@@ -1,3 +1,6 @@
+import { IAttributes, IAttributeUpdate, ICharacterDataUpdate, IElementLayoutState, IInput, IInsert,
+  IMove, InputElement, IRemove, IScroll } from "../../../declarations/clarity";
+import { Action, CharacterDataNode} from "../../../declarations/clarity";
 import { ShadowDom } from "./shadowdom";
 import { createLayoutState, getElementLayoutRectangle, getNodeIndex } from "./stateprovider";
 

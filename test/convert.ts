@@ -1,6 +1,7 @@
 import FromArray from "../converters/fromarray";
 import schemas from "../converters/schema";
 import ToArray from "../converters/toarray";
+import { IEvent } from "../declarations/clarity";
 
 import * as chai from "chai";
 let assert = chai.assert;

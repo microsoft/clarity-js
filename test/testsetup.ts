@@ -1,4 +1,4 @@
-import { IAddEventMessage, IConfig, IWorkerMessage, WorkerMessageType } from "../clarity";
+import { IAddEventMessage, IConfig, IEvent, IWorkerMessage, WorkerMessageType } from "../declarations/clarity";
 import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
 import { addEvent } from "../src/core";
@@ -69,6 +69,7 @@ function mockWorkerOnMessage(message: any) {
     switch (message.type) {
       case WorkerMessageType.AddEvent:
         let addEventMsg = message as IAddEventMessage;
+        let schema = addEventMsg.event[5];
 
         // Events are passed to the worker in the array form, so we need to convert them back to JSON here
         let originalEvent = EventFromArray(addEventMsg.event);

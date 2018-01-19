@@ -1,3 +1,4 @@
+import { IEvent, IEventArray, ILayoutState } from "../declarations/clarity";
 import StateManager from "./../src/plugins/layout/statemanager";
 import { getNodeIndex } from "./../src/plugins/layout/stateprovider";
 import { hashCode } from "./../src/utils";

@@ -1,3 +1,4 @@
+import { ClarityDataSchema, ObjectType } from "../declarations/clarity";
 import { hashCode } from "./../src/utils";
 
 export class SchemaManager {

@@ -1,7 +1,8 @@
-import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, ICompressedBatchMessage,
-  IDroppedPayloadInfo, IEnvelope, IEvent, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
-  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITotalByteLimitExceededEventState, ITriggerState, IUploadInfo,
-  IXhrErrorEventState, State, UploadCallback, WorkerMessageType } from "../clarity";
+import EventToArray from "../converters/toarray";
+import { IAddEventMessage, IBindingContainer, IClarityActivateErrorEventData, IClarityDuplicatedEventData, ICompressedBatchMessage,
+  IDroppedPayloadInfo, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventInfo, IImpressionMetadata, IMissingFeatureEventData,
+  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITotalByteLimitExceededEventData, ITriggerState, IUploadInfo,
+  IXhrErrorEventData, Origin, State, UploadCallback, WorkerMessageType } from "../declarations/clarity";
 import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
@@ -102,7 +103,7 @@ export function teardown() {
     state = State.Unloaded;
 
     // Instrument teardown and upload residual events
-    instrument({ type: Instrumentation.Teardown });
+    instrument(Instrumentation.Teardown);
     uploadPendingEvents();
   }
 }
@@ -125,7 +126,7 @@ export function addEvent(info: IEventInfo, scheduleUpload: boolean = true) {
     type: info.type,
     data: info.data
   };
-  let evt = EventConverter(evtJson);
+  let evt = EventToArray(evtJson);
   let addEventMessage: IAddEventMessage = {
     type: WorkerMessageType.AddEvent,
     event: evt,
@@ -155,10 +156,9 @@ export function addMultipleEvents(events: IEventInfo[]) {
 export function onTrigger(key: string) {
   if (state === State.Activated) {
     let triggerState: ITriggerState = {
-      type: Instrumentation.Trigger,
       key
     };
-    instrument(triggerState);
+    instrument(Instrumentation.Trigger, triggerState);
     queueUploads = false;
     for (let i = 0; i < pendingUploads.length; i++) {
       let uploadInfo = pendingUploads[i];

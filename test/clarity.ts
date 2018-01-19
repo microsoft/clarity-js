@@ -1,4 +1,4 @@
-import { IConfig } from "../clarity";
+import { IConfig } from "../declarations/clarity";
 import { start } from "../src/clarity";
 
 // Make config uri non-empty, so that Clarity executes send

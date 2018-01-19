@@ -1,6 +1,8 @@
-import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
-  Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode, LayoutRoutine,
-  NumberJson, Source } from "../../clarity";
+import { treeToDiscoverArray } from "../../converters/toarray";
+import { Action, CharacterDataNode, DiscoverEventType, IDiscover, IElementLayoutState, IEventInfo, IInputLayoutState, ILayoutEventData,
+   ILayoutEventInfo, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo, InputElement, Instrumentation, IPlugin,
+   IShadowDomInconsistentEventData, IShadowDomMutationSummary, IShadowDomNode, ITextLayoutState, LayoutRoutine, NumberJson,
+   Origin} from "../../declarations/clarity";
 import { config } from "../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "../core";
 import { debug, isNumber, traverseNodeTree } from "../utils";

@@ -91,6 +91,7 @@ declare const enum Origin {
   /* 5 */ Viewport
 }
 
+export interface IPlugin {
   activate(): void;
   teardown(): void;
   reset(): void;
@@ -494,7 +495,7 @@ interface IClarityActivateErrorEventData {
   error: string;
 }
 
-interface ITriggerState extends IInstrumentationEventState {
+interface ITriggerState {
   key: string;
 }
 

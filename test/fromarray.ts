@@ -1,4 +1,5 @@
 import EventFromArray from "../converters/fromarray";
+import { IEvent, IEventArray } from "../declarations/clarity";
 
 export default function(eventArray: IEventArray): IEvent {
   let origin = eventArray[0];

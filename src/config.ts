@@ -1,4 +1,4 @@
-import { IConfig } from "../clarity";
+import { IConfig } from "../declarations/clarity";
 
 // Default configuration
 export let config: IConfig = {
