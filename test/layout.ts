@@ -214,42 +214,43 @@ describe("Layout Tests", () => {
     }
   });
 
-  //  Currently we stopped capturing CSS rule modifications, so disabling this test
-  //  Keeping it in code to use it again, once CSS rule modification capturing is restored
-  //
-  //  it('ensures we capture css rule modifications via javascript', (done: DoneFn) => {
-  //    let observer = new MutationObserver(callback);
-  //    observer.observe(document, {"childList": true,"subtree": true});
+  it("checks that we capture cssRule modifications via javascript when cssRule config is enabled", (done: DoneFn) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, {childList: true, subtree: true });
 
-  //    // Add a style tag and later modify styles using javascript
-  //    let dom = document.getElementById("clarity");
-  //    let domIndex = dom[NodeIndex];
-  //    let style = document.createElement("style");
-  //    style.textContent = "body {}";
-  //    dom.appendChild(style);
-  //    let stylesheet = style.sheet;
-  //    let rules = stylesheet["cssRules"] || stylesheet["rules"];
-  //    rules[0].style.background = "red";
+    // Disable images
+    config.cssRules = true;
 
-  //    function callback() {
-  //      observer.disconnect();
+    // Add a style tag and later modify styles using javascript
+    let stopObserving = observeEvents(eventName);
+    let dom = document.getElementById("clarity");
+    let domIndex = dom[NodeIndex];
+    let style = document.createElement("style");
+    style.textContent = "body {}";
+    dom.appendChild(style);
+    let stylesheet = style.sheet as CSSStyleSheet;
+    let rules = stylesheet.cssRules;
+    let styleRule = rules[0] as CSSStyleRule;
+    styleRule.style.background = "red";
 
-  //      // Following jasmine feature fast forwards the async delay in setTimeout calls
-  //      waitForSend();
+    function callback() {
+      observer.disconnect();
 
-  //      // Uncompress recent data from mutations
-  //      let events = getEventsByType(LayoutEventName);
+      // Uncompress recent data from mutations
+      let events = stopObserving();
 
-  //      assert.equal(core.bytes.length, 2);
-  //      assert.equal(events.length, 2);
-  //      assert.equal(events[0].state.action, Action.Insert);
-  //      assert.equal(events[0].state.parent, domIndex);
-  //      assert.equal(events[1].state.content.indexOf("red") > 0, true);
+      // Assert that style state has css rules and that style's child text node is ignored
+      assert.equal(events.length, 2);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(!!events[0].state.cssRules, true);
+      assert.equal(events[0].state.cssRules.length, 1);
+      assert.equal(events[0].state.cssRules[0].indexOf("red") > 0, true);
+      assert.equal(events[1].state.tag, IgnoreTag);
 
-  //      // Explicitly signal that we are done here
-  //      done();
-  //    };
-  //  });
+      // Explicitly signal that we are done here
+      done();
+    }
+  });
 
   it("checks dom changes are captured accurately when multiple siblings are moved to another parent", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
