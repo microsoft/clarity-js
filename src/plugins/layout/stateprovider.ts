@@ -1,5 +1,5 @@
-import { IAttributes, IDoctypeLayoutState, IElementLayoutState,
-   IIgnoreLayoutState, ILayoutState, ITextLayoutState } from "../../../clarity";
+import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutState, IStyleLayoutState,
+  ITextLayoutState } from "../../../clarity";
 import { config } from "../../config";
 import { assert } from "../../utils";
 import { ShadowDom } from "./shadowdom";
@@ -31,7 +31,12 @@ export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutStat
       layoutState = createTextLayoutState(node as Text);
       break;
     case Node.ELEMENT_NODE:
-      layoutState = createElementLayoutState(node as Element);
+      let elem = node as Element;
+      if (elem.tagName === "STYLE") {
+        layoutState = createStyleLayoutState(elem as HTMLStyleElement);
+      } else {
+        layoutState = createElementLayoutState(elem);
+      }
       break;
     default:
       layoutState = createIgnoreLayoutState(node);
@@ -115,6 +120,17 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
   return elementState;
 }
 
+export function createStyleLayoutState(styleNode: HTMLStyleElement): IStyleLayoutState {
+  let layoutState = createElementLayoutState(styleNode) as IStyleLayoutState;
+  let cssRules = (styleNode.sheet as CSSStyleSheet).cssRules;
+  let cssRulesTexts = [];
+  for (let i = 0; i < cssRules.length; i++) {
+    cssRulesTexts.push(cssRules[i].cssText);
+  }
+  layoutState.cssRules = cssRulesTexts;
+  return layoutState;
+}
+
 export function createTextLayoutState(textNode: Text): ITextLayoutState {
   // Text nodes that are children of the STYLE elements contain CSS code, so we don't want to hide it
   // Checking parentNode, instead of parentElement, because in IE textNode.parentElement returns 'undefined'.
@@ -159,6 +175,11 @@ export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {
     case Node.COMMENT_NODE:
       ignore = true;
       break;
+    case Node.TEXT_NODE:
+      // If we capture CSSRules on style elements, ignore its text children nodes
+      if (config.cssRules && (node.parentNode as Element).tagName === "STYLE") {
+        ignore = true;
+      }
     default:
       break;
   }

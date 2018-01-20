@@ -11,6 +11,7 @@ export let config: IConfig = {
   showImages: false,
   timeToYield: 50,
   instrument: false,
+  cssRules: false,
   uploadHandler: null,
   getImpressionId: null,
   getCid: null,
