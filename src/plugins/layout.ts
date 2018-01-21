@@ -6,7 +6,7 @@ import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./.
 import { debug, isNumber, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
 import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
-import { getNodeIndex, IgnoreTag, NodeIndex } from "./layout/stateprovider";
+import { getLayoutState, getNodeIndex, IgnoreTag, NodeIndex, resetStates } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
   private eventName = "Layout";
@@ -20,7 +20,6 @@ export default class Layout implements IPlugin {
   private domDiscoverComplete: boolean;
   private lastConsistentDomJson: NumberJson;
   private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventState;
-  private layoutStates: ILayoutState[];
   private originalLayouts: Array<{
     node: Node;
     layout: ILayoutState;
@@ -36,8 +35,8 @@ export default class Layout implements IPlugin {
     this.domPreDiscoverMutations = [];
     this.lastConsistentDomJson = null;
     this.firstShadowDomInconsistentEvent = null;
-    this.layoutStates = [];
     this.originalLayouts = [];
+    resetStates();
   }
 
   public activate(): void {
@@ -93,9 +92,7 @@ export default class Layout implements IPlugin {
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
   private discoverNode(node: Node) {
     this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
-    let index = getNodeIndex(node);
     let layout = createGenericLayoutState(node, null);
-    this.layoutStates[index] = layout;
     this.originalLayouts.push({
       node,
       layout
@@ -118,21 +115,21 @@ export default class Layout implements IPlugin {
     while (this.originalLayouts.length > 0 && getTimestamp(true) < yieldTime) {
       let originalLayout = this.originalLayouts.shift();
       let originalLayoutState = originalLayout.layout;
-      let currentLayoutState = createLayoutState(originalLayout.node, this.shadowDom);
-
-      currentLayoutState.index = originalLayout.layout.index;
+      let currentLayoutState = createLayoutState(originalLayout.node);
       currentLayoutState.parent = originalLayoutState.parent;
       currentLayoutState.previous = originalLayoutState.previous;
       currentLayoutState.next = originalLayoutState.next;
       currentLayoutState.source = Source.Discover;
       currentLayoutState.action = Action.Insert;
 
+      // Watch for any input changes or scroll events within the element
+      this.watch(originalLayout.node, currentLayoutState);
+
       events.push({
         type: this.eventName,
         state: currentLayoutState,
         time
       });
-      this.layoutStates[originalLayout.layout.index] = currentLayoutState;
     }
     addMultipleEvents(events);
 
@@ -162,14 +159,13 @@ export default class Layout implements IPlugin {
         type: this.eventName,
         state: eventState
       });
-      this.layoutStates[eventState.index] = eventState;
     }
     addMultipleEvents(eventsData);
   }
 
   private createEventState<T extends ILayoutEventInfo>(eventInfo: T): ILayoutState {
     let node = eventInfo.node;
-    let layoutState: ILayoutState = createLayoutState(node, this.shadowDom);
+    let layoutState: ILayoutState = createLayoutState(node);
 
     switch (eventInfo.action) {
       case Action.Insert:
@@ -235,32 +231,34 @@ export default class Layout implements IPlugin {
     let recordEvent = true;
     if (index !== null) {
       let time = getTimestamp();
-      let lastLayoutState = this.layoutStates[index];
+      let layoutState = <IElementLayoutState> getLayoutState(index);
 
-      // Deep-copy an existing layout JSON
-      let newLayoutState: IElementLayoutState = JSON.parse(JSON.stringify(lastLayoutState));
-      newLayoutState.source = source;
-      newLayoutState.action = Action.Update;
+      if (!layoutState) {
+        return;
+      }
 
       switch (source) {
         case Source.Scroll:
-          newLayoutState.layout.scrollX = Math.round(element.scrollLeft);
-          newLayoutState.layout.scrollY = Math.round(element.scrollTop);
-          if (lastLayoutState && !this.checkDistance(lastLayoutState as IElementLayoutState, newLayoutState)) {
-            recordEvent = false;
+          let scrollX = Math.round(element.scrollLeft);
+          let scrollY = Math.round(element.scrollTop);
+          let dx = layoutState.layout.scrollX - scrollX;
+          let dy = layoutState.layout.scrollY - scrollY;
+          if (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold) {
+            layoutState.source = source;
+            layoutState.action = Action.Update;
+            layoutState.layout.scrollX = scrollX;
+            layoutState.layout.scrollY = scrollY;
+            addEvent({type: this.eventName, state: layoutState});
           }
           break;
         case Source.Input:
-          newLayoutState.attributes.value = element["value"];
+          layoutState.attributes.value = element["value"];
+          layoutState.source = source;
+          layoutState.action = Action.Update;
+          addEvent({type: this.eventName, state: layoutState});
           break;
         default:
           break;
-      }
-
-      // Update the reference of layouts object to current state
-      if (recordEvent) {
-        this.layoutStates[index] = newLayoutState;
-        addEvent({type: this.eventName, state: newLayoutState});
       }
     }
   }
@@ -268,7 +266,7 @@ export default class Layout implements IPlugin {
   private checkDistance(stateOne: IElementLayoutState, stateTwo: IElementLayoutState) {
     let dx = stateOne.layout.scrollX - stateTwo.layout.scrollX;
     let dy = stateOne.layout.scrollY - stateTwo.layout.scrollY;
-    return (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold);
+    return ;
   }
 
   private mutation(mutations: MutationRecord[]) {

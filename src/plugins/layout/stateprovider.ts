@@ -2,7 +2,6 @@ import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutSta
   ITextLayoutState } from "../../../clarity";
 import { config } from "../../config";
 import { assert } from "../../utils";
-import { ShadowDom } from "./shadowdom";
 
 export const NodeIndex = "clarity-index";
 export const DoctypeTag = "*DOC*";
@@ -12,13 +11,18 @@ const MetaTag = "META";
 const ScriptTag = "SCRIPT";
 
 let attributeMaskList = ["value", "placeholder", "alt", "title"];
+let layoutStates: ILayoutState[];
+
+export function resetStates() {
+  layoutStates = [];
+}
 
 export function getNodeIndex(node: Node): number {
   return (node && NodeIndex in node) ? node[NodeIndex] : null;
 }
 
-export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutState {
-  if (shouldIgnoreNode(node, shadowDom)) {
+export function createLayoutState(node: Node): ILayoutState {
+  if (shouldIgnoreNode(node)) {
     return createIgnoreLayoutState(node);
   }
 
@@ -150,8 +154,9 @@ export function createIgnoreLayoutState(node: Node): IIgnoreLayoutState {
 }
 
 export function createGenericLayoutState(node: Node, tag: string): ILayoutState {
-  let layoutState: ILayoutState = {
-    index: getNodeIndex(node),
+  let layoutIndex = getNodeIndex(node);
+  layoutStates[layoutIndex] = {
+    index: layoutIndex,
     parent: getNodeIndex(node.parentNode),
     previous: getNodeIndex(node.previousSibling),
     next: getNodeIndex(node.nextSibling),
@@ -159,11 +164,11 @@ export function createGenericLayoutState(node: Node, tag: string): ILayoutState 
     action: null,
     tag
   };
-  return layoutState;
+
+  return layoutStates[layoutIndex];
 }
 
-export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {
-  let shadowNode = shadowDom.getShadowNode(getNodeIndex(node));
+export function shouldIgnoreNode(node: Node): boolean {
   let ignore = false;
   switch (node.nodeType) {
     case Node.ELEMENT_NODE:
@@ -187,13 +192,16 @@ export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {
   // Ignore subtrees of ignored nodes (e.g. text with a <script> parent)
   if (!ignore) {
     let parentIndex = getNodeIndex(node.parentNode);
-    if (parentIndex !== null) {
-      let parentShadowNode = shadowDom.getShadowNode(parentIndex);
-      assert(!!parentShadowNode, "shouldIgnoreNode", "parentShadowNode is missing");
-      if (parentShadowNode && parentShadowNode.ignore && parentShadowNode.node !== document) {
+    if (parentIndex !== null && parentIndex > 0) {
+      let parentState = layoutStates[parentIndex];
+      if (parentState && parentState.tag === IgnoreTag) {
         ignore = true;
       }
     }
   }
   return ignore;
+}
+
+export function getLayoutState(index) {
+  return layoutStates[index];
 }

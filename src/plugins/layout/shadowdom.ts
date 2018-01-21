@@ -36,7 +36,7 @@ export class ShadowDom {
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
     shadowNode.id = "" + index;
     shadowNode.node = node;
-    shadowNode.ignore = shouldIgnoreNode(node, this);
+    shadowNode.ignore = shouldIgnoreNode(node) || (parent && parent.ignore && parent.node !== document);
     this.nodeMap[index] = shadowNode;
 
     if (isDocument) {
