@@ -31,6 +31,9 @@ export interface IConfig {
   // Send back instrumentation data, if set to true
   instrument?: boolean;
 
+  // Inspect CSSRuleList for style elements and send CSSRules data instead of style's text children
+  cssRules?: boolean;
+
   // Pointer to the function which would be responsible for sending the data
   // If left unspecified, raw payloads will be uploaded to the uploadUrl endpoint
   uploadHandler?: UploadHandler;
@@ -223,6 +226,10 @@ interface IDoctypeLayoutState extends ILayoutState {
 interface IElementLayoutState extends ILayoutState {
   attributes: IAttributes;  /* Attributes associated with an element */
   layout: ILayoutRectangle; /* Layout rectangle */
+}
+
+interface IStyleLayoutState extends IElementLayoutState {
+  cssRules: string[];
 }
 
 interface ITextLayoutState extends ILayoutState {
