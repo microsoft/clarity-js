@@ -172,6 +172,14 @@ interface IShadowDomNode extends HTMLDivElement {
   ignore: boolean;  /* Flag to avoid sending data for that node */
 }
 
+interface ILayoutStyle {
+  color?: string;
+  backgroundColor?: string;
+  backgroundImage?: string;
+  overflowX?: string;
+  overflowY?: string;
+}
+
 interface ILayoutRectangle {
   x: number; /* X coordinate of the element */
   y: number; /* Y coordinate of the element */
@@ -231,6 +239,7 @@ interface IDoctypeLayoutState extends ILayoutState {
 interface IElementLayoutState extends ILayoutState {
   attributes: IAttributes;  /* Attributes associated with an element */
   layout: ILayoutRectangle; /* Layout rectangle */
+  style: ILayoutStyle; /* Layout computed styles */
 }
 
 interface IStyleLayoutState extends IElementLayoutState {

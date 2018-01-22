@@ -1,4 +1,4 @@
-import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutState, IStyleLayoutState,
+import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutState, ILayoutStyle, IStyleLayoutState,
   ITextLayoutState } from "../../../clarity";
 import { config } from "../../config";
 import { assert } from "../../utils";
@@ -7,14 +7,24 @@ export const NodeIndex = "clarity-index";
 export const DoctypeTag = "*DOC*";
 export const TextTag = "*TXT*";
 export const IgnoreTag = "*IGNORE*";
-const MetaTag = "META";
-const ScriptTag = "SCRIPT";
+
+enum Token {
+  Meta = "META",
+  Script = "SCRIPT",
+  Color = "color",
+  BackgroundColor = "backgroundColor",
+  BackgroundImage = "backgroundImage",
+  OverflowX = "overflowX",
+  OverflowY = "overflowY"
+}
 
 let attributeMaskList = ["value", "placeholder", "alt", "title"];
 let layoutStates: ILayoutState[];
+let defaultStyles = {};
 
-export function resetStates() {
+export function resetStateProvider() {
   layoutStates = [];
+  defaultStyles = {};
 }
 
 export function getNodeIndex(node: Node): number {
@@ -63,7 +73,7 @@ export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLay
 export function createElementLayoutState(element: Element): IElementLayoutState {
   let tagName = element.tagName;
   let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
-  if (tagName === ScriptTag || tagName === MetaTag) {
+  if (tagName === Token.Script || tagName === Token.Meta) {
     elementState.tag = IgnoreTag;
     return elementState;
   }
@@ -99,9 +109,10 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
   }
 
   elementState.layout = null;
-  if (rect) {
-    let styles = window.getComputedStyle(element);
+  elementState.style = null;
 
+  if (rect) {
+    elementState.style = getStyles(element);
     elementState.layout = {
       x: Math.round(rect.left),
       y: Math.round(rect.top),
@@ -110,18 +121,55 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
     };
 
     // Check if scroll is possible
-    if (styles["overflow-x"] === "auto"
-                              || styles["overflow-x"] === "scroll"
-                              || styles["overflow-x"] === "hidden"
-                              || styles["overflow-y"] === "auto"
-                              || styles["overflow-y"] === "scroll"
-                              || styles["overflow-y"] === "hidden") {
+    if (elementState.style && (Token.OverflowX in elementState.style || Token.OverflowX in elementState.style)) {
       elementState.layout.scrollX = Math.round(element.scrollLeft);
       elementState.layout.scrollY = Math.round(element.scrollTop);
     }
   }
 
   return elementState;
+}
+
+function getStyles(element) {
+    let computed = window.getComputedStyle(element);
+    let style = {};
+
+    if (!(Token.Color in defaultStyles)) {
+      defaultStyles[Token.Color] = computed[Token.Color];
+      defaultStyles[Token.BackgroundColor] = computed[Token.BackgroundColor];
+    }
+
+    // Send computed styles, if relevant, back to server
+    if (match(computed[Token.OverflowX], ["auto", "scroll", "hidden"])) {
+      style[Token.OverflowX] = computed[Token.OverflowX];
+    }
+
+    if (match(computed[Token.OverflowY], ["auto", "scroll", "hidden"])) {
+      style[Token.OverflowY] = computed[Token.OverflowY];
+    }
+
+    if (computed[Token.BackgroundImage] !== "none") {
+      style[Token.BackgroundImage] = computed[Token.BackgroundImage];
+    }
+
+    if (computed[Token.BackgroundColor] !== defaultStyles[Token.BackgroundColor]) {
+      style[Token.BackgroundColor] = computed[Token.BackgroundColor];
+    }
+
+    if (computed[Token.Color] !== defaultStyles[Token.Color]) {
+      style[Token.Color] = computed[Token.Color];
+    }
+
+    return Object.keys(style).length > 0 ? style : null;
+}
+
+function match(variable, values) {
+  for (let i = 0; i < values.length; i++) {
+    if (variable === values[i]) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function createStyleLayoutState(styleNode: HTMLStyleElement): IStyleLayoutState {
@@ -173,7 +221,7 @@ export function shouldIgnoreNode(node: Node): boolean {
   switch (node.nodeType) {
     case Node.ELEMENT_NODE:
       let tagName = (node as Element).tagName;
-      if (tagName === ScriptTag || tagName === MetaTag) {
+      if (tagName === Token.Script || tagName === Token.Meta) {
         ignore = true;
       }
       break;
