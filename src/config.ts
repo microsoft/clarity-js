@@ -13,8 +13,7 @@ export let config: IConfig = {
   instrument: false,
   cssRules: false,
   uploadHandler: null,
-  getImpressionId: null,
-  getCid: null,
+  customInstrumentation: null,
   debug: false,
   validateConsistency: false,
   waitForTrigger: false
