@@ -78,7 +78,45 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
     return elementState;
   }
 
+  elementState.attributes = getAttributes(element);
+  elementState.layout = getLayout(element);
+  elementState.style = elementState.layout ? getStyles(element) : null;
+
+  // Check if scroll is possible
+  if (elementState.layout && elementState.style && (Token.OverflowX in elementState.style || Token.OverflowX in elementState.style)) {
+    elementState.layout.scrollX = Math.round(element.scrollLeft);
+    elementState.layout.scrollY = Math.round(element.scrollTop);
+  }
+
+  return elementState;
+}
+
+function getLayout(element) {
+  let layout = null;
+  // In IE, calling getBoundingClientRect on a node that is disconnected
+  // from a DOM tree, sometimes results in a 'Unspecified Error'
+  // Wrapping this in try/catch is faster than checking whether element is connected to DOM
+  let rect = null;
+  try {
+    rect = element.getBoundingClientRect();
+  } catch (e) {
+    // Ignore
+  }
+
+  if (rect) {
+    layout = {
+      x: Math.round(rect.left),
+      y: Math.round(rect.top),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+  }
+  return layout;
+}
+
+function getAttributes(element) {
   let elementAttributes = element.attributes;
+  let tagName = element.tagName;
   let stateAttributes: IAttributes = {};
   for (let i = 0; i < elementAttributes.length; i++) {
     let attr = elementAttributes[i];
@@ -96,38 +134,7 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
       stateAttributes[attr.name] = attr.value;
     }
   }
-  elementState.attributes = stateAttributes;
-
-  // In IE, calling getBoundingClientRect on a node that is disconnected
-  // from a DOM tree, sometimes results in a 'Unspecified Error'
-  // Wrapping this in try/catch is faster than checking whether element is connected to DOM
-  let rect = null;
-  try {
-    rect = element.getBoundingClientRect();
-  } catch (e) {
-    // Ignore
-  }
-
-  elementState.layout = null;
-  elementState.style = null;
-
-  if (rect) {
-    elementState.style = getStyles(element);
-    elementState.layout = {
-      x: Math.round(rect.left),
-      y: Math.round(rect.top),
-      width: Math.round(rect.width),
-      height: Math.round(rect.height)
-    };
-
-    // Check if scroll is possible
-    if (elementState.style && (Token.OverflowX in elementState.style || Token.OverflowX in elementState.style)) {
-      elementState.layout.scrollX = Math.round(element.scrollLeft);
-      elementState.layout.scrollY = Math.round(element.scrollTop);
-    }
-  }
-
-  return elementState;
+  return stateAttributes;
 }
 
 function getStyles(element) {
