@@ -1,0 +1,59 @@
+import {  IEvent, IEventArray, ILayoutState } from "../clarity";
+import { Action, ObjectType } from "../clarity";
+import schemas from "./schema";
+
+export default function(eventArray: IEventArray): IEvent {
+  let id          = eventArray[0];
+  let type        = eventArray[1];
+  let time        = eventArray[2];
+  let stateArray  = eventArray[3];
+  let schema      = eventArray[4];
+
+  if (typeof schema === "string") {
+    schema = schemas.getSchema(schema);
+  } else {
+    schemas.addSchema(schema);
+  }
+
+  let state = dataFromArray(stateArray, schema as any[]);
+  let event: IEvent = { id, type, time, state };
+  return event;
+}
+
+function dataFromArray(dataArray: any[], schema: any[]): any {
+  if (typeof schema === "string" || schema === null) {
+    return dataArray;
+  }
+
+  let data = null;
+  let dataType = null;
+  let subschemas = null;
+  if (schema.length === 2) {
+    dataType = schema[0];
+    subschemas = schema[1];
+  } else if (schema.length === 3) {
+    dataType = schema[1];
+    subschemas = schema[2];
+  }
+
+  if (dataType === ObjectType.Object) {
+    data = {};
+    for (let i = 0; i < subschemas.length; i++) {
+      let nextSubschema = subschemas[i];
+      let nextProperty = null;
+      if (typeof nextSubschema === "string") {
+        nextProperty = nextSubschema;
+      } else {
+        nextProperty = nextSubschema[0];
+      }
+      data[nextProperty] = dataFromArray(dataArray[i], nextSubschema);
+    }
+  } else if (dataType === ObjectType.Array) {
+    data = [];
+    for (let i = 0; i < subschemas.length; i++) {
+      let nextSubschema = subschemas[i];
+      data.push(dataFromArray(dataArray[i], nextSubschema));
+    }
+  }
+  return data;
+}

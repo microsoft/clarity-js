@@ -1,17 +1,19 @@
 import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, ICompressedBatchMessage,
-  IDroppedPayloadInfo, IEnvelope, IEvent, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
-  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITotalByteLimitExceededEventState, ITriggerState, IUploadInfo,
-  IXhrErrorEventState, State, UploadCallback, WorkerMessageType } from "../clarity";
+  IDroppedPayloadInfo, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
+  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITotalByteLimitExceededEventState, ITriggerState,
+  IUploadInfo, IXhrErrorEventState, State, UploadCallback, WorkerMessageType } from "../clarity";
+import EventToArray from "../converters/toarray";
 import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-const version = "0.1.23";
+const version = "0.1.24";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
+const InstrumentationEventName = "Instrumentation";
 export const ClarityAttribute = "clarity-iid";
 
 let startTime: number;
@@ -33,7 +35,7 @@ let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
 // Storage for events that were posted to compression worker, but have not returned to core as compressed batches yet.
 // When page is unloaded, keeping such event copies in core allows us to terminate compression worker safely and then
 // compress and upload remaining events synchronously from the main thread.
-let pendingEvents: IEvent[] = [];
+let pendingEvents: IEventArray[] = [];
 
 // Storage for payloads that are compressed and are ready to be sent, but are waiting for Clarity trigger.
 // Once trigger is fired, all payloads from this array will be sent in the order they were generated.
@@ -118,16 +120,18 @@ export function bind(target: EventTarget, event: string, listener: EventListener
 }
 
 export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
-  let evt: IEvent = {
+  let evtJson: IEvent = {
     id: eventCount++,
     time: isNumber(event.time) ? event.time : getTimestamp(),
     type: event.type,
     state: event.state
   };
+  let evt = EventToArray(evtJson);
   let addEventMessage: IAddEventMessage = {
     type: WorkerMessageType.AddEvent,
     event: evt,
-    time: getTimestamp()
+    time: getTimestamp(),
+    isXhrErrorEvent: event.type === InstrumentationEventName && event.state.type === Instrumentation.XhrError
   };
   if (compressionWorker) {
     compressionWorker.postMessage(addEventMessage);
@@ -183,7 +187,7 @@ export function getTimestamp(unix?: boolean, raw?: boolean) {
 
 export function instrument(eventState: IInstrumentationEventState) {
   if (config.instrument) {
-    addEvent({type: "Instrumentation", state: eventState});
+    addEvent({type: InstrumentationEventName, state: eventState});
   }
 }
 
@@ -290,8 +294,8 @@ function onFirstSendDeliveryFailure(status: number, rawPayload: string, compress
     sequenceNumber: sentObj.envelope.sequenceNumber,
     compressedLength: compressedPayload.length,
     rawLength: rawPayload.length,
-    firstEventId: sentObj.events[0].id,
-    lastEventId: sentObj.events[sentObj.events.length - 1].id,
+    firstEventId: sentObj.events[0][0 /* id */],
+    lastEventId: sentObj.events[sentObj.events.length - 1][0 /* id */],
     attemptNumber: 0
   };
   droppedPayloads[xhrErrorEventState.sequenceNumber] = {

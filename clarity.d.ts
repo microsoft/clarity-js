@@ -1,4 +1,11 @@
 /* ##################################### */
+/* ############   LIBRARY   ############ */
+/* ##################################### */
+
+export function start(config?: IConfig): void;
+export function stop(): void;
+
+/* ##################################### */
 /* ############   CONFIG   ############# */
 /* ##################################### */
 
@@ -78,7 +85,7 @@ export interface IPlugin {
 
 interface IPayload {
   envelope: IEnvelope;
-  events: IEvent[];
+  events: IEventArray[];
 }
 
 interface IEnvelope {
@@ -125,6 +132,15 @@ interface IBindingContainer {
 export type UploadCallback = (status: number) => void;
 export type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) => void;
 
+// IEvent object converted to a value array representation
+type IEventArray = [
+  number, // id
+  string, // type
+  number, // time
+  any[],  // state
+  ClarityDataSchema   // data schema, if it's a new one, otherwise - schema hashcode
+];
+
 /* ##################################### */
 /* ######   COMPRESSION WORKER   ####### */
 /* ##################################### */
@@ -147,7 +163,8 @@ interface ITimestampedWorkerMessage extends IWorkerMessage {
 }
 
 interface IAddEventMessage extends ITimestampedWorkerMessage {
-  event: IEvent;
+  event: IEventArray;
+  isXhrErrorEvent?: boolean;
 }
 
 interface ICompressedBatchMessage extends IWorkerMessage {
@@ -443,8 +460,12 @@ interface IPerformanceResourceTiming {
 }
 
 /* ##################################### */
-/* ############   LIBRARY   ############ */
+/* ###########   CONVERT   ############# */
 /* ##################################### */
 
-export function start(config?: IConfig): void;
-export function stop(): void;
+declare const enum ObjectType {
+  Object,
+  Array
+}
+
+type ClarityDataSchema = null | string | any[];

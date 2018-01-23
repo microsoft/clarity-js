@@ -3,7 +3,8 @@ import { config } from "../src/config";
 import * as core from "../src/core";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, postCompressedBatch } from "./utils";
+import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, payloadToEvents,
+  postCompressedBatch } from "./utils";
 
 import * as chai from "chai";
 let assert = chai.assert;
@@ -292,7 +293,7 @@ describe("Core Tests", () => {
     assert.equal(sentBytes.length, 1);
 
     let uncompressedPayload = JSON.parse(uncompress(sentBytes[0]));
-    let events = uncompressedPayload.events as IEvent[];
+    let events = payloadToEvents(uncompressedPayload);
     assert.equal(events.length, 2);
     assert.equal(events[0].type, MockEventName);
     assert.equal(events[1].type, "Instrumentation");
