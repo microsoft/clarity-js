@@ -122,7 +122,8 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
 
 export function createStyleLayoutState(styleNode: HTMLStyleElement): IStyleLayoutState {
   let layoutState = createElementLayoutState(styleNode) as IStyleLayoutState;
-  let cssRules = (styleNode.sheet as CSSStyleSheet).cssRules;
+  let sheet = styleNode.sheet as CSSStyleSheet;
+  let cssRules = sheet ? sheet.cssRules : [];
   let cssRulesTexts = [];
   for (let i = 0; i < cssRules.length; i++) {
     cssRulesTexts.push(cssRules[i].cssText);
