@@ -38,15 +38,9 @@ export interface IConfig {
   // If left unspecified, raw payloads will be uploaded to the uploadUrl endpoint
   uploadHandler?: UploadHandler;
 
-  // Pointer to the function which would be responsible for obtaining a
-  // page level GUID.
-  // If left unspecified, random GUID will be generated
-  getImpressionId?: () => string;
-
-  // Pointer to the function which would be responsible for obtaining a
-  // user level GUID.
-  // If left unspecified, the ClarityID cookie will be used or randomly generated
-  getCid?: () => string;
+  // Pointer to the function which will be responsible for giving Clarity
+  // a dictionary of strings that the user wants logged in each Clarity payload
+  customInstrumentation?: () => { [key: string]: string; };
 
   // Setting to enable debug features (e.g. console.log statements)
   debug?: boolean;
@@ -94,6 +88,7 @@ interface IEnvelope {
   version: string;
   time?: number;
   sequenceNumber?: number;
+  extraInfo?: Object;
 }
 
 interface IEventData {

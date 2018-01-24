@@ -326,16 +326,12 @@ function uploadPendingEvents() {
 
 function init() {
   // Set ClarityID cookie, if it's not set already
-  if (config.getCid) {
-    cid = config.getCid();
-  } else {
-    if (!getCookie(Cookie)) {
-      setCookie(Cookie, guid());
-    }
-    cid = getCookie(Cookie);
+  if (!getCookie(Cookie)) {
+    setCookie(Cookie, guid());
   }
+  cid = getCookie(Cookie);
 
-  impressionId = config.getImpressionId ? config.getImpressionId() : guid();
+  impressionId = guid();
   startTime = getUnixTimestamp();
   sequence = 0;
   envelope = {
@@ -344,6 +340,16 @@ function init() {
     url: window.location.href,
     version
   };
+
+  if (config.customInstrumentation) {
+    let customInst = config.customInstrumentation();
+    envelope.extraInfo = {};
+    for (let key in customInst) {
+      if (customInst.hasOwnProperty(key) && customInst[key]) {
+        envelope.extraInfo[key] = customInst[key];
+      }
+    }
+  }
 
   activePlugins = [];
   bindings = {};
