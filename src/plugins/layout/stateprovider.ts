@@ -24,11 +24,11 @@ enum Styles {
 
 let attributeMaskList = ["value", "placeholder", "alt", "title"];
 let layoutStates: ILayoutState[];
-let defaultStyles = {};
+let defaultColor = "";
 
 export function resetStateProvider() {
   layoutStates = [];
-  defaultStyles = {};
+  defaultColor = "";
 }
 
 export function getNodeIndex(node: Node): number {
@@ -150,9 +150,8 @@ function getStyles(element) {
     let computed = window.getComputedStyle(element);
     let style = {};
 
-    if (!(Styles.Color in defaultStyles)) {
-      defaultStyles[Styles.Color] = computed[Styles.Color];
-      defaultStyles[Styles.BackgroundColor] = computed[Styles.BackgroundColor];
+    if (defaultColor.length === 0) {
+      defaultColor = computed[Styles.Color];
     }
 
     // Send computed styles, if relevant, back to server
@@ -172,11 +171,11 @@ function getStyles(element) {
       style[Styles.BackgroundImage] = computed[Styles.BackgroundImage];
     }
 
-    if (computed[Styles.BackgroundColor] !== defaultStyles[Styles.BackgroundColor]) {
+    if (!match(computed[Styles.BackgroundColor], ["rgba(0, 0, 0, 0)", "transparent"])) {
       style[Styles.BackgroundColor] = computed[Styles.BackgroundColor];
     }
 
-    if (computed[Styles.Color] !== defaultStyles[Styles.Color]) {
+    if (computed[Styles.Color] !== defaultColor) {
       style[Styles.Color] = computed[Styles.Color];
     }
 
