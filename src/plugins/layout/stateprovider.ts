@@ -8,14 +8,18 @@ export const DoctypeTag = "*DOC*";
 export const TextTag = "*TXT*";
 export const IgnoreTag = "*IGNORE*";
 
-enum Token {
+enum Tags {
   Meta = "META",
-  Script = "SCRIPT",
+  Script = "SCRIPT"
+}
+
+enum Styles {
   Color = "color",
   BackgroundColor = "backgroundColor",
   BackgroundImage = "backgroundImage",
   OverflowX = "overflowX",
-  OverflowY = "overflowY"
+  OverflowY = "overflowY",
+  Visibility = "visibility"
 }
 
 let attributeMaskList = ["value", "placeholder", "alt", "title"];
@@ -73,17 +77,22 @@ export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLay
 export function createElementLayoutState(element: Element): IElementLayoutState {
   let tagName = element.tagName;
   let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
-  if (tagName === Token.Script || tagName === Token.Meta) {
+  if (tagName === Tags.Script || tagName === Tags.Meta) {
     elementState.tag = IgnoreTag;
     return elementState;
   }
 
+  // Get attributes for the element
   elementState.attributes = getAttributes(element);
+
+  // Get layout bounding box for the element
   elementState.layout = getLayout(element);
+
+  // Get computed systems for the element with valid layout
   elementState.style = elementState.layout ? getStyles(element) : null;
 
   // Check if scroll is possible
-  if (elementState.layout && elementState.style && (Token.OverflowX in elementState.style || Token.OverflowX in elementState.style)) {
+  if (elementState.layout && elementState.style && (Styles.OverflowX in elementState.style || Styles.OverflowX in elementState.style)) {
     elementState.layout.scrollX = Math.round(element.scrollLeft);
     elementState.layout.scrollY = Math.round(element.scrollTop);
   }
@@ -141,36 +150,40 @@ function getStyles(element) {
     let computed = window.getComputedStyle(element);
     let style = {};
 
-    if (!(Token.Color in defaultStyles)) {
-      defaultStyles[Token.Color] = computed[Token.Color];
-      defaultStyles[Token.BackgroundColor] = computed[Token.BackgroundColor];
+    if (!(Styles.Color in defaultStyles)) {
+      defaultStyles[Styles.Color] = computed[Styles.Color];
+      defaultStyles[Styles.BackgroundColor] = computed[Styles.BackgroundColor];
     }
 
     // Send computed styles, if relevant, back to server
-    if (match(computed[Token.OverflowX], ["auto", "scroll", "hidden"])) {
-      style[Token.OverflowX] = computed[Token.OverflowX];
+    if (match(computed[Styles.Visibility], ["hidden", "collapse"])) {
+      style[Styles.Visibility] = computed[Styles.Visibility];
     }
 
-    if (match(computed[Token.OverflowY], ["auto", "scroll", "hidden"])) {
-      style[Token.OverflowY] = computed[Token.OverflowY];
+    if (match(computed[Styles.OverflowX], ["auto", "scroll", "hidden"])) {
+      style[Styles.OverflowX] = computed[Styles.OverflowX];
     }
 
-    if (computed[Token.BackgroundImage] !== "none") {
-      style[Token.BackgroundImage] = computed[Token.BackgroundImage];
+    if (match(computed[Styles.OverflowY], ["auto", "scroll", "hidden"])) {
+      style[Styles.OverflowY] = computed[Styles.OverflowY];
     }
 
-    if (computed[Token.BackgroundColor] !== defaultStyles[Token.BackgroundColor]) {
-      style[Token.BackgroundColor] = computed[Token.BackgroundColor];
+    if (computed[Styles.BackgroundImage] !== "none") {
+      style[Styles.BackgroundImage] = computed[Styles.BackgroundImage];
     }
 
-    if (computed[Token.Color] !== defaultStyles[Token.Color]) {
-      style[Token.Color] = computed[Token.Color];
+    if (computed[Styles.BackgroundColor] !== defaultStyles[Styles.BackgroundColor]) {
+      style[Styles.BackgroundColor] = computed[Styles.BackgroundColor];
+    }
+
+    if (computed[Styles.Color] !== defaultStyles[Styles.Color]) {
+      style[Styles.Color] = computed[Styles.Color];
     }
 
     return Object.keys(style).length > 0 ? style : null;
 }
 
-function match(variable, values) {
+function match(variable: string, values: string[]): boolean {
   for (let i = 0; i < values.length; i++) {
     if (variable === values[i]) {
       return true;
@@ -229,7 +242,7 @@ export function shouldIgnoreNode(node: Node): boolean {
   switch (node.nodeType) {
     case Node.ELEMENT_NODE:
       let tagName = (node as Element).tagName;
-      if (tagName === Token.Script || tagName === Token.Meta) {
+      if (tagName === Tags.Script || tagName === Tags.Meta) {
         ignore = true;
       }
       break;
@@ -248,6 +261,8 @@ export function shouldIgnoreNode(node: Node): boolean {
   // Ignore subtrees of ignored nodes (e.g. text with a <script> parent)
   if (!ignore) {
     let parentIndex = getNodeIndex(node.parentNode);
+
+    // Check if parent is not null or not document node (parentIndex === 0)
     if (parentIndex !== null && parentIndex > 0) {
       let parentState = layoutStates[parentIndex];
       if (parentState && parentState.tag === IgnoreTag) {

@@ -263,12 +263,6 @@ export default class Layout implements IPlugin {
     }
   }
 
-  private checkDistance(stateOne: IElementLayoutState, stateTwo: IElementLayoutState) {
-    let dx = stateOne.layout.scrollX - stateTwo.layout.scrollX;
-    let dy = stateOne.layout.scrollY - stateTwo.layout.scrollY;
-    return ;
-  }
-
   private mutation(mutations: MutationRecord[]) {
 
     // Don't process mutations on top of the inconsistent state.

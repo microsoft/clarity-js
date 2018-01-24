@@ -36,7 +36,7 @@ export class ShadowDom {
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
     shadowNode.id = "" + index;
     shadowNode.node = node;
-    shadowNode.ignore = shouldIgnoreNode(node) || (parent && parent.ignore && parent.node !== document);
+    shadowNode.ignore = shouldIgnoreNode(node) || this.shouldIgnoreParent(parent);
     this.nodeMap[index] = shadowNode;
 
     if (isDocument) {
@@ -274,6 +274,10 @@ export class ShadowDom {
       this.writeIndexToJson(nextChild, childJson, getIndexFromNode);
       nextChild = nextChild.nextSibling as IShadowDomNode;
     }
+  }
+
+  private shouldIgnoreParent(parent) {
+    return parent && parent.ignore && parent.node !== document;
   }
 
   private isConsistentNode(node: Node, shadowNode: IShadowDomNode): boolean {

@@ -167,7 +167,9 @@ interface IShadowDomNode extends HTMLDivElement {
   ignore: boolean;  /* Flag to avoid sending data for that node */
 }
 
+/* Computed CSS styles associated with a layout element */
 interface ILayoutStyle {
+  visibility?: string;
   color?: string;
   backgroundColor?: string;
   backgroundImage?: string;
