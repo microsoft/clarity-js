@@ -1,24 +1,42 @@
-import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutState, IStyleLayoutState,
+import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutState, ILayoutStyle, IStyleLayoutState,
   ITextLayoutState } from "../../../clarity";
 import { config } from "../../config";
 import { assert } from "../../utils";
-import { ShadowDom } from "./shadowdom";
 
 export const NodeIndex = "clarity-index";
-export const DoctypeTag = "*DOC*";
-export const TextTag = "*TXT*";
-export const IgnoreTag = "*IGNORE*";
-const MetaTag = "META";
-const ScriptTag = "SCRIPT";
+
+export enum Tags {
+  Meta = "META",
+  Script = "SCRIPT",
+  Doc = "*DOC*",
+  Text = "*TXT*",
+  Ignore = "*IGNORE*"
+}
+
+enum Styles {
+  Color = "color",
+  BackgroundColor = "backgroundColor",
+  BackgroundImage = "backgroundImage",
+  OverflowX = "overflowX",
+  OverflowY = "overflowY",
+  Visibility = "visibility"
+}
 
 let attributeMaskList = ["value", "placeholder", "alt", "title"];
+let layoutStates: ILayoutState[];
+let defaultColor = "";
+
+export function resetStateProvider() {
+  layoutStates = [];
+  defaultColor = "";
+}
 
 export function getNodeIndex(node: Node): number {
   return (node && NodeIndex in node) ? node[NodeIndex] : null;
 }
 
-export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutState {
-  if (shouldIgnoreNode(node, shadowDom)) {
+export function createLayoutState(node: Node): ILayoutState {
+  if (shouldIgnoreNode(node)) {
     return createIgnoreLayoutState(node);
   }
 
@@ -47,7 +65,7 @@ export function createLayoutState(node: Node, shadowDom: ShadowDom): ILayoutStat
 }
 
 export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLayoutState {
-  let doctypeState = createGenericLayoutState(doctypeNode, DoctypeTag) as IDoctypeLayoutState;
+  let doctypeState = createGenericLayoutState(doctypeNode, Tags.Doc) as IDoctypeLayoutState;
   doctypeState.attributes = {
     name: doctypeNode.name,
     publicId: doctypeNode.publicId,
@@ -59,12 +77,55 @@ export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLay
 export function createElementLayoutState(element: Element): IElementLayoutState {
   let tagName = element.tagName;
   let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
-  if (tagName === ScriptTag || tagName === MetaTag) {
-    elementState.tag = IgnoreTag;
+  if (tagName === Tags.Script || tagName === Tags.Meta) {
+    elementState.tag = Tags.Ignore;
     return elementState;
   }
 
+  // Get attributes for the element
+  elementState.attributes = getAttributes(element);
+
+  // Get layout bounding box for the element
+  elementState.layout = getLayout(element);
+
+  // Get computed systems for the element with valid layout
+  elementState.style = elementState.layout ? getStyles(element) : null;
+
+  // Check if scroll is possible
+  if (elementState.layout && elementState.style && (Styles.OverflowX in elementState.style || Styles.OverflowX in elementState.style)) {
+    elementState.layout.scrollX = Math.round(element.scrollLeft);
+    elementState.layout.scrollY = Math.round(element.scrollTop);
+  }
+
+  return elementState;
+}
+
+function getLayout(element) {
+  let layout = null;
+  // In IE, calling getBoundingClientRect on a node that is disconnected
+  // from a DOM tree, sometimes results in a 'Unspecified Error'
+  // Wrapping this in try/catch is faster than checking whether element is connected to DOM
+  let rect = null;
+  try {
+    rect = element.getBoundingClientRect();
+  } catch (e) {
+    // Ignore
+  }
+
+  if (rect) {
+    layout = {
+      x: Math.round(rect.left),
+      y: Math.round(rect.top),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+  }
+  return layout;
+}
+
+function getAttributes(element) {
   let elementAttributes = element.attributes;
+  let tagName = element.tagName;
   let stateAttributes: IAttributes = {};
   for (let i = 0; i < elementAttributes.length; i++) {
     let attr = elementAttributes[i];
@@ -82,42 +143,47 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
       stateAttributes[attr.name] = attr.value;
     }
   }
-  elementState.attributes = stateAttributes;
+  return stateAttributes;
+}
 
-  // In IE, calling getBoundingClientRect on a node that is disconnected
-  // from a DOM tree, sometimes results in a 'Unspecified Error'
-  // Wrapping this in try/catch is faster than checking whether element is connected to DOM
-  let rect = null;
-  try {
-    rect = element.getBoundingClientRect();
-  } catch (e) {
-    // Ignore
-  }
+function getStyles(element) {
+    let computed = window.getComputedStyle(element);
+    let style = {};
 
-  elementState.layout = null;
-  if (rect) {
-    let styles = window.getComputedStyle(element);
-
-    elementState.layout = {
-      x: Math.round(rect.left),
-      y: Math.round(rect.top),
-      width: Math.round(rect.width),
-      height: Math.round(rect.height)
-    };
-
-    // Check if scroll is possible
-    if (styles["overflow-x"] === "auto"
-                              || styles["overflow-x"] === "scroll"
-                              || styles["overflow-x"] === "hidden"
-                              || styles["overflow-y"] === "auto"
-                              || styles["overflow-y"] === "scroll"
-                              || styles["overflow-y"] === "hidden") {
-      elementState.layout.scrollX = Math.round(element.scrollLeft);
-      elementState.layout.scrollY = Math.round(element.scrollTop);
+    if (defaultColor.length === 0) {
+      defaultColor = computed[Styles.Color];
     }
-  }
 
-  return elementState;
+    // Send computed styles, if relevant, back to server
+    if (match(computed[Styles.Visibility], ["hidden", "collapse"])) {
+      style[Styles.Visibility] = computed[Styles.Visibility];
+    }
+
+    if (match(computed[Styles.OverflowX], ["auto", "scroll", "hidden"])) {
+      style[Styles.OverflowX] = computed[Styles.OverflowX];
+    }
+
+    if (match(computed[Styles.OverflowY], ["auto", "scroll", "hidden"])) {
+      style[Styles.OverflowY] = computed[Styles.OverflowY];
+    }
+
+    if (computed[Styles.BackgroundImage] !== "none") {
+      style[Styles.BackgroundImage] = computed[Styles.BackgroundImage];
+    }
+
+    if (!match(computed[Styles.BackgroundColor], ["rgba(0, 0, 0, 0)", "transparent"])) {
+      style[Styles.BackgroundColor] = computed[Styles.BackgroundColor];
+    }
+
+    if (computed[Styles.Color] !== defaultColor) {
+      style[Styles.Color] = computed[Styles.Color];
+    }
+
+    return Object.keys(style).length > 0 ? style : null;
+}
+
+function match(variable: string, values: string[]): boolean {
+  return values.indexOf(variable) > -1;
 }
 
 export function createStyleLayoutState(styleNode: HTMLStyleElement): IStyleLayoutState {
@@ -136,13 +202,13 @@ export function createTextLayoutState(textNode: Text): ITextLayoutState {
   // Text nodes that are children of the STYLE elements contain CSS code, so we don't want to hide it
   // Checking parentNode, instead of parentElement, because in IE textNode.parentElement returns 'undefined'.
   let showText = (textNode.parentNode && (textNode.parentNode as Element).tagName === "STYLE") ? true : config.showText;
-  let textState = createGenericLayoutState(textNode, TextTag) as ITextLayoutState;
+  let textState = createGenericLayoutState(textNode, Tags.Text) as ITextLayoutState;
   textState.content = showText ? textNode.textContent : textNode.textContent.replace(/\S/gi, "*");
   return textState;
 }
 
 export function createIgnoreLayoutState(node: Node): IIgnoreLayoutState {
-  let layoutState = createGenericLayoutState(node, IgnoreTag) as IIgnoreLayoutState;
+  let layoutState = createGenericLayoutState(node, Tags.Ignore) as IIgnoreLayoutState;
   layoutState.nodeType = node.nodeType;
   if (node.nodeType === Node.ELEMENT_NODE) {
     layoutState.elementTag = (node as Element).tagName;
@@ -151,8 +217,9 @@ export function createIgnoreLayoutState(node: Node): IIgnoreLayoutState {
 }
 
 export function createGenericLayoutState(node: Node, tag: string): ILayoutState {
-  let layoutState: ILayoutState = {
-    index: getNodeIndex(node),
+  let layoutIndex = getNodeIndex(node);
+  layoutStates[layoutIndex] = {
+    index: layoutIndex,
     parent: getNodeIndex(node.parentNode),
     previous: getNodeIndex(node.previousSibling),
     next: getNodeIndex(node.nextSibling),
@@ -160,16 +227,16 @@ export function createGenericLayoutState(node: Node, tag: string): ILayoutState 
     action: null,
     tag
   };
-  return layoutState;
+
+  return layoutStates[layoutIndex];
 }
 
-export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {
-  let shadowNode = shadowDom.getShadowNode(getNodeIndex(node));
+export function shouldIgnoreNode(node: Node): boolean {
   let ignore = false;
   switch (node.nodeType) {
     case Node.ELEMENT_NODE:
       let tagName = (node as Element).tagName;
-      if (tagName === ScriptTag || tagName === MetaTag) {
+      if (tagName === Tags.Script || tagName === Tags.Meta) {
         ignore = true;
       }
       break;
@@ -188,13 +255,18 @@ export function shouldIgnoreNode(node: Node, shadowDom: ShadowDom): boolean {
   // Ignore subtrees of ignored nodes (e.g. text with a <script> parent)
   if (!ignore) {
     let parentIndex = getNodeIndex(node.parentNode);
-    if (parentIndex !== null) {
-      let parentShadowNode = shadowDom.getShadowNode(parentIndex);
-      assert(!!parentShadowNode, "shouldIgnoreNode", "parentShadowNode is missing");
-      if (parentShadowNode && parentShadowNode.ignore && parentShadowNode.node !== document) {
+
+    // Check if parent is not null or not document node (parentIndex === 0)
+    if (parentIndex !== null && parentIndex > 0) {
+      let parentState = getLayoutState(parentIndex);
+      if (parentState && parentState.tag === Tags.Ignore) {
         ignore = true;
       }
     }
   }
   return ignore;
+}
+
+export function getLayoutState(index) {
+  return layoutStates[index];
 }

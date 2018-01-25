@@ -2,7 +2,7 @@ import { Action, IEvent, Source } from "../clarity";
 import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
-import { IgnoreTag, NodeIndex } from "../src/plugins/layout/stateprovider";
+import { NodeIndex, Tags } from "../src/plugins/layout/stateprovider";
 import { cleanupFixture, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
 import { getEventsByType, observeEvents } from "./utils";
@@ -150,9 +150,9 @@ describe("Layout Tests", () => {
           observer.disconnect();
           assert.equal(events.length, 3);
           assert.equal(events[0].state.action, Action.Insert);
-          assert.equal(events[0].state.tag, IgnoreTag);
+          assert.equal(events[0].state.tag, Tags.Ignore);
           assert.equal(events[1].state.action, Action.Insert);
-          assert.equal(events[1].state.tag, IgnoreTag);
+          assert.equal(events[1].state.tag, Tags.Ignore);
           assert.equal(events[2].state.action, Action.Insert);
           assert.equal(events[2].state.tag, "DIV");
           done();
@@ -169,9 +169,9 @@ describe("Layout Tests", () => {
         assert.equal(events[0].state.action, Action.Insert);
         assert.equal(events[0].state.tag, "DIV");
         assert.equal(events[1].state.action, Action.Insert);
-        assert.equal(events[1].state.tag, IgnoreTag);
+        assert.equal(events[1].state.tag, Tags.Ignore);
         assert.equal(events[2].state.action, Action.Insert);
-        assert.equal(events[2].state.tag, IgnoreTag);
+        assert.equal(events[2].state.tag, Tags.Ignore);
         assert.equal(events[3].state.action, Action.Insert);
         assert.equal(events[3].state.tag, "SPAN");
         done();
@@ -245,7 +245,7 @@ describe("Layout Tests", () => {
       assert.equal(!!events[0].state.cssRules, true);
       assert.equal(events[0].state.cssRules.length, 1);
       assert.equal(events[0].state.cssRules[0].indexOf("red") > 0, true);
-      assert.equal(events[1].state.tag, IgnoreTag);
+      assert.equal(events[1].state.tag, Tags.Ignore);
 
       // Explicitly signal that we are done here
       done();
@@ -756,11 +756,11 @@ describe("Layout Tests", () => {
 
       assert.equal(events.length, 2);
       assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, IgnoreTag);
+      assert.equal(events[0].state.tag, Tags.Ignore);
       assert.equal(events[0].state.nodeType, Node.ELEMENT_NODE);
 
       assert.equal(events[1].state.action, Action.Insert);
-      assert.equal(events[1].state.tag, IgnoreTag);
+      assert.equal(events[1].state.tag, Tags.Ignore);
       assert.equal(events[1].state.nodeType, Node.TEXT_NODE);
 
       done();
@@ -781,7 +781,7 @@ describe("Layout Tests", () => {
       let events = stopObserving();
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, IgnoreTag);
+      assert.equal(events[0].state.tag, Tags.Ignore);
       assert.equal(events[0].state.nodeType, Node.ELEMENT_NODE);
       done();
     }
@@ -801,7 +801,7 @@ describe("Layout Tests", () => {
       let events = stopObserving();
       assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
-      assert.equal(events[0].state.tag, IgnoreTag);
+      assert.equal(events[0].state.tag, Tags.Ignore);
       assert.equal(events[0].state.nodeType, Node.COMMENT_NODE);
       done();
     }
