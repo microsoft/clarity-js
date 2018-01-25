@@ -276,7 +276,7 @@ export class ShadowDom {
     }
   }
 
-  private shouldIgnoreParent(parent) {
+  private shouldIgnoreParent(parent: IShadowDomNode) {
     return parent && parent.ignore && parent.node !== document;
   }
 

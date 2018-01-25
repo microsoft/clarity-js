@@ -4,13 +4,13 @@ import { config } from "../../config";
 import { assert } from "../../utils";
 
 export const NodeIndex = "clarity-index";
-export const DoctypeTag = "*DOC*";
-export const TextTag = "*TXT*";
-export const IgnoreTag = "*IGNORE*";
 
-enum Tags {
+export enum Tags {
   Meta = "META",
-  Script = "SCRIPT"
+  Script = "SCRIPT",
+  Doc = "*DOC*",
+  Text = "*TXT*",
+  Ignore = "*IGNORE*"
 }
 
 enum Styles {
@@ -65,7 +65,7 @@ export function createLayoutState(node: Node): ILayoutState {
 }
 
 export function createDoctypeLayoutState(doctypeNode: DocumentType): IDoctypeLayoutState {
-  let doctypeState = createGenericLayoutState(doctypeNode, DoctypeTag) as IDoctypeLayoutState;
+  let doctypeState = createGenericLayoutState(doctypeNode, Tags.Doc) as IDoctypeLayoutState;
   doctypeState.attributes = {
     name: doctypeNode.name,
     publicId: doctypeNode.publicId,
@@ -78,7 +78,7 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
   let tagName = element.tagName;
   let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
   if (tagName === Tags.Script || tagName === Tags.Meta) {
-    elementState.tag = IgnoreTag;
+    elementState.tag = Tags.Ignore;
     return elementState;
   }
 
@@ -183,12 +183,7 @@ function getStyles(element) {
 }
 
 function match(variable: string, values: string[]): boolean {
-  for (let i = 0; i < values.length; i++) {
-    if (variable === values[i]) {
-      return true;
-    }
-  }
-  return false;
+  return values.indexOf(variable) > -1;
 }
 
 export function createStyleLayoutState(styleNode: HTMLStyleElement): IStyleLayoutState {
@@ -207,13 +202,13 @@ export function createTextLayoutState(textNode: Text): ITextLayoutState {
   // Text nodes that are children of the STYLE elements contain CSS code, so we don't want to hide it
   // Checking parentNode, instead of parentElement, because in IE textNode.parentElement returns 'undefined'.
   let showText = (textNode.parentNode && (textNode.parentNode as Element).tagName === "STYLE") ? true : config.showText;
-  let textState = createGenericLayoutState(textNode, TextTag) as ITextLayoutState;
+  let textState = createGenericLayoutState(textNode, Tags.Text) as ITextLayoutState;
   textState.content = showText ? textNode.textContent : textNode.textContent.replace(/\S/gi, "*");
   return textState;
 }
 
 export function createIgnoreLayoutState(node: Node): IIgnoreLayoutState {
-  let layoutState = createGenericLayoutState(node, IgnoreTag) as IIgnoreLayoutState;
+  let layoutState = createGenericLayoutState(node, Tags.Ignore) as IIgnoreLayoutState;
   layoutState.nodeType = node.nodeType;
   if (node.nodeType === Node.ELEMENT_NODE) {
     layoutState.elementTag = (node as Element).tagName;
@@ -263,8 +258,8 @@ export function shouldIgnoreNode(node: Node): boolean {
 
     // Check if parent is not null or not document node (parentIndex === 0)
     if (parentIndex !== null && parentIndex > 0) {
-      let parentState = layoutStates[parentIndex];
-      if (parentState && parentState.tag === IgnoreTag) {
+      let parentState = getLayoutState(parentIndex);
+      if (parentState && parentState.tag === Tags.Ignore) {
         ignore = true;
       }
     }

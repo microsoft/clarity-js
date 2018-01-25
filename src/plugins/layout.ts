@@ -6,7 +6,7 @@ import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./.
 import { debug, isNumber, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
 import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
-import { getLayoutState, getNodeIndex, IgnoreTag, NodeIndex, resetStateProvider } from "./layout/stateprovider";
+import { getLayoutState, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
   private eventName = "Layout";
