@@ -1,21 +1,20 @@
 import { ClarityDataSchema, ObjectType } from "../clarity";
-import { hashCode } from "./../src/utils";
 
 // Details about schema generation are in schema.md:
 // https://github.com/Microsoft/clarity-js/blob/master/converters/schema.md
 
 export class SchemaManager {
 
-  private schemas = {};
-
-  public getSchema(schemaHash: string): ClarityDataSchema {
-    return this.schemas[schemaHash];
-  }
+  private schemas: ClarityDataSchema[] = [];
+  private schemaToIdMap = {};
 
   public addSchema(schema: ClarityDataSchema): boolean {
-    let schemaHash = this.getSchemaHashcode(schema);
-    let isNew = (typeof this.getSchema(schemaHash) === "undefined");
-    this.schemas[schemaHash] = schema;
+    let schemaStr = JSON.stringify(schema);
+    let isNew = !(schemaStr in this.schemaToIdMap);
+    if (isNew) {
+      this.schemaToIdMap[schemaStr] = this.schemas.length;
+      this.schemas.push(schema);
+    }
     return isNew;
   }
 
@@ -33,8 +32,12 @@ export class SchemaManager {
     return schema;
   }
 
-  public getSchemaHashcode(schema: ClarityDataSchema) {
-    return hashCode(JSON.stringify(schema));
+  public getSchema(schemaId: number): ClarityDataSchema {
+    return this.schemas[schemaId];
+  }
+
+  public getSchemaId(schema: ClarityDataSchema): number | undefined {
+    return this.schemaToIdMap[JSON.stringify(schema)];
   }
 
   private createNestedSchema(data: object | any[], name?: string): ClarityDataSchema {

@@ -1,6 +1,5 @@
 import { IEvent, IEventArray, ILayoutState } from "../clarity";
 import { getNodeIndex } from "./../src/plugins/layout/stateprovider";
-import { hashCode } from "./../src/utils";
 import schemas from "./schema";
 
 // We serialize send a lot of JSONs with identical structures and putting all property names on the
@@ -13,7 +12,7 @@ export default function(event: IEvent): IEventArray {
   let schema = schemas.createSchema(event.state);
   let newSchema = schemas.addSchema(schema);
   let stateArray = dataToArray(event.state);
-  let schemaPayload = newSchema ? schema : schemas.getSchemaHashcode(schema);
+  let schemaPayload = newSchema ? schema : schemas.getSchemaId(schema);
   let array = [event.id, event.type, event.time, stateArray, schemaPayload] as IEventArray;
   return array;
 }

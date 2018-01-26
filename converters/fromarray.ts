@@ -6,7 +6,7 @@ export default function(eventArray: IEventArray): IEvent {
   let id, type, time, stateArray, schema;
   [id, type, time, stateArray, schema] = eventArray;
 
-  if (typeof schema === "string") {
+  if (typeof schema === "number") {
     schema = schemas.getSchema(schema);
   } else {
     schemas.addSchema(schema);
