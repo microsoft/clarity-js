@@ -141,6 +141,15 @@ type IEventArray = [
   ClarityDataSchema   // data schema, if it's a new one, otherwise - schema hashcode
 ];
 
+declare const enum ObjectType {
+  Object,
+  Array
+}
+
+// For details on schema generation, see schema.md:
+// https://github.com/Microsoft/clarity-js/blob/master/converters/schema.md
+type ClarityDataSchema = null | string | any[];
+
 /* ##################################### */
 /* ######   COMPRESSION WORKER   ####### */
 /* ##################################### */
@@ -458,14 +467,3 @@ interface IPerformanceResourceTiming {
   encodedBodySize?: number;
   decodedBodySize?: number;
 }
-
-/* ##################################### */
-/* ###########   CONVERT   ############# */
-/* ##################################### */
-
-declare const enum ObjectType {
-  Object,
-  Array
-}
-
-type ClarityDataSchema = null | string | any[];

@@ -39,7 +39,8 @@ function dataToArray(data: any): any[] {
     }
   } else if (data.constructor === Array) {
     for (let i = 0; i < data.length; i++) {
-      dataArray.push(dataToArray(data[i]));
+      let arrayValue = dataToArray(data[i]);
+      dataArray.push(arrayValue);
     }
   }
 

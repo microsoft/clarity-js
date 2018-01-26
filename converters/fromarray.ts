@@ -3,11 +3,8 @@ import { Action, ObjectType } from "../clarity";
 import schemas from "./schema";
 
 export default function(eventArray: IEventArray): IEvent {
-  let id          = eventArray[0];
-  let type        = eventArray[1];
-  let time        = eventArray[2];
-  let stateArray  = eventArray[3];
-  let schema      = eventArray[4];
+  let id, type, time, stateArray, schema;
+  [id, type, time, stateArray, schema] = eventArray;
 
   if (typeof schema === "string") {
     schema = schemas.getSchema(schema);
@@ -20,7 +17,11 @@ export default function(eventArray: IEventArray): IEvent {
   return event;
 }
 
+// This function reconstructs the original object from array of data and a schema that describes it. Check schema.md for details:
+// https://github.com/Microsoft/clarity-js/blob/master/converters/schema.md
 function dataFromArray(dataArray: any[], schema: any[]): any {
+  // Schema is of type "string" or null when data that matches it is not an Array or an Object,
+  // so no additional reconstruction on the data is required.
   if (typeof schema === "string" || schema === null) {
     return dataArray;
   }
@@ -29,9 +30,11 @@ function dataFromArray(dataArray: any[], schema: any[]): any {
   let dataType = null;
   let subschemas = null;
   if (schema.length === 2) {
+    // Schema is [ObjectType, [Array values' or Object properties' schemas (based on the object type) ]]
     dataType = schema[0];
     subschemas = schema[1];
   } else if (schema.length === 3) {
+    // Schema is [Property name in parent object, ObjectType, [Array values' or Object properties' schemas (based on the object type) ]]
     dataType = schema[1];
     subschemas = schema[2];
   }
@@ -39,14 +42,14 @@ function dataFromArray(dataArray: any[], schema: any[]): any {
   if (dataType === ObjectType.Object) {
     data = {};
     for (let i = 0; i < subschemas.length; i++) {
-      let nextSubschema = subschemas[i];
-      let nextProperty = null;
-      if (typeof nextSubschema === "string") {
-        nextProperty = nextSubschema;
+      let currentSubschema = subschemas[i];
+      let currentProperty = null;
+      if (typeof currentSubschema === "string") {
+        currentProperty = currentSubschema;
       } else {
-        nextProperty = nextSubschema[0];
+        currentProperty = currentSubschema[0];
       }
-      data[nextProperty] = dataFromArray(dataArray[i], nextSubschema);
+      data[currentProperty] = dataFromArray(dataArray[i], currentSubschema);
     }
   } else if (dataType === ObjectType.Array) {
     data = [];
