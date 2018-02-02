@@ -9,6 +9,7 @@
     "prefer-const": false,
     "prefer-for-of": false,
     "object-literal-sort-keys": false,
+    "one-variable-per-declaration": false,
     "trailing-comma": [
       false
     ]

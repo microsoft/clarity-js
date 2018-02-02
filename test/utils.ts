@@ -1,8 +1,9 @@
 
-import { ICompressedBatchMessage, IEnvelope, IEvent, IWorkerMessage, WorkerMessageType } from "../clarity";
+import { ICompressedBatchMessage, IEnvelope, IEvent, IPayload, IWorkerMessage, WorkerMessageType } from "../clarity";
 import compress from "../src/compress";
 import { addEvent, onWorkerMessage } from "../src/core";
 import { guid } from "../src/utils";
+import EventFromArray from "./fromarray";
 import { getSentEvents, getWorkerMessages } from "./testsetup";
 
 export const MockEventName = "ClarityTestMockEvent";
@@ -69,4 +70,14 @@ export function getMockEvent(eventName?: string) {
     type: eventName || MockEventName
   };
   return mockEvent;
+}
+
+export function payloadToEvents(payload: IPayload): IEvent[] {
+  let eventArrays = payload.events;
+  let events: IEvent[] = [];
+  for (let i = 0; i < eventArrays.length; i++) {
+    let event = EventFromArray(eventArrays[i]);
+    events.push(event);
+  }
+  return events;
 }

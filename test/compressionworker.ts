@@ -4,7 +4,8 @@ import { createCompressionWorker } from "./../src/compressionworker";
 import { config } from "./../src/config";
 import * as core from "./../src/core";
 import { cleanupFixture, setupFixture } from "./testsetup";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents } from "./utils";
+import MockEventToArray from "./toarray";
+import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, payloadToEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -39,7 +40,7 @@ describe("Compression Worker Tests", () => {
     let forceCompressionMsg = createForceCompressionMessage();
 
     worker.postMessage(addEventMessage);
-    addEventMessage.event = secondMockEvent;
+    addEventMessage.event = MockEventToArray(secondMockEvent);
     worker.postMessage(addEventMessage);
     worker.postMessage(forceCompressionMsg);
 
@@ -47,9 +48,10 @@ describe("Compression Worker Tests", () => {
       assert.equal(message.type, WorkerMessageType.CompressedBatch);
       let compressedBatchMessage = message as ICompressedBatchMessage;
       let payload = JSON.parse(compressedBatchMessage.rawData);
-      assert.equal(payload.events.length, 2);
-      assert.equal(payload.events[0].type, firstMockEventName);
-      assert.equal(payload.events[1].type, secondMockEventName);
+      let events = payloadToEvents(payload);
+      assert.equal(events.length, 2);
+      assert.equal(events[0].type, firstMockEventName);
+      assert.equal(events[1].type, secondMockEventName);
       done();
     };
   });
@@ -68,7 +70,7 @@ describe("Compression Worker Tests", () => {
     let forceCompressionMsg = createForceCompressionMessage();
 
     worker.postMessage(addEventMessage);
-    addEventMessage.event = secondMockEvent;
+    addEventMessage.event = MockEventToArray(secondMockEvent);
     worker.postMessage(addEventMessage);
     worker.postMessage(forceCompressionMsg);
     scheduleTestFailureTimeout(done, "Worker has not responded in allocated time");
@@ -87,10 +89,12 @@ describe("Compression Worker Tests", () => {
 
     function performAssertions() {
       assert.equal(payloads.length, 2);
-      assert.equal(payloads[0].events.length, 1);
-      assert.equal(payloads[0].events[0].type, firstMockEventName);
-      assert.equal(payloads[1].events.length, 1);
-      assert.equal(payloads[1].events[0].type, secondMockEventName);
+      let firstPayloadEvents = payloadToEvents(payloads[0]);
+      let secondPayloadEvents = payloadToEvents(payloads[1]);
+      assert.equal(firstPayloadEvents.length, 1);
+      assert.equal(firstPayloadEvents[0].type, firstMockEventName);
+      assert.equal(secondPayloadEvents.length, 1);
+      assert.equal(secondPayloadEvents[0].type, secondMockEventName);
       done();
     }
   });
@@ -109,8 +113,9 @@ describe("Compression Worker Tests", () => {
       assert.equal(message.type, WorkerMessageType.CompressedBatch);
       let compressedBatchMessage = message as ICompressedBatchMessage;
       let payload = JSON.parse(compressedBatchMessage.rawData);
-      assert.equal(payload.events.length, 1);
-      assert.equal(payload.events[0].type, MockEventName);
+      let events = payloadToEvents(payload);
+      assert.equal(events.length, 1);
+      assert.equal(events[0].type, MockEventName);
       done();
     };
   });
@@ -125,7 +130,8 @@ describe("Compression Worker Tests", () => {
     let addEventMessage: IAddEventMessage = {
       type: WorkerMessageType.AddEvent,
       time: -1,
-      event: mockXhrErrorEvent
+      event: MockEventToArray(mockXhrErrorEvent),
+      isXhrErrorEvent: true
     };
     let forceCompressionMsg = createForceCompressionMessage();
 
@@ -171,7 +177,7 @@ describe("Compression Worker Tests", () => {
     let addEventMessage: IAddEventMessage = {
       type: WorkerMessageType.AddEvent,
       time: -1,
-      event
+      event: MockEventToArray(event)
     };
     return addEventMessage;
   }

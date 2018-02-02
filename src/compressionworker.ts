@@ -1,5 +1,5 @@
-import { IAddEventMessage, ICompressedBatchMessage, IEnvelope, IEvent,
-  Instrumentation, ITimestampedWorkerMessage, WorkerMessageType } from "../clarity";
+import { IAddEventMessage, ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, Instrumentation, ITimestampedWorkerMessage,
+  WorkerMessageType } from "../clarity";
 import compress from "./compress";
 import { config } from "./config";
 
@@ -23,7 +23,7 @@ function workerContext() {
   let compress = workerGlobalScope.compress;
   let config = workerGlobalScope.config;
   let envelope: IEnvelope = workerGlobalScope.envelope;
-  let nextBatchEvents: IEvent[] = [];
+  let nextBatchEvents: IEventArray[] = [];
   let nextBatchBytes = 0;
   let sequence = 0;
 
@@ -37,7 +37,7 @@ function workerContext() {
     switch (message.type) {
       case WorkerMessageType.AddEvent:
         let addEventMsg = message as IAddEventMessage;
-        addEvent(addEventMsg.event, addEventMsg.time);
+        addEvent(addEventMsg.event, addEventMsg.time, addEventMsg.isXhrErrorEvent);
         break;
       case WorkerMessageType.ForceCompression:
         let forceCompressionMsg = message as ITimestampedWorkerMessage;
@@ -48,7 +48,7 @@ function workerContext() {
     }
   };
 
-  function addEvent(event: IEvent, time: number): void {
+  function addEvent(event: IEventArray, time: number, isXhrErrorEvent?: boolean): void {
     let eventStr = JSON.stringify(event);
 
     // If appending new event to next batch would exceed batch limit, then post next batch first
@@ -56,10 +56,10 @@ function workerContext() {
       postNextBatchToCore(time);
     }
 
-    // Append new event to the next batch
+    // // Append new event to the next batch
+    nextBatchIsSingleXhrErrorEvent = (nextBatchEvents.length === 0 && isXhrErrorEvent);
     nextBatchEvents.push(event);
     nextBatchBytes += eventStr.length;
-    nextBatchIsSingleXhrErrorEvent = (nextBatchEvents.length === 1 && event.state && event.state.type === Instrumentation.XhrError);
 
     // Even if we just posted next batch, it is possible that a single new event exceeds batch limit by itself, so we need to check again
     if (nextBatchBytes >= config.batchLimit) {
