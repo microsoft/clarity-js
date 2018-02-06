@@ -2,9 +2,9 @@ Schema represents the structure of an arbitrary JavaScript variable. For Objects
 
 The gist of the idea can be illustrated with a simple example:
 
-let car = {
-  make: "Tesla",
-  year: 2018 
+let car = {  
+  make: "Tesla",  
+  year: 2018  
 };  
 schema(car) = ["make", "year"]
 
@@ -12,17 +12,17 @@ However, schemas needs to be able to handle more complex objects, which can have
 
 ### Handling nested Objects
 
-let car = {
-  make: "Tesla",
-  year: 2018,
-  features: {
-    color: "red",
-  }
+let car = {  
+  make: "Tesla",  
+  year: 2018,  
+  features: {  
+    color: "red",  
+  }  
 }
 
 Now, to construct a schema for 'car', it's not enough to just say ["make, "year", "features"], because features has a schema of its own, which needs to be respected as well. To take that into account, we need to add an extra dimension to the features representation, which would allow us to pass two pieces of inofrmation for the features object - property name, under which it's stored in the car object and features's own schema. It can look something like this:
 
-featuresSchema = ["features", ["color"]]
+featuresSchema = ["features", ["color"]]  
 schema(car) = [ "make", "year", featuresSchema ]
 
 ### Differentiating Object's schema arrays from actual arrays of data
@@ -31,30 +31,30 @@ Last problem that we need to handle is disambiguation between the arrays describ
 
 Here is a more complicated example containing three schema types (primitive, array, object) nested within another object. 
 
-let car = {
-  make: "Tesla",
-  year: 2018,
-  features: {
-    color: "red",
-  },
-  passenges: [
-    "John",
-    "Lena"
-  ]
+let car = {  
+  make: "Tesla",  
+  year: 2018,  
+  features: {  
+    color: "red",  
+  },  
+  passenges: [  
+    "John",  
+    "Lena"  
+  ]  
 }
 
-featuresSchema = ["features", ObjectType.Object, ["color"]]
-passengersSchema = ["passengers", ObjectType.Array, [null, null]];
+featuresSchema = ["features", ObjectType.Object, ["color"]]  
+passengersSchema = ["passengers", ObjectType.Array, [null, null]];  
 schema(car) = [ ObjectType.Object, [ "make", "year", featuresSchema, passengerSchema ] ]
 
 More generally speaking, schema is determined by (1) the type of variable for which schema is created, and (2) whether this variable is contained within some other object as a value for a property with a name. Table below contains all permutations of those two factors:
 
-[comment]: <> (Markdown for table below is auto-generated and renders correctly)
-[comment]: <> (Generator URL: https://www.tablesgenerator.com/markdown_tables)
+[comment]: # (Markdown for table below is auto-generated and renders correctly)
+[comment]: # (Generator URL: https://www.tablesgenerator.com/markdown_tables)
 
 | Is a named property value | Primitive     | Array                                                                          | Object                                                                         |
 |---------------------------|---------------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
 | FALSE                     | null          | [ObjectType.Array, [Array of array values' recursive Schemas]]                 | [ObjectType.Object, [Array of array values' recursive Schemas]]                |
 | TRUE                      | Property name | [Property name, ObjectType.Array, [Array of object values' recursive Schemas]] | [Property name, ObjectType.Array, [Array of object values' recursive Schemas]] |
 
-[comment]: <> (End of table)
+[comment]: # (End of table)
