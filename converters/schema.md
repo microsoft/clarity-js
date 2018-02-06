@@ -2,16 +2,19 @@ Schema represents the structure of an arbitrary JavaScript variable. For Objects
 
 The gist of the idea can be illustrated with a simple example:
 
+```javascript
 let car = {  
   make: "Tesla",  
   year: 2018  
 };  
 schema(car) = ["make", "year"]
+```
 
 However, schemas needs to be able to handle more complex objects, which can have properties of arbitrary types, which might require their own schemas. When we think about these slightly harder cases, there are two issues that come up that need to be handled as special cases.
 
 ### Handling nested Objects
 
+```javascript
 let car = {  
   make: "Tesla",  
   year: 2018,  
@@ -19,6 +22,7 @@ let car = {
     color: "red",  
   }  
 }
+```
 
 Now, to construct a schema for 'car', it's not enough to just say ["make, "year", "features"], because features has a schema of its own, which needs to be respected as well. To take that into account, we need to add an extra dimension to the features representation, which would allow us to pass two pieces of inofrmation for the features object - property name, under which it's stored in the car object and features's own schema. It can look something like this:
 
@@ -31,6 +35,7 @@ Last problem that we need to handle is disambiguation between the arrays describ
 
 Here is a more complicated example containing three schema types (primitive, array, object) nested within another object. 
 
+```javascript
 let car = {  
   make: "Tesla",  
   year: 2018,  
@@ -42,6 +47,7 @@ let car = {
     "Lena"  
   ]  
 }
+```
 
 featuresSchema = ["features", ObjectType.Object, ["color"]]  
 passengersSchema = ["passengers", ObjectType.Array, [null, null]];  
