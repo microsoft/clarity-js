@@ -9,7 +9,7 @@ import { config } from "./config";
 import getPlugin from "./plugins";
 import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-export const version = "0.1.27";
+export const version = "0.1.28";
 export const ClarityAttribute = "clarity-iid";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
