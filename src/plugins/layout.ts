@@ -17,7 +17,6 @@ export default class Layout implements IPlugin {
   private watchList: boolean[];
   private mutationSequence: number;
   private domPreDiscoverMutations: ILayoutEventInfo[][];
-  private domDiscoverComplete: boolean;
   private lastConsistentDomJson: NumberJson;
   private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventState;
   private originalLayouts: Array<{
@@ -31,7 +30,6 @@ export default class Layout implements IPlugin {
     this.watchList = [];
     this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
     this.mutationSequence = 0;
-    this.domDiscoverComplete = false;
     this.domPreDiscoverMutations = [];
     this.lastConsistentDomJson = null;
     this.firstShadowDomInconsistentEvent = null;
@@ -84,71 +82,12 @@ export default class Layout implements IPlugin {
     this.checkConsistency({
       action: LayoutRoutine.DiscoverDom
     });
-    setTimeout(() => {
-      this.backfillLayoutsAsync(discoverTime, this.onDomDiscoverComplete.bind(this));
-    }, 0);
   }
 
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
-  private discoverNode(node: Node) {
+  private discoverNode(node: Node, shadowDom: ShadowDom): ILayoutState {
     this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
-    let layout = createGenericLayoutState(node, null);
-    this.originalLayouts.push({
-      node,
-      layout
-    });
-  }
-
-  // Go back to the nodes that were stored with a dummy layout during the DOM discovery
-  // and compute valid layouts for those nodes. Since there can be many layouts to process,
-  // this function will yield a thread, if it is taking too long and will return to processing
-  // remaining layouts ASAP through the setTimeout call.
-  // Because of its potential async nature, it is possible that by the time we get to processing
-  // a layout of some element, there has been a mutation on it, so its properties could have changed.
-  // To handle this, until we record all initial layouts, MutationObserver's callback function will
-  // evaluate whether some mutation changes node's attributes/characterData for the first time and,
-  // if it does, store original values. Then, when we record the layout of the mutated node,
-  // we can adjust the current layout JSON with the original values to mimic its initial state.
-  private backfillLayoutsAsync(time: number, onDomDiscoverComplete: () => void) {
-    let yieldTime = getTimestamp(true) + config.timeToYield;
-    let events: IEventData[] = [];
-    while (this.originalLayouts.length > 0 && getTimestamp(true) < yieldTime) {
-      let originalLayout = this.originalLayouts.shift();
-      let originalLayoutState = originalLayout.layout;
-      let currentLayoutState = createLayoutState(originalLayout.node);
-      currentLayoutState.parent = originalLayoutState.parent;
-      currentLayoutState.previous = originalLayoutState.previous;
-      currentLayoutState.next = originalLayoutState.next;
-      currentLayoutState.source = Source.Discover;
-      currentLayoutState.action = Action.Insert;
-
-      // Watch for any input changes or scroll events within the element
-      this.watch(originalLayout.node, currentLayoutState);
-
-      events.push({
-        type: this.eventName,
-        state: currentLayoutState,
-        time
-      });
-    }
-    addMultipleEvents(events);
-
-    // If there are more elements that need to be processed, yield the thread and return ASAP
-    if (this.originalLayouts.length > 0) {
-      setTimeout(() => {
-        this.backfillLayoutsAsync(time, onDomDiscoverComplete);
-      }, 0);
-    } else {
-      onDomDiscoverComplete();
-    }
-  }
-
-  // Mark dom discovery process completed and process mutations that happened on the page up to this point
-  private onDomDiscoverComplete() {
-    this.domDiscoverComplete = true;
-    for (let i = 0; i < this.domPreDiscoverMutations.length; i++) {
-      this.processMultipleNodeEvents(this.domPreDiscoverMutations[i]);
-    }
+    return createLayoutState(node);
   }
 
   private processMultipleNodeEvents<T extends ILayoutEventInfo>(eventInfos: T[]) {
@@ -284,11 +223,7 @@ export default class Layout implements IPlugin {
 
       if (this.allowMutation()) {
         let events = this.processMutations(summary, time);
-        if (this.domDiscoverComplete) {
-          this.processMultipleNodeEvents(events);
-        } else {
-          this.domPreDiscoverMutations.push(events);
-        }
+        this.processMultipleNodeEvents(events);
       } else {
         debug(`>>> ShadowDom doesn't match PageDOM after mutation batch #${this.mutationSequence}!`);
       }
