@@ -78,14 +78,22 @@ export default class Layout implements IPlugin {
   // and returning to it later through a set timeout
   private discoverDom() {
     let discoverTime = getTimestamp();
-    traverseNodeTree(document, this.discoverNode.bind(this));
+    traverseNodeTree(document, (node: Node) => {
+      let layoutState = this.discoverNode(node);
+      layoutState.action = Action.Insert;
+      layoutState.source = Source.Discover;
+      addEvent({
+        type: this.eventName,
+        state: layoutState
+      });
+    });
     this.checkConsistency({
       action: LayoutRoutine.DiscoverDom
     });
   }
 
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
-  private discoverNode(node: Node, shadowDom: ShadowDom): ILayoutState {
+  private discoverNode(node: Node): ILayoutState {
     this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
     return createLayoutState(node);
   }
