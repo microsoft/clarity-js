@@ -5,7 +5,7 @@ The gist of the idea can be illustrated with a simple example:
 let car = {
   make: "Tesla",
   year: 2018 
-}; 
+};  
 schema(car) = ["make", "year"]
 
 However, schemas needs to be able to handle more complex objects, which can have properties of arbitrary types, which might require their own schemas. When we think about these slightly harder cases, there are two issues that come up that need to be handled as special cases.
