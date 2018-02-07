@@ -4,6 +4,7 @@
 
 export function start(config?: IConfig): void;
 export function stop(): void;
+export function trigger(key: string): void;
 
 /* ##################################### */
 /* ############   CONFIG   ############# */
