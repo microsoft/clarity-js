@@ -1,10 +1,15 @@
 import {  IEvent, IEventArray, ILayoutState } from "../clarity";
 import { Action, ObjectType } from "../clarity";
-import schemas from "./schema";
+import { SchemaManager } from "./schema";
+import defaultSchemas from "./schema";
 
-export default function(eventArray: IEventArray): IEvent {
+export default function(eventArray: IEventArray, schemas?: SchemaManager): IEvent {
   let id, type, time, stateArray, schema;
   [id, type, time, stateArray, schema] = eventArray;
+
+  if (!schemas) {
+    schemas = defaultSchemas;
+  }
 
   if (typeof schema === "number") {
     schema = schemas.getSchema(schema);
