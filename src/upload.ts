@@ -4,7 +4,7 @@ import {
 } from "../clarity";
 import { config } from "./config";
 import { instrument, state, teardown } from "./core";
-import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
+import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Counters
 let sentBytesCount: number;
@@ -99,7 +99,7 @@ function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, 
 function onSuccessDefault(sequenceNumber: number, status: number) {
   debug(`SUCCESS: Delivered batch #${sequenceNumber}`);
   let sentData = uploadInfos[sequenceNumber];
-  uploadInfos[sequenceNumber] = null;
+  delete uploadInfos[sequenceNumber];
   sentBytesCount += sentData.compressed.length;
 
   if (state === State.Activated && sentBytesCount > config.totalLimit) {
@@ -133,8 +133,8 @@ function logXhrError(sequenceNumber: number, status: number, uploadInfo: IUpload
     sequenceNumber,
     compressedLength: uploadInfo.compressed.length,
     rawLength: JSON.stringify(uploadInfo.raw).length,
-    firstEventId: events[0][0 /* id */],
-    lastEventId: events[events.length - 1][0 /* id */],
+    firstEventId: getEventId(events[0]),
+    lastEventId: getEventId(events[events.length - 1]),
     attemptNumber: uploadInfo.failureCount
   };
   instrument(xhrErrorState);

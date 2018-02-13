@@ -1,4 +1,4 @@
-import { IClarityAssertFailedEventState, Instrumentation } from "../clarity";
+import { IClarityAssertFailedEventState, IEventArray, Instrumentation } from "../clarity";
 import { config } from "./config";
 import { instrument } from "./core";
 
@@ -98,4 +98,12 @@ export function debug(text) {
   if (config.debug && console.log) {
     console.log(`(Clarity) ${text}`);
   }
+}
+
+export function getEventId(eventArray: IEventArray) {
+  return eventArray[0];
+}
+
+export function getEventType(eventArray: IEventArray) {
+  return eventArray[1];
 }

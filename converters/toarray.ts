@@ -8,7 +8,6 @@ import schemas from "./schema";
 // has to only be sent for the first event of that type and the following events can then re-use this schema
 // on the server for reconstructing the full JSON.
 export default function(event: IEvent): IEventArray {
-  let keys = Object.keys(event);
   let schema = schemas.createSchema(event.state);
   let newSchema = schemas.addSchema(schema);
   let stateArray = dataToArray(event.state);

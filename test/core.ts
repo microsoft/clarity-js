@@ -4,6 +4,7 @@ import {
 } from "../clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
+import { getEventType } from "../src/utils";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
 import {
@@ -144,17 +145,17 @@ describe("Core Tests", () => {
     // Verify first payload
     assert.equal(firstPayload.envelope.sequenceNumber, 0);
     assert.equal(firstPayload.events.length, 1);
-    assert.equal(firstPayload.events[0][1 /*type*/], firstMockEventName);
+    assert.equal(getEventType(firstPayload.events[0]), firstMockEventName);
 
     // Verify second payload
     assert.equal(secondPayload.envelope.sequenceNumber, 1);
     assert.equal(secondPayload.events.length, 1);
-    assert.equal(secondPayload.events[0][1 /*type*/], secondMockEventName);
+    assert.equal(getEventType(secondPayload.events[0]), secondMockEventName);
 
     // Verify third payload
     assert.equal(thirdPayload.envelope.sequenceNumber, 0);
     assert.equal(thirdPayload.events.length, 1);
-    assert.equal(thirdPayload.events[0][1 /*type*/], firstMockEventName);
+    assert.equal(getEventType(thirdPayload.events[0]), firstMockEventName);
 
     done();
   });

@@ -7,7 +7,7 @@ import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
 import getPlugin from "./plugins";
 import { enqueueUpload, flushUploadQueue, resetUploads, upload } from "./upload";
-import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
+import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 export const version = "0.1.30";
 export const ClarityAttribute = "clarity-iid";
@@ -30,7 +30,7 @@ let eventCount: number;
 // Storage for events that were posted to compression worker, but have not returned to core as compressed batches yet.
 // When page is unloaded, keeping such event copies in core allows us to terminate compression worker safely and then
 // compress and upload remaining events synchronously from the main thread.
-let pendingEvents: IEventArray[] = [];
+let pendingEvents: { [key: number]: IEventArray };
 
 let queueUploads: boolean;
 let compressionWorker: Worker;
@@ -90,7 +90,7 @@ export function teardown() {
       // Immediately terminate the worker and kill its thread.
       // Any possible pending incoming messages from the worker will be ignored in the 'Unloaded' state.
       // Copies of all the events that were sent to the worker, but have not been returned as a compressed batch yet,
-      // are stored in the 'pendingEvents' queue, so we will compress and upload them synchronously in this thread.
+      // are stored in the 'pendingEvents' object, so we will compress and upload them synchronously in this thread.
       compressionWorker.terminate();
     }
     state = State.Unloaded;
@@ -128,7 +128,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   if (compressionWorker) {
     compressionWorker.postMessage(addEventMessage);
   }
-  pendingEvents.push(evt);
+  pendingEvents[evtJson.id] = evt;
   if (scheduleUpload) {
     clearTimeout(timeout);
     timeout = setTimeout(forceCompression, config.delay);
@@ -190,13 +190,14 @@ export function onWorkerMessage(evt: MessageEvent) {
         } else {
           upload(uploadMsg.compressedData, uploadMsg.rawData);
         }
+        sequence = uploadMsg.rawData.envelope.sequenceNumber + 1;
 
-        // Clear local copies for the events that just came in a compressed batch from the worker.
-        // Since the order of messages is guaranteed, events will be coming from the worker in the
-        // exact same order as they were pushed on the pendingEvents queue and sent to the worker.
-        // This means that we can just pop 'eventCount' number of events from the front of the queue.
-        pendingEvents.splice(0, uploadMsg.rawData.events.length);
-        sequence++;
+        // Clear records for the compressed events returned by the worker
+        let events = uploadMsg.rawData.events;
+        for (let i = 0; i < events.length; i++) {
+          let evtId = getEventId(events[i]);
+          delete pendingEvents[evtId];
+        }
         break;
       default:
         break;
@@ -221,10 +222,17 @@ function getPageContextBasedTimestamp(): number {
 }
 
 function uploadPendingEvents() {
-  if (pendingEvents.length > 0) {
+  let events: IEventArray[] = [];
+  let keys = Object.keys(pendingEvents);
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+    let val = pendingEvents[key];
+    events.push(val);
+  }
+  if (events.length > 0) {
     envelope.sequenceNumber = sequence++;
     envelope.time = getTimestamp();
-    let raw: IPayload = { envelope, events: pendingEvents };
+    let raw: IPayload = { envelope, events };
     let compressed = compress(JSON.stringify(raw));
     upload(compressed, raw);
   }
