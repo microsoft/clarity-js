@@ -11,10 +11,10 @@ import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie 
 
 export const version = "0.1.30";
 export const ClarityAttribute = "clarity-iid";
+export const InstrumentationEventName = "Instrumentation";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
-const InstrumentationEventName = "Instrumentation";
 
 let startTime: number;
 let cid: string;
