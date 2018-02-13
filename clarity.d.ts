@@ -92,6 +92,12 @@ interface IPayload {
   events: IEventArray[];
 }
 
+interface IPayloadInfo {
+  compressed: string;
+  raw: IPayload;
+  failureCount: number;
+}
+
 interface IEnvelope {
   clarityId: string;
   impressionId: string;
@@ -111,12 +117,6 @@ interface IEventData {
 interface IEvent extends IEventData {
   id: number; /* Event ID */
   time: number; /* Time relative to page start */
-}
-
-interface IUploadInfo {
-  compressed: string;
-  raw: IPayload;
-  failureCount: number;
 }
 
 interface IEventBindingPair {

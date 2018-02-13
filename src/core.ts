@@ -6,7 +6,7 @@ import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
 import getPlugin from "./plugins";
-import { enqueueUpload, flushUploadQueue, resetUploads, upload } from "./upload";
+import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 export const version = "0.1.30";
@@ -154,7 +154,7 @@ export function onTrigger(key: string) {
     };
     instrument(triggerState);
     queueUploads = false;
-    flushUploadQueue();
+    flushPayloadQueue();
   }
 }
 
@@ -186,7 +186,7 @@ export function onWorkerMessage(evt: MessageEvent) {
       case WorkerMessageType.CompressedBatch:
         let uploadMsg = message as ICompressedBatchMessage;
         if (queueUploads) {
-          enqueueUpload(uploadMsg.compressedData, uploadMsg.rawData);
+          enqueuePayload(uploadMsg.compressedData, uploadMsg.rawData);
         } else {
           upload(uploadMsg.compressedData, uploadMsg.rawData);
         }
