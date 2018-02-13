@@ -1,20 +1,20 @@
 import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, ICompressedBatchMessage,
-  IDroppedPayloadInfo, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
-  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITotalByteLimitExceededEventState, ITriggerState,
-  IUploadInfo, IXhrErrorEventState, State, UploadCallback, WorkerMessageType } from "../clarity";
+  IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
+  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITriggerState, State, WorkerMessageType } from "../clarity";
 import EventToArray from "../converters/toarray";
 import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
 import getPlugin from "./plugins";
-import { debug, getCookie, guid, isNumber, mapProperties, setCookie } from "./utils";
+import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
+import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-export const version = "0.1.29";
+export const version = "0.1.30";
 export const ClarityAttribute = "clarity-iid";
+export const InstrumentationEventName = "Instrumentation";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
-const InstrumentationEventName = "Instrumentation";
 
 let startTime: number;
 let cid: string;
@@ -25,21 +25,13 @@ let activePlugins: IPlugin[];
 let bindings: IBindingContainer;
 
 // Counters
-let sentBytesCount: number;
-let uploadCount: number;
 let eventCount: number;
-
-// Storage for payloads that were not delivered for re-upload
-let droppedPayloads: { [key: number]: IDroppedPayloadInfo };
 
 // Storage for events that were posted to compression worker, but have not returned to core as compressed batches yet.
 // When page is unloaded, keeping such event copies in core allows us to terminate compression worker safely and then
 // compress and upload remaining events synchronously from the main thread.
-let pendingEvents: IEventArray[] = [];
+let pendingEvents: { [key: number]: IEventArray };
 
-// Storage for payloads that are compressed and are ready to be sent, but are waiting for Clarity trigger.
-// Once trigger is fired, all payloads from this array will be sent in the order they were generated.
-let pendingUploads: IUploadInfo[];
 let queueUploads: boolean;
 let compressionWorker: Worker;
 let timeout: number;
@@ -98,7 +90,7 @@ export function teardown() {
       // Immediately terminate the worker and kill its thread.
       // Any possible pending incoming messages from the worker will be ignored in the 'Unloaded' state.
       // Copies of all the events that were sent to the worker, but have not been returned as a compressed batch yet,
-      // are stored in the 'pendingEvents' queue, so we will compress and upload them synchronously in this thread.
+      // are stored in the 'pendingEvents' object, so we will compress and upload them synchronously in this thread.
       compressionWorker.terminate();
     }
     state = State.Unloaded;
@@ -136,7 +128,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   if (compressionWorker) {
     compressionWorker.postMessage(addEventMessage);
   }
-  pendingEvents.push(evt);
+  pendingEvents[evtJson.id] = evt;
   if (scheduleUpload) {
     clearTimeout(timeout);
     timeout = setTimeout(forceCompression, config.delay);
@@ -162,11 +154,7 @@ export function onTrigger(key: string) {
     };
     instrument(triggerState);
     queueUploads = false;
-    for (let i = 0; i < pendingUploads.length; i++) {
-      let uploadInfo = pendingUploads[i];
-      upload(uploadInfo.payload, uploadInfo.onSuccess, uploadInfo.onFailure);
-    }
-    pendingUploads = [];
+    flushPayloadQueue();
   }
 }
 
@@ -197,25 +185,19 @@ export function onWorkerMessage(evt: MessageEvent) {
     switch (message.type) {
       case WorkerMessageType.CompressedBatch:
         let uploadMsg = message as ICompressedBatchMessage;
-        let onSuccess = (status: number) => { mapProperties(droppedPayloads, uploadDroppedPayloadsMappingFunction, true); };
-        let onFailure = (status: number) => { onFirstSendDeliveryFailure(status, uploadMsg.rawData, uploadMsg.compressedData); };
         if (queueUploads) {
-          let uploadInfo: IUploadInfo = {
-            payload: uploadMsg.compressedData,
-            onSuccess,
-            onFailure
-          };
-          pendingUploads.push(uploadInfo);
+          enqueuePayload(uploadMsg.compressedData, uploadMsg.rawData);
         } else {
-          upload(uploadMsg.compressedData, onSuccess, onFailure);
+          upload(uploadMsg.compressedData, uploadMsg.rawData);
         }
+        sequence = uploadMsg.rawData.envelope.sequenceNumber + 1;
 
-        // Clear local copies for the events that just came in a compressed batch from the worker.
-        // Since the order of messages is guaranteed, events will be coming from the worker in the
-        // exact same order as they were pushed on the pendingEvents queue and sent to the worker.
-        // This means that we can just pop 'eventCount' number of events from the front of the queue.
-        pendingEvents.splice(0, uploadMsg.eventCount);
-        sequence++;
+        // Clear records for the compressed events returned by the worker
+        let events = uploadMsg.rawData.events;
+        for (let i = 0; i < events.length; i++) {
+          let evtId = getEventId(events[i]);
+          delete pendingEvents[evtId];
+        }
         break;
       default:
         break;
@@ -239,92 +221,20 @@ function getPageContextBasedTimestamp(): number {
     : new Date().getTime() - startTime;
 }
 
-function uploadDroppedPayloadsMappingFunction(sequenceNumber: string, droppedPayloadInfo: IDroppedPayloadInfo) {
-  let onSuccess = (status: number) => { onResendDeliverySuccess(droppedPayloadInfo); };
-  let onFailure = (status: number) => { onResendDeliveryFailure(status, droppedPayloadInfo); };
-  upload(droppedPayloadInfo.payload, onSuccess, onFailure);
-}
-
-function upload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
-  let uploadHandler = config.uploadHandler || defaultUpload;
-  uploadHandler(payload, onSuccess, onFailure);
-  debug(`** Clarity #${uploadCount}: Uploading ${Math.round(payload.length / 1024.0)}KB (Compressed). **`);
-
-  // Increment counters and make sure we don't exceed the byte limit
-  uploadCount++;
-  sentBytesCount += payload.length;
-  if (state === State.Activated && sentBytesCount > config.totalLimit) {
-    let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {
-      type: Instrumentation.TotalByteLimitExceeded,
-      bytes: sentBytesCount
-    };
-    instrument(totalByteLimitExceededEventState);
-    teardown();
-  }
-}
-
-function defaultUpload(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
-  if (config.uploadUrl.length > 0) {
-    payload = JSON.stringify(payload);
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", config.uploadUrl);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, onSuccess, onFailure); };
-    xhr.send(payload);
-  }
-}
-
-function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, onFailure: UploadCallback) {
-  if (xhr.readyState === XMLHttpRequest.DONE) {
-    // HTTP response status documentation:
-    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-    if (xhr.status < 200 || xhr.status > 208) {
-      onFailure(xhr.status);
-    } else {
-      onSuccess(xhr.status);
-    }
-  }
-}
-
-function onFirstSendDeliveryFailure(status: number, rawPayload: string, compressedPayload: string) {
-  let sentObj: IPayload = JSON.parse(rawPayload);
-  let xhrErrorEventState: IXhrErrorEventState = {
-    type: Instrumentation.XhrError,
-    requestStatus: status,
-    sequenceNumber: sentObj.envelope.sequenceNumber,
-    compressedLength: compressedPayload.length,
-    rawLength: rawPayload.length,
-    firstEventId: sentObj.events[0][0 /* id */],
-    lastEventId: sentObj.events[sentObj.events.length - 1][0 /* id */],
-    attemptNumber: 0
-  };
-  droppedPayloads[xhrErrorEventState.sequenceNumber] = {
-    payload: compressedPayload,
-    xhrErrorState: xhrErrorEventState
-  };
-  instrument(xhrErrorEventState);
-  sentBytesCount -= compressedPayload.length;
-}
-
-function onResendDeliveryFailure(status: number, droppedPayloadInfo: IDroppedPayloadInfo) {
-  droppedPayloadInfo.xhrErrorState.requestStatus = status;
-  droppedPayloadInfo.xhrErrorState.attemptNumber++;
-  instrument(droppedPayloadInfo.xhrErrorState);
-}
-
-function onResendDeliverySuccess(droppedPayloadInfo: IDroppedPayloadInfo) {
-  delete droppedPayloads[droppedPayloadInfo.xhrErrorState.sequenceNumber];
-}
-
 function uploadPendingEvents() {
-  if (pendingEvents.length > 0) {
+  let events: IEventArray[] = [];
+  let keys = Object.keys(pendingEvents);
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+    let val = pendingEvents[key];
+    events.push(val);
+  }
+  if (events.length > 0) {
     envelope.sequenceNumber = sequence++;
     envelope.time = getTimestamp();
-    let raw = JSON.stringify({ envelope, events: pendingEvents });
-    let compressed = compress(raw);
-    let onSuccess = (status: number) => { /* Do nothing */ };
-    let onFailure = (status: number) => { /* Do nothing */ };
-    upload(compressed, onSuccess, onFailure);
+    let raw: IPayload = { envelope, events };
+    let compressed = compress(JSON.stringify(raw));
+    upload(compressed, raw);
   }
 }
 
@@ -345,6 +255,8 @@ function init() {
     version
   };
 
+  resetUploads();
+
   if (config.customInstrumentation) {
     let customInst = config.customInstrumentation();
     envelope.extraInfo = {};
@@ -357,13 +269,9 @@ function init() {
 
   activePlugins = [];
   bindings = {};
-  droppedPayloads = {};
   pendingEvents = [];
-  pendingUploads = [];
   queueUploads = config.waitForTrigger;
 
-  sentBytesCount = 0;
-  uploadCount = 0;
   eventCount = 0;
 
   compressionWorker = createCompressionWorker(envelope, onWorkerMessage);

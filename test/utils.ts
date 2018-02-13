@@ -1,10 +1,11 @@
 
-import { ICompressedBatchMessage, IEnvelope, IEvent, IPayload, IWorkerMessage, WorkerMessageType } from "../clarity";
+import { ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, IPayload, IWorkerMessage, WorkerMessageType } from "../clarity";
 import compress from "../src/compress";
 import { addEvent, onWorkerMessage } from "../src/core";
 import { guid } from "../src/utils";
 import EventFromArray from "./fromarray";
 import { getSentEvents, getWorkerMessages } from "./testsetup";
+import EventToArray from "./toarray";
 
 export const MockEventName = "ClarityTestMockEvent";
 
@@ -31,18 +32,17 @@ export function getEventsByType(events: IEvent[], eventType: string): IEvent[] {
 }
 
 export function postCompressedBatch(events: IEvent[], envelope?: IEnvelope) {
-  let mockNextBatch: string[] = [];
-  for (let i = 0; i < events.length; i++) {
-    mockNextBatch.push(JSON.stringify(events[i]));
-  }
   envelope = envelope || getMockEnvelope();
-  let mockRawData = `{"envelope":${JSON.stringify(envelope)},"events":[${mockNextBatch.join()}]}`;
-  let mockCompressedData = compress(mockRawData);
+  let eventArrays: IEventArray[] = [];
+  for (let i = 0; i < events.length; i++) {
+    eventArrays.push(EventToArray(events[i]));
+  }
+  let mockRawData: IPayload = { envelope, events: eventArrays };
+  let mockCompressedData = compress(JSON.stringify(mockRawData));
   let mockCompressedBatchMessage: ICompressedBatchMessage = {
     type: WorkerMessageType.CompressedBatch,
     compressedData: mockCompressedData,
-    rawData: mockRawData,
-    eventCount: events.length
+    rawData: mockRawData
   };
   let mockCompressedBatchMessageEvent = {
     data: mockCompressedBatchMessage

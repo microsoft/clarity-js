@@ -7,7 +7,7 @@ import * as chai from "chai";
 import { getMockEvent } from "./utils";
 let assert = chai.assert;
 
-describe("Core Tests", () => {
+describe("Data Conversion Tests", () => {
 
   it("validates that conversion works", (done: DoneFn) => {
     let mapObj = {

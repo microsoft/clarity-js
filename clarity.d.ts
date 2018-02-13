@@ -26,6 +26,9 @@ export interface IConfig {
   // Maximum number of bytes that Clarity can send per page overall
   totalLimit?: number;
 
+  // Maximum number of XHR re-delivery attempts for a single payload
+  reUploadLimit?: number;
+
   // If set to false, text on the page will be masked with asterisks
   showText?: boolean;
 
@@ -89,6 +92,12 @@ interface IPayload {
   events: IEventArray[];
 }
 
+interface IPayloadInfo {
+  compressed: string;
+  raw: IPayload;
+  failureCount: number;
+}
+
 interface IEnvelope {
   clarityId: string;
   impressionId: string;
@@ -108,17 +117,6 @@ interface IEventData {
 interface IEvent extends IEventData {
   id: number; /* Event ID */
   time: number; /* Time relative to page start */
-}
-
-interface IDroppedPayloadInfo {
-  payload: string;
-  xhrErrorState: IXhrErrorEventState;
-}
-
-interface IUploadInfo {
-  payload: string;
-  onSuccess?: UploadCallback;
-  onFailure?: UploadCallback;
 }
 
 interface IEventBindingPair {
@@ -179,8 +177,7 @@ interface IAddEventMessage extends ITimestampedWorkerMessage {
 
 interface ICompressedBatchMessage extends IWorkerMessage {
   compressedData: string;
-  rawData: string;
-  eventCount: number;
+  rawData: IPayload;
 }
 
 /* ##################################### */

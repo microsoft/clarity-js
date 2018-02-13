@@ -7,6 +7,7 @@ export let config: IConfig = {
   delay: 500,
   batchLimit: 100 * 1024, // 100 kilobytes
   totalLimit: 20 * 1024 * 1024,  // 20 megabytes
+  reUploadLimit: 1,
   showText: false,
   showImages: false,
   timeToYield: 50,
