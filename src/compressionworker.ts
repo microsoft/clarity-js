@@ -1,5 +1,5 @@
-import { IAddEventMessage, ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, Instrumentation, ITimestampedWorkerMessage,
-  WorkerMessageType } from "../clarity";
+import { IAddEventMessage, ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, Instrumentation, IPayload,
+  ITimestampedWorkerMessage, WorkerMessageType } from "../clarity";
 import compress from "./compress";
 import { config } from "./config";
 
@@ -71,21 +71,21 @@ function workerContext() {
     if (nextBatchBytes > 0 && !nextBatchIsSingleXhrErrorEvent) {
       envelope.sequenceNumber = sequence++;
       envelope.time = time;
-      let raw = JSON.stringify({ envelope, events: nextBatchEvents });
-      let compressed = compress(raw);
+      let raw: IPayload = { envelope, events: nextBatchEvents };
+      let rawStr = JSON.stringify(raw);
+      let compressed = compress(rawStr);
       let eventCount = nextBatchEvents.length;
       nextBatchEvents = [];
       nextBatchBytes = 0;
-      postToCore(compressed, raw, eventCount);
+      postToCore(compressed, raw);
     }
   }
 
-  function postToCore(compressed: string, uncompressed: string, eventCount: number): void {
+  function postToCore(compressed: string, raw: IPayload): void {
     let message: ICompressedBatchMessage = {
       type: WorkerMessageType.CompressedBatch,
       compressedData: compressed,
-      rawData: uncompressed,
-      eventCount
+      rawData: raw
     };
 
     // Post message to the main thread

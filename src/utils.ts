@@ -96,6 +96,6 @@ export function assert(condition: boolean, source: string, comment: string) {
 
 export function debug(text) {
   if (config.debug && console.log) {
-    console.log(text);
+    console.log(`(Clarity) ${text}`);
   }
 }

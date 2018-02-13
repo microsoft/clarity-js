@@ -1,10 +1,15 @@
-import { ICompressedBatchMessage, IEvent, Instrumentation, State, UploadCallback, WorkerMessageType } from "../clarity";
+import {
+  ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, Instrumentation, IPayload, State, UploadCallback,
+  WorkerMessageType
+} from "../clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, payloadToEvents,
-  postCompressedBatch } from "./utils";
+import {
+  getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, payloadToEvents,
+  postCompressedBatch
+} from "./utils";
 
 import * as chai from "chai";
 let assert = chai.assert;
@@ -139,17 +144,17 @@ describe("Core Tests", () => {
     // Verify first payload
     assert.equal(firstPayload.envelope.sequenceNumber, 0);
     assert.equal(firstPayload.events.length, 1);
-    assert.equal(firstPayload.events[0].type, firstMockEventName);
+    assert.equal(firstPayload.events[0][1 /*type*/], firstMockEventName);
 
     // Verify second payload
     assert.equal(secondPayload.envelope.sequenceNumber, 1);
     assert.equal(secondPayload.events.length, 1);
-    assert.equal(secondPayload.events[0].type, secondMockEventName);
+    assert.equal(secondPayload.events[0][1 /*type*/], secondMockEventName);
 
     // Verify third payload
     assert.equal(thirdPayload.envelope.sequenceNumber, 0);
     assert.equal(thirdPayload.events.length, 1);
-    assert.equal(thirdPayload.events[0].type, firstMockEventName);
+    assert.equal(thirdPayload.events[0][1 /*type*/], firstMockEventName);
 
     done();
   });
@@ -210,6 +215,10 @@ describe("Core Tests", () => {
   });
 
   it("validates that Clarity tears down and logs instrumentation when total byte limit is exceeded", (done: DoneFn) => {
+    core.teardown();
+    config.uploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) => { onSuccess(200); };
+    activateCore();
+
     assert.equal(core.state, State.Activated);
 
     let stopObserving = observeEvents("Instrumentation");
@@ -309,12 +318,11 @@ describe("Core Tests", () => {
     let sentBytes: string[] = [];
     let mockEvent = getMockEvent();
     let mockCompressedData = "MockCompressedData";
-    let mockRawData = "MockRawData";
+    let mockRawData: IPayload = { envelope: {} as IEnvelope, events: [] as IEventArray[] };
     let mockCompressedBatchMessage: ICompressedBatchMessage = {
       type: WorkerMessageType.CompressedBatch,
       compressedData: mockCompressedData,
-      rawData: mockRawData,
-      eventCount: 1
+      rawData: mockRawData
     };
     let mockCompressedMessageEvent = {
       data: mockCompressedBatchMessage

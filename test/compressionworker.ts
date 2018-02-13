@@ -47,7 +47,7 @@ describe("Compression Worker Tests", () => {
     processMessage = (message: IWorkerMessage) => {
       assert.equal(message.type, WorkerMessageType.CompressedBatch);
       let compressedBatchMessage = message as ICompressedBatchMessage;
-      let payload = JSON.parse(compressedBatchMessage.rawData);
+      let payload = compressedBatchMessage.rawData;
       let events = payloadToEvents(payload);
       assert.equal(events.length, 2);
       assert.equal(events[0].type, firstMockEventName);
@@ -79,7 +79,7 @@ describe("Compression Worker Tests", () => {
     let payloads: any[] = [];
     processMessage = (message: IWorkerMessage) => {
       let compressedBatchMessage = message as ICompressedBatchMessage;
-      let payload = JSON.parse(compressedBatchMessage.rawData);
+      let payload = compressedBatchMessage.rawData;
       payloads.push(payload);
       handlerInvocationCount++;
       if (handlerInvocationCount > 1) {
@@ -112,7 +112,7 @@ describe("Compression Worker Tests", () => {
     processMessage = (message: IWorkerMessage) => {
       assert.equal(message.type, WorkerMessageType.CompressedBatch);
       let compressedBatchMessage = message as ICompressedBatchMessage;
-      let payload = JSON.parse(compressedBatchMessage.rawData);
+      let payload = compressedBatchMessage.rawData;
       let events = payloadToEvents(payload);
       assert.equal(events.length, 1);
       assert.equal(events[0].type, MockEventName);
