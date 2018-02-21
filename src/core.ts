@@ -222,6 +222,10 @@ function getPageContextBasedTimestamp(): number {
 }
 
 function uploadPendingEvents() {
+  // If queueUploads === true, then Clarity was never trigger and we don't want to upload any data
+  if (queueUploads) {
+    return;
+  }
   let events: IEventArray[] = [];
   let keys = Object.keys(pendingEvents);
   for (let i = 0; i < keys.length; i++) {

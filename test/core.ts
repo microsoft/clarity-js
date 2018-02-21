@@ -245,4 +245,27 @@ describe("Core Tests", () => {
     assert.equal(events[0].state.key, mockTriggerKey);
     done();
   });
+
+  it("validates that nothing is sent on teardown when trigger was never fired", (done: DoneFn) => {
+    let sentBytes: string[] = [];
+    core.teardown();
+
+    // Set up test config
+    config.waitForTrigger = true;
+    config.uploadHandler = mockUploadHandler;
+    activateCore();
+
+    let stopObserving = observeEvents();
+    let mockEvent = getMockEvent();
+    core.addEvent(mockEvent);
+    core.teardown();
+
+    let events = stopObserving();
+    assert.equal(sentBytes.length, 0);
+    done();
+
+    function mockUploadHandler(payload: string) {
+      sentBytes.push(payload);
+    }
+  });
 });
