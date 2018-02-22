@@ -32,7 +32,7 @@ let eventCount: number;
 // compress and upload remaining events synchronously from the main thread.
 let pendingEvents: { [key: number]: IEventArray };
 
-let queueUploads: boolean;
+let backgroundMode: boolean;
 let compressionWorker: Worker;
 let timeout: number;
 
@@ -153,7 +153,7 @@ export function onTrigger(key: string) {
       key
     };
     instrument(triggerState);
-    queueUploads = false;
+    backgroundMode = false;
     flushPayloadQueue();
   }
 }
@@ -185,7 +185,7 @@ export function onWorkerMessage(evt: MessageEvent) {
     switch (message.type) {
       case WorkerMessageType.CompressedBatch:
         let uploadMsg = message as ICompressedBatchMessage;
-        if (queueUploads) {
+        if (backgroundMode) {
           enqueuePayload(uploadMsg.compressedData, uploadMsg.rawData);
         } else {
           upload(uploadMsg.compressedData, uploadMsg.rawData);
@@ -222,6 +222,10 @@ function getPageContextBasedTimestamp(): number {
 }
 
 function uploadPendingEvents() {
+  // We don't want to upload any data if Clarity is in background mode
+  if (backgroundMode) {
+    return;
+  }
   let events: IEventArray[] = [];
   let keys = Object.keys(pendingEvents);
   for (let i = 0; i < keys.length; i++) {
@@ -270,7 +274,7 @@ function init() {
   activePlugins = [];
   bindings = {};
   pendingEvents = [];
-  queueUploads = config.waitForTrigger;
+  backgroundMode = config.backgroundMode;
 
   eventCount = 0;
 

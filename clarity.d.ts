@@ -66,7 +66,7 @@ export interface IConfig {
   // If this flag is enabled, Clarity will not send any data until trigger function is called.
   // Clarity will still run in the background collecting events and compressing them into batches,
   // but actual sending will only be done one the trigger is fired.
-  waitForTrigger?: boolean;
+  backgroundMode?: boolean;
 }
 
 /* ##################################### */
