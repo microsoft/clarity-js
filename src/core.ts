@@ -222,7 +222,7 @@ function getPageContextBasedTimestamp(): number {
 }
 
 function uploadPendingEvents() {
-  // If queueUploads === true, then Clarity was never triggered and we don't want to upload any data
+  // We don't want to upload any data if Clarity is in background mode
   if (backgroundMode) {
     return;
   }
