@@ -209,7 +209,7 @@ describe("Core Tests", () => {
     core.teardown();
 
     // Set up test config
-    config.waitForTrigger = true;
+    config.backgroundMode = true;
     config.uploadHandler = mockUploadHandler;
     activateCore();
 
@@ -232,7 +232,7 @@ describe("Core Tests", () => {
     core.teardown();
 
     // Set up test config
-    config.waitForTrigger = true;
+    config.backgroundMode = true;
     activateCore();
 
     let stopObserving = observeEvents("Instrumentation");
@@ -251,7 +251,7 @@ describe("Core Tests", () => {
     core.teardown();
 
     // Set up test config
-    config.waitForTrigger = true;
+    config.backgroundMode = true;
     config.uploadHandler = mockUploadHandler;
     activateCore();
 

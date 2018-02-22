@@ -274,7 +274,7 @@ function init() {
   activePlugins = [];
   bindings = {};
   pendingEvents = [];
-  backgroundMode = config.waitForTrigger;
+  backgroundMode = config.backgroundMode;
 
   eventCount = 0;
 

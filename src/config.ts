@@ -17,5 +17,5 @@ export let config: IConfig = {
   customInstrumentation: null,
   debug: false,
   validateConsistency: false,
-  waitForTrigger: false
+  backgroundMode: false
 };
