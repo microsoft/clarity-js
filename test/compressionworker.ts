@@ -1,11 +1,11 @@
-import { IAddEventMessage, ICompressedBatchMessage, IEvent, Instrumentation,
-  ITimestampedWorkerMessage, IWorkerMessage, IXhrErrorEventState, WorkerMessageType } from "../clarity";
+import { EventType, IAddEventMessage, ICompressedBatchMessage, IEvent,
+  Instrumentation, ITimestampedWorkerMessage, IWorkerMessage, IXhrErrorEventState, WorkerMessageType } from "../clarity";
 import { createCompressionWorker } from "./../src/compressionworker";
 import { config } from "./../src/config";
 import * as core from "./../src/core";
 import { cleanupFixture, setupFixture } from "./testsetup";
 import MockEventToArray from "./toarray";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, payloadToEvents } from "./utils";
+import { getMockEnvelope, getMockEvent, MockEventType, observeEvents, payloadToEvents } from "./utils";
 
 import * as chai from "chai";
 
@@ -32,10 +32,12 @@ describe("Compression Worker Tests", () => {
 
   it("validates that events are batched for upload correctly when total length is below the limit", (done: DoneFn) => {
     let worker = createTestWorker();
-    let firstMockEventName = "FirstMockEvent";
-    let secondMockEventName = "SecondMockEvent";
-    let firstMockEvent = getMockEvent(firstMockEventName);
-    let secondMockEvent = getMockEvent(secondMockEventName);
+    let firstMockEventType = -2;
+    let secondMockEventType = -3;
+    let firstMockEvent = getMockEvent();
+    let secondMockEvent = getMockEvent();
+    firstMockEvent.type = firstMockEventType;
+    secondMockEvent.type = secondMockEventType;
     let addEventMessage = createAddEventMessage(firstMockEvent);
     let forceCompressionMsg = createForceCompressionMessage();
 
@@ -50,18 +52,18 @@ describe("Compression Worker Tests", () => {
       let payload = compressedBatchMessage.rawData;
       let events = payloadToEvents(payload);
       assert.equal(events.length, 2);
-      assert.equal(events[0].type, firstMockEventName);
-      assert.equal(events[1].type, secondMockEventName);
+      assert.equal(events[0].type, firstMockEventType);
+      assert.equal(events[1].type, secondMockEventType);
       done();
     };
   });
 
   it("validates that events are batched for upload correctly when total length is above the limit", (done: DoneFn) => {
     let worker = createTestWorker();
-    let firstMockEventName = "FirstMockEvent";
-    let secondMockEventName = "SecondMockEvent";
-    let firstMockEvent = getMockEvent(firstMockEventName);
-    let secondMockEvent = getMockEvent(secondMockEventName);
+    let firstMockEventType = -2;
+    let secondMockEventType = -3;
+    let firstMockEvent = getMockEvent(firstMockEventType);
+    let secondMockEvent = getMockEvent(secondMockEventType);
     let firstMockData = Array(Math.round(config.batchLimit * (2 / 3))).join("1");
     let secondMockData = Array(Math.round(config.batchLimit / 2)).join("2");
     firstMockEvent.state = { data: firstMockData };
@@ -92,9 +94,9 @@ describe("Compression Worker Tests", () => {
       let firstPayloadEvents = payloadToEvents(payloads[0]);
       let secondPayloadEvents = payloadToEvents(payloads[1]);
       assert.equal(firstPayloadEvents.length, 1);
-      assert.equal(firstPayloadEvents[0].type, firstMockEventName);
+      assert.equal(firstPayloadEvents[0].type, firstMockEventType);
       assert.equal(secondPayloadEvents.length, 1);
-      assert.equal(secondPayloadEvents[0].type, secondMockEventName);
+      assert.equal(secondPayloadEvents[0].type, secondMockEventType);
       done();
     }
   });
@@ -115,14 +117,14 @@ describe("Compression Worker Tests", () => {
       let payload = compressedBatchMessage.rawData;
       let events = payloadToEvents(payload);
       assert.equal(events.length, 1);
-      assert.equal(events[0].type, MockEventName);
+      assert.equal(events[0].type, MockEventType);
       done();
     };
   });
 
   it("validates that payloads consisting of a single XHR error event are not uploaded", (done: DoneFn) => {
     let worker = createTestWorker();
-    let mockXhrErrorEvent = getMockEvent(InstrumentationEventName);
+    let mockXhrErrorEvent = getMockEvent(EventType.Instrumentation);
     let mockXhrErrorEventState = {
       type: Instrumentation.XhrError
     } as IXhrErrorEventState;

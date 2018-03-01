@@ -1,11 +1,11 @@
 import { IEvent, IEventArray } from "../clarity";
 import EventFromArray from "../converters/fromarray";
-import { MockEventName } from "./utils";
+import { MockEventType } from "./utils";
 
 export default function(eventArray: IEventArray): IEvent {
   let type = eventArray[1];
   let event: IEvent = null;
-  if (type === MockEventName) {
+  if (type === MockEventType) {
     event = mockEventFromArray(eventArray);
   } else {
     event = EventFromArray(eventArray);
