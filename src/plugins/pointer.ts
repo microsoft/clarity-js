@@ -1,10 +1,9 @@
-import { IPlugin, IPointerModule, IPointerState } from "../../clarity";
+import { EventType, IPlugin, IPointerModule, IPointerState } from "../../clarity";
 import { addEvent, bind } from "../core";
 import * as mouse from "./pointer/mouse";
 import * as touch from "./pointer/touch";
 
 export default class Pointer implements IPlugin {
-  private eventName = "Pointer";
   private distanceThreshold = 20;
   private timeThreshold = 500;
   private lastMoveState: IPointerState;
@@ -47,11 +46,11 @@ export default class Pointer implements IPlugin {
           || this.checkTime(time)) {
           this.lastMoveState = state;
           this.lastMoveTime = time;
-          addEvent({type: this.eventName, state});
+          addEvent({type: EventType.Pointer, state});
         }
         break;
       default:
-        addEvent({type: this.eventName, state});
+        addEvent({type: EventType.Pointer, state});
         break;
     }
   }

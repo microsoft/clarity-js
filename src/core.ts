@@ -1,6 +1,7 @@
-import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, ICompressedBatchMessage,
-  IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
-  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITriggerState, State, WorkerMessageType } from "../clarity";
+import { EventType, IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState,
+  ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IInstrumentationEventState,
+  IMissingFeatureEventState, Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITriggerState, State,
+  WorkerMessageType } from "../clarity";
 import EventToArray from "../converters/toarray";
 import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
@@ -11,7 +12,6 @@ import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie 
 
 export const version = "0.1.31";
 export const ClarityAttribute = "clarity-iid";
-export const InstrumentationEventName = "Instrumentation";
 const ImpressionAttribute = "data-iid";
 const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
@@ -123,7 +123,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
     type: WorkerMessageType.AddEvent,
     event: evt,
     time: getTimestamp(),
-    isXhrErrorEvent: event.type === InstrumentationEventName && event.state.type === Instrumentation.XhrError
+    isXhrErrorEvent: event.type === EventType.Instrumentation && event.state.type === Instrumentation.XhrError
   };
   if (compressionWorker) {
     compressionWorker.postMessage(addEventMessage);
@@ -175,7 +175,7 @@ export function getTimestamp(unix?: boolean, raw?: boolean) {
 
 export function instrument(eventState: IInstrumentationEventState) {
   if (config.instrument) {
-    addEvent({type: InstrumentationEventName, state: eventState});
+    addEvent({type: EventType.Instrumentation, state: eventState});
   }
 }
 

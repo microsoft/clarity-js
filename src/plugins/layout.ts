@@ -1,6 +1,6 @@
-import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
-  Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode, LayoutRoutine,
-  NumberJson, Source } from "../../clarity";
+import { Action, EventType, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRoutineInfo, ILayoutState,
+  IMutationRoutineInfo, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode,
+  LayoutRoutine, NumberJson, Source } from "../../clarity";
 import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
 import { debug, isNumber, traverseNodeTree } from "./../utils";
@@ -9,7 +9,6 @@ import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } 
 import { getLayoutState, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
-  private eventName = "Layout";
   private distanceThreshold = 5;
   private shadowDom: ShadowDom;
   private inconsistentShadowDomCount: number;
@@ -83,7 +82,7 @@ export default class Layout implements IPlugin {
       layoutState.action = Action.Insert;
       layoutState.source = Source.Discover;
       addEvent({
-        type: this.eventName,
+        type: EventType.Layout,
         state: layoutState
       });
     });
@@ -103,7 +102,7 @@ export default class Layout implements IPlugin {
     for (let i = 0; i < eventInfos.length; i++) {
       let eventState = this.createEventState(eventInfos[i]);
       eventsData.push({
-        type: this.eventName,
+        type: EventType.Layout,
         state: eventState
       });
     }
@@ -195,14 +194,14 @@ export default class Layout implements IPlugin {
             layoutState.action = Action.Update;
             layoutState.layout.scrollX = scrollX;
             layoutState.layout.scrollY = scrollY;
-            addEvent({type: this.eventName, state: layoutState});
+            addEvent({type: EventType.Layout, state: layoutState});
           }
           break;
         case Source.Input:
           layoutState.attributes.value = element["value"];
           layoutState.source = source;
           layoutState.action = Action.Update;
-          addEvent({type: this.eventName, state: layoutState});
+          addEvent({type: EventType.Layout, state: layoutState});
           break;
         default:
           break;

@@ -1,8 +1,7 @@
-import { IPlugin, IViewportState } from "../../clarity";
+import { EventType, IPlugin, IViewportState } from "../../clarity";
 import { addEvent, bind } from "../core";
 
 export default class Viewport implements IPlugin {
-  private eventName = "Viewport";
   private distanceThreshold = 20;
   private lastViewportState: IViewportState;
 
@@ -58,7 +57,7 @@ export default class Viewport implements IPlugin {
     }
     if (recordState) {
       this.lastViewportState = state;
-      addEvent({type: this.eventName, state});
+      addEvent({type: EventType.Viewport, state});
     }
   }
 
