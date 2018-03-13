@@ -5,8 +5,17 @@ import { ClarityDataSchema, ObjectType } from "../clarity";
 
 export class SchemaManager {
 
-  private schemas: ClarityDataSchema[] = [];
-  private schemaToIdMap = {};
+  private schemas: ClarityDataSchema[];
+  private schemaToIdMap;
+
+  constructor() {
+    this.reset();
+  }
+
+  public reset() {
+    this.schemas = [];
+    this.schemaToIdMap = {};
+  }
 
   public addSchema(schema: ClarityDataSchema): boolean {
     let schemaStr = JSON.stringify(schema);
@@ -79,5 +88,9 @@ export class SchemaManager {
   }
 }
 
-let schemaManager = new SchemaManager();
+export function resetSchemas() {
+  schemaManager.reset();
+}
+
+let schemaManager: SchemaManager = new SchemaManager();
 export default schemaManager;

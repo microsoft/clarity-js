@@ -2,6 +2,7 @@ import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClari
   IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
   Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITriggerState, State, WorkerMessageType } from "../clarity";
 import EventToArray from "../converters/toarray";
+import { resetSchemas } from "./../converters/schema";
 import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
@@ -259,6 +260,7 @@ function init() {
     version
   };
 
+  resetSchemas();
   resetUploads();
 
   if (config.customInstrumentation) {
