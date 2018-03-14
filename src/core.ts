@@ -10,7 +10,7 @@ import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-export const version = "0.1.31";
+export const version = "0.1.32";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const ImpressionAttribute = "data-iid";
