@@ -4,8 +4,10 @@ import { addEvent, instrument } from "../core";
 import { mapProperties } from "../utils";
 
 export default class PerformanceProfiler implements IPlugin {
-  private clarityUploadHref = document.createElement("a");
-  private timeoutLength = 1000;
+
+  private readonly timeoutLength = 1000;
+
+  private uploadHyperlink = document.createElement("a");
   private lastInspectedEntryIndex: number;
   private logTimingTimeout: number;
   private logResourceTimingTimeout: number;
@@ -30,7 +32,7 @@ export default class PerformanceProfiler implements IPlugin {
 
   public activate() {
     if (config.uploadUrl.length > 0) {
-      this.clarityUploadHref.href = config.uploadUrl;
+      this.uploadHyperlink.href = config.uploadUrl;
     }
     if (this.timing) {
       this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
@@ -46,7 +48,7 @@ export default class PerformanceProfiler implements IPlugin {
     this.incompleteEntryIndices = [];
 
     if (config.uploadUrl) {
-      this.clarityUploadHref.href = config.uploadUrl;
+      this.uploadHyperlink.href = config.uploadUrl;
     }
 
     // Potentially these don't need resets because performance object doesn't normally change within the page
@@ -132,7 +134,7 @@ export default class PerformanceProfiler implements IPlugin {
     if (entry && entry.responseEnd > 0) {
 
       // Ignore Clarity's own network upload requests to avoid infinite loop of network reporting
-      if (entry.name !== this.clarityUploadHref.href && entry.name !== this.clarityUploadHref.pathname) {
+      if (entry.name !== this.uploadHyperlink.href && entry.name !== this.uploadHyperlink.pathname) {
         networkData = {
           duration: entry.duration,
           initiatorType: entry.initiatorType,
