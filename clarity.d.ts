@@ -81,6 +81,16 @@ declare const enum State {
   Unloading
 }
 
+declare const enum EventType {
+  /* 0 */ Discover,
+  /* 1 */ Instrumentation,
+  /* 2 */ Layout,
+  /* 3 */ Pointer,
+  /* 4 */ Viewport,
+  /* 5 */ NavigationTiming,
+  /* 6 */ ResourceTiming
+}
+
 export interface IPlugin {
   activate(): void;
   teardown(): void;
@@ -109,7 +119,7 @@ interface IEnvelope {
 }
 
 interface IEventData {
-  type: string;
+  type: EventType;
   state: any;
   time?: number;
 }
@@ -133,11 +143,11 @@ export type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFail
 
 // IEvent object converted to a value array representation
 type IEventArray = [
-  number, // id
-  string, // type
-  number, // time
-  any[],  // state
-  ClarityDataSchema   // data schema, if it's a new one, otherwise - schema hashcode
+  number,     // id
+  EventType,  // type
+  number,     // time
+  any[],      // state
+  ClarityDataSchema   // data schema, if it's a new one, otherwise - schema id
 ];
 
 declare const enum ObjectType {
@@ -384,7 +394,8 @@ declare const enum Instrumentation {
   ClarityDuplicated,
   ShadowDomInconsistent,
   ClarityActivateError,
-  Trigger
+  Trigger,
+  PerformanceStateError
 }
 
 interface IInstrumentationEventState {

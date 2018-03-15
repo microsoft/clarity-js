@@ -1,4 +1,4 @@
-import { Instrumentation, State, UploadCallback } from "../clarity";
+import { EventType, Instrumentation, State, UploadCallback } from "../clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { getEventType } from "../src/utils";
@@ -44,7 +44,7 @@ describe("Data Upload Tests", () => {
 
     let events = stopObserving();
     assert.equal(events.length, 1);
-    assert.equal(events[0].type, core.InstrumentationEventName);
+    assert.equal(events[0].type, EventType.Instrumentation);
     assert.equal(events[0].state.type, Instrumentation.XhrError);
     assert.equal(events[0].state.requestStatus, 400);
     done();
@@ -69,21 +69,21 @@ describe("Data Upload Tests", () => {
 
     // Part 1: Mock an XHR failure, so that dropped payload is stored for re-delivery
     let stopObserving = observeEvents();
-    let firstMockEventName = "FirstMockEvent";
-    let firstMockEvent = getMockEvent(firstMockEventName);
+    let firstMockEventType = -2;
+    let firstMockEvent = getMockEvent(firstMockEventType);
     let firstEnvelope = getMockEnvelope(0);
     postCompressedBatch([firstMockEvent], firstEnvelope);
 
     // Ensure XHR failure is logged
     let events = stopObserving();
     assert.equal(events.length, 1);
-    assert.equal(events[0].type, core.InstrumentationEventName);
+    assert.equal(events[0].type, EventType.Instrumentation);
     assert.equal(events[0].state.type, Instrumentation.XhrError);
     assert.equal(events[0].state.requestStatus, 400);
 
     // Part 2: Successfully send second payload, which should trigger re-send of the first payload
-    let secondMockEventName = "SecondMockEvent";
-    let secondMockEvent = getMockEvent(secondMockEventName);
+    let secondMockEventType = -3;
+    let secondMockEvent = getMockEvent(secondMockEventType);
     let secondEnvelope = getMockEnvelope(1);
     postCompressedBatch([secondMockEvent], secondEnvelope);
 
@@ -97,17 +97,17 @@ describe("Data Upload Tests", () => {
     // Verify first payload
     assert.equal(firstPayload.envelope.sequenceNumber, 0);
     assert.equal(firstPayload.events.length, 1);
-    assert.equal(getEventType(firstPayload.events[0]), firstMockEventName);
+    assert.equal(getEventType(firstPayload.events[0]), firstMockEventType);
 
     // Verify second payload
     assert.equal(secondPayload.envelope.sequenceNumber, 1);
     assert.equal(secondPayload.events.length, 1);
-    assert.equal(getEventType(secondPayload.events[0]), secondMockEventName);
+    assert.equal(getEventType(secondPayload.events[0]), secondMockEventType);
 
     // Verify third payload
     assert.equal(thirdPayload.envelope.sequenceNumber, 0);
     assert.equal(thirdPayload.events.length, 1);
-    assert.equal(getEventType(thirdPayload.events[0]), firstMockEventName);
+    assert.equal(getEventType(thirdPayload.events[0]), firstMockEventType);
 
     done();
   });
@@ -119,7 +119,7 @@ describe("Data Upload Tests", () => {
 
     assert.equal(core.state, State.Activated);
 
-    let stopObserving = observeEvents("Instrumentation");
+    let stopObserving = observeEvents(EventType.Instrumentation);
     config.totalLimit = 0;
     let mockEvent = getMockEvent();
     postCompressedBatch([mockEvent]);

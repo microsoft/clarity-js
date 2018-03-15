@@ -1,5 +1,6 @@
 
-import { ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, IPayload, IWorkerMessage, WorkerMessageType } from "../clarity";
+import { EventType, ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, IPayload, IWorkerMessage,
+  WorkerMessageType } from "../clarity";
 import compress from "../src/compress";
 import { addEvent, onWorkerMessage } from "../src/core";
 import { guid } from "../src/utils";
@@ -7,9 +8,9 @@ import EventFromArray from "./fromarray";
 import { getSentEvents, getWorkerMessages } from "./testsetup";
 import EventToArray from "./toarray";
 
-export const MockEventName = "ClarityTestMockEvent";
+export let MockEventType = -1;
 
-export function observeEvents(eventType?: string): () => IEvent[] {
+export function observeEvents(eventType?: EventType): () => IEvent[] {
   let initialEventsLength = getSentEvents().length;
   let stopObserving = (): IEvent[] => {
     let newEvents = getSentEvents().slice(initialEventsLength);
@@ -27,7 +28,7 @@ export function observeWorkerMessages() {
   return stopObserving;
 }
 
-export function getEventsByType(events: IEvent[], eventType: string): IEvent[] {
+export function getEventsByType(events: IEvent[], eventType: EventType): IEvent[] {
   return events.filter((event) => event.type === eventType);
 }
 
@@ -62,12 +63,12 @@ export function getMockEnvelope(sequenceNumber?: number) {
   return mockEnvelope;
 }
 
-export function getMockEvent(eventName?: string) {
+export function getMockEvent(eventType?: EventType) {
   let mockEvent: IEvent = {
     id: -1,
     state: {},
     time: -1,
-    type: eventName || MockEventName
+    type: eventType || MockEventType
   };
   return mockEvent;
 }

@@ -1,4 +1,4 @@
-import { IPerformanceResourceTiming, IPlugin } from "../../clarity";
+import { EventType, Instrumentation, IPerformanceResourceTiming, IPlugin } from "../../clarity";
 import { config } from "../config";
 import { addEvent, instrument } from "../core";
 import { mapProperties } from "../utils";
@@ -71,7 +71,7 @@ export default class PerformanceProfiler implements IPlugin {
       let navigationTimingEventState = {
         timing: formattedTiming
       };
-      addEvent({type: "NavigationTiming", state: navigationTimingEventState});
+      addEvent({type: EventType.NavigationTiming, state: navigationTimingEventState});
     } else {
       this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
@@ -86,7 +86,7 @@ export default class PerformanceProfiler implements IPlugin {
     if (entries.length < this.lastInspectedEntryIndex + 1) {
       if (!this.stateError) {
         this.stateError = true;
-        addEvent({type: "PerformanceStateError", state: {}});
+        instrument({type: Instrumentation.PerformanceStateError});
       }
 
       this.lastInspectedEntryIndex = -1;
@@ -120,7 +120,7 @@ export default class PerformanceProfiler implements IPlugin {
       let resourceTimingEventState = {
         entries: entryInfos
       };
-      addEvent({type: "ResourceTiming", state: resourceTimingEventState});
+      addEvent({type: EventType.ResourceTiming, state: resourceTimingEventState});
     }
 
     this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);

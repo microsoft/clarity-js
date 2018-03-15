@@ -4,9 +4,9 @@ import { cleanupFixture, setupFixture } from "./testsetup";
 import { observeEvents } from "./utils";
 
 import * as chai from "chai";
+import { EventType } from "../clarity";
 
 let distanceThreshold = 20;
-let eventName = "Pointer";
 let timeThreshold = 500;
 let assert = chai.assert;
 
@@ -19,7 +19,7 @@ describe("Pointer Tests", () => {
 
   it("validates that mouse events are processed by clarity", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(EventType.Pointer);
     document.addEventListener("click", callback);
 
     // Trigger mousemove events followed by a click event
@@ -48,7 +48,7 @@ describe("Pointer Tests", () => {
   // Make sure that we don't record mouse events that are too close to each other
   it("validates that mouse events are throttled by distance", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(EventType.Pointer);
     document.addEventListener("click", callback);
 
     // Trigger mousemove events followed by a click event
@@ -75,7 +75,7 @@ describe("Pointer Tests", () => {
   // Make sure that we don't record mouse events that are too close to each other
   it("validates that mouse events are throttled by time", (done: DoneFn) => {
     let dom = document.getElementById("clarity");
-    let stopObserving = observeEvents(eventName);
+    let stopObserving = observeEvents(EventType.Pointer);
     document.addEventListener("click", callback);
 
     // Trigger mousemove events followed by a click event
