@@ -134,7 +134,7 @@ export default class PerformanceProfiler implements IPlugin {
     if (entry && entry.responseEnd > 0) {
 
       // Ignore Clarity's own network upload requests to avoid infinite loop of network reporting
-      if (entry.name !== this.uploadHyperlink.href && entry.name !== this.uploadHyperlink.pathname) {
+      if (entry.name !== this.uploadHyperlink.href) {
         networkData = {
           duration: entry.duration,
           initiatorType: entry.initiatorType,
