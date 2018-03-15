@@ -31,9 +31,6 @@ export default class PerformanceProfiler implements IPlugin {
   private getEntriesByType: (type: string) => PerformanceEntry[];
 
   public activate() {
-    if (config.uploadUrl.length > 0) {
-      this.uploadHyperlink.href = config.uploadUrl;
-    }
     if (this.timing) {
       this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
@@ -47,7 +44,7 @@ export default class PerformanceProfiler implements IPlugin {
     this.stateError = false;
     this.incompleteEntryIndices = [];
 
-    if (config.uploadUrl) {
+    if (config.uploadUrl.length > 0) {
       this.uploadHyperlink.href = config.uploadUrl;
     }
 
