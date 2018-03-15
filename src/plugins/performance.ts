@@ -4,10 +4,11 @@ import { addEvent, instrument } from "../core";
 import { mapProperties } from "../utils";
 
 export default class PerformanceProfiler implements IPlugin {
-  private dummyHyperlink = document.createElement("a");
-  private timeoutLength = 1000;
+
+  private readonly timeoutLength = 1000;
+
+  private uploadHyperlink = document.createElement("a");
   private lastInspectedEntryIndex: number;
-  private clarityHostName: string;
   private logTimingTimeout: number;
   private logResourceTimingTimeout: number;
 
@@ -43,9 +44,8 @@ export default class PerformanceProfiler implements IPlugin {
     this.stateError = false;
     this.incompleteEntryIndices = [];
 
-    if (config.uploadUrl) {
-      this.dummyHyperlink.href = config.uploadUrl;
-      this.clarityHostName = this.dummyHyperlink.hostname;
+    if (config.uploadUrl.length > 0) {
+      this.uploadHyperlink.href = config.uploadUrl;
     }
 
     // Potentially these don't need resets because performance object doesn't normally change within the page
@@ -129,10 +129,9 @@ export default class PerformanceProfiler implements IPlugin {
   private inspectEntry(entry, entryIndex): object {
     let networkData: IPerformanceResourceTiming = null;
     if (entry && entry.responseEnd > 0) {
-      this.dummyHyperlink.href = entry.name;
 
       // Ignore Clarity's own network upload requests to avoid infinite loop of network reporting
-      if (this.dummyHyperlink.hostname !== this.clarityHostName) {
+      if (entry.name !== this.uploadHyperlink.href) {
         networkData = {
           duration: entry.duration,
           initiatorType: entry.initiatorType,
