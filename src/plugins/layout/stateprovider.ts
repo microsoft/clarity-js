@@ -138,7 +138,7 @@ function getAttributes(element) {
 
     // If we are masking text, also mask it from input boxes as well as alt description
     if (!config.showText && attributeMaskList.indexOf(attrName) >= 0) {
-      stateAttributes[attr.name] = attr.value.replace(/\S/gi, "*");
+      stateAttributes[attr.name] = attr.value.replace(/./g, "*");
     } else {
       stateAttributes[attr.name] = attr.value;
     }
@@ -203,7 +203,7 @@ export function createTextLayoutState(textNode: Text): ITextLayoutState {
   // Checking parentNode, instead of parentElement, because in IE textNode.parentElement returns 'undefined'.
   let showText = (textNode.parentNode && (textNode.parentNode as Element).tagName === "STYLE") ? true : config.showText;
   let textState = createGenericLayoutState(textNode, Tags.Text) as ITextLayoutState;
-  textState.content = showText ? textNode.textContent : textNode.textContent.replace(/\S/gi, "*");
+  textState.content = showText ? textNode.textContent : textNode.textContent.replace(/./g, "*");
   return textState;
 }
 

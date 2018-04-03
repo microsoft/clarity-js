@@ -199,7 +199,8 @@ export default class Layout implements IPlugin {
           }
           break;
         case Source.Input:
-          layoutState.attributes.value = element["value"];
+          let input = element as HTMLInputElement;
+          layoutState.attributes.value = config.showText ? input.value : input.value.replace(/\S/gi, "*");
           layoutState.source = source;
           layoutState.action = Action.Update;
           addEvent({type: this.eventName, state: layoutState});

@@ -938,6 +938,8 @@ describe("Layout Tests", () => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
+    config.showText = true;
+
     let newValueString = "new value";
     let input = document.createElement("input");
     document.body.appendChild(input);
@@ -973,6 +975,8 @@ describe("Layout Tests", () => {
     let stopObserving = null;
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
+
+    config.showText = true;
 
     let newValueString = "new value";
     let textarea = document.createElement("textarea");
