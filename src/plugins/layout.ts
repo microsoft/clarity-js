@@ -3,7 +3,7 @@ import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRouti
   NumberJson, Source } from "../../clarity";
 import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
-import { debug, isNumber, traverseNodeTree } from "./../utils";
+import { debug, isNumber, maskText, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
 import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
 import { getLayoutState, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
@@ -199,7 +199,8 @@ export default class Layout implements IPlugin {
           }
           break;
         case Source.Input:
-          layoutState.attributes.value = element["value"];
+          let input = element as HTMLInputElement;
+          layoutState.attributes.value = maskText(input.value);
           layoutState.source = source;
           layoutState.action = Action.Update;
           addEvent({type: this.eventName, state: layoutState});
