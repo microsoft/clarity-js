@@ -107,3 +107,7 @@ export function getEventId(eventArray: IEventArray) {
 export function getEventType(eventArray: IEventArray) {
   return eventArray[1];
 }
+
+export function maskText(text: string) {
+  return config.showText ? text : text.replace(/./g, "*");
+}
