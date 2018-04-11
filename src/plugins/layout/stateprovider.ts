@@ -22,9 +22,9 @@ enum Styles {
   Visibility = "visibility"
 }
 
-let attributeMaskList = ["value", "placeholder", "alt", "title"];
+const attributeMaskList = ["value", "placeholder", "alt", "title"];
 let layoutStates: ILayoutState[];
-let defaultColor = "";
+let defaultColor: string;
 
 export function resetStateProvider() {
   layoutStates = [];
