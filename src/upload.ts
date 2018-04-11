@@ -3,7 +3,7 @@ import {
   State, UploadCallback
 } from "../clarity";
 import { config } from "./config";
-import { instrument, state, teardown } from "./core";
+import { ClarityAttribute, instrument, state, teardown } from "./core";
 import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie } from "./utils";
 
 // Counters
@@ -19,21 +19,11 @@ let payloadInfos: { [key: number]: IPayloadInfo };
 
 let reUploadQueue: number[];
 
-export function upload(compressed: string, raw: IPayload, onSuccessExtra?: UploadCallback, onFailureExtra?: UploadCallback) {
+export function upload(compressed: string, raw: IPayload, onSuccessCustom?: UploadCallback, onFailureCustom?: UploadCallback) {
   let uploadHandler = config.uploadHandler || defaultUploadHandler;
   let sequenceNo = raw.envelope.sequenceNumber;
-  let onSuccess = (status: number) => {
-    onSuccessDefault(sequenceNo, status);
-    if (onSuccessExtra) {
-      onSuccessExtra(status);
-    }
-  };
-  let onFailure = (status: number) => {
-    onFailureDefault(sequenceNo, status);
-    if (onFailureExtra) {
-      onFailureExtra(status);
-    }
-  };
+  let onSuccess = getOnUploadCompletedHandler(true, sequenceNo, onSuccessCustom);
+  let onFailure = getOnUploadCompletedHandler(false, sequenceNo, onFailureCustom);
   payloadInfos[sequenceNo] = { compressed, raw, failureCount: 0 };
   uploadHandler(compressed, onSuccess, onFailure);
 
@@ -147,4 +137,18 @@ function retryFailedUploads() {
     payloads.push(payloadInfos[nextPayloadSequenceNo]);
   }
   uploadMultiplePayloads(payloads);
+}
+
+function getOnUploadCompletedHandler(success: boolean, sequenceNo: number, customHandler: UploadCallback) {
+  let defaultHandler = success ? onSuccessDefault : onFailureDefault;
+  let sourceImpressionId = document[ClarityAttribute];
+  return (status: number) => {
+    let currentImpressionId = document[ClarityAttribute];
+    if (state === State.Activated && currentImpressionId === sourceImpressionId) {
+      defaultHandler(sequenceNo, status);
+      if (customHandler) {
+        customHandler(status);
+      }
+    }
+  };
 }

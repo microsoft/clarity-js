@@ -10,11 +10,9 @@ import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie } from "./utils";
 
-export const version = "0.1.34";
+export const version = "0.1.35";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
-const ImpressionAttribute = "data-iid";
-const UserAttribute = "data-cid";
 const Cookie = "ClarityID";
 
 let startTime: number;
@@ -86,7 +84,6 @@ export function teardown() {
       }
     }
 
-    delete document[ClarityAttribute];
     if (compressionWorker) {
       // Immediately terminate the worker and kill its thread.
       // Any possible pending incoming messages from the worker will be ignored in the 'Unloaded' state.
@@ -99,6 +96,8 @@ export function teardown() {
     // Instrument teardown and upload residual events
     instrument({ type: Instrumentation.Teardown });
     uploadPendingEvents();
+
+    delete document[ClarityAttribute];
   }
 }
 
