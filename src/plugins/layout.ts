@@ -5,7 +5,7 @@ import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
 import { debug, isNumber, maskText, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
-import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
+import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState, deleteLayoutState } from "./layout/stateprovider";
 import { getLayoutState, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
@@ -19,10 +19,6 @@ export default class Layout implements IPlugin {
   private domPreDiscoverMutations: ILayoutEventInfo[][];
   private lastConsistentDomJson: NumberJson;
   private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventState;
-  private originalLayouts: Array<{
-    node: Node;
-    layout: ILayoutState;
-  }>;
 
   public reset(): void {
     this.shadowDom = new ShadowDom();
@@ -33,7 +29,6 @@ export default class Layout implements IPlugin {
     this.domPreDiscoverMutations = [];
     this.lastConsistentDomJson = null;
     this.firstShadowDomInconsistentEvent = null;
-    this.originalLayouts = [];
     resetStateProvider();
   }
 
@@ -295,6 +290,7 @@ export default class Layout implements IPlugin {
         time
       });
       traverseNodeTree(shadowNode, (removedShadowNode: IShadowDomNode) => {
+        deleteLayoutState(removedShadowNode.node[NodeIndex]);
         delete removedShadowNode.node[NodeIndex];
       });
     }

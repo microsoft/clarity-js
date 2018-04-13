@@ -23,11 +23,11 @@ enum Styles {
 }
 
 const attributeMaskList = ["value", "placeholder", "alt", "title"];
-let layoutStates: ILayoutState[];
+let layoutStates: {[key: number]: ILayoutState};
 let defaultColor: string;
 
 export function resetStateProvider() {
-  layoutStates = [];
+  layoutStates = {};
   defaultColor = "";
 }
 
@@ -218,7 +218,7 @@ export function createIgnoreLayoutState(node: Node): IIgnoreLayoutState {
 
 export function createGenericLayoutState(node: Node, tag: string): ILayoutState {
   let layoutIndex = getNodeIndex(node);
-  layoutStates[layoutIndex] = {
+  let state: ILayoutState = {
     index: layoutIndex,
     parent: getNodeIndex(node.parentNode),
     previous: getNodeIndex(node.previousSibling),
@@ -227,8 +227,8 @@ export function createGenericLayoutState(node: Node, tag: string): ILayoutState 
     action: null,
     tag
   };
-
-  return layoutStates[layoutIndex];
+  layoutStates[layoutIndex] = state;
+  return state;
 }
 
 export function shouldIgnoreNode(node: Node): boolean {
@@ -267,6 +267,10 @@ export function shouldIgnoreNode(node: Node): boolean {
   return ignore;
 }
 
-export function getLayoutState(index) {
+export function getLayoutState(index: number): ILayoutState {
   return layoutStates[index];
+}
+
+export function deleteLayoutState(index: number) {
+  delete layoutStates[index];
 }
