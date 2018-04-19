@@ -1,6 +1,7 @@
-import { IShadowDomMutationSummary, IShadowDomNode, NumberJson } from "../../../clarity";
+import { INodeInfo, IShadowDomMutationSummary, IShadowDomNode, NumberJson } from "../../../clarity";
 import { assert, isNumber, traverseNodeTree } from "../../utils";
-import { getNodeIndex, NodeIndex, shouldIgnoreNode } from "./stateprovider";
+import { createNodeInfo } from "./nodeinfo";
+import { getNodeIndex, NodeIndex } from "./stateprovider";
 
 // Class names to tag actions that happen to nodes in a single mutation batch
 const FinalClassName = "cl-final";
@@ -28,6 +29,11 @@ export class ShadowDom {
     return node;
   }
 
+  public getNodeInfo(index: number): INodeInfo {
+    let shadowNode = this.getShadowNode(index);
+    return shadowNode.info;
+  }
+
   public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number): IShadowDomNode {
     let isDocument = (node === document);
     let index = this.setNodeIndex(node);
@@ -36,7 +42,12 @@ export class ShadowDom {
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
     shadowNode.id = "" + index;
     shadowNode.node = node;
-    shadowNode.ignore = shouldIgnoreNode(node) || this.shouldIgnoreParent(parent);
+    shadowNode.computeInfo = () => {
+      let parentNode = shadowNode.parentNode as IShadowDomNode;
+      let info = createNodeInfo(node, parentNode ? parentNode.info : null );
+      shadowNode.info = info;
+      return info;
+    };
     this.nodeMap[index] = shadowNode;
 
     if (isDocument) {
@@ -277,7 +288,7 @@ export class ShadowDom {
   }
 
   private shouldIgnoreParent(parent: IShadowDomNode) {
-    return parent && parent.ignore && parent.node !== document;
+    return parent && parent.info.ignore && parent.node !== document;
   }
 
   private isConsistentNode(node: Node, shadowNode: IShadowDomNode): boolean {

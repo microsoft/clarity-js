@@ -1,12 +1,12 @@
 import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
-  Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode, LayoutRoutine,
-  NumberJson, Source } from "../../clarity";
+  INodeInfo, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode,
+  LayoutRoutine, NumberJson, Source } from "../../clarity";
 import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
-import { debug, isNumber, maskText, traverseNodeTree } from "./../utils";
+import { debug, isNumber, mask, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
-import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState, deleteLayoutState } from "./layout/stateprovider";
-import { getLayoutState, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
+import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
+import { getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
   private eventName = "Layout";
@@ -74,12 +74,12 @@ export default class Layout implements IPlugin {
   private discoverDom() {
     let discoverTime = getTimestamp();
     traverseNodeTree(document, (node: Node) => {
-      let layoutState = this.discoverNode(node);
-      layoutState.action = Action.Insert;
-      layoutState.source = Source.Discover;
+      let nodeInfo = this.discoverNode(node);
+      nodeInfo.state.action = Action.Insert;
+      nodeInfo.state.source = Source.Discover;
       addEvent({
         type: this.eventName,
-        state: layoutState
+        state: nodeInfo.state
       });
     });
     this.checkConsistency({
@@ -88,9 +88,9 @@ export default class Layout implements IPlugin {
   }
 
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
-  private discoverNode(node: Node): ILayoutState {
-    this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
-    return createLayoutState(node);
+  private discoverNode(node: Node): INodeInfo {
+    let shadowNode = this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
+    return shadowNode.computeInfo();
   }
 
   private processMultipleNodeEvents<T extends ILayoutEventInfo>(eventInfos: T[]) {
@@ -107,7 +107,8 @@ export default class Layout implements IPlugin {
 
   private createEventState<T extends ILayoutEventInfo>(eventInfo: T): ILayoutState {
     let node = eventInfo.node;
-    let layoutState: ILayoutState = createLayoutState(node);
+    let shadowNode = this.shadowDom.getShadowNode(eventInfo.index);
+    let layoutState: ILayoutState = shadowNode.computeInfo().state;
 
     switch (eventInfo.action) {
       case Action.Insert:
@@ -170,15 +171,11 @@ export default class Layout implements IPlugin {
 
   private layoutHandler(element: Element, source: Source) {
     let index = getNodeIndex(element);
+    let nodeInfo = this.shadowDom.getNodeInfo(index);
     let recordEvent = true;
-    if (index !== null) {
+    if (nodeInfo) {
       let time = getTimestamp();
-      let layoutState = <IElementLayoutState> getLayoutState(index);
-
-      if (!layoutState) {
-        return;
-      }
-
+      let layoutState = <IElementLayoutState> nodeInfo.state;
       switch (source) {
         case Source.Scroll:
           let scrollX = Math.round(element.scrollLeft);
@@ -195,7 +192,8 @@ export default class Layout implements IPlugin {
           break;
         case Source.Input:
           let input = element as HTMLInputElement;
-          layoutState.attributes.value = maskText(input.value);
+          let showText = config.showText && !nodeInfo.forceMask;
+          layoutState.attributes.value = showText ? input.value : mask(input.value);
           layoutState.source = source;
           layoutState.action = Action.Update;
           addEvent({type: this.eventName, state: layoutState});
@@ -290,7 +288,6 @@ export default class Layout implements IPlugin {
         time
       });
       traverseNodeTree(shadowNode, (removedShadowNode: IShadowDomNode) => {
-        deleteLayoutState(removedShadowNode.node[NodeIndex]);
         delete removedShadowNode.node[NodeIndex];
       });
     }
