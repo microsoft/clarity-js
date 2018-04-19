@@ -470,7 +470,11 @@ interface IPerformanceTiming extends PerformanceTiming {
   // We send back all properties from performance.timing object
 }
 
-interface IPerformanceResourceTiming {
+interface IPerformanceTimingState {
+  timing: IPerformanceTiming;
+}
+
+interface IPerformanceResourceTimingState {
   duration: number;
   initiatorType: string;
   startTime: number;
