@@ -1,7 +1,7 @@
 import { IAddEventMessage, IConfig, IEvent, IWorkerMessage, WorkerMessageType } from "../clarity";
 import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
-import { guid, mapProperties } from "../src/utils";
+import { mapProperties } from "../src/utils";
 import { testConfig } from "./clarity";
 import EventFromArray from "./fromarray";
 

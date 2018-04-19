@@ -24,7 +24,6 @@ describe("Data Upload Tests", () => {
       sendCount++;
     };
 
-    let stopObserving = observeEvents();
     let mockEvent = getMockEvent();
     postCompressedBatch([mockEvent]);
 

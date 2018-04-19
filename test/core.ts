@@ -1,15 +1,14 @@
-import { ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, Instrumentation, IPayload, State, WorkerMessageType } from "../clarity";
+import { ICompressedBatchMessage, IEnvelope, IEventArray, Instrumentation, IPayload, State, WorkerMessageType } from "../clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, observeWorkerMessages, payloadToEvents } from "./utils";
+import { getMockEvent, MockEventName, observeEvents, observeWorkerMessages, payloadToEvents } from "./utils";
 
 import * as chai from "chai";
 let assert = chai.assert;
 
 describe("Core Tests", () => {
-  let limit = config.batchLimit;
   let base64img = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe("Core Tests", () => {
 
   it("validates that missing feature event is sent when required feature is missing", (done: DoneFn) => {
     core.teardown();
-    let stopObserving = observeEvents();
+    observeEvents();
 
     // Function.prototype.bind is a required API for Clarity to work
     // Mocking a browser that doesn't support it by temporarily deleting it
@@ -39,7 +38,7 @@ describe("Core Tests", () => {
 
   it("validates that error during clarity activate is caught and logged correctly", (done: DoneFn) => {
     core.teardown();
-    let stopObserving = observeEvents();
+    observeEvents();
     let originalWorker = Worker;
     let mockErrorText = "Mock Worker error!";
     (Worker as any) = () => {
@@ -195,7 +194,6 @@ describe("Core Tests", () => {
 
   it("validates that upload queue is flushed when Clarity trigger is fired", (done: DoneFn) => {
     let sentBytes: string[] = [];
-    let mockEvent = getMockEvent();
     let mockCompressedData = "MockCompressedData";
     let mockRawData: IPayload = { envelope: {} as IEnvelope, events: [] as IEventArray[] };
     let mockCompressedBatchMessage: ICompressedBatchMessage = {
@@ -255,12 +253,10 @@ describe("Core Tests", () => {
     config.uploadHandler = mockUploadHandler;
     activateCore();
 
-    let stopObserving = observeEvents();
     let mockEvent = getMockEvent();
     core.addEvent(mockEvent);
     core.teardown();
 
-    let events = stopObserving();
     assert.equal(sentBytes.length, 0);
     done();
 

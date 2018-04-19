@@ -1,10 +1,8 @@
-import {
-  Instrumentation, IPayload, IPayloadInfo, ITotalByteLimitExceededEventState, IXhrErrorEventState,
-  State, UploadCallback
-} from "../clarity";
+import { Instrumentation, IPayload, IPayloadInfo, ITotalByteLimitExceededEventState, IXhrErrorEventState,
+  State, UploadCallback } from "../clarity";
 import { config } from "./config";
 import { ClarityAttribute, instrument, state, teardown } from "./core";
-import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie } from "./utils";
+import { debug, getEventId } from "./utils";
 
 // Counters
 let sentBytesCount: number;

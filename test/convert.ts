@@ -1,6 +1,5 @@
 import { IEvent } from "../clarity";
 import FromArray from "../converters/fromarray";
-import schemas from "../converters/schema";
 import ToArray from "../converters/toarray";
 
 import * as chai from "chai";
@@ -21,7 +20,6 @@ describe("Data Conversion Tests", () => {
     let evt: IEvent = getMockEvent();
     evt.state = mapObj;
 
-    let schema = schemas.createSchema(mapObj);
     let array = ToArray(evt);
     let original = FromArray(array);
     assert.equal(JSON.stringify(evt).length, JSON.stringify(original).length);

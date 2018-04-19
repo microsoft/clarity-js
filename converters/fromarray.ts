@@ -1,5 +1,5 @@
-import {  IEvent, IEventArray, ILayoutState } from "../clarity";
-import { Action, ObjectType } from "../clarity";
+import {  IEvent, IEventArray } from "../clarity";
+import { ObjectType } from "../clarity";
 import { SchemaManager } from "./schema";
 import defaultSchemas from "./schema";
 
