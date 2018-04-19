@@ -90,7 +90,7 @@ export default class PerformanceProfiler implements IPlugin {
     if (entries.length < this.lastInspectedEntryIndex + 1) {
       if (!this.stateError) {
         this.stateError = true;
-        addEvent({type: "PerformanceStateError", state: {}});
+        addEvent({type: PerformanceStateErrorEventType, state: {}});
       }
 
       this.lastInspectedEntryIndex = -1;
@@ -150,6 +150,9 @@ export default class PerformanceProfiler implements IPlugin {
         }
         if ("decodedBodySize" in entry) {
           networkData.decodedBodySize = entry.decodedBodySize;
+        }
+        if ("nextHopProtocol" in entry) {
+          networkData.protocol = entry.nextHopProtocol;
         }
 
         networkData = mapProperties(networkData, (name: string, value) => {

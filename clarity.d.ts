@@ -487,4 +487,5 @@ interface IPerformanceResourceTimingState {
   transferSize?: number;
   encodedBodySize?: number;
   decodedBodySize?: number;
+  protocol?: string;
 }
