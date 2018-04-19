@@ -3,12 +3,13 @@ import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { NodeIndex, Tags } from "../src/plugins/layout/stateprovider";
-import { maskText } from "../src/utils";
+import { mask } from "../src/utils";
 import { cleanupFixture, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
 import { getEventsByType, observeEvents } from "./utils";
 
 import * as chai from "chai";
+import { ForceMaskAttribute } from "../src/plugins/layout/nodeinfo";
 
 let eventName = "Layout";
 let assert = chai.assert;
@@ -690,6 +691,29 @@ describe("Layout Tests", () => {
     }
   });
 
+  it("checks that images source is not captured if the config allows it but mask attribute is applied", (done: DoneFn) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+    config.showImages = true;
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let img = document.createElement("img");
+    img.setAttribute(ForceMaskAttribute, "true");
+    img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAIBTAA7";
+    document.body.appendChild(img);
+
+    function callback() {
+      observer.disconnect();
+      let events = stopObserving();
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.tag, "IMG");
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal("src" in events[0].state.attributes, false);
+      done();
+    }
+  });
+
   it("checks that images source is captured if the config allows it", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
@@ -994,9 +1018,9 @@ describe("Layout Tests", () => {
     // Add a node to the document and observe Clarity events
     let stopObserving = observeEvents(eventName);
     let input = document.createElement("input");
-    let newValueString = "new value";
-    let maskedValueString = maskText(newValueString);
-    input.setAttribute("value", newValueString);
+    let valueString = "value";
+    let maskedValueString = mask(valueString);
+    input.setAttribute("value", valueString);
     document.body.appendChild(input);
 
     function callback() {
@@ -1018,7 +1042,7 @@ describe("Layout Tests", () => {
     config.showText = false;
 
     let newValueString = "new value";
-    let maskedValueString = maskText(newValueString);
+    let maskedValueString = mask(newValueString);
     let input = document.createElement("input");
     document.body.appendChild(input);
 
@@ -1045,6 +1069,61 @@ describe("Layout Tests", () => {
       assert.equal(events[0].state.action, Action.Update);
       assert.equal(events[0].state.source, Source.Input);
       assert.equal(events[0].state.attributes.value, maskedValueString);
+      done();
+    }
+  });
+
+  it("checks that input value is masked on insert if the config is set to show text and mask attribute is applied", (done: DoneFn) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    config.showText = true;
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let input = document.createElement("input");
+    let valueString = "value";
+    let maskedValueString = mask(valueString);
+    input.setAttribute("value", valueString);
+    input.setAttribute(ForceMaskAttribute, "true");
+    document.body.appendChild(input);
+
+    function callback() {
+      observer.disconnect();
+      let events = stopObserving();
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.tag, "INPUT");
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.attributes["value"], maskedValueString);
+      done();
+    }
+  });
+
+  it("checks that text value is masked when the config is set to show text and parent mask attribute is applied", (done: DoneFn) => {
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    config.showText = true;
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let valueString = "value";
+    let input = document.createElement("input");
+    let child = document.createTextNode(valueString);
+    let maskedValueString = mask(valueString);
+    input.setAttribute(ForceMaskAttribute, "true");
+    input.appendChild(child);
+    document.body.appendChild(input);
+
+    function callback() {
+      observer.disconnect();
+      let events = stopObserving();
+      assert.equal(events.length, 2);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.tag, input.tagName);
+      assert.equal(events[1].state.action, Action.Insert);
+      assert.equal(events[1].state.tag, "*TXT*");
+      assert.equal(events[1].state.content, maskedValueString);
       done();
     }
   });

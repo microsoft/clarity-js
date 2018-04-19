@@ -187,8 +187,9 @@ interface ICompressedBatchMessage extends IWorkerMessage {
 type NumberJson = Array<number | number[]>;
 
 interface IShadowDomNode extends HTMLDivElement {
-  node: Node; /* Reference to the node in the real DOM */
-  ignore: boolean;  /* Flag to avoid sending data for that node */
+  node: Node;
+  info: INodeInfo;
+  updateInfo: () => INodeInfo;
 }
 
 /* Computed CSS styles associated with a layout element */
@@ -226,6 +227,13 @@ declare const enum Action {
 
 interface IAttributes {
   [key: string]: string;
+}
+
+interface INodeInfo {
+  index: number;
+  ignore: boolean;
+  forceMask: boolean;
+  state: ILayoutState;
 }
 
 // Generic storage of various data pieces that can be passed along with
