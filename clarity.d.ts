@@ -189,7 +189,7 @@ type NumberJson = Array<number | number[]>;
 interface IShadowDomNode extends HTMLDivElement {
   node: Node;
   info: INodeInfo;
-  updateInfo: () => INodeInfo;
+  computeInfo: () => INodeInfo;
 }
 
 /* Computed CSS styles associated with a layout element */

@@ -90,7 +90,7 @@ export default class Layout implements IPlugin {
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
   private discoverNode(node: Node): INodeInfo {
     let shadowNode = this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
-    return shadowNode.updateInfo();
+    return shadowNode.computeInfo();
   }
 
   private processMultipleNodeEvents<T extends ILayoutEventInfo>(eventInfos: T[]) {
@@ -108,7 +108,7 @@ export default class Layout implements IPlugin {
   private createEventState<T extends ILayoutEventInfo>(eventInfo: T): ILayoutState {
     let node = eventInfo.node;
     let shadowNode = this.shadowDom.getShadowNode(eventInfo.index);
-    let layoutState: ILayoutState = shadowNode.updateInfo().state;
+    let layoutState: ILayoutState = shadowNode.computeInfo().state;
 
     switch (eventInfo.action) {
       case Action.Insert:

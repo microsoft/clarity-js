@@ -42,7 +42,7 @@ export class ShadowDom {
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
     shadowNode.id = "" + index;
     shadowNode.node = node;
-    shadowNode.updateInfo = () => {
+    shadowNode.computeInfo = () => {
       let parentNode = shadowNode.parentNode as IShadowDomNode;
       let info = createNodeInfo(node, parentNode ? parentNode.info : null );
       shadowNode.info = info;

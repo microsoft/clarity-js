@@ -1099,7 +1099,7 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that text value is masked when the config is set to show text and parent mask attribute is applied", (done: DoneFn) => {
+  it("checks that child value is masked when the config is set to show text and parent mask attribute is applied", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, { childList: true, subtree: true });
 
@@ -1127,4 +1127,38 @@ describe("Layout Tests", () => {
       done();
     }
   });
+
+  // // BUG: This test currently fails
+  // it(`checks that child value is masked when the config is set to show text
+  //     and skip-parent mask attribute is applied`, (done: DoneFn) => {
+  //   let observer = new MutationObserver(callback);
+  //   observer.observe(document, { childList: true, subtree: true });
+
+  //   config.showText = true;
+
+  //   // Add a node to the document and observe Clarity events
+  //   let stopObserving = observeEvents(eventName);
+  //   let valueString = "value";
+  //   let skipParent = document.createElement("div");
+  //   let parent = document.createElement("div");
+  //   let child = document.createTextNode(valueString);
+  //   let maskedValueString = mask(valueString);
+  //   skipParent.setAttribute(ForceMaskAttribute, "true");
+  //   skipParent.appendChild(child);
+  //   document.body.appendChild(skipParent);
+
+  //   function callback() {
+  //     observer.disconnect();
+  //     let events = stopObserving();
+  //     assert.equal(events.length, 3);
+  //     assert.equal(events[0].state.action, Action.Insert);
+  //     assert.equal(events[0].state.tag, skipParent.tagName);
+  //     assert.equal(events[1].state.action, Action.Insert);
+  //     assert.equal(events[1].state.tag, parent.tagName);
+  //     assert.equal(events[2].state.action, Action.Insert);
+  //     assert.equal(events[2].state.tag, "*TXT*");
+  //     assert.equal(events[2].state.content, maskedValueString);
+  //     done();
+  //   }
+  // });
 });
