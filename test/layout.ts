@@ -1,12 +1,9 @@
 import { Action, IEvent, Source } from "../clarity";
-import { start, stop } from "../src/clarity";
 import { config } from "../src/config";
-import * as core from "../src/core";
 import { NodeIndex, Tags } from "../src/plugins/layout/stateprovider";
 import { mask } from "../src/utils";
 import { cleanupFixture, setupFixture } from "./testsetup";
-import uncompress from "./uncompress";
-import { getEventsByType, observeEvents } from "./utils";
+import { observeEvents } from "./utils";
 
 import * as chai from "chai";
 import { ForceMaskAttribute } from "../src/plugins/layout/nodeinfo";
@@ -225,7 +222,6 @@ describe("Layout Tests", () => {
     // Add a style tag and later modify styles using javascript
     let stopObserving = observeEvents(eventName);
     let dom = document.getElementById("clarity");
-    let domIndex = dom[NodeIndex];
     let style = document.createElement("style");
     style.textContent = "body {}";
     dom.appendChild(style);
@@ -608,7 +604,6 @@ describe("Layout Tests", () => {
 
     let stopObserving = observeEvents(eventName);
     let divOne = document.createElement("div");
-    let divTwo = document.createElement("div");
     let clarityDiv = document.getElementById("clarity");
     let backup = document.getElementById("backup");
     document.body.appendChild(divOne);  // Insert

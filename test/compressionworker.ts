@@ -2,10 +2,9 @@ import { IAddEventMessage, ICompressedBatchMessage, IEvent, Instrumentation,
   ITimestampedWorkerMessage, IWorkerMessage, IXhrErrorEventState, WorkerMessageType } from "../clarity";
 import { createCompressionWorker } from "./../src/compressionworker";
 import { config } from "./../src/config";
-import * as core from "./../src/core";
 import { cleanupFixture, setupFixture } from "./testsetup";
 import MockEventToArray from "./toarray";
-import { getMockEnvelope, getMockEvent, MockEventName, observeEvents, payloadToEvents } from "./utils";
+import { getMockEnvelope, getMockEvent, MockEventName, payloadToEvents } from "./utils";
 
 import * as chai from "chai";
 

@@ -3,9 +3,8 @@ import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRouti
   LayoutRoutine, NumberJson, Source } from "../../clarity";
 import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
-import { debug, isNumber, mask, traverseNodeTree } from "./../utils";
+import { debug, mask, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
-import { createGenericLayoutState, createIgnoreLayoutState, createLayoutState } from "./layout/stateprovider";
 import { getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
@@ -72,7 +71,6 @@ export default class Layout implements IPlugin {
   // them with real data asynchronously (if it takes too long to do at once) by yielding a thread
   // and returning to it later through a set timeout
   private discoverDom() {
-    let discoverTime = getTimestamp();
     traverseNodeTree(document, (node: Node) => {
       let nodeInfo = this.discoverNode(node);
       nodeInfo.state.action = Action.Insert;
@@ -172,9 +170,7 @@ export default class Layout implements IPlugin {
   private layoutHandler(element: Element, source: Source) {
     let index = getNodeIndex(element);
     let nodeInfo = this.shadowDom.getNodeInfo(index);
-    let recordEvent = true;
     if (nodeInfo) {
-      let time = getTimestamp();
       let layoutState = <IElementLayoutState> nodeInfo.state;
       switch (source) {
         case Source.Scroll:

@@ -1,5 +1,4 @@
-import { IEvent, IEventArray, ILayoutState } from "../clarity";
-import { getNodeIndex } from "./../src/plugins/layout/stateprovider";
+import { IEvent, IEventArray } from "../clarity";
 import schemas from "./schema";
 
 // We serialize send a lot of JSONs with identical structures and putting all property names on the

@@ -3,8 +3,6 @@ import { bind, instrument } from "../core";
 
 export default class ErrorMonitor implements IPlugin {
 
-    private errorCount: number;
-
     public activate() {
         bind(window, "error", logError);
     }

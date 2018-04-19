@@ -1,4 +1,3 @@
-import { config } from "../src/config";
 import { getTimestamp } from "../src/core";
 import { cleanupFixture, setupFixture } from "./testsetup";
 import { observeEvents } from "./utils";

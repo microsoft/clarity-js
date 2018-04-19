@@ -1,6 +1,6 @@
 import { IPerformanceResourceTiming, IPlugin } from "../../clarity";
 import { config } from "../config";
-import { addEvent, instrument } from "../core";
+import { addEvent } from "../core";
 import { mapProperties } from "../utils";
 
 export default class PerformanceProfiler implements IPlugin {

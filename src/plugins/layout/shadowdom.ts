@@ -287,10 +287,6 @@ export class ShadowDom {
     }
   }
 
-  private shouldIgnoreParent(parent: IShadowDomNode) {
-    return parent && parent.info.ignore && parent.node !== document;
-  }
-
   private isConsistentNode(node: Node, shadowNode: IShadowDomNode): boolean {
     let index = getNodeIndex(node);
     return (isNumber(index) && shadowNode.id === (index).toString() && shadowNode.node === node);

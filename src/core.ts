@@ -8,7 +8,7 @@ import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
 import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
-import { debug, getCookie, getEventId, guid, isNumber, mapProperties, setCookie } from "./utils";
+import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
 export const version = "0.1.37";
 export const ClarityAttribute = "clarity-iid";

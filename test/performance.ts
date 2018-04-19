@@ -1,5 +1,3 @@
-import { config } from "../src/config";
-import * as core from "../src/core";
 import { cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import { getEventsByType, observeEvents } from "./utils";
 

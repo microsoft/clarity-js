@@ -1,4 +1,4 @@
-import { IAddEventMessage, ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, Instrumentation, IPayload,
+import { IAddEventMessage, ICompressedBatchMessage, IEnvelope, IEventArray, IPayload,
   ITimestampedWorkerMessage, WorkerMessageType } from "../clarity";
 import compress from "./compress";
 import { config } from "./config";
@@ -74,7 +74,6 @@ function workerContext() {
       let raw: IPayload = { envelope, events: nextBatchEvents };
       let rawStr = JSON.stringify(raw);
       let compressed = compress(rawStr);
-      let eventCount = nextBatchEvents.length;
       nextBatchEvents = [];
       nextBatchBytes = 0;
       postToCore(compressed, raw);
