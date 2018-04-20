@@ -1,8 +1,9 @@
 import { Action, IEvent, Source } from "../clarity";
 import { config } from "../src/config";
+import * as core from "../src/core";
 import { NodeIndex, Tags } from "../src/plugins/layout/stateprovider";
 import { mask } from "../src/utils";
-import { cleanupFixture, setupFixture } from "./testsetup";
+import { activateCore, cleanupFixture, setupFixture } from "./testsetup";
 import { observeEvents } from "./utils";
 
 import * as chai from "chai";
@@ -1156,4 +1157,63 @@ describe("Layout Tests", () => {
   //     done();
   //   }
   // });
+
+  it("checks that configurable sensitive attributes are masked when config is set to not show text", (done: DoneFn) => {
+    core.teardown();
+
+    let sensitiveAttributeName = "data-sensitive-attribute";
+    config.showText = false;
+    config.sensitiveAttributes = [sensitiveAttributeName];
+    activateCore();
+
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let value = "value";
+    let maskedValue = mask(value);
+    let div = document.createElement("div");
+    div.setAttribute(sensitiveAttributeName, value);
+    document.body.appendChild(div);
+
+    function callback() {
+      observer.disconnect();
+      let events = stopObserving();
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.tag, div.tagName);
+      assert.equal(events[0].state.attributes[sensitiveAttributeName], maskedValue);
+      done();
+    }
+  });
+
+  it("checks that default sensitive attributes are masked when config is set to not show text", (done: DoneFn) => {
+    core.teardown();
+
+    let sensitiveAttributeName = "placeholder";
+    config.showText = false;
+    activateCore();
+
+    let observer = new MutationObserver(callback);
+    observer.observe(document, { childList: true, subtree: true });
+
+    // Add a node to the document and observe Clarity events
+    let stopObserving = observeEvents(eventName);
+    let value = "value";
+    let maskedValue = mask(value);
+    let div = document.createElement("div");
+    div.setAttribute(sensitiveAttributeName, value);
+    document.body.appendChild(div);
+
+    function callback() {
+      observer.disconnect();
+      let events = stopObserving();
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(events[0].state.tag, div.tagName);
+      assert.equal(events[0].state.attributes[sensitiveAttributeName], maskedValue);
+      done();
+    }
+  });
 });
