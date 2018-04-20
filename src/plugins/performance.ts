@@ -1,7 +1,11 @@
-import { IPerformanceResourceTiming, IPlugin } from "../../clarity";
+import { IPerformanceResourceTimingState, IPerformanceTimingState, IPlugin } from "../../clarity";
 import { config } from "../config";
 import { addEvent } from "../core";
 import { mapProperties } from "../utils";
+
+export const NavigationTimingEventType = "NavigationTiming";
+export const ResourceTimingEventType = "ResourceTiming";
+export const PerformanceStateErrorEventType = "PerformanceStateError";
 
 export default class PerformanceProfiler implements IPlugin {
 
@@ -68,10 +72,10 @@ export default class PerformanceProfiler implements IPlugin {
       formattedTiming = mapProperties(formattedTiming, (name: string, value) => {
         return (formattedTiming[name] === 0) ? 0 : Math.round(formattedTiming[name] - formattedTiming.navigationStart);
       }, false);
-      let navigationTimingEventState = {
+      let navigationTimingEventState: IPerformanceTimingState = {
         timing: formattedTiming
       };
-      addEvent({type: "NavigationTiming", state: navigationTimingEventState});
+      addEvent({type: NavigationTimingEventType, state: navigationTimingEventState});
     } else {
       this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
@@ -86,14 +90,13 @@ export default class PerformanceProfiler implements IPlugin {
     if (entries.length < this.lastInspectedEntryIndex + 1) {
       if (!this.stateError) {
         this.stateError = true;
-        addEvent({type: "PerformanceStateError", state: {}});
+        addEvent({type: PerformanceStateErrorEventType, state: {}});
       }
 
       this.lastInspectedEntryIndex = -1;
       this.incompleteEntryIndices = [];
     }
 
-    let entryInfos = [];
     let incompleteEntryIndicesCopy = this.incompleteEntryIndices.slice();
 
     this.incompleteEntryIndices = [];
@@ -103,7 +106,7 @@ export default class PerformanceProfiler implements IPlugin {
       let entryIndex = incompleteEntryIndicesCopy[i];
       let networkData = this.inspectEntry(entries[entryIndex], entryIndex);
       if (networkData) {
-        entryInfos.push(networkData);
+        addEvent({type: ResourceTimingEventType, state: networkData});
       }
     }
 
@@ -111,23 +114,16 @@ export default class PerformanceProfiler implements IPlugin {
     for (let i = this.lastInspectedEntryIndex + 1; i < entries.length; i++) {
       let networkData = this.inspectEntry(entries[i], i);
       if (networkData) {
-        entryInfos.push(networkData);
+        addEvent({type: ResourceTimingEventType, state: networkData});
       }
       this.lastInspectedEntryIndex = i;
-    }
-
-    if (entryInfos.length > 0) {
-      let resourceTimingEventState = {
-        entries: entryInfos
-      };
-      addEvent({type: "ResourceTiming", state: resourceTimingEventState});
     }
 
     this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);
   }
 
-  private inspectEntry(entry, entryIndex): object {
-    let networkData: IPerformanceResourceTiming = null;
+  private inspectEntry(entry, entryIndex): IPerformanceResourceTimingState {
+    let networkData: IPerformanceResourceTimingState = null;
     if (entry && entry.responseEnd > 0) {
 
       // Ignore Clarity's own network upload requests to avoid infinite loop of network reporting
@@ -155,10 +151,13 @@ export default class PerformanceProfiler implements IPlugin {
         if ("decodedBodySize" in entry) {
           networkData.decodedBodySize = entry.decodedBodySize;
         }
+        if ("nextHopProtocol" in entry) {
+          networkData.protocol = entry.nextHopProtocol;
+        }
 
         networkData = mapProperties(networkData, (name: string, value) => {
           return (typeof value === "number") ? Math.round(value) : value;
-        }, true) as IPerformanceResourceTiming;
+        }, true) as IPerformanceResourceTimingState;
       }
     } else {
       this.incompleteEntryIndices.push(entryIndex);

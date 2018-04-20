@@ -2,6 +2,7 @@ import { cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import { getEventsByType, observeEvents } from "./utils";
 
 import * as chai from "chai";
+import { ResourceTimingEventType } from "../src/plugins/performance";
 
 let assert = chai.assert;
 let resourceTimingEventName = "ResourceTiming";
@@ -47,28 +48,8 @@ describe("Performance Tests", () => {
 
     let events = stopObserving();
     assert.equal(events.length, 1);
-
-    let entries = events[0].state && events[0].state.entries;
-    assert.equal(!!entries, true);
-    assert.equal(entries.length, 1);
-    assert.equal(entries[0].initiatorType, dummyEntry.initiatorType);
-
-    done();
-  });
-
-  it("checks that multiple network resource timings are logged together", (done: DoneFn) => {
-    let stopObserving = observeEvents(resourceTimingEventName);
-    dummyResourceTimings.push({ responseEnd: 1 });
-    dummyResourceTimings.push({ responseEnd: 1 });
-
-    // Timings are checked in an interval, so it needs additional time to re-invoke the check
-    fastForwardToNextPerformancePoll();
-    let events = stopObserving();
-    assert.equal(events.length, 1);
-
-    let entries = events[0].state.entries;
-    assert.equal(entries.length, 2);
-
+    assert.equal(events[0].type, ResourceTimingEventType);
+    assert.equal(events[0].state.initiatorType, dummyEntry.initiatorType);
     done();
   });
 
@@ -101,9 +82,9 @@ describe("Performance Tests", () => {
     let events = stopObserving();
     assert.equal(events.length, 1);
 
-    let entries = events[0].state.entries;
-    assert.equal(entries.length, 1);
-    assert.equal(entries[0].initiatorType, "completeEntry");
+    assert.equal(events.length, 1);
+    assert.equal(events[0].type, ResourceTimingEventType);
+    assert.equal(events[0].state.initiatorType, "completeEntry");
 
     // Adjust the entry to have a valid response end time and wait for snapshot to propagate
     stopObserving = observeEvents(resourceTimingEventName);
@@ -113,9 +94,9 @@ describe("Performance Tests", () => {
     events = stopObserving();
     assert.equal(events.length, 1);
 
-    entries = events[0].state.entries;
-    assert.equal(entries.length, 1);
-    assert.equal(entries[0].initiatorType, "incompleteEntry");
+    assert.equal(events.length, 1);
+    assert.equal(events[0].type, ResourceTimingEventType);
+    assert.equal(events[0].state.initiatorType, "incompleteEntry");
 
     done();
   });
