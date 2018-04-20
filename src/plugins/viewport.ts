@@ -40,13 +40,24 @@ export default class Viewport implements IPlugin {
       },
       document: {
         width: body ? body.clientWidth : null,
-        height: body ? body.clientHeight : null
+        height: getDocumentHeight(body, de);
       },
       dpi: "devicePixelRatio" in window ? window.devicePixelRatio : -1,
       visibility: "visibilityState" in document ? document.visibilityState : "default",
       event: type
     };
     return viewport;
+  }
+
+  private getDocumentHeight(body, documentElement) {
+     let bodyClientHeight = body ? body.clientHeight : null;
+     let bodyScrollHeight = body ? body.scrollHeight : null;
+     let bodyOffsetHeight = body ? body.offsetHeight : null;
+     let documentClientHeight = documentElement ? documentElement.clientHeight : null;
+     let documentScrollHeight = documentElement ? documentElement.scrollHeight : null;
+     let documentOffsetHeight = documentElement ? documentElement.offsetHeight : null;
+     documentHeight = Math.max(bodyClientHeight, bodyScrollHeight, bodyOffsetHeight,
+       documentClientHeight, documentScrollHeight, documentOffsetHeight);
   }
 
   private processState(state: IViewportState) {
