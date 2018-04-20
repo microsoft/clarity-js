@@ -10,6 +10,7 @@ export let config: IConfig = {
   reUploadLimit: 1,
   showText: false,
   showImages: false,
+  sensitiveAttributes: [],
   timeToYield: 50,
   instrument: false,
   cssRules: false,

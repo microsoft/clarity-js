@@ -4,7 +4,7 @@ import { config } from "../../config";
 import { mask } from "../../utils";
 
 export const NodeIndex = "clarity-index";
-const AttributeMaskList = ["value", "placeholder", "alt", "title"];
+const DefaultAttributeMaskList = ["value", "placeholder", "alt", "title"];
 
 export enum Tags {
   Meta = "META",
@@ -24,8 +24,10 @@ enum Styles {
 }
 
 let defaultColor: string;
+let attributeMaskList: string[];
 
 export function resetStateProvider() {
+  attributeMaskList = DefaultAttributeMaskList.concat(config.sensitiveAttributes);
   defaultColor = "";
 }
 
@@ -183,7 +185,7 @@ function getAttributes(element: Element, maskText: boolean, maskImages: boolean)
     }
 
     // If we are masking text, also mask it from input boxes as well as alt description
-    if (maskText && AttributeMaskList.indexOf(attrName) >= 0) {
+    if (maskText && attributeMaskList.indexOf(attrName) >= 0) {
       stateAttributes[attr.name] = mask(attr.value);
     } else {
       stateAttributes[attr.name] = attr.value;
