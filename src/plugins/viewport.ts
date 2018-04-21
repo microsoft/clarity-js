@@ -5,6 +5,8 @@ export default class Viewport implements IPlugin {
   private eventName = "Viewport";
   private distanceThreshold = 20;
   private lastViewportState: IViewportState;
+  private body = document.body;
+  private documentElement = document.documentElement;
 
   public activate() {
     this.processState(this.getViewport("discover"));
@@ -29,18 +31,16 @@ export default class Viewport implements IPlugin {
   }
 
   private getViewport(type: string): IViewportState {
-    let de = document.documentElement;
-    let body = document.body;
     let viewport: IViewportState = {
       viewport: {
-        x: "pageXOffset" in window ? window.pageXOffset : de.scrollLeft,
-        y: "pageYOffset" in window ? window.pageYOffset : de.scrollTop,
-        width: "innerWidth" in window ? window.innerWidth : de.clientWidth,
-        height: "innerHeight" in window ? window.innerHeight : de.clientHeight
+        x: "pageXOffset" in window ? window.pageXOffset : this.documentElement.scrollLeft,
+        y: "pageYOffset" in window ? window.pageYOffset : this.documentElement.scrollTop,
+        width: "innerWidth" in window ? window.innerWidth : this.documentElement.clientWidth,
+        height: "innerHeight" in window ? window.innerHeight : this.documentElement.clientHeight
       },
       document: {
-        width: body ? body.clientWidth : null,
-        height: this.getDocumentHeight(body, de)
+        width: this.body ? this.body.clientWidth : null,
+        height: this.getDocumentHeight()
       },
       dpi: "devicePixelRatio" in window ? window.devicePixelRatio : -1,
       visibility: "visibilityState" in document ? document.visibilityState : "default",
@@ -49,13 +49,15 @@ export default class Viewport implements IPlugin {
     return viewport;
   }
 
-  private getDocumentHeight(body, documentElement): number {
-     let bodyClientHeight = body ? body.clientHeight : null;
-     let bodyScrollHeight = body ? body.scrollHeight : null;
-     let bodyOffsetHeight = body ? body.offsetHeight : null;
-     let documentClientHeight = documentElement ? documentElement.clientHeight : null;
-     let documentScrollHeight = documentElement ? documentElement.scrollHeight : null;
-     let documentOffsetHeight = documentElement ? documentElement.offsetHeight : null;
+  // body.clientHeight gets set to viewport height when doctype is not set for a document.
+  // The more accurate way to calculate browser height is to get the maximum of body and documentElement heights
+  private getDocumentHeight(): number {
+     let bodyClientHeight = this.body ? this.body.clientHeight : null;
+     let bodyScrollHeight = this.body ? this.body.scrollHeight : null;
+     let bodyOffsetHeight = this.body ? this.body.offsetHeight : null;
+     let documentClientHeight = this.documentElement ? this.documentElement.clientHeight : null;
+     let documentScrollHeight = this.documentElement ? this.documentElement.scrollHeight : null;
+     let documentOffsetHeight = this.documentElement ? this.documentElement.offsetHeight : null;
      let documentHeight = Math.max(bodyClientHeight, bodyScrollHeight, bodyOffsetHeight,
        documentClientHeight, documentScrollHeight, documentOffsetHeight);
      return documentHeight;
