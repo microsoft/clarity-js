@@ -5,8 +5,9 @@ export function transform(evt: TouchEvent): IPointerState[] {
   let states: IPointerState[] = [];
   let de = document.documentElement;
   let buttons = (evt.type === "touchstart" || evt.type === "touchmove") ? 1 : 0;
-  for (let i = 0; i < evt.changedTouches.length; i++) {
-    let touch = evt.changedTouches[i];
+  let touches = evt.changedTouches || [];
+  for (let i = 0; i < touches.length; i++) {
+    let touch = touches[i];
     states.push({
       index: touch.identifier + 2, /* Avoid conflict with mouse index of 1 */
       event: evt.type,
