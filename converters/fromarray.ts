@@ -1,5 +1,6 @@
 import {  IEvent, IEventArray } from "../clarity";
 import { ObjectType } from "../clarity";
+import { DiscoverEventName } from "./discoverclient";
 import { SchemaManager } from "./schema";
 import defaultSchemas from "./schema";
 
@@ -7,24 +8,24 @@ export default function(eventArray: IEventArray, schemas?: SchemaManager): IEven
   let id, type, time, stateArray, schema;
   [id, type, time, stateArray, schema] = eventArray;
 
-  if (!schemas) {
-    schemas = defaultSchemas;
+  let state = stateArray;
+  if (type !== DiscoverEventName) {
+    schemas = schemas || defaultSchemas;
+    if (typeof schema === "number") {
+      schema = schemas.getSchema(schema);
+    } else {
+      schemas.addSchema(schema);
+    }
+    state = dataFromArray(stateArray, schema as any[]);
   }
 
-  if (typeof schema === "number") {
-    schema = schemas.getSchema(schema);
-  } else {
-    schemas.addSchema(schema);
-  }
-
-  let state = dataFromArray(stateArray, schema as any[]);
   let event: IEvent = { id, type, time, state };
   return event;
 }
 
 // This function reconstructs the original object from array of data and a schema that describes it. Check schema.md for details:
 // https://github.com/Microsoft/clarity-js/blob/master/converters/schema.md
-function dataFromArray(dataArray: any[], schema: any[]): any {
+export function dataFromArray(dataArray: any[], schema: any[]): any {
   // Schema is of type "string" or null when data that matches it is not an Array or an Object,
   // so no additional reconstruction on the data is required.
   if (typeof schema === "string" || schema === null) {
