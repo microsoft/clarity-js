@@ -1,6 +1,7 @@
-import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
-  INodeInfo, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode,
-  LayoutRoutine, NumberJson, Source } from "../../clarity";
+import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRoutineInfo, ILayoutState,
+  IMutationRoutineInfo, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary,
+  IShadowDomNode, LayoutRoutine, NumberJson, Source } from "../../clarity";
+import { DiscoverEventName, treeToDiscoverArray } from "../../converters/discoverclient";
 import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
 import { debug, mask, traverseNodeTree } from "./../utils";
@@ -64,31 +65,25 @@ export default class Layout implements IPlugin {
     }
   }
 
-  // Recording full layouts of all elements on the page at once is an expensive operation
-  // and can impact user's experience by hanging the page due to occupying the thread for too long
-  // To avoid this, we only assign indices to all elements and build a ShadowDom with dummy layouts
-  // just to have a valid DOM skeleton. After that, we can come back to dummy layouts and populate
-  // them with real data asynchronously (if it takes too long to do at once) by yielding a thread
-  // and returning to it later through a set timeout
   private discoverDom() {
-    traverseNodeTree(document, (node: Node) => {
-      let nodeInfo = this.discoverNode(node);
-      nodeInfo.state.action = Action.Insert;
-      nodeInfo.state.source = Source.Discover;
-      addEvent({
-        type: this.eventName,
-        state: nodeInfo.state
-      });
-    });
+    this.discover(document);
     this.checkConsistency({
       action: LayoutRoutine.DiscoverDom
     });
+    let discoverEventData: IEventData = {
+      type: DiscoverEventName,
+      state: treeToDiscoverArray(document, this.shadowDom)
+    };
+    addEvent(discoverEventData);
   }
 
-  // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
-  private discoverNode(node: Node): INodeInfo {
-    let shadowNode = this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
-    return shadowNode.computeInfo();
+  private discover(root: Node): void {
+    let shadowNode = this.shadowDom.insertShadowNode(root, getNodeIndex(root.parentNode), getNodeIndex(root.nextSibling));
+    shadowNode.computeInfo();
+    let children = root.childNodes;
+    for (let i = 0; i < children.length; i++) {
+      this.discover(children[i]);
+    }
   }
 
   private processMultipleNodeEvents<T extends ILayoutEventInfo>(eventInfos: T[]) {
