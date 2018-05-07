@@ -1,3 +1,4 @@
+import { config } from "../src/config";
 import { cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import { getEventsByType, observeEvents } from "./utils";
 
@@ -98,6 +99,20 @@ describe("Performance Tests", () => {
     assert.equal(events[0].type, ResourceTimingEventType);
     assert.equal(events[0].state.initiatorType, "incompleteEntry");
 
+    done();
+  });
+
+  it("checks that network resource timings blacklisted in config are ignored", (done: DoneFn) => {
+    let stopObserving = observeEvents(resourceTimingEventName);
+    let blacklistedUrl = "https://www.clarity.blacklisted.url";
+    let dummyEntry = { name: blacklistedUrl };
+    config.urlBlacklist = [ blacklistedUrl ];
+
+    dummyResourceTimings.push(dummyEntry);
+    fastForwardToNextPerformancePoll();
+
+    let events = stopObserving();
+    assert.equal(events.length, 0);
     done();
   });
 
