@@ -11,7 +11,7 @@ export default class PerformanceProfiler implements IPlugin {
 
   private readonly timeoutLength = 1000;
 
-  private uploadHyperlink = document.createElement("a");
+  private urlBlacklist: string[];
   private lastInspectedEntryIndex: number;
   private logTimingTimeout: number;
   private logResourceTimingTimeout: number;
@@ -47,10 +47,7 @@ export default class PerformanceProfiler implements IPlugin {
     this.lastInspectedEntryIndex = -1;
     this.stateError = false;
     this.incompleteEntryIndices = [];
-
-    if (config.uploadUrl.length > 0) {
-      this.uploadHyperlink.href = config.uploadUrl;
-    }
+    this.urlBlacklist = config.urlBlacklist.map(this.getFullUrl);
 
     // Potentially these don't need resets because performance object doesn't normally change within the page
     // The reason for resetting these values on each activation is for easier testing
@@ -125,9 +122,7 @@ export default class PerformanceProfiler implements IPlugin {
   private inspectEntry(entry, entryIndex): IPerformanceResourceTimingState {
     let networkData: IPerformanceResourceTimingState = null;
     if (entry && entry.responseEnd > 0) {
-
-      // Ignore Clarity's own network upload requests to avoid infinite loop of network reporting
-      if (entry.name !== this.uploadHyperlink.href) {
+      if (this.urlBlacklist.indexOf(entry.name) < 0) {
         networkData = {
           duration: entry.duration,
           initiatorType: entry.initiatorType,
@@ -164,5 +159,11 @@ export default class PerformanceProfiler implements IPlugin {
     }
 
     return networkData;
+  }
+
+  private getFullUrl(partialUrl: string): string {
+    let dummyLink = document.createElement("a");
+    dummyLink.href = partialUrl;
+    return dummyLink.href;
   }
 }

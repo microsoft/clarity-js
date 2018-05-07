@@ -17,6 +17,10 @@ export interface IConfig {
   // Endpoint, to which data will be uploaded
   uploadUrl?: string;
 
+  // A list of URLs to ignore when instrumenting network resource entries
+  // This is useful to prevent Clarity from instrumenting its own activity
+  urlBlacklist?: string[];
+
   // Each new event is going to delay data upload to server by this number of milliseconds
   delay?: number;
 
