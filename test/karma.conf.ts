@@ -22,13 +22,7 @@ export = (config) => {
       "karma-browserify",
       "karma-jasmine"
     ],
-    browsers: ["ChromeNoSandbox"],
-    customLaunchers: {
-      ChromeNoSandbox: {
-        base: "Chrome",
-        flags: ["--no-sandbox"]
-      }
-    },
+    browsers: ["Chrome"],
     detectBrowsers: {
       enabled: true,
       usePhantomJS: false,
