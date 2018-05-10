@@ -1,5 +1,5 @@
 import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutRectangle, ILayoutState, IStyleLayoutState,
-  ITextLayoutState} from "../../../clarity";
+  ITextLayoutState } from "../../../clarity";
 import { config } from "../../config";
 import { mask } from "../../utils";
 
@@ -103,13 +103,25 @@ export function createElementLayoutState(element: Element, maskText: boolean, ma
 
 export function createStyleLayoutState(styleNode: HTMLStyleElement, maskText: boolean): IStyleLayoutState {
   let layoutState = createElementLayoutState(styleNode, maskText, false) as IStyleLayoutState;
-  let sheet = styleNode.sheet as CSSStyleSheet;
-  let cssRules = sheet ? sheet.cssRules : [];
-  let cssRulesTexts = [];
-  for (let i = 0; i < cssRules.length; i++) {
-    cssRulesTexts.push(cssRules[i].cssText);
+  if (config.cssRules) {
+    let cssRules = layoutState.cssRules = null;
+
+    // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
+    try {
+      let sheet = styleNode.sheet as CSSStyleSheet;
+      cssRules = sheet ? sheet.cssRules : [];
+    } catch (e) {
+      if (e.name !== "SecurityError") {
+        throw e;
+      }
+    }
+    if (cssRules !== null) {
+      layoutState.cssRules = [];
+      for (let i = 0; i < cssRules.length; i++) {
+        layoutState.cssRules.push(cssRules[i].cssText);
+      }
+    }
   }
-  layoutState.cssRules = cssRulesTexts;
   return layoutState;
 }
 
