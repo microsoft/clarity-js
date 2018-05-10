@@ -168,11 +168,8 @@ export default class Layout implements IPlugin {
         batchSize: mutations.length
       };
       this.checkConsistency(actionInfo);
-
       if (this.allowMutation()) {
         this.processMutations(summary, time);
-      } else {
-        debug(`>>> ShadowDom doesn't match PageDOM after mutation batch #${this.mutationSequence}!`);
       }
     }
 
@@ -237,6 +234,7 @@ export default class Layout implements IPlugin {
           evt.firstEvent = this.firstShadowDomInconsistentEvent;
           instrument(evt);
         }
+        debug(`>>> ShadowDom doesn't match PageDOM after mutation batch #${this.mutationSequence}!`);
       } else {
         this.inconsistentShadowDomCount = 0;
         this.firstShadowDomInconsistentEvent = null;
