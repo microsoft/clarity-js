@@ -1,4 +1,4 @@
-import { Action, IElementLayoutState, IEventData, ILayoutEventInfo, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
+import { Action, IElementLayoutState, IEventData, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
   INodeInfo, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode,
   LayoutRoutine, NumberJson, Source } from "../../clarity";
 import { config } from "./../config";
@@ -15,7 +15,6 @@ export default class Layout implements IPlugin {
   private observer: MutationObserver;
   private watchList: boolean[];
   private mutationSequence: number;
-  private domPreDiscoverMutations: ILayoutEventInfo[][];
   private lastConsistentDomJson: NumberJson;
   private firstShadowDomInconsistentEvent: IShadowDomInconsistentEventState;
 
@@ -25,7 +24,6 @@ export default class Layout implements IPlugin {
     this.watchList = [];
     this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
     this.mutationSequence = 0;
-    this.domPreDiscoverMutations = [];
     this.lastConsistentDomJson = null;
     this.firstShadowDomInconsistentEvent = null;
     resetStateProvider();
@@ -89,54 +87,6 @@ export default class Layout implements IPlugin {
   private discoverNode(node: Node): INodeInfo {
     let shadowNode = this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
     return shadowNode.computeInfo();
-  }
-
-  private processMultipleNodeEvents<T extends ILayoutEventInfo>(eventInfos: T[]) {
-    let eventsData: IEventData[] = [];
-    for (let i = 0; i < eventInfos.length; i++) {
-      let eventState = this.createEventState(eventInfos[i]);
-      eventsData.push({
-        type: this.eventName,
-        state: eventState
-      });
-    }
-    addMultipleEvents(eventsData);
-  }
-
-  private createEventState<T extends ILayoutEventInfo>(eventInfo: T): ILayoutState {
-    let node = eventInfo.node;
-    let shadowNode = this.shadowDom.getShadowNode(eventInfo.index);
-    let layoutState: ILayoutState = shadowNode.computeInfo().state;
-
-    switch (eventInfo.action) {
-      case Action.Insert:
-        // Watch element for scroll and input change events
-        this.watch(node, layoutState);
-        layoutState.action = Action.Insert;
-        break;
-      case Action.Update:
-        // Watch element for scroll and input change events
-        this.watch(node, layoutState);
-        layoutState.action = Action.Update;
-        break;
-      case Action.Remove:
-        // Index is passed explicitly because indices on removed nodes are cleared,
-        // so at this point we can't obtain node's index from the node itself
-        layoutState.index = eventInfo.index;
-        layoutState.action = Action.Remove;
-        break;
-      case Action.Move:
-        layoutState.action = Action.Move;
-        break;
-      default:
-        break;
-    }
-
-    if (eventInfo.source === Source.Mutation) {
-      layoutState.mutationSequence = this.mutationSequence;
-    }
-    layoutState.source = eventInfo.source;
-    return layoutState;
   }
 
   private watch(node: Node, nodeLayoutState: ILayoutState) {
@@ -218,12 +168,8 @@ export default class Layout implements IPlugin {
         batchSize: mutations.length
       };
       this.checkConsistency(actionInfo);
-
       if (this.allowMutation()) {
-        let events = this.processMutations(summary, time);
-        this.processMultipleNodeEvents(events);
-      } else {
-        debug(`>>> ShadowDom doesn't match PageDOM after mutation batch #${this.mutationSequence}!`);
+        this.processMutations(summary, time);
       }
     }
 
@@ -234,61 +180,34 @@ export default class Layout implements IPlugin {
     return this.inconsistentShadowDomCount < 2 || !config.validateConsistency;
   }
 
-  private processMutations(summary: IShadowDomMutationSummary, time: number): ILayoutEventInfo[] {
-    let events: ILayoutEventInfo[] = [];
+  private processMutations(summary: IShadowDomMutationSummary, time: number): void {
+    let inserts = summary.newNodes.map(this.processMutation.bind(this, Action.Insert));
+    let moves = summary.movedNodes.map(this.processMutation.bind(this, Action.Move));
+    let updates = summary.updatedNodes.map(this.processMutation.bind(this, Action.Update));
+    let removes = summary.removedNodes.map(this.processMutation.bind(this, Action.Remove));
+    let all = [].concat(inserts, moves, updates, removes);
+    addMultipleEvents(all);
+  }
 
-    // Process new nodes
-    for (let i = 0; i < summary.newNodes.length; i++) {
-      let node = summary.newNodes[i].node;
-      events.push({
-        node,
-        index: getNodeIndex(node),
-        source: Source.Mutation,
-        action: Action.Insert,
-        time
-      });
+  private processMutation(action: Action, shadowNode: IShadowDomNode): IEventData {
+    let state = shadowNode.computeInfo().state;
+    state.action = action;
+    state.source = Source.Mutation;
+    state.mutationSequence = this.mutationSequence;
+
+    // Watch new or updated nodes
+    if (action === Action.Insert || action === Action.Update) {
+      this.watch(shadowNode.node, state);
     }
 
-    // Process moves
-    for (let i = 0; i < summary.movedNodes.length; i++) {
-      let node = summary.movedNodes[i].node;
-      events.push({
-        node,
-        index: getNodeIndex(node),
-        source: Source.Mutation,
-        action: Action.Move,
-        time
-      });
-    }
-
-    // Process updates
-    for (let i = 0; i < summary.updatedNodes.length; i++) {
-      let node = summary.updatedNodes[i].node;
-      events.push({
-        node,
-        index: getNodeIndex(node),
-        source: Source.Mutation,
-        action: Action.Update,
-        time
-      });
-    }
-
-    // Process removes
-    for (let i = 0; i < summary.removedNodes.length; i++) {
-      let shadowNode = summary.removedNodes[i] as IShadowDomNode;
-      events.push({
-        node: shadowNode.node,
-        index: getNodeIndex(shadowNode.node),
-        source: Source.Mutation,
-        action: Action.Remove,
-        time
-      });
+    // If node has been removed, clear clarity indicies from its entire subtree
+    if (action === Action.Remove) {
       traverseNodeTree(shadowNode, (removedShadowNode: IShadowDomNode) => {
         delete removedShadowNode.node[NodeIndex];
       });
     }
 
-    return events;
+    return { type: this.eventName, state };
   }
 
   private checkConsistency(lastActionInfo: ILayoutRoutineInfo): void {
@@ -315,6 +234,7 @@ export default class Layout implements IPlugin {
           evt.firstEvent = this.firstShadowDomInconsistentEvent;
           instrument(evt);
         }
+        debug(`>>> ShadowDom doesn't match PageDOM after mutation batch #${this.mutationSequence}!`);
       } else {
         this.inconsistentShadowDomCount = 0;
         this.firstShadowDomInconsistentEvent = null;

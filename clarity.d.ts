@@ -243,16 +243,6 @@ interface INodeInfo {
   state: ILayoutState;
 }
 
-// Generic storage of various data pieces that can be passed along with
-// different layout events originating from different actions
-interface ILayoutEventInfo {
-  node: Node;
-  index: number;
-  source: Source;
-  action: Action;
-  time?: number;
-}
-
 interface ILayoutState {
   index: number;  /* Index of the layout element */
   tag: string;  /* Tag name of the element */
