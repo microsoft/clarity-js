@@ -173,8 +173,8 @@ export class ShadowDom {
     // Process the new state of the ShadowDom and extract the summary
     let summary = this.getMutationSummary();
 
-    // Clean up
-    this.postMutationCleanUp();
+    // Clear references to removed nodes and reset shadow dom state to get it ready for the next mutation batch
+    this.cleanUp();
 
     // Re-assign indices for all new nodes that remained attached to DOM such that there are no gaps between them
     this.reIndexNewNodes(summary.newNodes, nextIndexBeforeProcessing);
@@ -263,7 +263,7 @@ export class ShadowDom {
     return this.isConstentSubtree(document, this.shadowDocument);
   }
 
-  private postMutationCleanUp() {
+  private cleanUp() {
 
     // For each removed dom node, remove its index and its shadow dom reference
     traverseNodeTree(this.removedNodes, (removedNode: IShadowDomNode) => {
