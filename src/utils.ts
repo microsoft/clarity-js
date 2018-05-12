@@ -61,15 +61,17 @@ export function mapProperties(sourceObj: object,
   return outObj;
 }
 
-export function traverseNodeTree(node: Node, processingFunc: (node: Node) => void) {
-  let queue = [node];
+export function traverseNodeTree(root: Node, processingFunc: (node: Node) => void, includeRoot: boolean = true) {
+  let queue = [root];
   while (queue.length > 0) {
     let next = queue.shift();
-    processingFunc(next);
     let nextChild = next.firstChild;
     while (nextChild) {
       queue.push(nextChild);
       nextChild = nextChild.nextSibling;
+    }
+    if (next !== root || includeRoot) {
+      processingFunc(next);
     }
   }
 }

@@ -27,7 +27,7 @@ export function shouldIgnoreNode(node: Node, parentIgnored: boolean): boolean {
         break;
       case Node.TEXT_NODE:
         // If we capture CSSRules on style elements, ignore its text children nodes
-        if (config.cssRules && (node.parentNode as Element).tagName === "STYLE") {
+        if (config.cssRules && node.parentNode && (node.parentNode as Element).tagName === "STYLE") {
           ignore = true;
         }
       default:

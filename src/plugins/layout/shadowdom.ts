@@ -17,7 +17,7 @@ export class ShadowDom {
   private removedNodes = this.doc.createElement("div");
   private shadowDomRoot = this.doc.createElement("div");
   private classifyNodes = false;
-  private nodeMap: {[key: number]: IShadowDomNode} = {};
+  private nodeMap: { [key: number]: IShadowDomNode } = {};
 
   constructor() {
     this.doc.documentElement.appendChild(this.shadowDomRoot);
@@ -36,7 +36,7 @@ export class ShadowDom {
 
   public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number): IShadowDomNode {
     let isDocument = (node === document);
-    let index = this.setNodeIndex(node);
+    let index = this.assignNodeIndex(node);
     let parent = (isDocument ? this.shadowDomRoot : this.getShadowNode(parentIndex)) as IShadowDomNode;
     let nextSibling = this.getShadowNode(nextSiblingIndex);
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
@@ -44,7 +44,7 @@ export class ShadowDom {
     shadowNode.node = node;
     shadowNode.computeInfo = () => {
       let parentNode = shadowNode.parentNode as IShadowDomNode;
-      let info = createNodeInfo(node, parentNode ? parentNode.info : null );
+      let info = createNodeInfo(node, parentNode ? parentNode.info : null);
       shadowNode.info = info;
       return info;
     };
@@ -170,19 +170,14 @@ export class ShadowDom {
     // Detach removed nodes
     this.removedNodes.parentElement.removeChild(this.removedNodes);
 
-    // Re-assign indices for all new nodes that remained attached to DOM such that there are no gaps between them
-    this.reIndexNewNodes(nextIndexBeforeProcessing);
-
     // Process the new state of the ShadowDom and extract the summary
     let summary = this.getMutationSummary();
 
-    // Clean up the state to be ready for next mutation batch processing
-    let finalNodes = Array.prototype.slice.call(this.doc.getElementsByClassName(FinalClassName));
-    for (let i = 0; i < finalNodes.length; i++) {
-      this.removeAllClasses(finalNodes[i]);
-    }
-    this.removedNodes.innerHTML = "";
-    this.classifyNodes = false;
+    // Clear references to removed nodes and reset shadow dom state to get it ready for the next mutation batch
+    this.cleanUp();
+
+    // Re-assign indices for all new nodes that remained attached to DOM such that there are no gaps between them
+    this.reIndexNewNodes(summary.newNodes, nextIndexBeforeProcessing);
 
     return summary;
   }
@@ -249,18 +244,11 @@ export class ShadowDom {
       this.removeAllClasses(next);
     }
 
-    let removedNodes = this.removedNodes.childNodes;
-    for (let i = 0; i < removedNodes.length; i++) {
-      traverseNodeTree(removedNodes[i], (shadowNode: IShadowDomNode) => {
-        let index = getNodeIndex(shadowNode.node);
-        delete this.nodeMap[index];
-        if (this.hasClass(shadowNode, NewNodeClassName)) {
-          delete shadowNode.node[NodeIndex];
-        } else if (this.hasClass(shadowNode, MovedNodeClassName)) {
-          summary.removedNodes.push(shadowNode);
-        }
-      });
-    }
+    traverseNodeTree(this.removedNodes, (removedNode: IShadowDomNode) => {
+      if (this.hasClass(removedNode, MovedNodeClassName) && !this.hasClass(removedNode, NewNodeClassName)) {
+        summary.removedNodes.push(removedNode);
+      }
+    }, false);
 
     return summary;
   }
@@ -273,6 +261,24 @@ export class ShadowDom {
 
   public isConsistent(): boolean {
     return this.isConstentSubtree(document, this.shadowDocument);
+  }
+
+  private cleanUp() {
+
+    // For each removed dom node, remove its index and its shadow dom reference
+    traverseNodeTree(this.removedNodes, (removedNode: IShadowDomNode) => {
+      let index = getNodeIndex(removedNode.node);
+      delete removedNode.node[NodeIndex];
+      delete this.nodeMap[index];
+    }, false);
+
+    // Reset the state of the shadow dom to be ready for next mutation batch processing
+    let finalNodes = Array.prototype.slice.call(this.doc.getElementsByClassName(FinalClassName));
+    for (let i = 0; i < finalNodes.length; i++) {
+      this.removeAllClasses(finalNodes[i]);
+    }
+    this.removedNodes.innerHTML = "";
+    this.classifyNodes = false;
   }
 
   private writeIndexToJson(node: Node, json: NumberJson, getIndexFromNode: (node: Node) => number) {
@@ -380,22 +386,21 @@ export class ShadowDom {
   // thus 'stealing' an index with them. Since we don't instrument nodes that were added and removed within the same
   // mutation batch, we have no records of these stolen indices. To maintain consistency on the backend, at the end of the mutation,
   // we can re-assign indices for all nodes that remained attached to the DOM such that they all go in increasing order without gaps
-  private reIndexNewNodes(nextIndex: number) {
-    let newNodes = this.doc.getElementsByClassName(NewNodeClassName);
-    for (let i = 0; i < newNodes.length; i++) {
-      let shadowNode = newNodes[i] as IShadowDomNode;
-      let currentIndex = getNodeIndex(shadowNode);
-      shadowNode.id = "" + nextIndex;
+  private reIndexNewNodes(newNodes: IShadowDomNode[], nextIndex: number) {
+    newNodes.map((shadowNode: IShadowDomNode) => {
+      let index = getNodeIndex(shadowNode.node);
+      delete this.nodeMap[index];
+    });
+    newNodes.map((shadowNode: IShadowDomNode) => {
       shadowNode.node[NodeIndex] = nextIndex;
-
-      delete this.nodeMap[currentIndex];
+      shadowNode.id = `${nextIndex}`;
       this.nodeMap[nextIndex] = shadowNode;
       nextIndex++;
-    }
+    });
     this.nextIndex = nextIndex;
   }
 
-  private setNodeIndex(node: Node): number {
+  private assignNodeIndex(node: Node): number {
     let index = getNodeIndex(node);
     if (index === null) {
       index = this.nextIndex;

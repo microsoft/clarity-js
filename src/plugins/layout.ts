@@ -198,13 +198,10 @@ export default class Layout implements IPlugin {
     // Watch new or updated nodes
     if (action === Action.Insert || action === Action.Update) {
       this.watch(shadowNode.node, state);
-    }
-
-    // If node has been removed, clear clarity indicies from its entire subtree
-    if (action === Action.Remove) {
-      traverseNodeTree(shadowNode, (removedShadowNode: IShadowDomNode) => {
-        delete removedShadowNode.node[NodeIndex];
-      });
+    } else if (action === Action.Remove) {
+      // Removed nodes don't have an index any more, so computed state index will be null,
+      // however its original index can still be obtained from its matching shadow node id
+      state.index = parseInt(shadowNode.id, 10);
     }
 
     return { type: this.eventName, state };
