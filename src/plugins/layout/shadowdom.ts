@@ -31,7 +31,7 @@ export class ShadowDom {
 
   public getNodeInfo(index: number): INodeInfo {
     let shadowNode = this.getShadowNode(index);
-    return shadowNode.info;
+    return shadowNode ? shadowNode.info : null;
   }
 
   public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number): IShadowDomNode {
