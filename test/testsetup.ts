@@ -5,6 +5,8 @@ import { mapProperties } from "../src/utils";
 import { testConfig } from "./clarity";
 import EventFromArray from "./fromarray";
 
+declare var fixture;
+
 let sentEvents: IEvent[] = [];
 let workerMessages: IWorkerMessage[] = [];
 let workerPostMessageSpy: jasmine.Spy = null;
