@@ -43,7 +43,7 @@
     "karma-firefox-launcher": "^0.1.7",
     "karma-fixture": "^0.2.6",
     "karma-html2js-preprocessor": "^1.0.0",
-    "karma-ie-launcher": "^0.2.0",
+    "karma-ie-launcher": "^1.0.0",
     "karma-jasmine": "^1.0.2",
     "karma-safari-launcher": "^0.1.1",
     "rollup-plugin-typescript2": "^0.4.1",
@@ -51,7 +51,7 @@
     "run-sequence": "^1.2.2",
     "ts-node": "^3.0.2",
     "tslint": "^4.5.1",
-    "vinyl-source-stream": "^1.1.0",
+    "vinyl-source-stream": "^2.0.0",
     "watchify": "^3.11.0"
   },
   "scripts": {
