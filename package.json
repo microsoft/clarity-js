@@ -28,12 +28,12 @@
     "browserify": "^16.2.2",
     "chai": "^3.5.0",
     "del": "^2.2.2",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-rename": "^1.2.2",
     "gulp-typescript": "^3.1.6",
     "gulp-uglify": "^2.1.2",
     "jasmine-core": "^2.4.1",
-    "karma": "^2.0.5",
+    "karma": "^3.0.0",
     "karma-browserify": "^5.0.5",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
@@ -48,16 +48,14 @@
     "karma-safari-launcher": "^1.0.0",
     "rollup-plugin-typescript2": "^0.4.1",
     "rollup-stream": "^1.19.0",
-    "run-sequence": "^1.2.2",
     "ts-node": "^3.0.2",
     "tslint": "^4.5.1",
     "vinyl-source-stream": "^2.0.0",
     "watchify": "^3.11.0"
   },
   "scripts": {
-    "init": "npm install && npm install -g gulp && gulp place-git-hooks",
+    "init": "npm install && npm install -g gulp && npm install -g gulp-cli && gulp place-git-hooks",
     "tslint": "node_modules/.bin/tslint --project ./",
     "tslint-format": "node_modules/.bin/tslint --fix --project ./ --force"
-  },
-  "dependencies": {}
+  }
 }
