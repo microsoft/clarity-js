@@ -25,15 +25,7 @@ export = (config) => {
     browsers: ["Chrome"],
     detectBrowsers: {
       enabled: true,
-      usePhantomJS: false,
-      postDetection: (availableBrowsers: string[]) => {
-        // Switch Chrome to ChromeNoSandbox
-        let i = availableBrowsers.indexOf("Chrome");
-        if (i > -1) {
-          availableBrowsers[i] = "ChromeNoSandbox";
-        }
-        return availableBrowsers;
-      }
+      usePhantomJS: false
     },
     singleRun: true,
     preprocessors: {
