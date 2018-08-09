@@ -1,7 +1,7 @@
 import { IAddEventMessage, ICompressedBatchMessage, IEnvelope, IEventArray, IPayload,
   ITimestampedWorkerMessage, WorkerMessageType } from "../clarity";
-import compress from "./compress";
-import { config } from "./config";
+import Compress from "./compress";
+import { config as Config } from "./config";
 
 export function createCompressionWorker(
   envelope: IEnvelope,
@@ -100,8 +100,8 @@ function workerContext() {
 function createWorkerUrl(envelope: IEnvelope): string {
   let workerContextStr = workerContext.toString();
   let workerStr = workerContextStr.substring(workerContextStr.indexOf("{") + 1, workerContextStr.lastIndexOf("}"));
-  let code = `self.compress=${compress.toString()};`
-            + `self.config=${JSON.stringify(config)};`
+  let code = `self.compress=${Compress.toString()};`
+            + `self.config=${JSON.stringify(Config)};`
             + `self.envelope=${JSON.stringify(envelope)};`
             + workerStr;
   let blob = new Blob([code], {type: "application/javascript"});

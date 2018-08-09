@@ -121,7 +121,7 @@ export default class Layout implements IPlugin {
     let index = getNodeIndex(element);
     let nodeInfo = this.shadowDom.getNodeInfo(index);
     if (nodeInfo) {
-      let layoutState = <IElementLayoutState> nodeInfo.state;
+      let layoutState = nodeInfo.state as IElementLayoutState;
       switch (source) {
         case Source.Scroll:
           let scrollX = Math.round(element.scrollLeft);
