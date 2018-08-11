@@ -12,7 +12,6 @@
     "one-variable-per-declaration": false,
     "trailing-comma": [
       false
-    ],
-    "no-unused-variable": true
+    ]
   }
 }

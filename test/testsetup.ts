@@ -30,9 +30,9 @@ export function cleanupFixture() {
   jasmine.clock().uninstall();
 }
 
-export function activateCore(config?: IConfig) {
+export function activateCore(customConfig?: IConfig) {
   resetSetup();
-  start(config);
+  start(customConfig);
   waitForStartupAcvitityToFinish();
 }
 

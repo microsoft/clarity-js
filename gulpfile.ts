@@ -6,7 +6,6 @@ import * as uglify from "gulp-uglify";
 import * as karma from "karma";
 import * as typescript from "rollup-plugin-typescript2";
 import * as rollup from "rollup-stream";
-import * as runSequence from "run-sequence";
 import * as source from "vinyl-source-stream";
 
 declare const __dirname;
@@ -14,40 +13,6 @@ const tsProject = ts.createProject("tsconfig.json");
 const bundle = "clarity.js";
 const minifiedBundle = "clarity.min.js";
 const karmaServer = karma.Server;
-
-gulp.task("build", () => {
-  runSequence(
-    "clean",
-    "compile",
-    "place-fixture",
-    "rollup",
-    "uglify"
-  );
-});
-
-// build and then run coverage
-gulp.task("bnc", () => {
-  runSequence(
-    "clean",
-    "compile",
-    "place-fixture",
-    "rollup",
-    "uglify",
-    "coverage"
-  );
-});
-
-// build and then run tests
-gulp.task("bnt", () => {
-  runSequence(
-    "clean",
-    "compile",
-    "place-fixture",
-    "rollup",
-    "uglify",
-    "test"
-  );
-});
 
 gulp.task("uglify", () => {
   return gulp.src("build/" + bundle)
@@ -65,12 +30,13 @@ gulp.task("rollup", () => {
       (typescript as any)()
     ]
   })
-  .pipe(source(bundle))
-  .pipe(gulp.dest("build"));
+    .pipe(source(bundle))
+    .pipe(gulp.dest("build"));
 });
 
-gulp.task("clean", () => {
+gulp.task("clean", (done) => {
   del("build");
+  done();
 });
 
 gulp.task("compile", () => {
@@ -109,3 +75,31 @@ gulp.task("coverage", (done) => {
     configFile: __dirname + "/build/test/coverage.conf.js"
   }, done).start();
 });
+
+gulp.task("build", gulp.series(
+  "clean",
+  "compile",
+  "place-fixture",
+  "rollup",
+  "uglify"
+));
+
+// build and then run coverage
+gulp.task("bnc", gulp.series(
+  "clean",
+  "compile",
+  "place-fixture",
+  "rollup",
+  "uglify",
+  "coverage"
+));
+
+// build and then run tests
+gulp.task("bnt", gulp.series(
+  "clean",
+  "compile",
+  "place-fixture",
+  "rollup",
+  "uglify",
+  "test"
+));
