@@ -10,7 +10,7 @@ import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.1.42";
+export const version = "0.1.43";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
@@ -245,7 +245,8 @@ function uploadPendingEvents() {
 function init() {
   // Set ClarityID cookie, if it's not set already
   if (!getCookie(Cookie)) {
-    setCookie(Cookie, guid());
+    // setting our ClarityId cookie for 2 years
+    setCookie(Cookie, guid(), 7 * 52 * 2);
   }
   cid = getCookie(Cookie);
 
