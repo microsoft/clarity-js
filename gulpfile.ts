@@ -51,11 +51,6 @@ gulp.task("place-fixture", () => {
     .pipe(gulp.dest("build/test"));
 });
 
-gulp.task("place-git-hooks", () => {
-  return gulp.src("githooks/*")
-    .pipe(gulp.dest(".git/hooks"));
-});
-
 gulp.task("test", (done) => {
   new karmaServer({
     configFile: __dirname + "/build/test/karma.conf.js",
