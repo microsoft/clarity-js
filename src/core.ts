@@ -10,7 +10,7 @@ import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.1.43";
+export const version = "0.1.44";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
@@ -131,7 +131,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   pendingEvents[evtJson.id] = evt;
   if (scheduleUpload) {
     clearTimeout(timeout);
-    timeout = setTimeout(forceCompression, config.delay);
+    timeout = window.setTimeout(forceCompression, config.delay);
   }
 }
 

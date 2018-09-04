@@ -158,7 +158,7 @@ describe("Compression Worker Tests", () => {
 
   function scheduleTestSuccessTimeout(done: DoneFn) {
     jasmine.clock().uninstall();
-    testFailureTimeout = setTimeout(() => {
+    testFailureTimeout = window.setTimeout(() => {
       done();
     }, WorkerMessageWaitTime);
     jasmine.clock().install();
@@ -166,7 +166,7 @@ describe("Compression Worker Tests", () => {
 
   function scheduleTestFailureTimeout(done: DoneFn, failureMessage: string) {
     jasmine.clock().uninstall();
-    testFailureTimeout = setTimeout(() => {
+    testFailureTimeout = window.setTimeout(() => {
       done.fail(failureMessage);
     }, WorkerMessageWaitTime);
     jasmine.clock().install();

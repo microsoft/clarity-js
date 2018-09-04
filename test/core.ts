@@ -16,6 +16,13 @@ describe("Core Tests", () => {
   });
   afterEach(cleanupFixture);
 
+  it("validates that core.ts version matches package.json", (done: DoneFn) => {
+    let testJsons = window["__test_jsons"];
+    let packageJson = testJsons && testJsons["package"];
+    assert.equal(packageJson.version, core.version);
+    done();
+  });
+
   it("validates that missing feature event is sent when required feature is missing", (done: DoneFn) => {
     core.teardown();
     observeEvents();
