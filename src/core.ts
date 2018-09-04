@@ -131,7 +131,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   pendingEvents[evtJson.id] = evt;
   if (scheduleUpload) {
     clearTimeout(timeout);
-    timeout = setTimeout(forceCompression, config.delay);
+    timeout = window.setTimeout(forceCompression, config.delay);
   }
 }
 

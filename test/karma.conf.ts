@@ -5,9 +5,10 @@ export = (config) => {
     frameworks: ["chai", "detectBrowsers", "fixture", "browserify", "jasmine"],
     files: [
       "test/clarity.fixture.html",
+      "../package.json",
       {
         pattern: "test/**/*.js"
-      }
+      },
     ],
     plugins: [
       "karma-chai",
@@ -20,7 +21,8 @@ export = (config) => {
       "karma-fixture",
       "karma-html2js-preprocessor",
       "karma-browserify",
-      "karma-jasmine"
+      "karma-jasmine",
+      "karma-json-fixtures-preprocessor"
     ],
     browsers: ["Chrome"],
     detectBrowsers: {
@@ -30,7 +32,14 @@ export = (config) => {
     singleRun: true,
     preprocessors: {
       "test/*.js": ["browserify"],
-      "test/*.html": ["html2js"]
+      "test/*.html": ["html2js"],
+      "../**/*.json": ["json_fixtures"]
+    },
+    jsonFixturesPreprocessor: {
+      // Strip full file system part from the file path / fixture name
+      stripPrefix: ".+/",
+      // Change the global fixtures variable name
+      variableName: "__test_jsons"
     },
     reporters: ["dots"]
   });
