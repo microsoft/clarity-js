@@ -250,12 +250,12 @@ function init() {
   }
   cid = getCookie(Cookie);
 
-  impressionId = guid();
   startTime = getUnixTimestamp();
   sequence = 0;
   envelope = {
     clarityId: cid,
-    impressionId,
+    impressionId: guid(),
+    projectId: config.projectId || null,
     url: window.location.href,
     version
   };

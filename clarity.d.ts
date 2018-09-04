@@ -74,6 +74,9 @@ export interface IConfig {
   // Clarity will still run in the background collecting events and compressing them into batches,
   // but actual sending will only be done one the trigger is fired.
   backgroundMode?: boolean;
+
+  // Identifier of the project to which this impression will be merged on the backend
+  projectId?: string;
 }
 
 /* ##################################### */
@@ -108,11 +111,12 @@ interface IPayloadInfo {
 interface IEnvelope {
   clarityId: string;
   impressionId: string;
+  projectId: string;
   url: string;
   version: string;
   time?: number;
   sequenceNumber?: number;
-  extraInfo?: Object;
+  extraInfo?: object;
 }
 
 interface IEventData {
@@ -463,9 +467,8 @@ interface ITriggerState extends IInstrumentationEventState {
 /* #########   PERFORMANCE   ########### */
 /* ##################################### */
 
-interface IPerformanceTiming extends PerformanceTiming {
-  // We send back all properties from performance.timing object
-}
+// We send back all properties from performance.timing object
+declare type IPerformanceTiming = PerformanceTiming;
 
 interface IPerformanceTimingState {
   timing: IPerformanceTiming;

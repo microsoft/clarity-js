@@ -54,6 +54,7 @@ export function getMockEnvelope(sequenceNumber?: number) {
   let mockEnvelope: IEnvelope = {
     clarityId: guid(),
     impressionId: guid(),
+    projectId: guid(),
     sequenceNumber: sequenceNumber >= 0 ? sequenceNumber : -1,
     time: -1,
     url: window.location.toString(),
