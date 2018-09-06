@@ -2,6 +2,7 @@ import { IConfig } from "./config";
 import { ClarityDataSchema, IEvent, IEventArray } from "./core";
 
 declare class SchemaManager {
+  constructor();
   public reset(): void;
   public addSchema(schema: ClarityDataSchema): boolean;
   public createSchema(data: any, name?: string): ClarityDataSchema;
@@ -16,6 +17,7 @@ interface IClarityJs {
 }
 
 interface IPayloadEncoder {
+  SchemaManager: typeof SchemaManager;
   encode(event: IEvent): IEventArray;
   decode(eventArray: IEventArray, schemas?: SchemaManager): IEvent;
 }
