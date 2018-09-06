@@ -1,4 +1,4 @@
-import { ILayoutState, INodeInfo } from "../../../clarity";
+import { ILayoutState, INodeInfo } from "../../../types/index";
 import { config } from "../../config";
 import { createLayoutState, getNodeIndex, Tags } from "./stateprovider";
 

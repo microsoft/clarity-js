@@ -1,7 +1,7 @@
-import { Instrumentation, State, UploadCallback } from "../clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { getEventType } from "../src/utils";
+import { Instrumentation, State, UploadCallback } from "../types/index";
 import { activateCore, cleanupFixture, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
 import {

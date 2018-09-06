@@ -1,4 +1,4 @@
-import { IEvent, IEventArray } from "../clarity";
+import { IEvent, IEventArray } from "../../types/index";
 import schemas from "./schema";
 
 // We serialize send a lot of JSONs with identical structures and putting all property names on the

@@ -1,5 +1,5 @@
-import { IEvent, IEventArray } from "../clarity";
-import EventFromArray from "../converters/fromarray";
+import EventFromArray from "../src/converters/fromarray";
+import { IEvent, IEventArray } from "../types/index";
 import { MockEventName } from "./utils";
 
 export default function(eventArray: IEventArray): IEvent {
