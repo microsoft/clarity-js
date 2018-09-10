@@ -1,4 +1,4 @@
-import { ClarityDataSchema, ObjectType } from "../clarity";
+import { ClarityDataSchema, ObjectType } from "../../types/index";
 
 // Details about schema generation are in schema.md:
 // https://github.com/Microsoft/clarity-js/blob/master/converters/schema.md

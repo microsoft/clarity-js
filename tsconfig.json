@@ -19,10 +19,9 @@
         "types" : ["jasmine", "karma-fixture"]
     },
     "include":[
-       "clarity.d.ts",
-       "converters/**/*.ts",
        "src/**/*.ts",
-       "test/**/*.ts"
+       "test/**/*.ts",
+       "types/**/*.d.ts"
     ],
     "compileOnSave": true,
     "buildOnSave": false,

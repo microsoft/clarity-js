@@ -1,6 +1,6 @@
-import { ICompressedBatchMessage, IEnvelope, IEventArray, Instrumentation, IPayload, State, WorkerMessageType } from "../clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
+import { ICompressedBatchMessage, IEnvelope, IEventArray, Instrumentation, IPayload, State, WorkerMessageType } from "../types/index";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import uncompress from "./uncompress";
 import { getMockEvent, MockEventName, observeEvents, observeWorkerMessages, payloadToEvents } from "./utils";

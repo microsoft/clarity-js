@@ -1,5 +1,5 @@
 import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutRectangle, ILayoutState, IStyleLayoutState,
-  ITextLayoutState } from "../../../clarity";
+  ITextLayoutState } from "../../../types/index";
 import { config } from "../../config";
 import { mask } from "../../utils";
 

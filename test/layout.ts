@@ -1,8 +1,8 @@
-import { Action, IEvent, Source } from "../clarity";
 import { config } from "../src/config";
 import * as core from "../src/core";
 import { NodeIndex, Tags } from "../src/plugins/layout/stateprovider";
 import { mask } from "../src/utils";
+import { Action, IEvent, Source } from "../types/index";
 import { activateCore, cleanupFixture, setupFixture } from "./testsetup";
 import { observeEvents } from "./utils";
 

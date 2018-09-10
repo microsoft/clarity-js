@@ -1,5 +1,5 @@
 import { IAddEventMessage, ICompressedBatchMessage, IEvent, Instrumentation,
-  ITimestampedWorkerMessage, IWorkerMessage, IXhrErrorEventState, WorkerMessageType } from "../clarity";
+  ITimestampedWorkerMessage, IWorkerMessage, IXhrErrorEventState, WorkerMessageType } from "../types/index";
 import { createCompressionWorker } from "./../src/compressionworker";
 import { config } from "./../src/config";
 import { cleanupFixture, setupFixture } from "./testsetup";

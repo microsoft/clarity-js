@@ -1,4 +1,4 @@
-import { IPerformanceResourceTimingState, IPerformanceTimingState, IPlugin } from "../../clarity";
+import { IPerformanceResourceTimingState, IPerformanceTimingState, IPlugin } from "../../types/index";
 import { config } from "../config";
 import { addEvent } from "../core";
 import { mapProperties } from "../utils";

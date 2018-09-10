@@ -1,6 +1,6 @@
-import { IEvent } from "../clarity";
-import FromArray from "../converters/fromarray";
-import ToArray from "../converters/toarray";
+import FromArray from "../src/converters/fromarray";
+import ToArray from "../src/converters/toarray";
+import { IEvent } from "../types/index";
 
 import * as chai from "chai";
 import { getMockEvent } from "./utils";

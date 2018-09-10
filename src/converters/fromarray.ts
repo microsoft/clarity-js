@@ -1,5 +1,5 @@
-import {  IEvent, IEventArray } from "../clarity";
-import { ObjectType } from "../clarity";
+import { ObjectType } from "../../types/index";
+import {  IEvent, IEventArray } from "../../types/index";
 import { SchemaManager } from "./schema";
 import defaultSchemas from "./schema";
 

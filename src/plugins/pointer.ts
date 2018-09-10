@@ -1,4 +1,4 @@
-import { IPlugin, IPointerModule, IPointerState } from "../../clarity";
+import { IPlugin, IPointerModule, IPointerState } from "../../types/index";
 import { addEvent, bind } from "../core";
 import * as mouse from "./pointer/mouse";
 import * as touch from "./pointer/touch";
