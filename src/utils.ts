@@ -111,5 +111,5 @@ export function getEventType(eventArray: IEventArray) {
 }
 
 export function mask(text: string) {
-  return text.replace(/./g, "*");
+  return text.replace(/\S/gi, "*");
 }

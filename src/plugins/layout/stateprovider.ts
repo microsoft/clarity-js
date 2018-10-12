@@ -38,6 +38,7 @@ export function getNodeIndex(node: Node): number {
 export function createLayoutState(node: Node, ignore: boolean, forceMask: boolean): ILayoutState {
   let state: ILayoutState = null;
   let maskText = forceMask || !config.showText;
+  let maskLinks = forceMask || !config.showLinks;
   let maskImages = forceMask || !config.showImages;
   if (ignore) {
     state = createIgnoreLayoutState(node);
@@ -47,7 +48,7 @@ export function createLayoutState(node: Node, ignore: boolean, forceMask: boolea
         state = createDoctypeLayoutState(node as DocumentType);
         break;
       case Node.TEXT_NODE:
-        state = createTextLayoutState(node as Text, maskText);
+        state = createTextLayoutState(node as Text, maskText, maskLinks);
         break;
       case Node.ELEMENT_NODE:
         let elem = node as Element;
@@ -125,12 +126,13 @@ export function createStyleLayoutState(styleNode: HTMLStyleElement, maskText: bo
   return layoutState;
 }
 
-export function createTextLayoutState(textNode: Text, maskText: boolean): ITextLayoutState {
+export function createTextLayoutState(textNode: Text, maskText: boolean, maskLinks: boolean): ITextLayoutState {
   // Text nodes that are children of the STYLE elements contain CSS code, so we don't want to hide it
   // Checking parentNode, instead of parentElement, because in IE textNode.parentElement returns 'undefined'.
   let parent = textNode.parentNode;
   let isCss = parent && parent.nodeType === Node.ELEMENT_NODE && (parent as Element).tagName === "STYLE";
-  let showText = isCss || !maskText;
+  let isLink = parent && parent.nodeType === Node.ELEMENT_NODE && (parent as Element).tagName === "A";
+  let showText = isCss || (isLink && !maskLinks) || !maskText;
   let textState = createGenericLayoutState(textNode, Tags.Text) as ITextLayoutState;
   textState.content = showText ? textNode.nodeValue : mask(textNode.nodeValue);
   return textState;
