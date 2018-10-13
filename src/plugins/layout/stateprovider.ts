@@ -129,14 +129,9 @@ export function createTextLayoutState(textNode: Text, forceMask: boolean): IText
   let parent = textNode.parentNode;
   let isCss = parent && parent.nodeType === Node.ELEMENT_NODE && (parent as Element).tagName === "STYLE";
   let isLink = parent && parent.nodeType === Node.ELEMENT_NODE && (parent as Element).tagName === "A";
+  let showText = (isLink ? config.showLinks : config.showText) && !forceMask;
   let textState = createGenericLayoutState(textNode, Tags.Text) as ITextLayoutState;
-  let showText = isCss
-                  ? true
-                  : (isLink
-                      ? config.showLinks && !forceMask
-                      : config.showText && !forceMask
-                    );
-  textState.content = showText ? textNode.nodeValue : mask(textNode.nodeValue);
+  textState.content = isCss || showText ? textNode.nodeValue : mask(textNode.nodeValue);
   return textState;
 }
 
