@@ -48,6 +48,7 @@ export default class PerformanceProfiler implements IPlugin {
     this.stateError = false;
     this.incompleteEntryIndices = [];
     this.urlBlacklist = config.urlBlacklist.map(this.getFullUrl);
+    this.urlBlacklist.push(this.getFullUrl(config.uploadUrl));
 
     // Potentially these don't need resets because performance object doesn't normally change within the page
     // The reason for resetting these values on each activation is for easier testing

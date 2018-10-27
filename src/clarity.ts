@@ -8,15 +8,6 @@ export { version } from "./core";
 export function start(customConfig?: IConfig) {
   if (state !== State.Activated) {
     mapProperties(customConfig, null, true, config);
-    const uploadUrl = config.uploadUrl;
-    if(uploadUrl) {
-      if(!config.urlBlacklist) {
-        config.urlBlacklist = [uploadUrl]
-      } else if (config.urlBlacklist.indexOf(uploadUrl) === -1){
-          config.urlBlacklist.push(uploadUrl);
-      }
-    }
-    
     activate();
   }
 }
