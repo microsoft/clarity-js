@@ -48,6 +48,8 @@ export default class PerformanceProfiler implements IPlugin {
     this.stateError = false;
     this.incompleteEntryIndices = [];
     this.urlBlacklist = config.urlBlacklist.map(this.getFullUrl);
+    // we need to blacklist our own uploadUrl, otherwise we get into an infinite loop of instrumenting the calls we make
+    // to the uploadUrl. Each of our instrumentation calls gets instrumented and we ended up POSTing multiple times per second.
     this.urlBlacklist.push(this.getFullUrl(config.uploadUrl));
 
     // Potentially these don't need resets because performance object doesn't normally change within the page
