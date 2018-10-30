@@ -13,7 +13,7 @@ Here are some example sessions on popular websites visualized to demonstrate the
 1. CNN (Web)
 </br><a href="https://thumbs.gfycat.com/DenseMenacingBandicoot-size_restricted.gif"><img src="https://thumbs.gfycat.com/DenseMenacingBandicoot-size_restricted.gif" title="Clarity JS CNN Example"/></a>
 
-2. Pinterest (Mobile)
+2. Cook with Manali (Mobile)
 </br><a href="https://thumbs.gfycat.com/IlliterateComposedKid-size_restricted.gif"><img src="https://thumbs.gfycat.com/IlliterateComposedKid-size_restricted.gif" title="Clarity JS Pinterest Example"/></a>
 
 ## Project Goals
