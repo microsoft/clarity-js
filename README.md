@@ -11,10 +11,10 @@ Clarity is a project in active development. While it's not yet ready for product
 
 Here are some example sessions on popular websites visualized to demonstrate the telemetry captured:
 1. CNN (Web)
-</br><a href="https://gfycat.com/AggressiveLankyAbyssiniangroundhornbill"><img src="https://gfycat.com/AggressiveLankyAbyssiniangroundhornbill" title="Clarity JS CNN Example"/></a>
+</br><a href="https://thumbs.gfycat.com/AggressiveLankyAbyssiniangroundhornbill-size_restricted.gif"><img src="https://thumbs.gfycat.com/AggressiveLankyAbyssiniangroundhornbill-size_restricted.gif" title="Clarity JS CNN Example"/></a>
 
 2. Pinterest (Mobile)
-</br><a href="https://gfycat.com/CoolDependableAdamsstaghornedbeetle"><img src="https://gfycat.com/CoolDependableAdamsstaghornedbeetle" title="Clarity JS Cook With Manali Example"/></a> 
+</br><a href="https://thumbs.gfycat.com/CoolDependableAdamsstaghornedbeetle-size_restricted.gif"><img src="https://thumbs.gfycat.com/CoolDependableAdamsstaghornedbeetle-size_restricted.gif" title="Clarity JS Cook With Manali Example"/></a> 
 
 ## Project Goals
 * Enable a generic solution that is able to capture telemetry from third-party web-sites
