@@ -252,9 +252,13 @@ function init() {
 
   startTime = getUnixTimestamp();
   sequence = 0;
+
+  // storing the current impressionId in a global var to determine when multiple instances of
+  // Clarity are attempting to run simultaneously
+  impressionId = guid();
   envelope = {
     clarityId: cid,
-    impressionId: guid(),
+    impressionId,
     projectId: config.projectId || null,
     url: window.location.href,
     version
