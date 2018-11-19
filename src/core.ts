@@ -249,13 +249,11 @@ function init() {
     setCookie(Cookie, guid(), 7 * 52 * 2);
   }
   cid = getCookie(Cookie);
+  impressionId = guid();
 
   startTime = getUnixTimestamp();
   sequence = 0;
 
-  // storing the current impressionId in a global var to determine when multiple instances of
-  // Clarity are attempting to run simultaneously
-  impressionId = guid();
   envelope = {
     clarityId: cid,
     impressionId,
