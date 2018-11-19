@@ -10,7 +10,7 @@ import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.2.3";
+export const version = "0.2.4";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
@@ -249,12 +249,14 @@ function init() {
     setCookie(Cookie, guid(), 7 * 52 * 2);
   }
   cid = getCookie(Cookie);
+  impressionId = guid();
 
   startTime = getUnixTimestamp();
   sequence = 0;
+
   envelope = {
     clarityId: cid,
-    impressionId: guid(),
+    impressionId,
     projectId: config.projectId || null,
     url: window.location.href,
     version
