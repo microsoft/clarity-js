@@ -14,6 +14,7 @@ interface IClarityJs {
   start(config?: IConfig): void;
   stop(): void;
   trigger(key: string): void;
+  mark(key: string, info: any);
 }
 
 interface IPayloadEncoder {

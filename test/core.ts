@@ -251,6 +251,21 @@ describe("Core Tests", () => {
     done();
   });
 
+  it("validates that clarity.mark generates correct 'Mark' events", (done: DoneFn) => {
+    const stopObserving = observeEvents("Mark");
+    const markInfo = {
+      testFile: "core.ts"
+    };
+    core.mark("TestKey", markInfo);
+
+    const events = stopObserving();
+    assert.equal(events.length, 1);
+    assert.equal(events[0].type, "Mark");
+    assert.equal(events[0].state.key, "TestKey");
+    assert.equal(events[0].state.info.testFile, "core.ts");
+    done();
+  });
+
   it("validates that nothing is sent on teardown when trigger was never fired", (done: DoneFn) => {
     let sentBytes: string[] = [];
     core.teardown();

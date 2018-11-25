@@ -72,6 +72,11 @@ export type IEventArray = [
   ClarityDataSchema   // data schema, if it's a new one, otherwise - schema hashcode
 ];
 
+export interface IMarkEventState {
+  key: string;
+  info: any;
+}
+
 export const enum ObjectType {
   Object,
   Array

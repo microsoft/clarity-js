@@ -3,7 +3,7 @@ import { config } from "./config";
 import { activate, onTrigger, state, teardown } from "./core";
 import { mapProperties } from "./utils";
 
-export { version } from "./core";
+export { version, mark } from "./core";
 
 export function start(customConfig?: IConfig) {
   if (state !== State.Activated) {
