@@ -1,4 +1,4 @@
-import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutRectangle, ILayoutState, IStyleLayoutState,
+import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutRectangle, ILayoutState,
   ITextLayoutState } from "../../../types/index";
 import { config } from "../../config";
 import { mask } from "../../utils";
@@ -48,12 +48,7 @@ export function createLayoutState(node: Node, ignore: boolean, forceMask: boolea
         state = createTextLayoutState(node as Text, forceMask);
         break;
       case Node.ELEMENT_NODE:
-        let elem = node as Element;
-        if (elem.tagName === "STYLE") {
-          state = createStyleLayoutState(elem as HTMLStyleElement, forceMask);
-        } else {
-          state = createElementLayoutState(elem, forceMask);
-        }
+        state = createElementLayoutState(node as Element, forceMask);
         break;
       default:
         state = createIgnoreLayoutState(node);
@@ -97,30 +92,6 @@ export function createElementLayoutState(element: Element, forceMask: boolean): 
   }
 
   return elementState;
-}
-
-export function createStyleLayoutState(styleNode: HTMLStyleElement, forceMask: boolean): IStyleLayoutState {
-  let layoutState = createElementLayoutState(styleNode, forceMask) as IStyleLayoutState;
-  if (config.cssRules) {
-    let cssRules = layoutState.cssRules = null;
-
-    // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
-    try {
-      let sheet = styleNode.sheet as CSSStyleSheet;
-      cssRules = sheet ? sheet.cssRules : [];
-    } catch (e) {
-      if (e.name !== "SecurityError") {
-        throw e;
-      }
-    }
-    if (cssRules !== null) {
-      layoutState.cssRules = [];
-      for (let i = 0; i < cssRules.length; i++) {
-        layoutState.cssRules.push(cssRules[i].cssText);
-      }
-    }
-  }
-  return layoutState;
 }
 
 export function createTextLayoutState(textNode: Text, forceMask: boolean): ITextLayoutState {

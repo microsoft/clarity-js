@@ -29,7 +29,8 @@ export const enum Source {
   Discover,
   Mutation,
   Scroll,
-  Input
+  Input,
+  Css
 }
 
 export const enum Action {

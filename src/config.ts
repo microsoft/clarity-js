@@ -16,7 +16,6 @@ export let config: IConfig = {
   sensitiveAttributes: [],
   timeToYield: 50,
   instrument: false,
-  cssRules: false,
   uploadHandler: null,
   uploadHeaders: {
     "Content-Type": "application/json"

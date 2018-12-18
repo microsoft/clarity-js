@@ -1,5 +1,5 @@
 import { Action, IElementLayoutState, IEventData, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
-  INodeInfo, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode,
+  INodeInfo, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode, IStyleLayoutState,
   LayoutRoutine, NumberJson, Source } from "../../types/index";
 import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
@@ -13,6 +13,7 @@ export default class Layout implements IPlugin {
   private shadowDom: ShadowDom;
   private inconsistentShadowDomCount: number;
   private observer: MutationObserver;
+  private insertRule;
   private watchList: boolean[];
   private mutationSequence: number;
   private lastConsistentDomJson: NumberJson;
@@ -23,6 +24,7 @@ export default class Layout implements IPlugin {
     this.inconsistentShadowDomCount = 0;
     this.watchList = [];
     this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
+    this.insertRule = CSSStyleSheet.prototype.insertRule;
     this.mutationSequence = 0;
     this.lastConsistentDomJson = null;
     this.firstShadowDomInconsistentEvent = null;
@@ -39,12 +41,24 @@ export default class Layout implements IPlugin {
         subtree: true
       });
     }
+    if (this.insertRule) {
+      let that = this;
+      CSSStyleSheet.prototype.insertRule = function(style, index) {
+        let value = that.insertRule.call(this, style, index);
+        that.layoutHandler(this.ownerNode, Source.Css);
+        return value;
+      };
+    }
   }
 
   public teardown(): void {
     if (this.observer) {
       this.observer.disconnect();
     }
+
+    // Restore original insertRule definition
+    CSSStyleSheet.prototype.insertRule = this.insertRule;
+    this.insertRule = null;
 
     // Clean up node indices on observed nodes
     // If Clarity is re-activated within the same page later,
@@ -86,7 +100,15 @@ export default class Layout implements IPlugin {
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
   private discoverNode(node: Node): INodeInfo {
     let shadowNode = this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
-    return shadowNode.computeInfo();
+    return this.computeInfo(shadowNode);
+  }
+
+  private computeInfo(shadowNode) {
+    let info = shadowNode.computeInfo();
+    if ((shadowNode.node as Element).tagName === "STYLE" && shadowNode.node.textContent.length === 0) {
+      this.layoutHandler(shadowNode.node as Element, Source.Css);
+    }
+    return info;
   }
 
   private watch(node: Node, nodeLayoutState: ILayoutState) {
@@ -122,8 +144,10 @@ export default class Layout implements IPlugin {
     let nodeInfo = this.shadowDom.getNodeInfo(index);
     if (nodeInfo) {
       let layoutState = nodeInfo.state as IElementLayoutState;
+      let styleState = nodeInfo.state as IStyleLayoutState;
       switch (source) {
         case Source.Scroll:
+          layoutState = layoutState as IElementLayoutState;
           let scrollX = Math.round(element.scrollLeft);
           let scrollY = Math.round(element.scrollTop);
           let dx = layoutState.layout.scrollX - scrollX;
@@ -137,12 +161,36 @@ export default class Layout implements IPlugin {
           }
           break;
         case Source.Input:
+          layoutState = layoutState as IElementLayoutState;
           let input = element as HTMLInputElement;
           let showText = config.showText && !nodeInfo.forceMask;
           layoutState.attributes.value = showText ? input.value : mask(input.value);
           layoutState.source = source;
           layoutState.action = Action.Update;
           addEvent({type: this.eventName, state: layoutState});
+          break;
+        case Source.Css:
+          styleState.source = source;
+          styleState.action = Action.Update;
+          let cssRules = null;
+
+          // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
+          try {
+            let sheet = (element as HTMLStyleElement).sheet as CSSStyleSheet;
+            cssRules = sheet ? sheet.cssRules : [];
+          } catch (e) {
+            if (e.name !== "SecurityError") {
+              throw e;
+            }
+          }
+
+          if (cssRules !== null) {
+            styleState.cssRules = [];
+            for (let i = 0; i < cssRules.length; i++) {
+              styleState.cssRules.push(cssRules[i].cssText);
+            }
+          }
+          addEvent({type: this.eventName, state: styleState});
           break;
         default:
           break;
@@ -190,7 +238,8 @@ export default class Layout implements IPlugin {
   }
 
   private processMutation(action: Action, shadowNode: IShadowDomNode): IEventData {
-    let state = shadowNode.computeInfo().state;
+    let info = this.computeInfo(shadowNode);
+    let state = info.state;
     state.action = action;
     state.source = Source.Mutation;
     state.mutationSequence = this.mutationSequence;
