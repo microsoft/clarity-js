@@ -1,5 +1,4 @@
 import { ILayoutState, INodeInfo } from "../../../types/index";
-import { config } from "../../config";
 import { createLayoutState, getNodeIndex, Tags } from "./stateprovider";
 
 export const ForceMaskAttribute = "data-clarity-mask";
@@ -27,7 +26,8 @@ export function shouldIgnoreNode(node: Node, parentIgnored: boolean): boolean {
         break;
       case Node.TEXT_NODE:
         // If we capture CSSRules on style elements, ignore its text children nodes
-        if (config.cssRules && node.parentNode && (node.parentNode as Element).tagName === "STYLE") {
+        let parent = node.parentNode as Element;
+        if (parent && parent.tagName === "STYLE" && parent.textContent.length === 0) {
           ignore = true;
         }
       default:

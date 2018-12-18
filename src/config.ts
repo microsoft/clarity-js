@@ -15,7 +15,6 @@ export let config: IConfig = {
   sensitiveAttributes: [],
   timeToYield: 50,
   instrument: false,
-  cssRules: false,
   uploadHandler: null,
   customInstrumentation: null,
   debug: false,
