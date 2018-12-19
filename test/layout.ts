@@ -224,7 +224,7 @@ describe("Layout Tests", () => {
     let style = document.createElement("style");
     dom.appendChild(style);
     let stylesheet = style.sheet as CSSStyleSheet;
-    stylesheet.insertRule("body { color: black; }");
+    stylesheet.insertRule("body { color: red; }");
 
     function callback() {
       observer.disconnect();
@@ -233,12 +233,11 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       // Assert that style state has css rules and that style's child text node is ignored
-      assert.equal(events.length, 2);
-      assert.equal(events[1].state.action, Action.Update);
-      assert.equal(events[1].state.Source, Source.Css);
-      assert.equal(!!events[1].state.cssRules, true);
-      assert.equal(events[1].state.cssRules.length, 1);
-      assert.equal(events[1].state.cssRules[0].indexOf("red") > 0, true);
+      assert.equal(events.length, 1);
+      assert.equal(events[0].state.action, Action.Insert);
+      assert.equal(!!events[0].state.cssRules, true);
+      assert.equal(events[0].state.cssRules.length, 1);
+      assert.equal(events[0].state.cssRules[0].indexOf("red") > 0, true);
 
       // Explicitly signal that we are done here
       done();

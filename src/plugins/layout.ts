@@ -106,7 +106,7 @@ export default class Layout implements IPlugin {
   private computeInfo(shadowNode) {
     let info = shadowNode.computeInfo();
     if ((shadowNode.node as Element).tagName === "STYLE" && shadowNode.node.textContent.length === 0) {
-      this.layoutHandler(shadowNode.node as Element, Source.Css);
+      info.state.cssRules = this.cssRules(shadowNode.node as Element);
     }
     return info;
   }
@@ -170,32 +170,39 @@ export default class Layout implements IPlugin {
           addEvent({type: this.eventName, state: layoutState});
           break;
         case Source.Css:
+          styleState.cssRules = this.cssRules(element);
           styleState.source = source;
           styleState.action = Action.Update;
-          let cssRules = null;
-
-          // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
-          try {
-            let sheet = (element as HTMLStyleElement).sheet as CSSStyleSheet;
-            cssRules = sheet ? sheet.cssRules : [];
-          } catch (e) {
-            if (e.name !== "SecurityError") {
-              throw e;
-            }
-          }
-
-          if (cssRules !== null) {
-            styleState.cssRules = [];
-            for (let i = 0; i < cssRules.length; i++) {
-              styleState.cssRules.push(cssRules[i].cssText);
-            }
-          }
           addEvent({type: this.eventName, state: styleState});
           break;
         default:
           break;
       }
     }
+  }
+
+  private cssRules(element: Element) {
+    let cssRules = null;
+
+    let rules = [];
+    // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
+    try {
+      let sheet = (element as HTMLStyleElement).sheet as CSSStyleSheet;
+      cssRules = sheet ? sheet.cssRules : [];
+    } catch (e) {
+      if (e.name !== "SecurityError") {
+        throw e;
+      }
+    }
+
+    if (cssRules !== null) {
+      rules = [];
+      for (let i = 0; i < cssRules.length; i++) {
+        rules.push(cssRules[i].cssText);
+      }
+    }
+
+    return rules;
   }
 
   private mutation(mutations: MutationRecord[]) {
