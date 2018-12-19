@@ -8,7 +8,7 @@ import { ShadowDom } from "./layout/shadowdom";
 import { getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
-  private readonly cssTimeoutLength = 500;
+  private readonly cssTimeoutLength = 50;
   private eventName = "Layout";
   private distanceThreshold = 5;
   private shadowDom: ShadowDom;
@@ -16,6 +16,7 @@ export default class Layout implements IPlugin {
   private observer: MutationObserver;
   private insertRule;
   private cssTimeout;
+  private cssElementQueue;
   private watchList: boolean[];
   private mutationSequence: number;
   private lastConsistentDomJson: NumberJson;
@@ -25,6 +26,7 @@ export default class Layout implements IPlugin {
     this.shadowDom = new ShadowDom();
     this.inconsistentShadowDomCount = 0;
     this.watchList = [];
+    this.cssElementQueue = [];
     this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
     this.insertRule = CSSStyleSheet.prototype.insertRule;
     this.mutationSequence = 0;
@@ -47,7 +49,7 @@ export default class Layout implements IPlugin {
       let that = this;
       CSSStyleSheet.prototype.insertRule = function(style, index) {
         let value = that.insertRule.call(this, style, index);
-        that.cssHandler(this.ownerNode, Source.Css);
+        that.cssQueue(this.ownerNode);
         return value;
       };
     }
@@ -112,7 +114,7 @@ export default class Layout implements IPlugin {
   private computeInfo(shadowNode) {
     let info = shadowNode.computeInfo();
     if ((shadowNode.node as Element).tagName === "STYLE" && shadowNode.node.textContent.length === 0) {
-      info.state.cssRules = this.cssRules(shadowNode.node as Element);
+       info.state.cssRules = this.cssRules(shadowNode.node as Element);
     }
     return info;
   }
@@ -145,11 +147,24 @@ export default class Layout implements IPlugin {
     }
   }
 
-  private cssHandler(element: Element, source: Source) {
+  private cssQueue(element: Element) {
+    // Clear the timeout if it already exists
     if (this.cssTimeout) {
       clearTimeout(this.cssTimeout);
     }
-    this.cssTimeout = setTimeout(this.layoutHandler.bind(this, element, source), this.cssTimeoutLength);
+
+    // Queue element to be processed after the timeout triggers
+    if (this.cssElementQueue.indexOf(element) === -1) {
+      this.cssElementQueue.push(element);
+    }
+
+    this.cssTimeout = setTimeout(this.cssDequeue.bind(this), this.cssTimeoutLength);
+  }
+
+  private cssDequeue() {
+    for (let element of this.cssElementQueue) {
+      this.layoutHandler.bind(this, element, Source.Css);
+    }
   }
 
   private layoutHandler(element: Element, source: Source) {
