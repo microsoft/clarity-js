@@ -10,7 +10,7 @@ import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.2.5";
+export const version = "0.2.6";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
@@ -267,7 +267,7 @@ function init() {
   resetUploads();
 
   if (config.customInstrumentation) {
-    let customInst = config.customInstrumentation();
+    let customInst = config.customInstrumentation(impressionId, cid, config.projectId);
     envelope.extraInfo = {};
     for (let key in customInst) {
       if (customInst.hasOwnProperty(key) && customInst[key]) {
