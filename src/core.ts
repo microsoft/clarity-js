@@ -243,12 +243,12 @@ function uploadPendingEvents() {
 }
 
 function init() {
-  // Set ClarityID cookie, if it's not set already
-  if (!getCookie(Cookie)) {
+  // Set ClarityID cookie, if it's not set already and is allowed by config
+  if (!config.skipCookie && !getCookie(Cookie)) {
     // setting our ClarityId cookie for 2 years
     setCookie(Cookie, guid(), 7 * 52 * 2);
   }
-  cid = getCookie(Cookie);
+  cid = config.skipCookie ? guid() : getCookie(Cookie);
   impressionId = guid();
 
   startTime = getUnixTimestamp();
@@ -266,7 +266,7 @@ function init() {
   resetUploads();
 
   if (config.customInstrumentation) {
-    let customInst = config.customInstrumentation();
+    let customInst = config.customInstrumentation(impressionId, cid, config.projectId);
     envelope.extraInfo = {};
     for (let key in customInst) {
       if (customInst.hasOwnProperty(key) && customInst[key]) {

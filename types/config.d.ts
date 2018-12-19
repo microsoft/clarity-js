@@ -42,13 +42,16 @@ export interface IConfig {
     // Send back instrumentation data, if set to true
     instrument?: boolean;
 
+    // Skip writing cookie to track the user anonymously
+    skipCookie?: boolean;
+
     // Pointer to the function which would be responsible for sending the data
     // If left unspecified, raw payloads will be uploaded to the uploadUrl endpoint
     uploadHandler?: UploadHandler;
 
     // Pointer to the function which will be responsible for giving Clarity
     // a dictionary of strings that the user wants logged in each Clarity payload
-    customInstrumentation?: () => { [key: string]: string; };
+    customInstrumentation?: (impressionId?: string, cid?: string, projectId?: string) => { [key: string]: string; };
 
     // Setting to enable debug features (e.g. console.log statements)
     debug?: boolean;

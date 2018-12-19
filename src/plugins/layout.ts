@@ -8,12 +8,14 @@ import { ShadowDom } from "./layout/shadowdom";
 import { getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
+  private readonly cssTimeoutLength = 500;
   private eventName = "Layout";
   private distanceThreshold = 5;
   private shadowDom: ShadowDom;
   private inconsistentShadowDomCount: number;
   private observer: MutationObserver;
   private insertRule;
+  private cssTimeout;
   private watchList: boolean[];
   private mutationSequence: number;
   private lastConsistentDomJson: NumberJson;
@@ -45,7 +47,7 @@ export default class Layout implements IPlugin {
       let that = this;
       CSSStyleSheet.prototype.insertRule = function(style, index) {
         let value = that.insertRule.call(this, style, index);
-        that.layoutHandler(this.ownerNode, Source.Css);
+        that.cssHandler(this.ownerNode, Source.Css);
         return value;
       };
     }
@@ -54,6 +56,10 @@ export default class Layout implements IPlugin {
   public teardown(): void {
     if (this.observer) {
       this.observer.disconnect();
+    }
+
+    if (this.cssTimeout) {
+      clearTimeout(this.cssTimeout);
     }
 
     // Restore original insertRule definition
@@ -137,6 +143,13 @@ export default class Layout implements IPlugin {
       bind(element, "input", this.layoutHandler.bind(this, element, Source.Input));
       this.watchList[layoutState.index] = true;
     }
+  }
+
+  private cssHandler(element: Element, source: Source) {
+    if (this.cssTimeout) {
+      clearTimeout(this.cssTimeout);
+    }
+    this.cssTimeout = setTimeout(this.layoutHandler.bind(this, element, source), this.cssTimeoutLength);
   }
 
   private layoutHandler(element: Element, source: Source) {
