@@ -23,6 +23,9 @@ export interface IConfig {
     // Maximum number of XHR re-delivery attempts for a single payload
     reUploadLimit?: number;
 
+    // If set to 'true', clarity-js will write CID (Clarity ID) cookie
+    allowIdCookie?: boolean;
+
     // If set to false, text on the page will be masked with asterisks
     showText?: boolean;
 
@@ -48,6 +51,10 @@ export interface IConfig {
     // Pointer to the function which would be responsible for sending the data
     // If left unspecified, raw payloads will be uploaded to the uploadUrl endpoint
     uploadHandler?: UploadHandler;
+
+    // XHLHttpRequest headers to be added to every upload request with the default upload handler
+    // Object is a map from header names to header values
+    uploadHeaders?: { [key: string]: string; };
 
     // Pointer to the function which will be responsible for giving Clarity
     // a dictionary of strings that the user wants logged in each Clarity payload

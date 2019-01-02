@@ -65,8 +65,11 @@ function defaultUploadHandler(payload: string, onSuccess?: UploadCallback, onFai
   if (config.uploadUrl.length > 0) {
     payload = JSON.stringify(payload);
     let xhr = new XMLHttpRequest();
+    let headers = Object.keys(config.uploadHeaders);
     xhr.open("POST", config.uploadUrl);
-    xhr.setRequestHeader("Content-Type", "application/json");
+    for (let i = 0; i < headers.length; i++) {
+      xhr.setRequestHeader(headers[i], config.uploadHeaders[headers[i]]);
+    }
     xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, onSuccess, onFailure); };
     xhr.send(payload);
   }
