@@ -10,7 +10,7 @@ import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.2.4";
+export const version = "0.2.5";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
@@ -243,13 +243,14 @@ function uploadPendingEvents() {
 }
 
 function init() {
-  // Set ClarityID cookie, if it's not set already
-  if (!getCookie(Cookie)) {
-    // setting our ClarityId cookie for 2 years
-    setCookie(Cookie, guid(), 7 * 52 * 2);
-  }
-  cid = getCookie(Cookie);
+  let cidCookie = getCookie(Cookie);
+  cid = cidCookie || guid();
   impressionId = guid();
+
+  // Set 2-year CID cookie, if allowed by config
+  if (!cidCookie && config.allowIdCookie) {
+    setCookie(Cookie, cid, 7 * 52 * 2);
+  }
 
   startTime = getUnixTimestamp();
   sequence = 0;
