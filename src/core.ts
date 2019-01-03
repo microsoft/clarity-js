@@ -243,14 +243,14 @@ function uploadPendingEvents() {
 }
 
 function init() {
-  // Set ClarityID cookie, if it's not set already
-  cid = getCookie(Cookie);
-  if (config.allowIdCookie && !cid) {
-    cid = guid();
-    // Expires in 2 years
+  let cidCookie = getCookie(Cookie);
+  cid = cidCookie || guid();
+  impressionId = guid();
+
+  // Set 2-year CID cookie, if allowed by config
+  if (!cidCookie && config.allowIdCookie) {
     setCookie(Cookie, cid, 7 * 52 * 2);
   }
-  impressionId = guid();
 
   startTime = getUnixTimestamp();
   sequence = 0;
