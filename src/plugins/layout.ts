@@ -1,6 +1,6 @@
 import { Action, IElementLayoutState, IEventData, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
-  INodeInfo, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode, IStyleLayoutState,
-  LayoutRoutine, NumberJson, Source } from "../../types/index";
+  INodeInfo, InsertRuleHandler, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode,
+  IStyleLayoutState, LayoutRoutine, NumberJson, Source } from "../../types/index";
 import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
 import { debug, mask, traverseNodeTree } from "./../utils";
@@ -14,9 +14,9 @@ export default class Layout implements IPlugin {
   private shadowDom: ShadowDom;
   private inconsistentShadowDomCount: number;
   private observer: MutationObserver;
-  private insertRule;
-  private cssTimeout;
-  private cssElementQueue;
+  private insertRule: InsertRuleHandler;
+  private cssTimeout: number;
+  private cssElementQueue: Element[];
   private watchList: boolean[];
   private mutationSequence: number;
   private lastConsistentDomJson: NumberJson;
@@ -47,9 +47,14 @@ export default class Layout implements IPlugin {
     }
     if (this.insertRule) {
       let that = this;
+
+      // Some popular open source libraries, like styled-components, optimize performance
+      // by injecting CSS using insertRule API vs. appending text node. A side effect of
+      // using javascript API is that it doesn't trigger DOM mutation and therefore we
+      // need to override the insertRule API and listen for changes manually.
       CSSStyleSheet.prototype.insertRule = function(style, index) {
         let value = that.insertRule.call(this, style, index);
-        that.cssQueue(this.ownerNode);
+        that.queueCss(this.ownerNode);
         return value;
       };
     }
@@ -65,7 +70,9 @@ export default class Layout implements IPlugin {
     }
 
     // Restore original insertRule definition
-    CSSStyleSheet.prototype.insertRule = this.insertRule;
+    if (this.insertRule) {
+      CSSStyleSheet.prototype.insertRule = this.insertRule;
+    }
     this.insertRule = null;
 
     // Clean up node indices on observed nodes
@@ -147,7 +154,7 @@ export default class Layout implements IPlugin {
     }
   }
 
-  private cssQueue(element: Element) {
+  private queueCss(element: Element) {
     // Clear the timeout if it already exists
     if (this.cssTimeout) {
       clearTimeout(this.cssTimeout);
@@ -172,10 +179,8 @@ export default class Layout implements IPlugin {
     let nodeInfo = this.shadowDom.getNodeInfo(index);
     if (nodeInfo) {
       let layoutState = nodeInfo.state as IElementLayoutState;
-      let styleState = nodeInfo.state as IStyleLayoutState;
       switch (source) {
         case Source.Scroll:
-          layoutState = layoutState as IElementLayoutState;
           let scrollX = Math.round(element.scrollLeft);
           let scrollY = Math.round(element.scrollTop);
           let dx = layoutState.layout.scrollX - scrollX;
@@ -189,7 +194,6 @@ export default class Layout implements IPlugin {
           }
           break;
         case Source.Input:
-          layoutState = layoutState as IElementLayoutState;
           let input = element as HTMLInputElement;
           let showText = config.showText && !nodeInfo.forceMask;
           layoutState.attributes.value = showText ? input.value : mask(input.value);
@@ -198,6 +202,7 @@ export default class Layout implements IPlugin {
           addEvent({type: this.eventName, state: layoutState});
           break;
         case Source.Css:
+          let styleState = nodeInfo.state as IStyleLayoutState;
           styleState.cssRules = this.cssRules(element);
           styleState.source = source;
           styleState.action = Action.Update;
@@ -273,8 +278,7 @@ export default class Layout implements IPlugin {
   }
 
   private processMutation(action: Action, shadowNode: IShadowDomNode): IEventData {
-    let info = this.computeInfo(shadowNode);
-    let state = info.state;
+    let state = this.computeInfo(shadowNode).state;
     state.action = action;
     state.source = Source.Mutation;
     state.mutationSequence = this.mutationSequence;
