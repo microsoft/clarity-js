@@ -1,4 +1,4 @@
-import { UploadHandler } from "./core";
+import { IClarityFields, UploadHandler } from "./core";
 
 export interface IConfig {
     // Active plugins
@@ -23,8 +23,8 @@ export interface IConfig {
     // Maximum number of XHR re-delivery attempts for a single payload
     reUploadLimit?: number;
 
-    // If set to 'true', clarity-js will write CID (Clarity ID) cookie
-    allowIdCookie?: boolean;
+    // If set to 'true', clarity-js will NOT write CID (Clarity ID) cookie
+    disableCookie?: boolean;
 
     // If set to false, text on the page will be masked with asterisks
     showText?: boolean;
@@ -55,7 +55,7 @@ export interface IConfig {
 
     // Pointer to the function which will be responsible for giving Clarity
     // a dictionary of strings that the user wants logged in each Clarity payload
-    customInstrumentation?: (impressionId?: string, cid?: string, projectId?: string) => { [key: string]: string; };
+    customInstrumentation?: (fields: IClarityFields) => { [key: string]: string; };
 
     // Setting to enable debug features (e.g. console.log statements)
     debug?: boolean;
