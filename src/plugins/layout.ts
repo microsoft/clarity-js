@@ -5,7 +5,7 @@ import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
 import { debug, mask, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
-import { getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
+import { getCssRules, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
   private readonly cssTimeoutLength = 50;
@@ -115,15 +115,7 @@ export default class Layout implements IPlugin {
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
   private discoverNode(node: Node): INodeInfo {
     let shadowNode = this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
-    return this.computeInfo(shadowNode);
-  }
-
-  private computeInfo(shadowNode) {
-    let info = shadowNode.computeInfo();
-    if ((shadowNode.node as Element).tagName === "STYLE" && shadowNode.node.textContent.length === 0) {
-       info.state.cssRules = this.cssRules(shadowNode.node as Element);
-    }
-    return info;
+    return shadowNode.computeInfo();
   }
 
   private watch(node: Node, nodeLayoutState: ILayoutState) {
@@ -203,7 +195,7 @@ export default class Layout implements IPlugin {
           break;
         case Source.Css:
           let styleState = nodeInfo.state as IStyleLayoutState;
-          styleState.cssRules = this.cssRules(element);
+          styleState.cssRules = getCssRules(element as HTMLStyleElement);
           styleState.source = source;
           styleState.action = Action.Update;
           addEvent({type: this.eventName, state: styleState});
@@ -212,30 +204,6 @@ export default class Layout implements IPlugin {
           break;
       }
     }
-  }
-
-  private cssRules(element: Element) {
-    let cssRules = null;
-
-    let rules = [];
-    // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
-    try {
-      let sheet = (element as HTMLStyleElement).sheet as CSSStyleSheet;
-      cssRules = sheet ? sheet.cssRules : [];
-    } catch (e) {
-      if (e.name !== "SecurityError") {
-        throw e;
-      }
-    }
-
-    if (cssRules !== null) {
-      rules = [];
-      for (let i = 0; i < cssRules.length; i++) {
-        rules.push(cssRules[i].cssText);
-      }
-    }
-
-    return rules;
   }
 
   private mutation(mutations: MutationRecord[]) {
@@ -278,7 +246,7 @@ export default class Layout implements IPlugin {
   }
 
   private processMutation(action: Action, shadowNode: IShadowDomNode): IEventData {
-    let state = this.computeInfo(shadowNode).state;
+    let state = shadowNode.computeInfo().state;
     state.action = action;
     state.source = Source.Mutation;
     state.mutationSequence = this.mutationSequence;

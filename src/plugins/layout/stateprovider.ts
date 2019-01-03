@@ -1,4 +1,4 @@
-import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutRectangle, ILayoutState,
+import { IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState, ILayoutRectangle, ILayoutState, IStyleLayoutState,
   ITextLayoutState } from "../../../types/index";
 import { config } from "../../config";
 import { mask } from "../../utils";
@@ -48,7 +48,12 @@ export function createLayoutState(node: Node, ignore: boolean, forceMask: boolea
         state = createTextLayoutState(node as Text, forceMask);
         break;
       case Node.ELEMENT_NODE:
-        state = createElementLayoutState(node as Element, forceMask);
+        let elem = node as Element;
+        if (elem.tagName === "STYLE") {
+          state = createStyleLayoutState(elem as HTMLStyleElement, forceMask);
+        } else {
+          state = createElementLayoutState(elem, forceMask);
+        }
         break;
       default:
         state = createIgnoreLayoutState(node);
@@ -92,6 +97,38 @@ export function createElementLayoutState(element: Element, forceMask: boolean): 
   }
 
   return elementState;
+}
+
+export function createStyleLayoutState(styleNode: HTMLStyleElement, forceMask: boolean): IStyleLayoutState {
+  let layoutState = createElementLayoutState(styleNode, forceMask) as IStyleLayoutState;
+  if (styleNode.textContent.length === 0) {
+    layoutState.cssRules = getCssRules(styleNode);
+  }
+  return layoutState;
+}
+
+export function getCssRules(element: HTMLStyleElement) {
+  let cssRules = null;
+
+  let rules = [];
+  // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
+  try {
+    let sheet = element.sheet as CSSStyleSheet;
+    cssRules = sheet ? sheet.cssRules : [];
+  } catch (e) {
+    if (e.name !== "SecurityError") {
+      throw e;
+    }
+  }
+
+  if (cssRules !== null) {
+    rules = [];
+    for (let i = 0; i < cssRules.length; i++) {
+      rules.push(cssRules[i].cssText);
+    }
+  }
+
+  return rules;
 }
 
 export function createTextLayoutState(textNode: Text, forceMask: boolean): ITextLayoutState {
