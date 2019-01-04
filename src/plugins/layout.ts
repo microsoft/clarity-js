@@ -162,7 +162,7 @@ export default class Layout implements IPlugin {
 
   private cssDequeue() {
     for (let element of this.cssElementQueue) {
-      this.layoutHandler.bind(this, element, Source.Css);
+      this.layoutHandler(element, Source.Css);
     }
   }
 
