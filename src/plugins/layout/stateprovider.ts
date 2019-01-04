@@ -101,26 +101,34 @@ export function createElementLayoutState(element: Element, forceMask: boolean): 
 
 export function createStyleLayoutState(styleNode: HTMLStyleElement, forceMask: boolean): IStyleLayoutState {
   let layoutState = createElementLayoutState(styleNode, forceMask) as IStyleLayoutState;
-  if (config.cssRules) {
-    let cssRules = layoutState.cssRules = null;
-
-    // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
-    try {
-      let sheet = styleNode.sheet as CSSStyleSheet;
-      cssRules = sheet ? sheet.cssRules : [];
-    } catch (e) {
-      if (e.name !== "SecurityError") {
-        throw e;
-      }
-    }
-    if (cssRules !== null) {
-      layoutState.cssRules = [];
-      for (let i = 0; i < cssRules.length; i++) {
-        layoutState.cssRules.push(cssRules[i].cssText);
-      }
-    }
+  if (styleNode.textContent.length === 0) {
+    layoutState.cssRules = getCssRules(styleNode);
   }
   return layoutState;
+}
+
+export function getCssRules(element: HTMLStyleElement) {
+  let cssRules = null;
+
+  let rules = [];
+  // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
+  try {
+    let sheet = element.sheet as CSSStyleSheet;
+    cssRules = sheet ? sheet.cssRules : [];
+  } catch (e) {
+    if (e.name !== "SecurityError") {
+      throw e;
+    }
+  }
+
+  if (cssRules !== null) {
+    rules = [];
+    for (let i = 0; i < cssRules.length; i++) {
+      rules.push(cssRules[i].cssText);
+    }
+  }
+
+  return rules;
 }
 
 export function createTextLayoutState(textNode: Text, forceMask: boolean): ITextLayoutState {

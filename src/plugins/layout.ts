@@ -1,18 +1,22 @@
 import { Action, IElementLayoutState, IEventData, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
-  INodeInfo, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode,
-  LayoutRoutine, NumberJson, Source } from "../../types/index";
+  INodeInfo, InsertRuleHandler, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode,
+  IStyleLayoutState, LayoutRoutine, NumberJson, Source } from "../../types/index";
 import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
 import { debug, mask, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
-import { getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
+import { getCssRules, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
+  private readonly cssTimeoutLength = 50;
   private eventName = "Layout";
   private distanceThreshold = 5;
   private shadowDom: ShadowDom;
   private inconsistentShadowDomCount: number;
   private observer: MutationObserver;
+  private insertRule: InsertRuleHandler;
+  private cssTimeout: number;
+  private cssElementQueue: Element[];
   private watchList: boolean[];
   private mutationSequence: number;
   private lastConsistentDomJson: NumberJson;
@@ -22,7 +26,9 @@ export default class Layout implements IPlugin {
     this.shadowDom = new ShadowDom();
     this.inconsistentShadowDomCount = 0;
     this.watchList = [];
+    this.cssElementQueue = [];
     this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
+    this.insertRule = CSSStyleSheet.prototype.insertRule;
     this.mutationSequence = 0;
     this.lastConsistentDomJson = null;
     this.firstShadowDomInconsistentEvent = null;
@@ -39,12 +45,35 @@ export default class Layout implements IPlugin {
         subtree: true
       });
     }
+    if (this.insertRule) {
+      let that = this;
+
+      // Some popular open source libraries, like styled-components, optimize performance
+      // by injecting CSS using insertRule API vs. appending text node. A side effect of
+      // using javascript API is that it doesn't trigger DOM mutation and therefore we
+      // need to override the insertRule API and listen for changes manually.
+      CSSStyleSheet.prototype.insertRule = function(style, index) {
+        let value = that.insertRule.call(this, style, index);
+        that.queueCss(this.ownerNode);
+        return value;
+      };
+    }
   }
 
   public teardown(): void {
     if (this.observer) {
       this.observer.disconnect();
     }
+
+    if (this.cssTimeout) {
+      clearTimeout(this.cssTimeout);
+    }
+
+    // Restore original insertRule definition
+    if (this.insertRule) {
+      CSSStyleSheet.prototype.insertRule = this.insertRule;
+    }
+    this.insertRule = null;
 
     // Clean up node indices on observed nodes
     // If Clarity is re-activated within the same page later,
@@ -117,6 +146,26 @@ export default class Layout implements IPlugin {
     }
   }
 
+  private queueCss(element: Element) {
+    // Clear the timeout if it already exists
+    if (this.cssTimeout) {
+      clearTimeout(this.cssTimeout);
+    }
+
+    // Queue element to be processed after the timeout triggers
+    if (this.cssElementQueue.indexOf(element) === -1) {
+      this.cssElementQueue.push(element);
+    }
+
+    this.cssTimeout = setTimeout(this.cssDequeue.bind(this), this.cssTimeoutLength);
+  }
+
+  private cssDequeue() {
+    for (let element of this.cssElementQueue) {
+      this.layoutHandler(element, Source.Css);
+    }
+  }
+
   private layoutHandler(element: Element, source: Source) {
     let index = getNodeIndex(element);
     let nodeInfo = this.shadowDom.getNodeInfo(index);
@@ -143,6 +192,13 @@ export default class Layout implements IPlugin {
           layoutState.source = source;
           layoutState.action = Action.Update;
           addEvent({type: this.eventName, state: layoutState});
+          break;
+        case Source.Css:
+          let styleState = nodeInfo.state as IStyleLayoutState;
+          styleState.cssRules = getCssRules(element as HTMLStyleElement);
+          styleState.source = source;
+          styleState.action = Action.Update;
+          addEvent({type: this.eventName, state: styleState});
           break;
         default:
           break;

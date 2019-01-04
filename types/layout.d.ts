@@ -1,5 +1,7 @@
 export type NumberJson = Array<number | number[]>;
 
+export type InsertRuleHandler = (rule: string, index?: number) => number;
+
 export interface IShadowDomNode extends HTMLDivElement {
   node: Node;
   info: INodeInfo;
@@ -29,7 +31,8 @@ export const enum Source {
   Discover,
   Mutation,
   Scroll,
-  Input
+  Input,
+  Css
 }
 
 export const enum Action {

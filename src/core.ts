@@ -1,6 +1,7 @@
-import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, ICompressedBatchMessage,
-  IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IInstrumentationEventState, IMissingFeatureEventState,
-  Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage, ITriggerState, State, WorkerMessageType } from "../types/index";
+import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, IClarityFields,
+  ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData,
+  IInstrumentationEventState, IMissingFeatureEventState, Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage,
+  ITriggerState, State, WorkerMessageType } from "../types/index";
 import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
@@ -10,7 +11,7 @@ import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.2.5";
+export const version = "0.2.6";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
@@ -243,14 +244,14 @@ function uploadPendingEvents() {
 }
 
 function init() {
-  let cidCookie = getCookie(Cookie);
-  cid = cidCookie || guid();
-  impressionId = guid();
-
-  // Set 2-year CID cookie, if allowed by config
-  if (!cidCookie && config.allowIdCookie) {
-    setCookie(Cookie, cid, 7 * 52 * 2);
+  // Set ClarityID cookie, if it's not set already and is allowed by config
+  if (!config.disableCookie && !getCookie(Cookie)) {
+    // setting our ClarityId cookie for 2 years
+    setCookie(Cookie, guid(), 7 * 52 * 2);
   }
+
+  cid = config.disableCookie ? guid() : getCookie(Cookie);
+  impressionId = guid();
 
   startTime = getUnixTimestamp();
   sequence = 0;
@@ -267,7 +268,12 @@ function init() {
   resetUploads();
 
   if (config.customInstrumentation) {
-    let customInst = config.customInstrumentation();
+    let fields: IClarityFields = {
+      impressionId,
+      clientId: cid,
+      projectId: config.projectId
+    };
+    let customInst = config.customInstrumentation(fields);
     envelope.extraInfo = {};
     for (let key in customInst) {
       if (customInst.hasOwnProperty(key) && customInst[key]) {

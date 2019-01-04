@@ -54,6 +54,12 @@ export interface IBindingContainer {
   [key: string]: IEventBindingPair[];
 }
 
+export interface IClarityFields {
+  impressionId: string;
+  clientId: string;
+  projectId: string;
+}
+
 export type UploadCallback = (status: number) => void;
 export type UploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) => void;
 

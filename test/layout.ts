@@ -214,22 +214,17 @@ describe("Layout Tests", () => {
     }
   });
 
-  it("checks that we capture cssRule modifications via javascript when cssRule config is enabled", (done: DoneFn) => {
+  it("checks that we capture cssRule modifications via javascript when no innerText found", (done: DoneFn) => {
     let observer = new MutationObserver(callback);
     observer.observe(document, {childList: true, subtree: true });
-
-    config.cssRules = true;
 
     // Add a style tag and later modify styles using javascript
     let stopObserving = observeEvents(eventName);
     let dom = document.getElementById("clarity");
     let style = document.createElement("style");
-    style.textContent = "body {}";
     dom.appendChild(style);
     let stylesheet = style.sheet as CSSStyleSheet;
-    let rules = stylesheet.cssRules;
-    let styleRule = rules[0] as CSSStyleRule;
-    styleRule.style.background = "red";
+    stylesheet.insertRule("body { color: red; }");
 
     function callback() {
       observer.disconnect();
@@ -238,12 +233,11 @@ describe("Layout Tests", () => {
       let events = stopObserving();
 
       // Assert that style state has css rules and that style's child text node is ignored
-      assert.equal(events.length, 2);
+      assert.equal(events.length, 1);
       assert.equal(events[0].state.action, Action.Insert);
       assert.equal(!!events[0].state.cssRules, true);
       assert.equal(events[0].state.cssRules.length, 1);
       assert.equal(events[0].state.cssRules[0].indexOf("red") > 0, true);
-      assert.equal(events[1].state.tag, Tags.Ignore);
 
       // Explicitly signal that we are done here
       done();
