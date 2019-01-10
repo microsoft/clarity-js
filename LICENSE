@@ -2,20 +2,131 @@
 
     Copyright (c) Microsoft Corporation. All rights reserved.
 
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
+    Clarity.js is licensed for use as follows:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+The externally maintained libraries used by Clarity.js (collectively, “Third Party Code”) are below. Microsoft is not the original author of the Third Party Code. The original copyright notice and the license under which Microsoft received such Third Party Code is set forth below solely for informational purposes. 
+
+ @types/chai v.4.1.7
+Copyright 
+https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/chai/index.d.ts 
+Definitions by: Jed Mao https://github.com/jedmao, Bart van der Schoor https://github.com/Bartvds, Andrew Brown https://github.com/AGBrown, Olivier Chevet https://github.com/olivr70, Matt Wistrand https://github.com/mwistrand, Josh Goldberg https://github.com/joshuakgoldberg, Shaun Luttin https://github.com/shaunluttin, Gintautas Miselis https://github.com/Naktibalda, Satana Charuwichitratana https://github.com/micksatana, and Erik Schierboom https://github.com/ErikSchierboom
+
+
+@types/jasmine v.2.8.11
+Copyright https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/jasmine/index.d.ts
+Definitions by: Boris Yankov https://github.com/borisyankov, Theodore Brown https://github.com/theodorejb, David Pärsson https://github.com/davidparsson, Gabe Moothart https://github.com/gmoothart, Lukas Zech https://github.com/lukas-zech-software, Boris Breuer https://github.com/Engineer2B, Chris Yungmann https://github.com/cyungmann, Giles Roadnight https://github.com/Roaders, Yaroslav Admin https://github.com/devoto13, Domas Trijonis https://github.com/fdim, Peter Safranek https://github.com/pe8ter
+
+@types/karma-fixture 
+Copyright (c) 2014 Bill Trikalinos
+
+Browserify v.16.2.3
+Copyright (c) James Halliday
+
+Chai v.4.2.0
+Copyright (c) 2017 Chai.js Assertion Library
+
+Del v.3.0.0
+Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
+
+Gulp v.4.0.0
+Copyright (c) 2013-2018 Blaine Bublitz <blaine.bublitz@gmail.com>, Eric Schoffstall <yo@contra.io> and other contributors
+
+Gulp-rename v.1.2.2
+Copyright 2013 Hector Guillermo Parra Alvarez
+
+Gulp-typescript v.5.0.0-alpha.3
+Copyright Ivo Gabe de Wolff (http://ivogabe.com/)
+
+Gulp-uglify v.3.0.1
+Copyright (c) 2013-2017 Terin Stock 
+
+Husky v.0.14.3
+Copyright (c) 2014 Typicode <typicode@gmail.com>
+
+Jasmine v.3.3.0 
+Copyright (c) 2008-2017 Pivotal Labs
+
+Karma v.3.1.1
+Copyright (C) 2011-2018 Google, Inc.
+
+Karma-browserify v.5.0.5
+Copyright (c) 2014 Nico Rehwaldt
+
+Karma-chai v.0.1.0
+Copyright (c) 2013 Greg Thornton
+
+Karma-chrome-launcher v.2.2.0
+Copyright (c) 2011-2013 Google, Inc.
+
+Karma-coverage v.1.1.2
+Copyright (c) 2011-2013 Google, Inc.
+
+Karma-detect-browsers v.2.3.3
+Copyright (c) 2013-2015 Litixsoft GmbH info@litixsoft.de
+
+Karma-edge-launcher v.0.4.1
+Copyright (c) 2011-2013 Google, Inc.
+
+Karma-firefox-launcher v.1.1.0
+Copyright (c) 2011-2013 Google, Inc.
+
+Karma-fixture v.0.2.6
+Copyright (c) 2014 Bill Trikalinos
+
+Karma-html2js-preprocessor v.1.0.0
+Copyright (c) 2011-2013 Google, Inc.
+
+Karma-ie-launcher v.1.0.0
+Copyright (c) 2011-2013 Google, Inc
+
+Karma-jasmine v.1.0.2
+Copyright (c) 2011-2013 Google, Inc.
+
+Karma-safari-launcher v.1.0.0
+Copyright (c) 2011-2013 Google, Inc.
+
+Lint-staged v. 7.3.0
+Copyright (c) 2016 Andrey Okonetchnikov
+
+Rollup-plugin-typescript2 v.0.4.1
+Copyright (c) 2017 Eugene Zolenko
+
+Rollup-stream v. 1.19.0
+Copyright (c) 2015 Permutator
+
+Ts-node v.7.0.0
+Copyright (c) 2014 Blake Embrey (hello@blakeembrey.com)
+
+Vinyl-source-stream v.2.0.0
+Copyright (c) 2014 Hugh Kennedy
+
+Watchify v.3.11.0
+https://github.com/browserify/watchify/blob/master/LICENSE
+Copyright (c) James Halliday
+
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+Karma-json-fixtures-preprocessor v.0.0.6
+Copyright (c) 2015, Yahoo Inc.  All rights reserved
+Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name of Yahoo Inc. nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission of Yahoo Inc.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Tslint v.5.11.0
+https://github.com/palantir/tslint/blob/master/LICENSE
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
+
