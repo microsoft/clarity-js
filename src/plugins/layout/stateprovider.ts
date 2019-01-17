@@ -172,6 +172,7 @@ function getLayout(element): ILayoutRectangle {
   // from a DOM tree, sometimes results in a 'Unspecified Error'
   // Wrapping this in try/catch is faster than checking whether element is connected to DOM
   let rect = null;
+  let doc = document.documentElement;
   try {
     rect = element.getBoundingClientRect();
   } catch (e) {
@@ -179,9 +180,14 @@ function getLayout(element): ILayoutRectangle {
   }
 
   if (rect) {
+    // getBoundingClientRect returns relative positioning to viewport and therefore needs
+    // addition of window scroll position to get position relative to document
+    // Also: using Math.floor() instead of Math.round() below because in Edge,
+    // getBoundingClientRect returns partial pixel values (e.g. 162.5px) and Chrome already
+    // floors the value (e.g. 162px). Keeping behavior consistent across
     layout = {
-      x: Math.round(rect.left),
-      y: Math.round(rect.top),
+      x: Math.floor(rect.left) + ("pageXOffset" in window ? window.pageXOffset : doc.scrollLeft),
+      y: Math.floor(rect.top) + ("pageYOffset" in window ? window.pageYOffset : doc.scrollTop),
       width: Math.round(rect.width),
       height: Math.round(rect.height)
     };
