@@ -98,13 +98,15 @@ export default class Layout implements IPlugin {
   // them with real data asynchronously (if it takes too long to do at once) by yielding a thread
   // and returning to it later through a set timeout
   private discoverDom() {
+    const discoverTime = getTimestamp();
     traverseNodeTree(document, (node: Node) => {
       let nodeInfo = this.discoverNode(node);
       nodeInfo.state.action = Action.Insert;
       nodeInfo.state.source = Source.Discover;
       addEvent({
         type: this.eventName,
-        state: nodeInfo.state
+        state: nodeInfo.state,
+        time: discoverTime,
       });
     });
     this.checkConsistency({
@@ -241,7 +243,10 @@ export default class Layout implements IPlugin {
     let moves = summary.movedNodes.map(this.processMutation.bind(this, Action.Move));
     let updates = summary.updatedNodes.map(this.processMutation.bind(this, Action.Update));
     let removes = summary.removedNodes.map(this.processMutation.bind(this, Action.Remove));
-    let all = [].concat(inserts, moves, updates, removes);
+    let all: IEventData[] = [].concat(inserts, moves, updates, removes);
+    for (let i = 0; i < all.length; i++) {
+      all[i].time = time;
+    }
     addMultipleEvents(all);
   }
 
