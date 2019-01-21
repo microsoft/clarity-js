@@ -91,20 +91,17 @@ export default class Layout implements IPlugin {
     }
   }
 
-  // Recording full layouts of all elements on the page at once is an expensive operation
-  // and can impact user's experience by hanging the page due to occupying the thread for too long
-  // To avoid this, we only assign indices to all elements and build a ShadowDom with dummy layouts
-  // just to have a valid DOM skeleton. After that, we can come back to dummy layouts and populate
-  // them with real data asynchronously (if it takes too long to do at once) by yielding a thread
-  // and returning to it later through a set timeout
   private discoverDom() {
+    // All 'Discover' events together should be treated as an atomic 'Discover' operation and should have the same timestamp
+    const discoverTime = getTimestamp();
     traverseNodeTree(document, (node: Node) => {
       let nodeInfo = this.discoverNode(node);
       nodeInfo.state.action = Action.Insert;
       nodeInfo.state.source = Source.Discover;
       addEvent({
         type: this.eventName,
-        state: nodeInfo.state
+        state: nodeInfo.state,
+        time: discoverTime,
       });
     });
     this.checkConsistency({
@@ -241,7 +238,13 @@ export default class Layout implements IPlugin {
     let moves = summary.movedNodes.map(this.processMutation.bind(this, Action.Move));
     let updates = summary.updatedNodes.map(this.processMutation.bind(this, Action.Update));
     let removes = summary.removedNodes.map(this.processMutation.bind(this, Action.Remove));
-    let all = [].concat(inserts, moves, updates, removes);
+    let all: IEventData[] = [].concat(inserts, moves, updates, removes);
+
+    // Since we receive batched mutations and reprocess them after, all mutation events from the same batch
+    // should be treated as a single atomic operation, so all of those events should have the same timestamp
+    for (let i = 0; i < all.length; i++) {
+      all[i].time = time;
+    }
     addMultipleEvents(all);
   }
 
