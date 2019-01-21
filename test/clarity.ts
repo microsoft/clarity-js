@@ -1,5 +1,5 @@
 import { start } from "../src/clarity";
-import { IConfig } from "../types/index";
+import { IConfig } from "../types/config";
 
 // Make config uri non-empty, so that Clarity executes send
 // Allow instrumentation events

@@ -1,4 +1,5 @@
-import { IPerformanceResourceTimingState, IPerformanceTimingState, IPlugin } from "../../types/index";
+import { IPlugin } from "../../types/core";
+import { IPerformanceResourceTimingState, IPerformanceTimingState } from "../../types/performance";
 import { config } from "../config";
 import { addEvent } from "../core";
 import { mapProperties } from "../utils";

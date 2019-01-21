@@ -1,7 +1,9 @@
-import { IPlugin, IPointerModule, IPointerState } from "../../types/index";
-import { addEvent, bind } from "../core";
 import * as mouse from "./pointer/mouse";
 import * as touch from "./pointer/touch";
+
+import { IPlugin } from "../../types/core";
+import { IPointerModule, IPointerState } from "../../types/pointer";
+import { addEvent, bind } from "../core";
 
 export default class Pointer implements IPlugin {
   private eventName = "Pointer";

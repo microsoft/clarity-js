@@ -1,12 +1,20 @@
-import { IAddEventMessage, ICompressedBatchMessage, IEvent, Instrumentation,
-  ITimestampedWorkerMessage, IWorkerMessage, IXhrErrorEventState, WorkerMessageType } from "../types/index";
+import * as chai from "chai";
+
+import {
+  IAddEventMessage,
+  ICompressedBatchMessage,
+  ITimestampedWorkerMessage,
+  IWorkerMessage,
+  WorkerMessageType
+} from "../types/compressionworker";
+import { IEvent } from "../types/core";
+import { Instrumentation, IXhrErrorEventState } from "../types/instrumentation";
 import { createCompressionWorker } from "./../src/compressionworker";
 import { config } from "./../src/config";
 import { cleanupFixture, setupFixture } from "./testsetup";
-import MockEventToArray from "./toarray";
 import { getMockEnvelope, getMockEvent, MockEventName, payloadToEvents } from "./utils";
 
-import * as chai from "chai";
+import MockEventToArray from "./toarray";
 
 const InstrumentationEventName = "Instrumentation";
 const WorkerMessageWaitTime = 1000;

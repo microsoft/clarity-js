@@ -1,6 +1,6 @@
-import { ObjectType } from "../../types/index";
-import {  IEvent, IEventArray } from "../../types/index";
+import { IEvent, IEventArray, ObjectType } from "../../types/core";
 import { SchemaManager } from "./schema";
+
 import defaultSchemas from "./schema";
 
 export default function(eventArray: IEventArray, schemas?: SchemaManager): IEvent {

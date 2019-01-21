@@ -1,6 +1,20 @@
-import { Action, IElementLayoutState, IEventData, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo,
-  INodeInfo, InsertRuleHandler, Instrumentation, IPlugin, IShadowDomInconsistentEventState, IShadowDomMutationSummary, IShadowDomNode,
-  IStyleLayoutState, LayoutRoutine, NumberJson, Source } from "../../types/index";
+import { IEventData, IPlugin } from "../../types/core";
+import { Instrumentation, IShadowDomInconsistentEventState } from "../../types/instrumentation";
+import {
+  Action,
+  IElementLayoutState,
+  ILayoutRoutineInfo,
+  ILayoutState,
+  IMutationRoutineInfo,
+  INodeInfo,
+  InsertRuleHandler,
+  IShadowDomMutationSummary,
+  IShadowDomNode,
+  IStyleLayoutState,
+  LayoutRoutine,
+  NumberJson,
+  Source
+} from "../../types/layout";
 import { config } from "./../config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
 import { debug, mask, traverseNodeTree } from "./../utils";

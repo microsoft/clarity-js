@@ -1,4 +1,4 @@
-import { ILayoutState, INodeInfo } from "../../../types/index";
+import { ILayoutState, INodeInfo } from "../../../types/layout";
 import { createLayoutState, getNodeIndex, Tags } from "./stateprovider";
 
 export const ForceMaskAttribute = "data-clarity-mask";

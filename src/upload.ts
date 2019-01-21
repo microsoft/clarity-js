@@ -1,5 +1,5 @@
-import { Instrumentation, IPayload, IPayloadInfo, ITotalByteLimitExceededEventState, IXhrErrorEventState,
-  State, UploadCallback } from "../types/index";
+import { IPayload, IPayloadInfo, State, UploadCallback } from "../types/core";
+import { Instrumentation, ITotalByteLimitExceededEventState, IXhrErrorEventState } from "../types/instrumentation";
 import { config } from "./config";
 import { ClarityAttribute, instrument, state, teardown } from "./core";
 import { debug, getEventId } from "./utils";
