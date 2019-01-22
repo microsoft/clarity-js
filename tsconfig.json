@@ -4,7 +4,6 @@
         "module": "commonjs",
         "moduleResolution": "node",
         "isolatedModules": false,
-        "jsx": "react",
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "declaration": false,
@@ -16,12 +15,13 @@
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
         "outDir": "build/",
-        "types" : ["jasmine", "karma-fixture"]
+        "types" : ["jasmine", "karma-fixture"],
     },
     "include":[
        "src/**/*.ts",
        "test/**/*.ts",
-       "types/**/*.d.ts"
+       "types/**/*.d.ts",
+       "karma/**/*.ts",
     ],
     "compileOnSave": true,
     "buildOnSave": false,
