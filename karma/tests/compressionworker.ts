@@ -1,4 +1,8 @@
-// NOTE: Compression workers started timing out in Chrome Headless, so disabling these tests temporarily
+// NOTE: Compression workers started timing out in Chrome Headless
+// Since there were no changes in functionality, we can assume that this is an infrastructure issue
+// Disabling these tests temporarily to unblock unrelated changes in the pipeline
+//
+// TODO: Resolve flaky test failures
 // GitHub issue: https://github.com/Microsoft/clarity-js/issues/125
 
 // import { createCompressionWorker } from "../../src/compressionworker";
