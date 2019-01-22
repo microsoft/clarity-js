@@ -64,7 +64,9 @@
   },
   "scripts": {
     "init": "npm install && npm install -g gulp && npm install -g gulp-cli",
-    "test:headless": "node_modules/.bin/karma start karma/config.headless.js",
+    "test:headless": "node_modules/.bin/karma start karma/configs/headless.js",
+    "test:chrome": "node_modules/.bin/karma start karma/configs/chrome.js",
+    "test:firefox": "node_modules/.bin/karma start karma/configs/firefox.js",
     "precommit": "lint-staged",
     "tslint": "node_modules/.bin/tslint --project ./",
     "tslint-format": "node_modules/.bin/tslint --fix --project ./ --force"
