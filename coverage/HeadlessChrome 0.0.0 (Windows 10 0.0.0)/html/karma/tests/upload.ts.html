@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for karma\tests\upload.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">karma/tests/</a> upload.ts
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>87/87</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>2/2</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>10/10</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>86/86</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { config } from "../../src/config";
+import * as core from "../../src/core";
+import { getEventType } from "../../src/utils";
+import { Instrumentation, State, UploadCallback } from "../../types/index";
+import { activateCore, cleanupFixture, setupFixture } from "../setup/testsetup";
+import uncompress from "../setup/uncompress";
+import {
+  getMockEnvelope, getMockEvent, observeEvents, postCompressedBatch
+} from "../setup/utils";
+&nbsp;
+import * as chai from "chai";
+let assert = chai.assert;
+&nbsp;
+describe("Data Upload Tests", () =&gt; {
+&nbsp;
+  beforeEach(() =&gt; {
+    setupFixture([]);
+  });
+  afterEach(cleanupFixture);
+&nbsp;
+  it("validates that custom upload handler is invoked when passed through config", (done: DoneFn) =&gt; {
+    let sendCount = 0;
+    config.uploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) =&gt; {
+      sendCount++;
+    };
+&nbsp;
+    let mockEvent = getMockEvent();
+    postCompressedBatch([mockEvent]);
+&nbsp;
+    assert.equal(sendCount, 1);
+    done();
+  });
+&nbsp;
+  it("validates that XhrError is logged for failed requests through the 'onFailure' upload callback ", (done: DoneFn) =&gt; {
+    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) =&gt; {
+      // Suppose XHR was opened and returned a 400 code
+      onFailure(400);
+    };
+&nbsp;
+    let stopObserving = observeEvents();
+    let mockEvent = getMockEvent();
+    postCompressedBatch([mockEvent]);
+&nbsp;
+    let events = stopObserving();
+    assert.equal(events.length, 1);
+    assert.equal(events[0].type, core.InstrumentationEventName);
+    assert.equal(events[0].state.type, Instrumentation.XhrError);
+    assert.equal(events[0].state.requestStatus, 400);
+    done();
+  });
+&nbsp;
+  it("validates that dropped payloads are re-sent through the next request's 'onSuccess' callback", (done: DoneFn) =&gt; {
+    let mockFailure = true;
+    let uploadInvocationCount = 0;
+    let attemptedPayloads: string[] = [];
+&nbsp;
+    // Mock 1 failed request
+    config.uploadHandler = (payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) =&gt; {
+      attemptedPayloads[uploadInvocationCount] = payload;
+      uploadInvocationCount++;
+      if (mockFailure) {
+        onFailure(400);
+        mockFailure = false;
+      } else {
+        onSuccess(200);
+      }
+    };
+&nbsp;
+    // Part 1: Mock an XHR failure, so that dropped payload is stored for re-delivery
+    let stopObserving = observeEvents();
+    let firstMockEventName = "FirstMockEvent";
+    let firstMockEvent = getMockEvent(firstMockEventName);
+    let firstEnvelope = getMockEnvelope(0);
+    postCompressedBatch([firstMockEvent], firstEnvelope);
+&nbsp;
+    // Ensure XHR failure is logged
+    let events = stopObserving();
+    assert.equal(events.length, 1);
+    assert.equal(events[0].type, core.InstrumentationEventName);
+    assert.equal(events[0].state.type, Instrumentation.XhrError);
+    assert.equal(events[0].state.requestStatus, 400);
+&nbsp;
+    // Part 2: Successfully send second payload, which should trigger re-send of the first payload
+    let secondMockEventName = "SecondMockEvent";
+    let secondMockEvent = getMockEvent(secondMockEventName);
+    let secondEnvelope = getMockEnvelope(1);
+    postCompressedBatch([secondMockEvent], secondEnvelope);
+&nbsp;
+    // Upload invocations: First payload, second payload, first payload re-upload
+    assert.equal(attemptedPayloads.length, 3);
+&nbsp;
+    let firstPayload = JSON.parse(uncompress(attemptedPayloads[0]));
+    let secondPayload = JSON.parse(uncompress(attemptedPayloads[1]));
+    let thirdPayload = JSON.parse(uncompress(attemptedPayloads[2]));
+&nbsp;
+    // Verify first payload
+    assert.equal(firstPayload.envelope.sequenceNumber, 0);
+    assert.equal(firstPayload.events.length, 1);
+    assert.equal(getEventType(firstPayload.events[0]), firstMockEventName);
+&nbsp;
+    // Verify second payload
+    assert.equal(secondPayload.envelope.sequenceNumber, 1);
+    assert.equal(secondPayload.events.length, 1);
+    assert.equal(getEventType(secondPayload.events[0]), secondMockEventName);
+&nbsp;
+    // Verify third payload
+    assert.equal(thirdPayload.envelope.sequenceNumber, 0);
+    assert.equal(thirdPayload.events.length, 1);
+    assert.equal(getEventType(thirdPayload.events[0]), firstMockEventName);
+&nbsp;
+    done();
+  });
+&nbsp;
+  it("validates that Clarity tears down and logs instrumentation when total byte limit is exceeded", (done: DoneFn) =&gt; {
+    core.teardown();
+    config.uploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) =&gt; { onSuccess(200); };
+    activateCore();
+&nbsp;
+    assert.equal(core.state, State.Activated);
+&nbsp;
+    let stopObserving = observeEvents("Instrumentation");
+    config.totalLimit = 0;
+    let mockEvent = getMockEvent();
+    postCompressedBatch([mockEvent]);
+&nbsp;
+    let events = stopObserving();
+    assert.equal(core.state, State.Unloaded);
+    assert.equal(events.length, 2);
+    assert.equal(events[0].state.type, Instrumentation.TotalByteLimitExceeded);
+    assert.equal(events[1].state.type, Instrumentation.Teardown);
+    done();
+  });
+&nbsp;
+});
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Jan 21 2019 19:11:04 GMT-0800 (Pacific Standard Time)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

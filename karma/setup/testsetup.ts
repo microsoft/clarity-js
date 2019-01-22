@@ -27,7 +27,6 @@ export function cleanupFixture() {
   fixture.cleanup();
   stop();
   mapProperties(originalConfig, null, true, config);
-  console.log(originalConfig);
   jasmine.clock().uninstall();
 }
 

@@ -10,22 +10,7 @@ module.exports = function (config) {
             { pattern: "src/**/*.ts" },
             { pattern: "karma/setup/**/*.ts" },
             { pattern: "karma/tests/**/*.ts" },
-
-            // DEBUG
-            // { pattern: "karma/setup/testsetup.ts" },
-            // { pattern: "src/config.ts" },
-            // { pattern: "src/utils.ts" },
-            { pattern: "karma/sample_tests/**/*.ts" }
         ],
-
-        // plugins: [
-        //   "karma-typescript",
-        //   "karma-fixture",
-        //   "karma-html2js-preprocessor",
-        //   "karma-json-fixtures-preprocessor",
-        //   "karma-jasmine",
-        //   "karma-chrome-launcher"
-        // ],
 
         preprocessors: {
             "**/*.ts": ["karma-typescript"],

@@ -20,14 +20,14 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">82.61% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>19/23</span>
+        <span class='fraction'>23/23</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">70% </span>
+        <span class="strong">90% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>7/10</span>
+        <span class='fraction'>9/10</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -35,9 +35,9 @@
         <span class='fraction'>2/2</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">82.61% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>19/23</span>
+        <span class='fraction'>23/23</span>
       </div>
     </div>
   </div>
@@ -97,12 +97,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2×</span>
-<span class="cline-any cline-yes">154×</span>
-<span class="cline-any cline-yes">154×</span>
-<span class="cline-any cline-yes">154×</span>
-<span class="cline-any cline-yes">154×</span>
-<span class="cline-any cline-yes">154×</span>
-<span class="cline-any cline-yes">154×</span>
+<span class="cline-any cline-yes">7198×</span>
+<span class="cline-any cline-yes">7198×</span>
+<span class="cline-any cline-yes">7198×</span>
+<span class="cline-any cline-yes">7198×</span>
+<span class="cline-any cline-yes">7198×</span>
+<span class="cline-any cline-yes">7198×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -112,26 +112,26 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">1505×</span>
-<span class="cline-any cline-yes">1300×</span>
+<span class="cline-any cline-yes">76234×</span>
+<span class="cline-any cline-yes">65883×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">205×</span>
-<span class="cline-any cline-yes">205×</span>
-<span class="cline-any cline-yes">205×</span>
-<span class="cline-any cline-yes">205×</span>
-<span class="cline-any cline-yes">1351×</span>
-<span class="cline-any cline-yes">1351×</span>
-<span class="cline-any cline-yes">1351×</span>
+<span class="cline-any cline-yes">10351×</span>
+<span class="cline-any cline-yes">10351×</span>
+<span class="cline-any cline-yes">10348×</span>
+<span class="cline-any cline-yes">10348×</span>
+<span class="cline-any cline-yes">69032×</span>
+<span class="cline-any cline-yes">69032×</span>
+<span class="cline-any cline-yes">69032×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">205×</span>
+<span class="cline-any cline-yes">10351×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { IEvent, IEventArray } from "../../types/index";
 import schemas from "./schema";
@@ -162,17 +162,17 @@ function dataToArray(data: any): any[] {
   }
 &nbsp;
   let dataArray = [];
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (data.constructor === Object) {
+  if (data.constructor === Object) {
     let keys = Object.keys(data);
     for (let i = 0; i &lt; keys.length; i++) {
       let key = keys[i];
       let val = data[key];
       dataArray.push(dataToArray(val));
     }
-  } else <span class="cstat-no" title="statement not covered" >if (data.constructor === Array) {</span>
-<span class="cstat-no" title="statement not covered" >    for (let i = 0; i &lt; data.length; i++) {</span>
-<span class="cstat-no" title="statement not covered" >      let arrayValue = dataToArray(data[i]);</span>
-<span class="cstat-no" title="statement not covered" >      dataArray.push(arrayValue);</span>
+  } else <span class="missing-if-branch" title="else path not taken" >E</span>if (data.constructor === Array) {
+    for (let i = 0; i &lt; data.length; i++) {
+      let arrayValue = dataToArray(data[i]);
+      dataArray.push(arrayValue);
     }
   }
 &nbsp;
@@ -184,7 +184,7 @@ function dataToArray(data: any): any[] {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Jan 21 2019 19:01:37 GMT-0800 (Pacific Standard Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Jan 21 2019 19:11:04 GMT-0800 (Pacific Standard Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>

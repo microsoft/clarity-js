@@ -3,10 +3,10 @@ import * as core from "../../src/core";
 import { getEventType } from "../../src/utils";
 import { Instrumentation, State, UploadCallback } from "../../types/index";
 import { activateCore, cleanupFixture, setupFixture } from "../setup/testsetup";
+import uncompress from "../setup/uncompress";
 import {
   getMockEnvelope, getMockEvent, observeEvents, postCompressedBatch
 } from "../setup/utils";
-import uncompress from "./uncompress";
 
 import * as chai from "chai";
 let assert = chai.assert;

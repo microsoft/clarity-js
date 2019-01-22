@@ -1,5 +1,6 @@
+import * as chai from "chai";
 import compress from "../../src/compress";
-import uncompress from "./uncompress";
+import uncompress from "../setup/uncompress";
 
 let assert = chai.assert;
 

@@ -2,8 +2,8 @@ import { config } from "../../src/config";
 import * as core from "../../src/core";
 import { ICompressedBatchMessage, IEnvelope, IEventArray, Instrumentation, IPayload, State, WorkerMessageType } from "../../types/index";
 import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "../setup/testsetup";
+import uncompress from "../setup/uncompress";
 import { getMockEvent, MockEventName, observeEvents, observeWorkerMessages, payloadToEvents } from "../setup/utils";
-import uncompress from "./uncompress";
 
 import * as chai from "chai";
 let assert = chai.assert;

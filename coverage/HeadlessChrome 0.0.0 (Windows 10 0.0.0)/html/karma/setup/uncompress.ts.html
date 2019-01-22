@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for karma\setup\uncompress.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">karma/setup/</a> uncompress.ts
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">71.77% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>89/124</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">63.04% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>29/46</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>3/3</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">72.73% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>88/121</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line medium'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">1208×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1208×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">260×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1208×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">815×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">815×</span>
+<span class="cline-any cline-yes">815×</span>
+<span class="cline-any cline-yes">815×</span>
+<span class="cline-any cline-yes">815×</span>
+<span class="cline-any cline-yes">5946×</span>
+<span class="cline-any cline-yes">5946×</span>
+<span class="cline-any cline-yes">5946×</span>
+<span class="cline-any cline-yes">984×</span>
+<span class="cline-any cline-yes">984×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5946×</span>
+<span class="cline-any cline-yes">5946×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">815×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">156×</span>
+<span class="cline-any cline-yes">156×</span>
+<span class="cline-any cline-yes">156×</span>
+<span class="cline-any cline-yes">156×</span>
+<span class="cline-any cline-yes">1248×</span>
+<span class="cline-any cline-yes">1248×</span>
+<span class="cline-any cline-yes">1248×</span>
+<span class="cline-any cline-yes">216×</span>
+<span class="cline-any cline-yes">216×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1248×</span>
+<span class="cline-any cline-yes">1248×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">156×</span>
+<span class="cline-any cline-yes">156×</span>
+<span class="cline-any cline-yes">156×</span>
+<span class="cline-any cline-yes">156×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">811×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">811×</span>
+<span class="cline-any cline-yes">809×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">811×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">811×</span>
+<span class="cline-any cline-yes">811×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">811×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">811×</span>
+<span class="cline-any cline-yes">15×</span>
+<span class="cline-any cline-yes">15×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/* Credit: http://pieroxy.net/blog/pages/lz-string/index.html */
+&nbsp;
+// Excluding 3rd party code from tslint
+/* tslint:disable */
+export default function(compressed: string) {
+  // use decompressFromBase64 to parallel the compress function
+  var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (compressed == null) <span class="cstat-no" title="statement not covered" >return "";</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (compressed == "") <span class="cstat-no" title="statement not covered" >return null;</span>
+  var f = String.fromCharCode;
+  var length = compressed.length;
+  var resetValue = 32;
+  var getNextValue = function(index) { return getBaseValue(keyStrBase64, compressed.charAt(index)); }
+  var baseReverseDic = {};
+&nbsp;
+  function getBaseValue(alphabet, character) {
+    if (!baseReverseDic[alphabet]) {
+      baseReverseDic[alphabet] = {};
+      for (var i = 0; i &lt; alphabet.length; i++) {
+        baseReverseDic[alphabet][alphabet.charAt(i)] = i;
+      }
+    }
+    return baseReverseDic[alphabet][character];
+  }
+&nbsp;
+  var dictionary = [],
+    next,
+    enlargeIn = 4,
+    dictSize = 4,
+    numBits = 3,
+    entry = "",
+    result = [],
+    i,
+    w,
+    bits, resb, maxpower, power,
+    c,
+    data = { val: getNextValue(0), position: resetValue, index: 1 };
+&nbsp;
+  for (i = 0; i &lt; 3; i += 1) {
+    dictionary[i] = i;
+  }
+&nbsp;
+  bits = 0;
+  maxpower = Math.pow(2, 2);
+  power = 1;
+  while (power != maxpower) {
+    resb = data.val &amp; data.position;
+    data.position &gt;&gt;= 1;
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (data.position == 0) {
+<span class="cstat-no" title="statement not covered" >      data.position = resetValue;</span>
+<span class="cstat-no" title="statement not covered" >      data.val = getNextValue(data.index++);</span>
+    }
+    bits |= (resb &gt; 0 ? <span class="branch-0 cbranch-no" title="branch not covered" >1 </span>: 0) * power;
+    power &lt;&lt;= 1;
+  }
+&nbsp;
+  switch (next = bits) {
+    case 0:
+      bits = 0;
+      maxpower = Math.pow(2, 8);
+      power = 1;
+      while (power != maxpower) {
+        resb = data.val &amp; data.position;
+        data.position &gt;&gt;= 1;
+        if (data.position == 0) {
+          data.position = resetValue;
+          data.val = getNextValue(data.index++);
+        }
+        bits |= (resb &gt; 0 ? 1 : 0) * power;
+        power &lt;&lt;= 1;
+      }
+      c = f(bits);
+      break;
+<span class="branch-1 cbranch-no" title="branch not covered" >    case 1:</span>
+<span class="cstat-no" title="statement not covered" >      bits = 0;</span>
+<span class="cstat-no" title="statement not covered" >      maxpower = Math.pow(2, 16);</span>
+<span class="cstat-no" title="statement not covered" >      power = 1;</span>
+<span class="cstat-no" title="statement not covered" >      while (power != maxpower) {</span>
+<span class="cstat-no" title="statement not covered" >        resb = data.val &amp; data.position;</span>
+<span class="cstat-no" title="statement not covered" >        data.position &gt;&gt;= 1;</span>
+<span class="cstat-no" title="statement not covered" >        if (data.position == 0) {</span>
+<span class="cstat-no" title="statement not covered" >          data.position = resetValue;</span>
+<span class="cstat-no" title="statement not covered" >          data.val = getNextValue(data.index++);</span>
+        }
+<span class="cstat-no" title="statement not covered" >        bits |= (resb &gt; 0 ? 1 : 0) * power;</span>
+<span class="cstat-no" title="statement not covered" >        power &lt;&lt;= 1;</span>
+      }
+<span class="cstat-no" title="statement not covered" >      c = f(bits);</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+<span class="branch-2 cbranch-no" title="branch not covered" >    case 2:</span>
+<span class="cstat-no" title="statement not covered" >      return "";</span>
+  }
+  dictionary[3] = c;
+  w = c;
+  result.push(c);
+  while (true) {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (data.index &gt; length) {
+<span class="cstat-no" title="statement not covered" >      return "";</span>
+    }
+&nbsp;
+    bits = 0;
+    maxpower = Math.pow(2, numBits);
+    power = 1;
+    while (power != maxpower) {
+      resb = data.val &amp; data.position;
+      data.position &gt;&gt;= 1;
+      if (data.position == 0) {
+        data.position = resetValue;
+        data.val = getNextValue(data.index++);
+      }
+      bits |= (resb &gt; 0 ? 1 : 0) * power;
+      power &lt;&lt;= 1;
+    }
+&nbsp;
+    switch (c = bits) {
+      case 0:
+        bits = 0;
+        maxpower = Math.pow(2, 8);
+        power = 1;
+        while (power != maxpower) {
+          resb = data.val &amp; data.position;
+          data.position &gt;&gt;= 1;
+          if (data.position == 0) {
+            data.position = resetValue;
+            data.val = getNextValue(data.index++);
+          }
+          bits |= (resb &gt; 0 ? 1 : 0) * power;
+          power &lt;&lt;= 1;
+        }
+&nbsp;
+        dictionary[dictSize++] = f(bits);
+        c = dictSize - 1;
+        enlargeIn--;
+        break;
+<span class="branch-1 cbranch-no" title="branch not covered" >      case 1:</span>
+<span class="cstat-no" title="statement not covered" >        bits = 0;</span>
+<span class="cstat-no" title="statement not covered" >        maxpower = Math.pow(2, 16);</span>
+<span class="cstat-no" title="statement not covered" >        power = 1;</span>
+<span class="cstat-no" title="statement not covered" >        while (power != maxpower) {</span>
+<span class="cstat-no" title="statement not covered" >          resb = data.val &amp; data.position;</span>
+<span class="cstat-no" title="statement not covered" >          data.position &gt;&gt;= 1;</span>
+<span class="cstat-no" title="statement not covered" >          if (data.position == 0) {</span>
+<span class="cstat-no" title="statement not covered" >            data.position = resetValue;</span>
+<span class="cstat-no" title="statement not covered" >            data.val = getNextValue(data.index++);</span>
+          }
+<span class="cstat-no" title="statement not covered" >          bits |= (resb &gt; 0 ? 1 : 0) * power;</span>
+<span class="cstat-no" title="statement not covered" >          power &lt;&lt;= 1;</span>
+        }
+<span class="cstat-no" title="statement not covered" >        dictionary[dictSize++] = f(bits);</span>
+<span class="cstat-no" title="statement not covered" >        c = dictSize - 1;</span>
+<span class="cstat-no" title="statement not covered" >        enlargeIn--;</span>
+<span class="cstat-no" title="statement not covered" >        break;</span>
+      case 2:
+        return result.join('');
+    }
+&nbsp;
+    if (enlargeIn == 0) {
+      enlargeIn = Math.pow(2, numBits);
+      numBits++;
+    }
+&nbsp;
+    if (dictionary[c]) {
+      entry = dictionary[c];
+    } else {
+      <span class="missing-if-branch" title="else path not taken" >E</span>if (c === dictSize) {
+        entry = w + w.charAt(0);
+      } else {
+<span class="cstat-no" title="statement not covered" >        return null;</span>
+      }
+    }
+    result.push(entry);
+&nbsp;
+    // Add w+entry[0] to the dictionary.
+    dictionary[dictSize++] = w + entry.charAt(0);
+    enlargeIn--;
+&nbsp;
+    w = entry;
+&nbsp;
+    if (enlargeIn == 0) {
+      enlargeIn = Math.pow(2, numBits);
+      numBits++;
+    }
+&nbsp;
+  }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Jan 21 2019 19:11:04 GMT-0800 (Pacific Standard Time)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
