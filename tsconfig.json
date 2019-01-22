@@ -10,7 +10,7 @@
         "declaration": false,
         "noImplicitAny": false,
         "noImplicitUseStrict": false,
-        "noUnusedLocals": true,
+        "noUnusedLocals": false,
         "removeComments": true,
         "noLib": false,
         "preserveConstEnums": true,
