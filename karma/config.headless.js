@@ -2,11 +2,13 @@
 module.exports = function (config) {
     config.set({
 
+        basePath: "..",
+
         frameworks: ["karma-typescript", "fixture", "jasmine"],
 
         files: [
             { pattern: "karma/fixtures/**/*.html" },
-            { pattern: "karma/fixtures/**/*.json" },
+            { pattern: "package.json" },
             { pattern: "src/**/*.ts" },
             { pattern: "karma/setup/**/*.ts" },
             { pattern: "karma/tests/**/*.ts" },
@@ -18,7 +20,14 @@ module.exports = function (config) {
             "**/*.json": ["json_fixtures"]
         },
 
-        reporters: ["dots", "karma-typescript"],
+        jsonFixturesPreprocessor: {
+            // Strip full file system part from the file path / fixture name
+            stripPrefix: ".+/",
+            // Change the global fixtures variable name
+            variableName: "__test_jsons"
+          },
+
+        reporters: ["progress"],
 
         browsers: ["ChromeHeadless"],
 

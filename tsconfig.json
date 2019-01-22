@@ -14,8 +14,7 @@
         "noLib": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "build/",
-        "types" : ["jasmine", "karma-fixture"],
+        "outDir": "build/"
     },
     "include":[
        "src/**/*.ts",
