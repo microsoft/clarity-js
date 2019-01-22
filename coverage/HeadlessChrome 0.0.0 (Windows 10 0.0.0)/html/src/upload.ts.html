@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src\upload.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">src/</a> upload.ts
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">50.56% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>45/89</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">21.43% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>6/28</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">26.67% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>4/15</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">51.14% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>45/88</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line medium'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Instrumentation, IPayload, IPayloadInfo, ITotalByteLimitExceededEventState, IXhrErrorEventState,
+  State, UploadCallback } from "../types/index";
+import { config } from "./config";
+import { ClarityAttribute, instrument, state, teardown } from "./core";
+import { debug, getEventId } from "./utils";
+&nbsp;
+// Counters
+let sentBytesCount: number;
+let uploadCount: number;
+&nbsp;
+// Storage for payloads that are compressed and are ready to be sent, but are waiting for Clarity trigger.
+// Once trigger is fired, all payloads from this queue will be sent in the order they were generated.
+let payloadQueue: IPayloadInfo[];
+&nbsp;
+// Map from a sequence number to an UploadInfo object for payloads that were attempted to be sent, but were not succesfully delivered yet
+let payloadInfos: { [key: number]: IPayloadInfo };
+&nbsp;
+let reUploadQueue: number[];
+&nbsp;
+export function upload(compressed: string, raw: IPayload, onSuccessCustom?: UploadCallback, onFailureCustom?: UploadCallback) {
+  let uploadHandler = config.uploadHandler || defaultUploadHandler;
+  let sequenceNo = raw.envelope.sequenceNumber;
+  let onSuccess = getOnUploadCompletedHandler(true, sequenceNo, onSuccessCustom);
+  let onFailure = getOnUploadCompletedHandler(false, sequenceNo, onFailureCustom);
+  payloadInfos[sequenceNo] = { compressed, raw, failureCount: 0 };
+  uploadHandler(compressed, onSuccess, onFailure);
+&nbsp;
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (config.debug) {
+<span class="cstat-no" title="statement not covered" >    let rawLength = JSON.stringify(raw).length;</span>
+<span class="cstat-no" title="statement not covered" >    debug(`** Upload #${uploadCount}: Batch #${sequenceNo}`</span>
+          + ` ${Math.round(compressed.length / 1024.0)}KB`
+          + ` (${Math.round(rawLength / 1024.0)}KB Raw). **`);
+  }
+  uploadCount++;
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >export function enqueuePayload(compressed: string, raw: IPayload)</span> {
+<span class="cstat-no" title="statement not covered" >  let payloadInfo: IPayloadInfo = { compressed, raw, failureCount: 0 };</span>
+<span class="cstat-no" title="statement not covered" >  payloadQueue.push(payloadInfo);</span>
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >export function flushPayloadQueue(</span>) {
+<span class="cstat-no" title="statement not covered" >  uploadMultiplePayloads(payloadQueue);</span>
+}
+&nbsp;
+export function resetUploads() {
+  sentBytesCount = 0;
+  uploadCount = 0;
+  payloadQueue = [];
+  payloadInfos = {};
+  reUploadQueue = [];
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function uploadMultiplePayloads(payloads: IPayloadInfo[])</span> {
+<span class="cstat-no" title="statement not covered" >  if (payloads.length &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >    let nextPayload = payloads.shift();</span>
+<span class="cstat-no" title="statement not covered" >    let uploadNextPayload = <span class="fstat-no" title="function not covered" >(status: number)</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      uploadMultiplePayloads(payloads);</span>
+    };
+<span class="cstat-no" title="statement not covered" >    upload(nextPayload.compressed, nextPayload.raw, uploadNextPayload, uploadNextPayload);</span>
+  }
+}
+&nbsp;
+function defaultUploadHandler(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
+  <span class="missing-if-branch" title="else path not taken" >E</span>if (config.uploadUrl.length &gt; 0) {
+    payload = JSON.stringify(payload);
+    let xhr = new XMLHttpRequest();
+    let headers = Object.keys(config.uploadHeaders);
+    xhr.open("POST", config.uploadUrl);
+    for (let i = 0; i &lt; headers.length; i++) {
+      xhr.setRequestHeader(headers[i], config.uploadHeaders[headers[i]]);
+    }
+    xhr.onreadystatechange = <span class="fstat-no" title="function not covered" >() =&gt; { <span class="cstat-no" title="statement not covered" ></span>onXhrReadyStatusChange(xhr, onSuccess, onFailure); </span>};
+    xhr.send(payload);
+  }
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, onFailure: UploadCallback)</span> {
+<span class="cstat-no" title="statement not covered" >  if (xhr.readyState === XMLHttpRequest.DONE) {</span>
+    // HTTP response status documentation:
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+<span class="cstat-no" title="statement not covered" >    if (xhr.status &lt; 200 || xhr.status &gt; 208) {</span>
+<span class="cstat-no" title="statement not covered" >      onFailure(xhr.status);</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >      onSuccess(xhr.status);</span>
+    }
+  }
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function onSuccessDefault(sequenceNumber: number, status: number)</span> {
+<span class="cstat-no" title="statement not covered" >  debug(`SUCCESS: Delivered batch #${sequenceNumber}`);</span>
+<span class="cstat-no" title="statement not covered" >  let sentData = payloadInfos[sequenceNumber];</span>
+<span class="cstat-no" title="statement not covered" >  delete payloadInfos[sequenceNumber];</span>
+<span class="cstat-no" title="statement not covered" >  sentBytesCount += sentData.compressed.length;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (state === State.Activated &amp;&amp; sentBytesCount &gt; config.totalLimit) {</span>
+<span class="cstat-no" title="statement not covered" >    let totalByteLimitExceededEventState: ITotalByteLimitExceededEventState = {</span>
+      type: Instrumentation.TotalByteLimitExceeded,
+      bytes: sentBytesCount
+    };
+<span class="cstat-no" title="statement not covered" >    instrument(totalByteLimitExceededEventState);</span>
+<span class="cstat-no" title="statement not covered" >    teardown();</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  retryFailedUploads();</span>
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function onFailureDefault(sequenceNumber: number, status: number)</span> {
+<span class="cstat-no" title="statement not covered" >  debug(`FAILED: Delivery failed for batch #${sequenceNumber} Status: ${status}`);</span>
+<span class="cstat-no" title="statement not covered" >  let uploadInfo = payloadInfos[sequenceNumber];</span>
+<span class="cstat-no" title="statement not covered" >  uploadInfo.failureCount++;</span>
+<span class="cstat-no" title="statement not covered" >  logXhrError(sequenceNumber, status, uploadInfo);</span>
+<span class="cstat-no" title="statement not covered" >  if (uploadInfo.failureCount &lt;= config.reUploadLimit) {</span>
+<span class="cstat-no" title="statement not covered" >    reUploadQueue.push(sequenceNumber);</span>
+  }
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function logXhrError(sequenceNumber: number, status: number, payloadInfo: IPayloadInfo)</span> {
+<span class="cstat-no" title="statement not covered" >  let events = payloadInfo.raw.events;</span>
+<span class="cstat-no" title="statement not covered" >  let xhrErrorState: IXhrErrorEventState = {</span>
+    type: Instrumentation.XhrError,
+    requestStatus: status,
+    sequenceNumber,
+    compressedLength: payloadInfo.compressed.length,
+    rawLength: JSON.stringify(payloadInfo.raw).length,
+    firstEventId: getEventId(events[0]),
+    lastEventId: getEventId(events[events.length - 1]),
+    attemptNumber: payloadInfo.failureCount
+  };
+<span class="cstat-no" title="statement not covered" >  instrument(xhrErrorState);</span>
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function retryFailedUploads(</span>) {
+<span class="cstat-no" title="statement not covered" >  let payloads: IPayloadInfo[] = [];</span>
+<span class="cstat-no" title="statement not covered" >  while (reUploadQueue.length &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >    let nextPayloadSequenceNo = reUploadQueue.shift();</span>
+<span class="cstat-no" title="statement not covered" >    payloads.push(payloadInfos[nextPayloadSequenceNo]);</span>
+  }
+<span class="cstat-no" title="statement not covered" >  uploadMultiplePayloads(payloads);</span>
+}
+&nbsp;
+function getOnUploadCompletedHandler(success: boolean, sequenceNo: number, customHandler: UploadCallback) {
+  let defaultHandler = success ? onSuccessDefault : onFailureDefault;
+  let sourceImpressionId = document[ClarityAttribute];
+  return <span class="fstat-no" title="function not covered" >(status: number)</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >    let currentImpressionId = document[ClarityAttribute];</span>
+<span class="cstat-no" title="statement not covered" >    if (state === State.Activated &amp;&amp; currentImpressionId === sourceImpressionId) {</span>
+<span class="cstat-no" title="statement not covered" >      defaultHandler(sequenceNo, status);</span>
+<span class="cstat-no" title="statement not covered" >      if (customHandler) {</span>
+<span class="cstat-no" title="statement not covered" >        customHandler(status);</span>
+      }
+    }
+  };
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Jan 21 2019 19:01:37 GMT-0800 (Pacific Standard Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

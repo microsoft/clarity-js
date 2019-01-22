@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src\compressionworker.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">src/</a> compressionworker.ts
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">35.09% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>20/57</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">19.05% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>4/21</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">28.57% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>2/7</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">35.09% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>20/57</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { IAddEventMessage, ICompressedBatchMessage, IEnvelope, IEventArray, IPayload,
+  ITimestampedWorkerMessage, WorkerMessageType } from "../types/index";
+import Compress from "./compress";
+import { config as Config } from "./config";
+&nbsp;
+export function createCompressionWorker(
+  envelope: IEnvelope,
+  onMessage?: (e: MessageEvent) =&gt; void,
+  onError?: (e: ErrorEvent) =&gt; void
+): Worker {
+  let worker = null;
+  <span class="missing-if-branch" title="else path not taken" >E</span>if (Worker) {
+    let workerUrl = createWorkerUrl(envelope);
+    worker = new Worker(workerUrl);
+    worker.onmessage = onMessage || <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+    worker.onerror = onError || null;
+  }
+  return worker;
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function workerContext(</span>) {
+<span class="cstat-no" title="statement not covered" >  let workerGlobalScope = self as any;</span>
+<span class="cstat-no" title="statement not covered" >  let compress = workerGlobalScope.compress;</span>
+<span class="cstat-no" title="statement not covered" >  let config = workerGlobalScope.config;</span>
+<span class="cstat-no" title="statement not covered" >  let envelope: IEnvelope = workerGlobalScope.envelope;</span>
+<span class="cstat-no" title="statement not covered" >  let nextBatchEvents: IEventArray[] = [];</span>
+<span class="cstat-no" title="statement not covered" >  let nextBatchBytes = 0;</span>
+<span class="cstat-no" title="statement not covered" >  let sequence = 0;</span>
+&nbsp;
+  // Edge case: Flag to skip uploading batches consisting of a single XhrError instrumentation event
+  // This helps us avoid the infinite loop in the case when all requests fail (e.g. dropped internet connection)
+  // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
+<span class="cstat-no" title="statement not covered" >  let nextBatchIsSingleXhrErrorEvent: boolean =  false;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.onmessage = <span class="fstat-no" title="function not covered" >(evt: MessageEvent)</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    let message = evt.data;</span>
+<span class="cstat-no" title="statement not covered" >    switch (message.type) {</span>
+      case WorkerMessageType.AddEvent:
+<span class="cstat-no" title="statement not covered" >        let addEventMsg = message as IAddEventMessage;</span>
+<span class="cstat-no" title="statement not covered" >        addEvent(addEventMsg.event, addEventMsg.time, addEventMsg.isXhrErrorEvent);</span>
+<span class="cstat-no" title="statement not covered" >        break;</span>
+      case WorkerMessageType.ForceCompression:
+<span class="cstat-no" title="statement not covered" >        let forceCompressionMsg = message as ITimestampedWorkerMessage;</span>
+<span class="cstat-no" title="statement not covered" >        postNextBatchToCore(forceCompressionMsg.time);</span>
+<span class="cstat-no" title="statement not covered" >        break;</span>
+      default:
+<span class="cstat-no" title="statement not covered" >        break;</span>
+    }
+  };
+&nbsp;
+<span class="fstat-no" title="function not covered" >  function addEvent(event: IEventArray, time: number, isXhrErrorEvent?: boolean)</span>: void {
+<span class="cstat-no" title="statement not covered" >    let eventStr = JSON.stringify(event);</span>
+&nbsp;
+    // If appending new event to next batch would exceed batch limit, then post next batch first
+<span class="cstat-no" title="statement not covered" >    if (nextBatchBytes &gt; 0 &amp;&amp; nextBatchBytes + eventStr.length &gt; config.batchLimit) {</span>
+<span class="cstat-no" title="statement not covered" >      postNextBatchToCore(time);</span>
+    }
+&nbsp;
+    // // Append new event to the next batch
+<span class="cstat-no" title="statement not covered" >    nextBatchIsSingleXhrErrorEvent = (nextBatchEvents.length === 0 &amp;&amp; isXhrErrorEvent);</span>
+<span class="cstat-no" title="statement not covered" >    nextBatchEvents.push(event);</span>
+<span class="cstat-no" title="statement not covered" >    nextBatchBytes += eventStr.length;</span>
+&nbsp;
+    // Even if we just posted next batch, it is possible that a single new event exceeds batch limit by itself, so we need to check again
+<span class="cstat-no" title="statement not covered" >    if (nextBatchBytes &gt;= config.batchLimit) {</span>
+<span class="cstat-no" title="statement not covered" >      postNextBatchToCore(time);</span>
+    }
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  function postNextBatchToCore(time: number)</span>: void {
+<span class="cstat-no" title="statement not covered" >    if (nextBatchBytes &gt; 0 &amp;&amp; !nextBatchIsSingleXhrErrorEvent) {</span>
+<span class="cstat-no" title="statement not covered" >      envelope.sequenceNumber = sequence++;</span>
+<span class="cstat-no" title="statement not covered" >      envelope.time = time;</span>
+<span class="cstat-no" title="statement not covered" >      let raw: IPayload = { envelope, events: nextBatchEvents };</span>
+<span class="cstat-no" title="statement not covered" >      let rawStr = JSON.stringify(raw);</span>
+<span class="cstat-no" title="statement not covered" >      let compressed = compress(rawStr);</span>
+<span class="cstat-no" title="statement not covered" >      nextBatchEvents = [];</span>
+<span class="cstat-no" title="statement not covered" >      nextBatchBytes = 0;</span>
+<span class="cstat-no" title="statement not covered" >      postToCore(compressed, raw);</span>
+    }
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  function postToCore(compressed: string, raw: IPayload)</span>: void {
+<span class="cstat-no" title="statement not covered" >    let message: ICompressedBatchMessage = {</span>
+      type: WorkerMessageType.CompressedBatch,
+      compressedData: compressed,
+      rawData: raw
+    };
+&nbsp;
+    // Post message to the main thread
+<span class="cstat-no" title="statement not covered" >    workerGlobalScope.postMessage(message);</span>
+  }
+}
+&nbsp;
+// Workers are initialized with a URL, pointing to the code which is going to be executed within worker's scope.
+// URL can point to file, however we don't want to load a file with worker's code separately, so we create a Blob
+// with a string containing worker's code. To build such string, we stitch together string representations of
+// all functions and objects that are going to be required within the worker's scope.
+// Once Blob is created, we create a URL pointing to it, which can be passed to worker's constructor.
+function createWorkerUrl(envelope: IEnvelope): string {
+  let workerContextStr = workerContext.toString();
+  let workerStr = workerContextStr.substring(workerContextStr.indexOf("{") + 1, workerContextStr.lastIndexOf("}"));
+  let code = `self.compress=${Compress.toString()};`
+            + `self.config=${JSON.stringify(Config)};`
+            + `self.envelope=${JSON.stringify(envelope)};`
+            + workerStr;
+  let blob = new Blob([code], {type: "application/javascript"});
+  return URL.createObjectURL(blob);
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Jan 21 2019 19:01:37 GMT-0800 (Pacific Standard Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

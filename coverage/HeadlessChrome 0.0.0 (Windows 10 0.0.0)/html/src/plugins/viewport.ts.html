@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src\plugins\viewport.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">src/plugins/</a> viewport.ts
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">90.7% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>39/43</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">48.48% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>16/33</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">88.89% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>8/9</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">90.7% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>39/43</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { IPlugin, IViewportState } from "../../types/index";
+import { addEvent, bind } from "../core";
+&nbsp;
+export default class Viewport implements IPlugin {
+  private eventName = "Viewport";
+  private distanceThreshold = 20;
+  private lastViewportState: IViewportState;
+  private body = document.body;
+  private documentElement = document.documentElement;
+&nbsp;
+  public activate() {
+    this.processState(this.getViewport("discover"));
+    bind(window, "scroll", this.viewportHandler.bind(this));
+    bind(window, "resize", this.viewportHandler.bind(this));
+    bind(window, "pageshow", this.viewportHandler.bind(this));
+    bind(window, "pagehide", this.viewportHandler.bind(this));
+    bind(document, "visibilitychange", this.viewportHandler.bind(this));
+  }
+&nbsp;
+  public teardown() {
+    // Nothing to teardown
+  }
+&nbsp;
+  public reset(): void {
+    this.lastViewportState = null;
+  }
+&nbsp;
+  private viewportHandler(evt: Event) {
+    let viewportState = this.getViewport(evt.type);
+    this.processState(viewportState);
+  }
+&nbsp;
+  private getViewport(type: string): IViewportState {
+    let viewport: IViewportState = {
+      viewport: {
+        x: "pageXOffset" in window ? window.pageXOffset : <span class="branch-1 cbranch-no" title="branch not covered" >this.documentElement.scrollLeft,</span>
+        y: "pageYOffset" in window ? window.pageYOffset : <span class="branch-1 cbranch-no" title="branch not covered" >this.documentElement.scrollTop,</span>
+        width: "innerWidth" in window ? window.innerWidth : <span class="branch-1 cbranch-no" title="branch not covered" >this.documentElement.clientWidth,</span>
+        height: "innerHeight" in window ? window.innerHeight : <span class="branch-1 cbranch-no" title="branch not covered" >this.documentElement.clientHeight</span>
+      },
+      document: {
+        width: this.body ? this.body.clientWidth : <span class="branch-1 cbranch-no" title="branch not covered" >null,</span>
+        height: this.getDocumentHeight()
+      },
+      dpi: "devicePixelRatio" in window ? window.devicePixelRatio : <span class="branch-1 cbranch-no" title="branch not covered" >-1,</span>
+      visibility: "visibilityState" in document ? document.visibilityState : <span class="branch-1 cbranch-no" title="branch not covered" >"default",</span>
+      event: type
+    };
+    return viewport;
+  }
+&nbsp;
+  // body.clientHeight gets set to viewport height when doctype is not set for a document.
+  // The more accurate way to calculate browser height is to get the maximum of body and documentElement heights
+  private getDocumentHeight(): number {
+     let bodyClientHeight = this.body ? this.body.clientHeight : <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+     let bodyScrollHeight = this.body ? this.body.scrollHeight : <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+     let bodyOffsetHeight = this.body ? this.body.offsetHeight : <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+     let documentClientHeight = this.documentElement ? this.documentElement.clientHeight : <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+     let documentScrollHeight = this.documentElement ? this.documentElement.scrollHeight : <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+     let documentOffsetHeight = this.documentElement ? this.documentElement.offsetHeight : <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+     let documentHeight = Math.max(bodyClientHeight, bodyScrollHeight, bodyOffsetHeight,
+       documentClientHeight, documentScrollHeight, documentOffsetHeight);
+     return documentHeight;
+  }
+&nbsp;
+  private processState(state: IViewportState) {
+    let recordState = true;
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (state.event === "scroll"
+      &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >this.lastViewportState !== null</span>
+      &amp;&amp; <span class="branch-2 cbranch-no" title="branch not covered" >!this.checkDistance(this.lastViewportState, state))</span> {
+<span class="cstat-no" title="statement not covered" >      recordState = false;</span>
+    }
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (recordState) {
+      this.lastViewportState = state;
+      addEvent({type: this.eventName, state});
+    }
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  private checkDistance(stateOne: IViewportState, stateTwo: IViewportState)</span> {
+<span class="cstat-no" title="statement not covered" >    let dx = stateOne.viewport.x - stateTwo.viewport.x;</span>
+<span class="cstat-no" title="statement not covered" >    let dy = stateOne.viewport.y - stateTwo.viewport.y;</span>
+<span class="cstat-no" title="statement not covered" >    return (dx * dx + dy * dy &gt; this.distanceThreshold * this.distanceThreshold);</span>
+  }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Jan 21 2019 19:01:37 GMT-0800 (Pacific Standard Time)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
