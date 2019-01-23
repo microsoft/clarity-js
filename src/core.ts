@@ -1,7 +1,7 @@
 import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, IClarityFields,
   ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData,
-  IInstrumentationEventState, IMissingFeatureEventState, Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage,
-  ITriggerState, State, WorkerMessageType } from "../types/index";
+  IInstrumentationEventState, IMarkEventState, IMissingFeatureEventState, Instrumentation, IPayload, IPlugin,
+  ITimestampedWorkerMessage, ITriggerState, State, WorkerMessageType
 } from "../types/index";
 import compress from "./compress";
 import { createCompressionWorker } from "./compressionworker";
@@ -12,7 +12,7 @@ import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.2.8";
+export const version = "0.2.9";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const MarkEventName = "Mark";
