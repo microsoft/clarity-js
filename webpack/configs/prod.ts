@@ -4,6 +4,8 @@ import * as merge from "webpack-merge";
 
 import CommonConfig from "./base";
 
+// Webpack configuration docs:
+// https://webpack.js.org/configuration
 const ProdConfig: webpack.Configuration = {
 
     mode: "production",
@@ -12,18 +14,16 @@ const ProdConfig: webpack.Configuration = {
         filename: "clarity.min.js"
     },
 
-    plugins: [
-        new webpack.DefinePlugin({
-            "process.env.NODE_ENV": JSON.stringify("production")
-        })
-    ],
-
     optimization: {
         minimizer: [
             new UglifyJsPlugin({
                 cache: false
             })
         ]
+    },
+
+    performance: {
+        hints: false
     },
 
     stats: {

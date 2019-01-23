@@ -3,6 +3,8 @@ import * as merge from "webpack-merge";
 
 import CommonConfig from "./base";
 
+// Webpack configuration docs:
+// https://webpack.js.org/configuration
 const DevConfig: webpack.Configuration = {
 
     mode: "development",
