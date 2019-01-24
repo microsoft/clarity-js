@@ -23,10 +23,12 @@ const ProdConfig: webpack.Configuration = {
     },
 
     performance: {
+        // Debug output - not needed in production
         hints: false
     },
 
     stats: {
+        // Debug output - not needed in production
         warnings: false
     }
 };

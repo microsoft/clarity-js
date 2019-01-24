@@ -65,7 +65,8 @@
   },
   "scripts": {
     "init": "npm install && npm install -g gulp && npm install -g gulp-cli",
-    "build": "gulp build && npm run build:bundle && npm run build:bundle:dev",
+    "build": "gulp build && npm run build:bundle",
+    "build:dev": "gulp build && npm run build:bundle:dev",
     "build:bundle": "node_modules/.bin/webpack --config webpack/configs/prod.ts",
     "build:bundle:dev": "node_modules/.bin/webpack --config webpack/configs/dev.ts",
     "precommit": "lint-staged",
