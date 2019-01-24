@@ -66,7 +66,7 @@ export function traverseNodeTree(root: Node, processingFunc: (node: Node) => voi
   let queue = [root];
   while (queue.length > 0) {
     let next = queue.shift();
-    let nextChild = next.firstChild;
+    let nextChild: Node = next.firstChild;
     while (nextChild) {
       queue.push(nextChild);
       nextChild = nextChild.nextSibling;

@@ -302,8 +302,8 @@ export class ShadowDom {
 
   private isConstentSubtree(node: Node, shadowNode: IShadowDomNode): boolean {
     let isConsistent = this.isConsistentNode(node, shadowNode);
-    let nextChild = node.firstChild;
-    let nextShadowChild = shadowNode.firstChild;
+    let nextChild: Node = node.firstChild;
+    let nextShadowChild: Node = shadowNode.firstChild;
     while (isConsistent) {
       if (nextChild && nextShadowChild) {
         isConsistent = this.isConstentSubtree(nextChild, nextShadowChild as IShadowDomNode);
@@ -332,7 +332,7 @@ export class ShadowDom {
         // Process children
         // We use insertBefore to insert nodes into the shadowDom, so the right sibling needs to be inserted
         // before the left sibling. For that reason we process children from last to first (right to left)
-        let nextChild = addedNode.lastChild;
+        let nextChild: Node = addedNode.lastChild;
         while (nextChild) {
           this.applyInsert(nextChild, addedNode, nextChild.previousSibling, nextChild.nextSibling, true);
           nextChild = nextChild.previousSibling;
