@@ -1,12 +1,6 @@
 import {
-  IAttributes,
-  IDoctypeLayoutState,
-  IElementLayoutState,
-  IIgnoreLayoutState,
-  ILayoutRectangle,
-  ILayoutState,
-  IStyleLayoutState,
-  ITextLayoutState
+  IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState,
+  ILayoutRectangle, ILayoutState, IStyleLayoutState, ITextLayoutState
 } from "../../../types/layout";
 import { config } from "../../config";
 import { mask } from "../../utils";

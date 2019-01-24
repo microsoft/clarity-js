@@ -1,11 +1,7 @@
 import * as chai from "chai";
 
 import {
-  IAddEventMessage,
-  ICompressedBatchMessage,
-  ITimestampedWorkerMessage,
-  IWorkerMessage,
-  WorkerMessageType
+  IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, IWorkerMessage, WorkerMessageType
 } from "../types/compressionworker";
 import { IEvent } from "../types/core";
 import { Instrumentation, IXhrErrorEventState } from "../types/instrumentation";

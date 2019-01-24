@@ -1,23 +1,10 @@
 import { IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, WorkerMessageType } from "../types/compressionworker";
 import {
-  IBindingContainer,
-  IClarityFields,
-  IEnvelope,
-  IEvent,
-  IEventArray,
-  IEventBindingPair,
-  IEventData,
-  IPayload,
-  IPlugin,
-  State
+  IBindingContainer, IClarityFields, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IPayload, IPlugin, State
 } from "../types/core";
 import {
-  IClarityActivateErrorState,
-  IClarityDuplicatedEventState,
-  IInstrumentationEventState,
-  IMissingFeatureEventState,
-  Instrumentation,
-  ITriggerState
+  IClarityActivateErrorState, IClarityDuplicatedEventState, IInstrumentationEventState,
+  IMissingFeatureEventState, Instrumentation, ITriggerState
 } from "../types/instrumentation";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
