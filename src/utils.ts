@@ -1,4 +1,5 @@
-import { IClarityAssertFailedEventState, IEventArray, Instrumentation } from "../types/index";
+import { IEventArray } from "../types/core";
+import { IClarityAssertFailedEventState, Instrumentation } from "../types/instrumentation";
 import { config } from "./config";
 import { instrument } from "./core";
 

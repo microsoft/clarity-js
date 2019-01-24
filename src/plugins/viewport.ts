@@ -1,4 +1,5 @@
-import { IPlugin, IViewportState } from "../../types/index";
+import { IPlugin } from "../../types/core";
+import { IViewportState } from "../../types/viewport";
 import { addEvent, bind } from "../core";
 
 export default class Viewport implements IPlugin {

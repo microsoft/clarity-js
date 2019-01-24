@@ -1,14 +1,15 @@
-import { config } from "../src/config";
-import * as core from "../src/core";
-import { getEventType } from "../src/utils";
-import { Instrumentation, State, UploadCallback } from "../types/index";
-import { activateCore, cleanupFixture, setupFixture } from "./testsetup";
-import uncompress from "./uncompress";
-import {
-  getMockEnvelope, getMockEvent, observeEvents, postCompressedBatch
-} from "./utils";
-
 import * as chai from "chai";
+import * as core from "../src/core";
+
+import uncompress from "./uncompress";
+
+import { config } from "../src/config";
+import { getEventType } from "../src/utils";
+import { State, UploadCallback } from "../types/core";
+import { Instrumentation } from "../types/instrumentation";
+import { activateCore, cleanupFixture, setupFixture } from "./testsetup";
+import { getMockEnvelope, getMockEvent, observeEvents, postCompressedBatch } from "./utils";
+
 let assert = chai.assert;
 
 describe("Data Upload Tests", () => {

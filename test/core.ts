@@ -1,11 +1,15 @@
-import { config } from "../src/config";
+import * as chai from "chai";
 import * as core from "../src/core";
-import { ICompressedBatchMessage, IEnvelope, IEventArray, Instrumentation, IPayload, State, WorkerMessageType } from "../types/index";
-import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
+
 import uncompress from "./uncompress";
+
+import { config } from "../src/config";
+import { ICompressedBatchMessage, WorkerMessageType } from "../types/compressionworker";
+import { IEnvelope, IEventArray, IPayload, State } from "../types/core";
+import { Instrumentation } from "../types/instrumentation";
+import { activateCore, cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
 import { getMockEvent, MockEventName, observeEvents, observeWorkerMessages, payloadToEvents } from "./utils";
 
-import * as chai from "chai";
 let assert = chai.assert;
 
 describe("Core Tests", () => {

@@ -1,9 +1,11 @@
+import * as chai from "chai";
+
 import FromArray from "../src/converters/fromarray";
 import ToArray from "../src/converters/toarray";
-import { IEvent } from "../types/index";
 
-import * as chai from "chai";
+import { IEvent } from "../types/core";
 import { getMockEvent } from "./utils";
+
 let assert = chai.assert;
 
 describe("Data Conversion Tests", () => {

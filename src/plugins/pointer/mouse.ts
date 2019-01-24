@@ -1,4 +1,4 @@
-import { IPointerState } from "../../../types/index";
+import { IPointerState } from "../../../types/pointer";
 import { NodeIndex } from "../layout/stateprovider";
 
 // Accessing any evt property can sometimes (rarely) throw exception "Permission denied to access property..."
