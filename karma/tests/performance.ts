@@ -1,9 +1,9 @@
-import { config } from "../src/config";
-import { cleanupFixture, getSentEvents, setupFixture } from "./testsetup";
-import { getEventsByType, observeEvents } from "./utils";
+import { config } from "../../src/config";
+import { cleanupFixture, getSentEvents, setupFixture } from "../setup/testsetup";
+import { getEventsByType, observeEvents } from "../setup/utils";
 
 import * as chai from "chai";
-import { ResourceTimingEventType } from "../src/plugins/performance";
+import { ResourceTimingEventType } from "../../src/plugins/performance";
 
 let assert = chai.assert;
 let resourceTimingEventName = "ResourceTiming";

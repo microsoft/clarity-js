@@ -1,3 +1,7 @@
+import compress from "./compress";
+import EventToArray from "./converters/toarray";
+import getPlugin from "./plugins";
+
 import { IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, WorkerMessageType } from "../types/compressionworker";
 import {
   IBindingContainer, IClarityFields, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IPayload, IPlugin, State
@@ -11,10 +15,6 @@ import { config } from "./config";
 import { resetSchemas } from "./converters/schema";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
-
-import compress from "./compress";
-import EventToArray from "./converters/toarray";
-import getPlugin from "./plugins";
 
 export const version = "0.2.8";
 export const ClarityAttribute = "clarity-iid";

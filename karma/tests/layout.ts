@@ -1,14 +1,14 @@
 import * as chai from "chai";
-import * as core from "../src/core";
+import * as core from "../../src/core";
 
-import { config } from "../src/config";
-import { ForceMaskAttribute } from "../src/plugins/layout/nodeinfo";
-import { NodeIndex, Tags } from "../src/plugins/layout/stateprovider";
-import { mask } from "../src/utils";
-import { IEvent } from "../types/core";
-import { Action, Source } from "../types/layout";
-import { activateCore, cleanupFixture, setupFixture } from "./testsetup";
-import { observeEvents } from "./utils";
+import { config } from "../../src/config";
+import { ForceMaskAttribute } from "../../src/plugins/layout/nodeinfo";
+import { NodeIndex, Tags } from "../../src/plugins/layout/stateprovider";
+import { mask } from "../../src/utils";
+import { IEvent } from "../../types/core";
+import { Action, Source } from "../../types/layout";
+import { activateCore, cleanupFixture, setupFixture } from "../setup/testsetup";
+import { observeEvents } from "../setup/utils";
 
 let eventName = "Layout";
 let assert = chai.assert;

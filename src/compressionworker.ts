@@ -1,8 +1,8 @@
+import Compress from "./compress";
+
 import { IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, WorkerMessageType } from "../types/compressionworker";
 import { IEnvelope, IEventArray, IPayload } from "../types/core";
 import { config as Config } from "./config";
-
-import Compress from "./compress";
 
 export function createCompressionWorker(
   envelope: IEnvelope,

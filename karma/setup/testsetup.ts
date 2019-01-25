@@ -1,11 +1,11 @@
 import EventFromArray from "./fromarray";
 
-import { start, stop } from "../src/clarity";
-import { config } from "../src/config";
-import { mapProperties } from "../src/utils";
-import { IAddEventMessage, IWorkerMessage, WorkerMessageType } from "../types/compressionworker";
-import { IConfig } from "../types/config";
-import { IEvent } from "../types/core";
+import { start, stop } from "../../src/clarity";
+import { config } from "../../src/config";
+import { mapProperties } from "../../src/utils";
+import { IAddEventMessage, IWorkerMessage, WorkerMessageType } from "../../types/compressionworker";
+import { IConfig } from "../../types/config";
+import { IEvent } from "../../types/core";
 import { testConfig } from "./clarity";
 
 declare var fixture;
@@ -16,12 +16,12 @@ let workerPostMessageSpy: jasmine.Spy = null;
 let originalConfig: IConfig = config;
 
 export function setupFixture(plugins?: string[]) {
-  fixture.setBase("test");
+  // Relative to karma config location
+  fixture.setBase("karma/fixtures");
   fixture.load("clarity.fixture.html");
   jasmine.clock().install();
 
   workerPostMessageSpy = spyOn(Worker.prototype, "postMessage").and.callFake(mockWorkerOnMessage);
-  originalConfig = mapProperties(config, null, true);
   testConfig.plugins = plugins || config.plugins;
   activateCore(testConfig);
 }

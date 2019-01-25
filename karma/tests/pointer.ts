@@ -1,6 +1,6 @@
-import { getTimestamp } from "../src/core";
-import { cleanupFixture, setupFixture } from "./testsetup";
-import { observeEvents } from "./utils";
+import { getTimestamp } from "../../src/core";
+import { cleanupFixture, setupFixture } from "../setup/testsetup";
+import { observeEvents } from "../setup/utils";
 
 import * as chai from "chai";
 

@@ -1,22 +1,22 @@
 import * as chai from "chai";
 
+import MockEventToArray from "../setup/toarray";
+
+import { createCompressionWorker } from "../../src/compressionworker";
+import { config } from "../../src/config";
 import {
   IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, IWorkerMessage, WorkerMessageType
-} from "../types/compressionworker";
-import { IEvent } from "../types/core";
-import { Instrumentation, IXhrErrorEventState } from "../types/instrumentation";
-import { createCompressionWorker } from "./../src/compressionworker";
-import { config } from "./../src/config";
-import { cleanupFixture, setupFixture } from "./testsetup";
-import { getMockEnvelope, getMockEvent, MockEventName, payloadToEvents } from "./utils";
-
-import MockEventToArray from "./toarray";
+} from "../../types/compressionworker";
+import { IEvent } from "../../types/core";
+import { Instrumentation, IXhrErrorEventState } from "../../types/instrumentation";
+import { cleanupFixture, setupFixture } from "../setup/testsetup";
+import { getMockEnvelope, getMockEvent, MockEventName, payloadToEvents } from "../setup/utils";
 
 const InstrumentationEventName = "Instrumentation";
 const WorkerMessageWaitTime = 1000;
 let assert = chai.assert;
 
-describe("Compression Worker Tests", () => {
+xdescribe("Compression Worker Tests", () => {
   let workerMessages: IWorkerMessage[] = [];
   let testFailureTimeout: number = null;
   let processMessage: (message: IWorkerMessage) => void = null;

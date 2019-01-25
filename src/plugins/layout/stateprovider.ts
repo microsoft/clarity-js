@@ -6,7 +6,6 @@ import { config } from "../../config";
 import { mask } from "../../utils";
 
 export const NodeIndex = "clarity-index";
-const DefaultAttributeMaskList = ["value", "placeholder", "alt", "title"];
 
 export enum Tags {
   Meta = "META",
@@ -24,6 +23,8 @@ enum Styles {
   OverflowY = "overflowY",
   Visibility = "visibility"
 }
+
+const DefaultAttributeMaskList = ["value", "placeholder", "alt", "title"];
 
 let defaultColor: string;
 let attributeMaskList: string[];

@@ -1,12 +1,12 @@
 
-import compress from "../src/compress";
+import compress from "../../src/compress";
 import EventFromArray from "./fromarray";
 import EventToArray from "./toarray";
 
-import { onWorkerMessage } from "../src/core";
-import { guid } from "../src/utils";
-import { ICompressedBatchMessage, IWorkerMessage, WorkerMessageType } from "../types/compressionworker";
-import { IEnvelope, IEvent, IEventArray, IPayload } from "../types/core";
+import { onWorkerMessage } from "../../src/core";
+import { guid } from "../../src/utils";
+import { ICompressedBatchMessage, IWorkerMessage, WorkerMessageType } from "../../types/compressionworker";
+import { IEnvelope, IEvent, IEventArray, IPayload } from "../../types/core";
 import { getSentEvents, getWorkerMessages } from "./testsetup";
 
 export const MockEventName = "ClarityTestMockEvent";

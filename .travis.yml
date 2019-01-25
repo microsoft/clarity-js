@@ -6,4 +6,4 @@ before_script:
   - npm install -g gulp gulp-cli
 script:
   - npm run build
-  - gulp coverage
+  - npm run test:headless

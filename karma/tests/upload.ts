@@ -1,14 +1,14 @@
 import * as chai from "chai";
-import * as core from "../src/core";
+import * as core from "../../src/core";
 
-import uncompress from "./uncompress";
+import uncompress from "../setup/uncompress";
 
-import { config } from "../src/config";
-import { getEventType } from "../src/utils";
-import { State, UploadCallback } from "../types/core";
-import { Instrumentation } from "../types/instrumentation";
-import { activateCore, cleanupFixture, setupFixture } from "./testsetup";
-import { getMockEnvelope, getMockEvent, observeEvents, postCompressedBatch } from "./utils";
+import { config } from "../../src/config";
+import { getEventType } from "../../src/utils";
+import { State, UploadCallback } from "../../types/core";
+import { Instrumentation } from "../../types/instrumentation";
+import { activateCore, cleanupFixture, setupFixture } from "../setup/testsetup";
+import { getMockEnvelope, getMockEvent, observeEvents, postCompressedBatch } from "../setup/utils";
 
 let assert = chai.assert;
 

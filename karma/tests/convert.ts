@@ -1,10 +1,10 @@
 import * as chai from "chai";
 
-import FromArray from "../src/converters/fromarray";
-import ToArray from "../src/converters/toarray";
+import FromArray from "../../src/converters/fromarray";
+import ToArray from "../../src/converters/toarray";
 
-import { IEvent } from "../types/core";
-import { getMockEvent } from "./utils";
+import { IEvent } from "../../types/core";
+import { getMockEvent } from "../setup/utils";
 
 let assert = chai.assert;
 
