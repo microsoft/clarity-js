@@ -64,6 +64,7 @@
     "test": "karma start karma/configs/headless.js",
     "test:chrome": "karma start karma/configs/chrome.js",
     "test:firefox": "karma start karma/configs/firefox.js",
+    "test:ie": "karma start karma/configs/ie.js",
     "tslint": "tslint --project ./",
     "tslint:fix": "tslint --fix --project ./ --force",
     "precommit": "lint-staged"

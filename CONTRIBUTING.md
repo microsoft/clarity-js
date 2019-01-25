@@ -59,26 +59,25 @@ sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
 
 ### Starting Clarity
 
-Go to the project root directory, and run the command to obtain dependencies and configure repository:
+Install yarn package manager globally on your machine
 ```
-npm run init
+npm i -g yarn
 ```
 
 To build the project:
 ```
-gulp build
-```
-
-To run tests, coverage and complexity analysis:
-```
-gulp test
-gulp coverage
-npm run complexity
+yarn build      // outputs minified bundle
+yarn build:dev  // outputs original code
 ```
 
 To check code format:
 ```
-npm run tslint
+yarn tslint
+```
+
+To fix all autofixable format issues:
+```
+yarn tslint:fix
 ```
 
 On Ubuntu, if you run into errors, it may be because you are missing the libfontconfig package
@@ -86,11 +85,25 @@ On Ubuntu, if you run into errors, it may be because you are missing the libfont
 sudo apt-get install libfontconfig
 ```
 
+### Testing Clarity
+
+To run production tests in headless chrome browser:
+```
+yarn test
+```
+
+To run tests in alternative browsers:
+```
+yarn test:chrome
+yarn test:firefox
+yarn test:ie
+```
+
 ### Text Editor
 
 Recommended text editor is Visual Studio Code, but if you prefer a different text editor, feel free to use it.
 
-Download Visual Studio Code:
+Download Visual Studio Code
 ```
 https://code.visualstudio.com/download
 ```
@@ -109,19 +122,7 @@ For Visual Studio Code, you can install the TSLint plugin from the Visual Studio
 https://marketplace.visualstudio.com/items?itemName=eg2.tslint
 ```
 
-Note: You might have to install tslint globally in order for it to work with the Visual Studio Code plugin:
+Note: You might have to install tslint and typescript globally in order for it to work with the Visual Studio Code plugin:
 ```
-npm install -g tslint typescript
-```
-
-### Clarity Tests
-
-Run a quick test validation in using PhantomJS:
-```
-gulp coverage
-```
-
-Debug unit tests on your machine:
-```
-gulp test-debug
+yarn add -g tslint typescript
 ```
