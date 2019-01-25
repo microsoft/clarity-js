@@ -33,10 +33,7 @@
     "awesome-typescript-loader": "^5.2.1",
     "browserify": "^16.2.3",
     "chai": "^4.2.0",
-    "del": "^3.0.0",
     "del-cli": "^1.1.0",
-    "gulp": "^4.0.0",
-    "gulp-typescript": "^5.0.0",
     "husky": "^0.14.3",
     "jasmine": "^3.3.1",
     "jasmine-core": "^3.3.0",
@@ -55,7 +52,7 @@
     "karma-jasmine": "^1.0.2",
     "karma-json-fixtures-preprocessor": "0.0.6",
     "karma-safari-launcher": "^1.0.0",
-    "karma-typescript": "^3.0.13",
+    "karma-typescript": "^4.0.0-beta.3",
     "lint-staged": "^7.3.0",
     "ts-node": "^7.0.0",
     "tslint": "^5.11.0",
@@ -67,17 +64,15 @@
     "webpack-merge": "^4.2.1"
   },
   "scripts": {
-    "init": "npm install && npm install -g gulp && npm install -g gulp-cli",
-    "build": "gulp build && npm run build:bundle",
-    "build:dev": "gulp build && npm run build:bundle:dev",
-    "build:bundle": "node_modules/.bin/webpack --config webpack/configs/prod.ts",
-    "build:bundle:dev": "node_modules/.bin/webpack --config webpack/configs/dev.ts",
+    "build": "node_modules/.bin/webpack --config webpack/configs/prod.ts",
+    "build:dev": "node_modules/.bin/webpack --config webpack/configs/dev.ts",
+    "build:clean": "del-cli build/*",
     "test:headless": "node_modules/.bin/karma start karma/configs/headless.js",
     "test:chrome": "node_modules/.bin/karma start karma/configs/chrome.js",
     "test:firefox": "node_modules/.bin/karma start karma/configs/firefox.js",
-    "precommit": "lint-staged",
     "tslint": "node_modules/.bin/tslint --project ./",
-    "tslint-format": "node_modules/.bin/tslint --fix --project ./ --force"
+    "tslint:fix": "node_modules/.bin/tslint --fix --project ./ --force",
+    "precommit": "lint-staged"
   },
   "lint-staged": {
     "*ts": [

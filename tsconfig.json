@@ -3,7 +3,7 @@
         "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node",
-        "lib": ["es5", "es6", "dom"],
+        "lib": ["es2015", "dom"],
         "isolatedModules": false,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
@@ -14,17 +14,13 @@
         "removeComments": true,
         "noLib": false,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true,
-        "outDir": "build/",
-        "types" : ["jasmine", "karma-fixture"]
+        "suppressImplicitAnyIndexErrors": true
     },
     "include":[
        "src/**/*.ts",
        "types/**/*.d.ts",
        "karma/**/*.ts",
     ],
-    "compileOnSave": true,
-    "buildOnSave": false,
     "atom": {
         "rewriteTsconfig": false
     }
