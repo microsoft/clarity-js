@@ -58,14 +58,14 @@
     "webpack-merge": "^4.2.1"
   },
   "scripts": {
-    "build": "node_modules/.bin/webpack --config webpack/configs/prod.ts",
-    "build:dev": "node_modules/.bin/webpack --config webpack/configs/dev.ts",
+    "build": "webpack --config webpack/configs/prod.ts",
+    "build:dev": "webpack --config webpack/configs/dev.ts",
     "build:clean": "del-cli build/*",
-    "test": "node_modules/.bin/karma start karma/configs/headless.js",
-    "test:chrome": "node_modules/.bin/karma start karma/configs/chrome.js",
-    "test:firefox": "node_modules/.bin/karma start karma/configs/firefox.js",
-    "tslint": "node_modules/.bin/tslint --project ./",
-    "tslint:fix": "node_modules/.bin/tslint --fix --project ./ --force",
+    "test": "karma start karma/configs/headless.js",
+    "test:chrome": "karma start karma/configs/chrome.js",
+    "test:firefox": "karma start karma/configs/firefox.js",
+    "tslint": "tslint --project ./",
+    "tslint:fix": "tslint --fix --project ./ --force",
     "precommit": "lint-staged"
   },
   "lint-staged": {
