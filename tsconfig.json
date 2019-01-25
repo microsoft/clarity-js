@@ -3,6 +3,7 @@
         "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node",
+        "lib": ["es5", "es6", "dom"],
         "isolatedModules": false,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
@@ -14,7 +15,8 @@
         "noLib": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "build/"
+        "outDir": "build/",
+        "types" : ["jasmine", "karma-fixture"]
     },
     "include":[
        "src/**/*.ts",

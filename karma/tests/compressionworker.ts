@@ -1,19 +1,16 @@
-// NOTE: Compression workers started timing out in Chrome Headless
-// Since there were no changes in functionality, we can assume that this is an infrastructure issue
-// Disabling these tests temporarily to unblock unrelated changes in the pipeline
+import * as chai from "chai";
 
-// TODO: Resolve flaky test failures
-// GitHub issue: https://github.com/Microsoft/clarity-js/issues/125
+import MockEventToArray from "../setup/toarray";
 
 import { createCompressionWorker } from "../../src/compressionworker";
 import { config } from "../../src/config";
-import { IAddEventMessage, ICompressedBatchMessage, IEvent, Instrumentation,
-  ITimestampedWorkerMessage, IWorkerMessage, IXhrErrorEventState, WorkerMessageType } from "../../types/index";
+import {
+  IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, IWorkerMessage, WorkerMessageType
+} from "../../types/compressionworker";
+import { IEvent } from "../../types/core";
+import { Instrumentation, IXhrErrorEventState } from "../../types/instrumentation";
 import { cleanupFixture, setupFixture } from "../setup/testsetup";
-import MockEventToArray from "../setup/toarray";
 import { getMockEnvelope, getMockEvent, MockEventName, payloadToEvents } from "../setup/utils";
-
-import * as chai from "chai";
 
 const InstrumentationEventName = "Instrumentation";
 const WorkerMessageWaitTime = 1000;

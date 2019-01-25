@@ -1,5 +1,6 @@
-import { IEvent, IEventArray } from "../../types/index";
 import schemas from "./schema";
+
+import { IEvent, IEventArray } from "../../types/core";
 
 // We serialize send a lot of JSONs with identical structures and putting all property names on the
 // wire every time can be very redundant. We can save bytes by splitting JSON into a separate nested array of

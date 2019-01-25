@@ -1,13 +1,18 @@
-import { IAddEventMessage, IBindingContainer, IClarityActivateErrorState, IClarityDuplicatedEventState, IClarityFields,
-  ICompressedBatchMessage, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData,
-  IInstrumentationEventState, IMissingFeatureEventState, Instrumentation, IPayload, IPlugin, ITimestampedWorkerMessage,
-  ITriggerState, State, WorkerMessageType } from "../types/index";
 import compress from "./compress";
+import EventToArray from "./converters/toarray";
+import getPlugin from "./plugins";
+
+import { IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, WorkerMessageType } from "../types/compressionworker";
+import {
+  IBindingContainer, IClarityFields, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IPayload, IPlugin, State
+} from "../types/core";
+import {
+  IClarityActivateErrorState, IClarityDuplicatedEventState, IInstrumentationEventState,
+  IMissingFeatureEventState, Instrumentation, ITriggerState
+} from "../types/instrumentation";
 import { createCompressionWorker } from "./compressionworker";
 import { config } from "./config";
 import { resetSchemas } from "./converters/schema";
-import EventToArray from "./converters/toarray";
-import getPlugin from "./plugins";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 

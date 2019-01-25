@@ -26,6 +26,12 @@ module.exports = function (config) {
             "**/*.json": ["json_fixtures"]
         },
 
+        karmaTypescriptConfig: {
+            compilerOptions: {
+                lib: ["es6", "dom"],
+            },
+        },
+
         jsonFixturesPreprocessor: {
             // Strip full file system part from the file path / fixture name
             stripPrefix: ".+/",

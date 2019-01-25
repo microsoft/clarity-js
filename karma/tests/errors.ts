@@ -1,9 +1,9 @@
-import { cleanupFixture, setupFixture } from "../setup/testsetup";
-import { observeEvents } from "../setup/utils";
-
 import * as chai from "chai";
 import * as errors from "../../src/plugins/errors";
-import { Instrumentation } from "../../types/index";
+
+import { Instrumentation } from "../../types/instrumentation";
+import { cleanupFixture, setupFixture } from "../setup/testsetup";
+import { observeEvents } from "../setup/utils";
 
 let assert = chai.assert;
 

@@ -1,5 +1,6 @@
 import EventToArray from "../../src/converters/toarray";
-import { IEvent, IEventArray } from "../../types/index";
+
+import { IEvent, IEventArray } from "../../types/core";
 import { MockEventName } from "./utils";
 
 export default function(event: IEvent): IEventArray {

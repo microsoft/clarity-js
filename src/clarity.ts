@@ -1,8 +1,8 @@
-import { IConfig, State } from "../types/index";
+import { IConfig } from "../types/config";
+import { State } from "../types/core";
 import { config } from "./config";
 import { activate, onTrigger, state, teardown } from "./core";
 import { mapProperties } from "./utils";
-
 export { version } from "./core";
 
 export function start(customConfig?: IConfig) {

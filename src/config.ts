@@ -1,4 +1,4 @@
-import { IConfig } from "../types/index";
+import { IConfig } from "../types/config";
 
 // Default configuration
 export let config: IConfig = {

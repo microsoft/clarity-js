@@ -24,6 +24,8 @@ export default function(compressed: string) {
   }
 
   var dictionary = [],
+    // Not modifying 3rd party code - suppressing ts error instead.
+    // @ts-ignore: Unused local variable
     next,
     enlargeIn = 4,
     dictSize = 4,

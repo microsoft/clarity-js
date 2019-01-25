@@ -1,9 +1,12 @@
-import { start, stop } from "../../src/clarity";
+import EventFromArray from "./fromarray";
+
+import { start } from "../../src/clarity";
 import { config } from "../../src/config";
 import { mapProperties } from "../../src/utils";
-import { IAddEventMessage, IConfig, IEvent, IWorkerMessage, WorkerMessageType } from "../../types/index";
+import { IAddEventMessage, IWorkerMessage, WorkerMessageType } from "../../types/compressionworker";
+import { IConfig } from "../../types/config";
+import { IEvent } from "../../types/core";
 import { testConfig } from "./clarity";
-import EventFromArray from "./fromarray";
 
 declare var fixture;
 
