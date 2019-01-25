@@ -10,5 +10,11 @@ node_modules
 # npm logs
 npm-debug.log*
 
-# rollup-plugins-typescript2
-.rpt2_cache
+# yarn uses its own yarn.lock file
+package-lock.json
+
+# yarn logs
+yarn-error.log
+
+# chrome debug
+debug.log
