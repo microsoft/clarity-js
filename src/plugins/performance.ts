@@ -37,10 +37,10 @@ export default class PerformanceProfiler implements IPlugin {
 
   public activate() {
     if (this.timing) {
-      this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
+      this.logTimingTimeout = window.setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
     if (this.getEntriesByType) {
-      this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);
+      this.logResourceTimingTimeout = window.setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);
     }
   }
 
@@ -78,7 +78,7 @@ export default class PerformanceProfiler implements IPlugin {
       };
       addEvent({type: NavigationTimingEventType, state: navigationTimingEventState});
     } else {
-      this.logTimingTimeout = setTimeout(this.logTiming.bind(this), this.timeoutLength);
+      this.logTimingTimeout = window.setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
   }
 
@@ -120,7 +120,7 @@ export default class PerformanceProfiler implements IPlugin {
       this.lastInspectedEntryIndex = i;
     }
 
-    this.logResourceTimingTimeout = setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);
+    this.logResourceTimingTimeout = window.setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);
   }
 
   private inspectEntry(entry, entryIndex): IPerformanceResourceTimingState {

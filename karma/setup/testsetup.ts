@@ -1,6 +1,6 @@
 import EventFromArray from "./fromarray";
 
-import { start } from "../../src/clarity";
+import { start, stop } from "../../src/clarity";
 import { config } from "../../src/config";
 import { mapProperties } from "../../src/utils";
 import { IAddEventMessage, IWorkerMessage, WorkerMessageType } from "../../types/compressionworker";

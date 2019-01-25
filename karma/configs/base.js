@@ -28,7 +28,12 @@ module.exports = function (config) {
 
         karmaTypescriptConfig: {
             compilerOptions: {
-                lib: ["es6", "dom"],
+                "lib": ["es2015", "dom"],
+                "include": [
+                    "src/**/*.ts",
+                    "test/**/*.ts",
+                    "types/**/*.d.ts"
+                ]
             },
         },
 

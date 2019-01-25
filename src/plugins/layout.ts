@@ -157,7 +157,7 @@ export default class Layout implements IPlugin {
       this.cssElementQueue.push(element);
     }
 
-    this.cssTimeout = setTimeout(this.cssDequeue.bind(this), this.cssTimeoutLength);
+    this.cssTimeout = window.setTimeout(this.cssDequeue.bind(this), this.cssTimeoutLength);
   }
 
   private cssDequeue() {
