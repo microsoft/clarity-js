@@ -59,15 +59,15 @@ sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
 
 ### Starting Clarity
 
-Install yarn package manager globally on your machine
+Install yarn package manager globally on your machine:
 ```
 npm i -g yarn
 ```
 
 To build the project:
 ```
-yarn build      // outputs minified bundle
-yarn build:dev  // outputs original code
+yarn build      // outputs minified code for prod
+yarn build:dev  // outputs original code for debugging
 ```
 
 To check code format:
