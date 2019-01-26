@@ -92,6 +92,5 @@ export function resetSchemas() {
   schemaManager.reset();
 }
 
-// More changes
 let schemaManager: SchemaManager = new SchemaManager();
 export default schemaManager;
