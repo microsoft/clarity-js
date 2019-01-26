@@ -66,11 +66,15 @@
     "test:firefox": "karma start karma/configs/firefox.js",
     "test:ie": "karma start karma/configs/ie.js",
     "tslint": "tslint --project ./",
-    "tslint:fix": "tslint --fix --project ./ --force",
-    "precommit": "lint-staged"
+    "tslint:fix": "tslint --fix --project ./ --force"
+  },
+  "husky": {
+    "hooks": {
+      "precommit": "lint-staged"
+    }
   },
   "lint-staged": {
-    "*ts": [
+    "*.ts": [
       "tslint --format codeFrame"
     ]
   }
