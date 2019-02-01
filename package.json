@@ -1,10 +1,10 @@
 {
   "name": "clarity-js",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "An analytics library that uses web page interactions to generate aggregated insights",
   "author": "Microsoft Corp.",
   "license": "MIT",
-  "main": "build/src/index.js",
+  "main": "build/index.js",
   "types": "types/index.d.ts",
   "keywords": [
     "clarity",
@@ -58,8 +58,10 @@
     "webpack-merge": "^4.2.1"
   },
   "scripts": {
-    "build": "webpack --config webpack/configs/prod.ts",
-    "build:dev": "webpack --config webpack/configs/dev.ts",
+    "build": "yarn build:clean && yarn build:main && yarn build:cjs",
+    "build:main": "webpack --config webpack/configs/index.ts",
+    "build:cjs": "webpack --config webpack/configs/prod.ts",
+    "build:cjs:dev": "webpack --config webpack/configs/dev.ts",
     "build:clean": "del-cli build/*",
     "test": "karma start karma/configs/headless.js",
     "test:chrome": "karma start karma/configs/chrome.js",

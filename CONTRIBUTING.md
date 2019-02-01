@@ -64,11 +64,16 @@ Install yarn package manager globally on your machine:
 npm i -g yarn
 ```
 
-To build the project:
+To build for local dev use:
 ```
-yarn build      // outputs minified code for prod
-yarn build:dev  // outputs original code for debugging
+yarn build:cjs:dev    // outputs original clarity.js bundle
 ```
+
+To build for prod (npm publish):
+```
+yarn build            // outputs minified clarity.js bundle and module's main "index.js" file
+```
+
 
 To check code format:
 ```
