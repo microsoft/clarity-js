@@ -115,7 +115,9 @@ export default class Layout implements IPlugin {
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
   private discoverNode(node: Node): INodeInfo {
     let shadowNode = this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
-    return shadowNode.computeInfo();
+    let nodeInfo = shadowNode.computeInfo();
+    this.watch(node, nodeInfo.state);
+    return nodeInfo;
   }
 
   private watch(node: Node, nodeLayoutState: ILayoutState) {
