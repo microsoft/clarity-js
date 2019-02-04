@@ -7,14 +7,19 @@ import CommonConfig from "./base";
 // https://webpack.js.org/configuration
 const IndexConfig: webpack.Configuration = {
 
-    mode: "development",
+    mode: "production",
 
     entry: "./src/index.ts",
 
     output: {
         libraryTarget: "commonjs",
         filename: "index.js"
+    },
+
+    optimization: {
+        minimize: false
     }
+
 };
 
 export default merge(CommonConfig, IndexConfig);

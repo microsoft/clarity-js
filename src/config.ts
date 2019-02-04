@@ -1,4 +1,5 @@
 import { IConfig } from "../types/config";
+import { mapProperties } from "./utils";
 
 // Default configuration
 export let config: IConfig = {
@@ -25,3 +26,10 @@ export let config: IConfig = {
   validateConsistency: false,
   backgroundMode: false
 };
+
+export function resetConfig() {
+  mapProperties(defaultConfig, null, false, config);
+}
+
+let defaultConfig: IConfig = {};
+mapProperties(config, null, false, defaultConfig);

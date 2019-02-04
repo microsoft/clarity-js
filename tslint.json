@@ -12,6 +12,9 @@
     "one-variable-per-declaration": false,
     "trailing-comma": [
       false
-    ]
+    ],
+    "variable-name": false,
+    "interface-over-type-literal": false,
+    "only-arrow-functions": false
   }
 }

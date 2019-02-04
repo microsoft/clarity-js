@@ -11,12 +11,12 @@ import {
   IMissingFeatureEventState, Instrumentation, ITriggerState
 } from "../types/instrumentation";
 import { createCompressionWorker } from "./compressionworker";
-import { config } from "./config";
+import { config, resetConfig } from "./config";
 import { resetSchemas } from "./converters/schema";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.2.10";
+export const version = "0.2.11";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
@@ -102,6 +102,7 @@ export function teardown() {
     // Instrument teardown and upload residual events
     instrument({ type: Instrumentation.Teardown });
     uploadPendingEvents();
+    resetConfig();
 
     delete document[ClarityAttribute];
   }
