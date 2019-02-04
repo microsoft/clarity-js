@@ -1,32 +1,28 @@
-// import * as chai from "chai";
+import FromArray from "../../src/converters/fromarray";
+import ToArray from "../../src/converters/toarray";
 
-// import FromArray from "../../src/converters/fromarray";
-// import ToArray from "../../src/converters/toarray";
+import { assert } from "chai";
+import { IEvent } from "../../types/core";
+import { createMockEvent } from "../setup/mocks/event";
 
-// import { IEvent } from "../../types/core";
-// import { getMockEvent } from "../setup/utils";
+describe("Data Conversion Tests", () => {
 
-// let assert = chai.assert;
+    it("validates that conversion works", (done: DoneFn) => {
+        let mapObj = {
+            country: "USA",
+            cities: ["Seattle", "Boston"],
+            properties: {
+                zoom: 1.5
+            }
+        };
 
-// describe("Data Conversion Tests", () => {
+        let evt: IEvent = createMockEvent();
+        evt.state = mapObj;
 
-//   it("validates that conversion works", (done: DoneFn) => {
-//     let mapObj = {
-//       country: "USA",
-//       cities: ["Seattle", "Boston"],
-//       properties: {
-//         zoom: 1.5
-//       }
-//     };
+        let array = ToArray(evt);
+        let original = FromArray(array);
+        assert.equal(JSON.stringify(evt).length, JSON.stringify(original).length);
+        done();
+    });
 
-//     let evt: IEvent = getMockEvent();
-//     evt.state = mapObj;
-
-//     let array = ToArray(evt);
-//     let original = FromArray(array);
-//     assert.equal(JSON.stringify(evt).length, JSON.stringify(original).length);
-
-//     done();
-//   });
-
-// });
+});
