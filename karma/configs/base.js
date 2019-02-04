@@ -11,11 +11,16 @@ module.exports = function (config) {
 
         // List of files to load in the browser.
         files: [
-            { pattern: "karma/fixtures/**/*.html" },
-            { pattern: "package.json" },
-            { pattern: "src/**/*.ts" },
-            { pattern: "karma/setup/**/*.ts" },
-            { pattern: "karma/tests/**/*.ts" },
+            "karma/fixtures/**/*.html",
+            "package.json",
+            "build/clarity.min.js",
+            "src/converters/**/*.ts",
+            "karma/setup/**/*.ts",
+            "karma/tests/**/*.ts",
+
+            // Resolve to be removed
+            // Root offender: stateprovider [NodeIndex, Tags]
+            "src/**/*.ts"
         ],
 
         // Preprocess matching files before serving them to the browser.
@@ -23,18 +28,22 @@ module.exports = function (config) {
         preprocessors: {
             "**/*.ts": ["karma-typescript"],
             "**/*.html": ["html2js"],
-            "**/*.json": ["json_fixtures"]
+            "**/*.json": ["json_fixtures"],
         },
 
         karmaTypescriptConfig: {
+            tsconfig: "tsconfig.json",
+
             compilerOptions: {
-                "lib": ["es2015", "dom"],
-                "include": [
-                    "src/**/*.ts",
-                    "test/**/*.ts",
-                    "types/**/*.d.ts"
-                ]
+                "sourceMap": true
             },
+            
+            // Exclude all files from coverage
+            // NOTE: When we want to run coverage, we need a way to exclude BLOB files created by compression workers
+            // Otherwise Karma can't map those blobs to an actual file and it causes an error '__cov_..... is undefined'
+            coverageOptions: {
+                exclude: [/^.*$/]
+            }
         },
 
         jsonFixturesPreprocessor: {
@@ -53,5 +62,6 @@ module.exports = function (config) {
         // Available reporters: https://npmjs.org/browse/keyword/karma-reporter
         reporters: ["progress"],
 
+        concurrency: 0
     });
 };

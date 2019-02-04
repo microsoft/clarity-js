@@ -11,6 +11,7 @@ declare class SchemaManager {
 }
 
 interface IClarityJs {
+  version: string;
   start(config?: IConfig): void;
   stop(): void;
   trigger(key: string): void;
