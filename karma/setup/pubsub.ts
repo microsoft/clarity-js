@@ -22,17 +22,20 @@ const _publishSync = PubSub.publishSync;
 };
 
 export enum PubSubEvents {
-    SYNC_WORKER_LOADED,
+
     // Page ====> Worker messages
     WORKER_ADD_EVENT_MESSAGE,
     WORKER_FORCE_COMPRESSION_MESSAGE,
     SYNC_AFTER_WORKER_ADD_EVENT_MESSAGE,
+
     // Page <==== Worker messages
     WORKER_COMPRESSED_BATCH_MESSAGE,
     SYNC_AFTER_WORKER_COMPRESSED_BATCH_MESSAGE,
-    // Core event
+
+    // End output monitoring
     UPLOAD,
     SYNC_AFTER_UPLOAD,
+
     // Browser callbacks
     MUTATION,
     CLICK,

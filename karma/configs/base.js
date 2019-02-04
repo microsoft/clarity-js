@@ -17,9 +17,6 @@ module.exports = function (config) {
             "src/converters/**/*.ts",
             "karma/setup/**/*.ts",
             "karma/tests/**/*.ts",
-
-            // Resolve to be removed
-            // Root offender: stateprovider [NodeIndex, Tags]
             "src/**/*.ts"
         ],
 
@@ -62,6 +59,8 @@ module.exports = function (config) {
         // Available reporters: https://npmjs.org/browse/keyword/karma-reporter
         reporters: ["progress"],
 
-        concurrency: 0
+        // Disallow Karma launching multiple browsers at the same time
+        concurrency: 1
+
     });
 };
