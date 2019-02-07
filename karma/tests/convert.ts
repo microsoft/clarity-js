@@ -1,5 +1,5 @@
-import FromArray from "../../src/converters/fromarray";
-import ToArray from "../../src/converters/toarray";
+import FromArray from "@src/converters/fromarray";
+import ToArray from "@src/converters/toarray";
 
 import { assert } from "chai";
 import { IEvent } from "../../types/core";

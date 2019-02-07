@@ -1,8 +1,8 @@
-import schemas from "../../src/converters/schema";
+import schemas from "@src/converters/schema";
 
+import { createCompressionWorker } from "@src/compressionworker";
+import { encode } from "@src/converters/convert";
 import { assert } from "chai";
-import { createCompressionWorker } from "../../src/compressionworker";
-import { encode } from "../../src/converters/convert";
 import { IAddEventMessage, ITimestampedWorkerMessage, WorkerMessageType } from "../../types/compressionworker";
 import { IEvent } from "../../types/core";
 import { Instrumentation, IXhrErrorEventState } from "../../types/instrumentation";
@@ -13,7 +13,7 @@ import { testAsync } from "../setup/testasync";
 import { resetWatcher, stopWatching, watch } from "../setup/watch";
 
 // TODO: Remove src imports and modify compression worker to accept batchLimit as an argument
-import { config } from "../../src/config";
+import { config } from "@src/config";
 
 const InstrumentationEventName = "Instrumentation";
 const WorkerMessageWaitTime = 1000;

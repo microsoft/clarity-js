@@ -1,5 +1,5 @@
+import { ResourceTimingEventType } from "@src/plugins/performance";
 import { assert } from "chai";
-import { ResourceTimingEventType } from "../../src/plugins/performance";
 import { IPerformanceResourceTimingState, IPerformanceTiming } from "../../types/performance";
 import { restartClarity } from "../setup/clarity";
 import { createMockPerformanceResourceTimings as createMockPerformanceResourceTimings, IMockPerformance } from "../setup/mocks/performance";

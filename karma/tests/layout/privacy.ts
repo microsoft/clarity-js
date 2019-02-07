@@ -1,6 +1,6 @@
+import { ForceMaskAttribute } from "@src/plugins/layout/nodeinfo";
+import { mask } from "@src/utils";
 import { assert } from "chai";
-import { ForceMaskAttribute } from "../../../src/plugins/layout/nodeinfo";
-import { mask } from "../../../src/utils";
 import { Action, Source } from "../../../types/layout";
 import { restartClarity } from "../../setup/clarity";
 import { cleanupPage, setupPage } from "../../setup/page";

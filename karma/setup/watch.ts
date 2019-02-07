@@ -1,7 +1,7 @@
 import uncompress from "./uncompress";
 
-import { decode } from "../../src/converters/convert";
-import { SchemaManager } from "../../src/converters/schema";
+import { decode } from "@src/converters/convert";
+import { SchemaManager } from "@src/converters/schema";
 import { IAddEventMessage, ICompressedBatchMessage } from "../../types/compressionworker";
 import { IEvent, IEventArray, IPayload } from "../../types/core";
 import { PubSubEvents } from "./pubsub";

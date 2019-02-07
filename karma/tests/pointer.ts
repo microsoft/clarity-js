@@ -1,5 +1,5 @@
+import { getTimestamp } from "@src/core";
 import { assert } from "chai";
-import { getTimestamp } from "../../src/core";
 import { cleanupPage, setupPage } from "../setup/page";
 import { PubSubEvents, waitFor } from "../setup/pubsub";
 import { testAsync } from "../setup/testasync";

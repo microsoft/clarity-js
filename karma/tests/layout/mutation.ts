@@ -1,5 +1,5 @@
+import { NodeIndex, Tags } from "@src/plugins/layout/stateprovider";
 import { assert } from "chai";
-import { NodeIndex, Tags } from "../../../src/plugins/layout/stateprovider";
 import { IEvent } from "../../../types/core";
 import { Action } from "../../../types/layout";
 import { cleanupPage, setupPage } from "../../setup/page";

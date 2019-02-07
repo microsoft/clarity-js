@@ -1,5 +1,5 @@
+import { ClarityAttribute } from "@src/core";
 import { assert } from "chai";
-import { ClarityAttribute } from "../../../src/core";
 import { Instrumentation } from "../../../types/instrumentation";
 import { restartClarity } from "../../setup/clarity";
 import { cleanupPage, setupPage } from "../../setup/page";
