@@ -1,5 +1,5 @@
+import { IAddEventMessage, ICompressedBatchMessage, IWorkerMessage, WorkerMessageType } from "@clarity-types/compressionworker";
 import { publishAsync, publishSync, PubSubEvents } from "@karma/setup/pubsub";
-import { IAddEventMessage, ICompressedBatchMessage, IWorkerMessage, WorkerMessageType } from "../../../types/compressionworker";
 import { setRealTimeout } from "./jasmineclock";
 
 interface IWorkerProxy extends Worker {

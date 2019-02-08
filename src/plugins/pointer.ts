@@ -1,9 +1,9 @@
 import * as mouse from "./pointer/mouse";
 import * as touch from "./pointer/touch";
 
+import { IPlugin } from "@clarity-types/core";
+import { IPointerModule, IPointerState } from "@clarity-types/pointer";
 import { addEvent, bind } from "@src/core";
-import { IPlugin } from "../../types/core";
-import { IPointerModule, IPointerState } from "../../types/pointer";
 
 export default class Pointer implements IPlugin {
   private eventName = "Pointer";

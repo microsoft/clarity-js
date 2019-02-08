@@ -1,6 +1,6 @@
+import { IPlugin } from "@clarity-types/core";
+import { IJsErrorEventState, Instrumentation } from "@clarity-types/instrumentation";
 import { bind, instrument } from "@src/core";
-import { IPlugin } from "../../types/core";
-import { IJsErrorEventState, Instrumentation } from "../../types/instrumentation";
 
 export default class ErrorMonitor implements IPlugin {
 

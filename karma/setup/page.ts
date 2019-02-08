@@ -1,4 +1,4 @@
-import { IConfig } from "../../types";
+import { IConfig } from "@clarity-types/config";
 import { IStartClarityOptions, startClarity, stopClarity } from "./clarity";
 import { installEventListenerProxies, uninstallEventListenerProxies } from "./proxyapis/eventlistener";
 import { installJasmineClock, uninstallJasmineClock } from "./proxyapis/jasmineclock";

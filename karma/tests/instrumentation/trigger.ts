@@ -1,9 +1,9 @@
+import { Instrumentation } from "@clarity-types/instrumentation";
 import { restartClarity, triggerClarity } from "@karma/setup/clarity";
 import { cleanupPage, setupPage } from "@karma/setup/page";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
-import { Instrumentation } from "../../../types/instrumentation";
 
 const instrumentationEventName = "Instrumentation";
 

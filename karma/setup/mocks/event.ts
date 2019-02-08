@@ -1,4 +1,4 @@
-import { IEnvelope, IEvent, IPayload } from "../../../types/core";
+import { IEnvelope, IEvent, IPayload } from "@clarity-types/core";
 
 export const MockEventName = "ClarityTestMockEvent";
 

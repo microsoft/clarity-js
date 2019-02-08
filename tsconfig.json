@@ -18,7 +18,8 @@
         "baseUrl": ".",
         "paths": {
             "@src/*": ["src/*"],
-            "@karma/*": ["karma/*"]
+            "@karma/*": ["karma/*"],
+            "@clarity-types/*": ["types/*"]
         }
     },
     "include":[

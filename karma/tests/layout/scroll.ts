@@ -1,9 +1,9 @@
+import { Action, Source } from "@clarity-types/layout";
 import { cleanupPage, setupPage } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
-import { Action, Source } from "../../../types/layout";
 
 describe("Layout: Scroll Tests", () => {
 

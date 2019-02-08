@@ -35,6 +35,23 @@ module.exports = function (config) {
                 "sourceMap": true
             },
             
+            bundlerOptions: {
+                // There is a module resolution bug for typings files with tsconfig paths
+                // A workaround is to add each such file to bundlerOptions.exclude
+                // https://github.com/monounity/karma-typescript/issues/315#issuecomment-461746455
+                exclude: [
+                    "@clarity-types/compressionworker",
+                    "@clarity-types/config",
+                    "@clarity-types/core",
+                    "@clarity-types/index",
+                    "@clarity-types/instrumentation",
+                    "@clarity-types/layout",
+                    "@clarity-types/performance",
+                    "@clarity-types/pointer",
+                    "@clarity-types/viewport"
+                ]
+            },
+
             // Exclude all files from coverage
             // NOTE: When we want to run coverage, we need a way to exclude BLOB files created by compression workers
             // Otherwise Karma can't map those blobs to an actual file and it causes an error '__cov_..... is undefined'

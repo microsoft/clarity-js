@@ -1,6 +1,6 @@
 import defaultSchemas from "./schema";
 
-import { IEvent, IEventArray, ObjectType } from "../../types/core";
+import { IEvent, IEventArray, ObjectType } from "@clarity-types/core";
 import { SchemaManager } from "./schema";
 
 export default function(eventArray: IEventArray, schemas?: SchemaManager): IEvent {
