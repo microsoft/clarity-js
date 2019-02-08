@@ -90,7 +90,7 @@ describe("Pointer Tests", () => {
         done();
     }));
 
-    function triggerMouseEvent(target, type, x, y) {
+    function triggerMouseEvent(target: EventTarget, type: string, x: number, y: number): void {
         let mouseEvent;
         if (typeof MouseEvent !== "function") {
             mouseEvent = document.createEvent("MouseEvents");

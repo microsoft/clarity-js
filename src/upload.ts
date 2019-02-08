@@ -17,7 +17,7 @@ let payloadInfos: { [key: number]: IPayloadInfo };
 
 let reUploadQueue: number[];
 
-export function upload(compressed: string, raw: IPayload, onSuccessCustom?: UploadCallback, onFailureCustom?: UploadCallback) {
+export function upload(compressed: string, raw: IPayload, onSuccessCustom?: UploadCallback, onFailureCustom?: UploadCallback): void {
   let uploadHandler = config.uploadHandler || defaultUploadHandler;
   let sequenceNo = raw.envelope.sequenceNumber;
   let onSuccess = getOnUploadCompletedHandler(true, sequenceNo, onSuccessCustom);
@@ -34,16 +34,16 @@ export function upload(compressed: string, raw: IPayload, onSuccessCustom?: Uplo
   uploadCount++;
 }
 
-export function enqueuePayload(compressed: string, raw: IPayload) {
+export function enqueuePayload(compressed: string, raw: IPayload): void {
   let payloadInfo: IPayloadInfo = { compressed, raw, failureCount: 0 };
   payloadQueue.push(payloadInfo);
 }
 
-export function flushPayloadQueue() {
+export function flushPayloadQueue(): void {
   uploadMultiplePayloads(payloadQueue);
 }
 
-export function resetUploads() {
+export function resetUploads(): void {
   sentBytesCount = 0;
   uploadCount = 0;
   payloadQueue = [];
@@ -51,17 +51,17 @@ export function resetUploads() {
   reUploadQueue = [];
 }
 
-function uploadMultiplePayloads(payloads: IPayloadInfo[]) {
+function uploadMultiplePayloads(payloads: IPayloadInfo[]): void {
   if (payloads.length > 0) {
     let nextPayload = payloads.shift();
-    let uploadNextPayload = (status: number) => {
+    let uploadNextPayload = (): void => {
       uploadMultiplePayloads(payloads);
     };
     upload(nextPayload.compressed, nextPayload.raw, uploadNextPayload, uploadNextPayload);
   }
 }
 
-function defaultUploadHandler(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) {
+function defaultUploadHandler(payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback): void {
   if (config.uploadUrl.length > 0) {
     payload = JSON.stringify(payload);
     let xhr = new XMLHttpRequest();
@@ -70,12 +70,14 @@ function defaultUploadHandler(payload: string, onSuccess?: UploadCallback, onFai
     for (let i = 0; i < headers.length; i++) {
       xhr.setRequestHeader(headers[i], config.uploadHeaders[headers[i]]);
     }
-    xhr.onreadystatechange = () => { onXhrReadyStatusChange(xhr, onSuccess, onFailure); };
+    xhr.onreadystatechange = (): void => {
+      onXhrReadyStatusChange(xhr, onSuccess, onFailure);
+    };
     xhr.send(payload);
   }
 }
 
-function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, onFailure: UploadCallback) {
+function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, onFailure: UploadCallback): void {
   if (xhr.readyState === XMLHttpRequest.DONE) {
     // HTTP response status documentation:
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
@@ -87,7 +89,7 @@ function onXhrReadyStatusChange(xhr: XMLHttpRequest, onSuccess: UploadCallback, 
   }
 }
 
-function onSuccessDefault(sequenceNumber: number, status: number) {
+function onSuccessDefault(sequenceNumber: number): void {
   debug(`SUCCESS: Delivered batch #${sequenceNumber}`);
   let sentData = payloadInfos[sequenceNumber];
   delete payloadInfos[sequenceNumber];
@@ -106,7 +108,7 @@ function onSuccessDefault(sequenceNumber: number, status: number) {
   retryFailedUploads();
 }
 
-function onFailureDefault(sequenceNumber: number, status: number) {
+function onFailureDefault(sequenceNumber: number, status: number): void {
   debug(`FAILED: Delivery failed for batch #${sequenceNumber} Status: ${status}`);
   let uploadInfo = payloadInfos[sequenceNumber];
   uploadInfo.failureCount++;
@@ -116,7 +118,7 @@ function onFailureDefault(sequenceNumber: number, status: number) {
   }
 }
 
-function logXhrError(sequenceNumber: number, status: number, payloadInfo: IPayloadInfo) {
+function logXhrError(sequenceNumber: number, status: number, payloadInfo: IPayloadInfo): void {
   let events = payloadInfo.raw.events;
   let xhrErrorState: IXhrErrorEventState = {
     type: Instrumentation.XhrError,
@@ -131,7 +133,7 @@ function logXhrError(sequenceNumber: number, status: number, payloadInfo: IPaylo
   instrument(xhrErrorState);
 }
 
-function retryFailedUploads() {
+function retryFailedUploads(): void {
   let payloads: IPayloadInfo[] = [];
   while (reUploadQueue.length > 0) {
     let nextPayloadSequenceNo = reUploadQueue.shift();
@@ -140,10 +142,10 @@ function retryFailedUploads() {
   uploadMultiplePayloads(payloads);
 }
 
-function getOnUploadCompletedHandler(success: boolean, sequenceNo: number, customHandler: UploadCallback) {
+function getOnUploadCompletedHandler(success: boolean, sequenceNo: number, customHandler: UploadCallback): UploadCallback {
   let defaultHandler = success ? onSuccessDefault : onFailureDefault;
   let sourceImpressionId = document[ClarityAttribute];
-  return (status: number) => {
+  return (status: number): void => {
     let currentImpressionId = document[ClarityAttribute];
     if (state === State.Activated && currentImpressionId === sourceImpressionId) {
       defaultHandler(sequenceNo, status);

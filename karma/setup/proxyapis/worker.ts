@@ -9,14 +9,14 @@ interface IWorkerProxy extends Worker {
 
 let _Worker: typeof Worker = null;
 
-export const installWorkerProxy = () => {
+export const installWorkerProxy = (): void => {
     if (_Worker === null) {
         _Worker = Worker;
     }
     Worker = (function(aURL: string, options: WorkerOptions, ig: string): Worker {
         const instance: IWorkerProxy = new _Worker(aURL, options) as IWorkerProxy;
         instance._postMessage = instance.postMessage;
-        instance.postMessage = (msg: IWorkerMessage) => {
+        instance.postMessage = (msg: IWorkerMessage): void => {
             instance._postMessage(msg);
             processWorkerMessage(msg);
         };
@@ -28,7 +28,7 @@ export const installWorkerProxy = () => {
         // complexity comes along, we can use object mutation detection libraries to wrap updated handlers as well.
         setRealTimeout(() => {
             instance._onmessage = instance.onmessage;
-            instance.onmessage = (msgEvt: MessageEvent) => {
+            instance.onmessage = (msgEvt: MessageEvent): void => {
                 instance._onmessage(msgEvt);
                 processWorkerMessage(msgEvt.data);
             };
@@ -38,7 +38,7 @@ export const installWorkerProxy = () => {
     }) as any as typeof Worker;
 };
 
-export const uninstallWorkerProxy = () => {
+export const uninstallWorkerProxy = (): void => {
     if (_Worker !== null) {
         Worker = _Worker;
         _Worker = null;

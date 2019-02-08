@@ -34,7 +34,7 @@ describe("Instrumentation: Activate Tests", () => {
     it("validates that error during clarity activate is caught and logged correctly", testAsync(async (done: DoneFn) => {
         const _worker = Worker;
         const mockErrorText = "Mock error!";
-        Worker = (() => { throw new Error(mockErrorText); }) as any;
+        Worker = ((): void => { throw new Error(mockErrorText); }) as any;
         await restartClarity({ instrument: true });
         Worker = _worker;
 

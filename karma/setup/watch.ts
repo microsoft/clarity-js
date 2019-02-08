@@ -42,7 +42,7 @@ export function getFullImpressionWatchResult(): IWatchResult {
     return JSON.parse(JSON.stringify(fullImpression));
 }
 
-export function resetWatcher() {
+export function resetWatcher(): void {
     fullImpression = {
         coreEvents: [],
         compressedEvents: [],

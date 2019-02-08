@@ -27,7 +27,7 @@ export let config: IConfig = {
   backgroundMode: false
 };
 
-export function resetConfig() {
+export function resetConfig(): void {
   mapProperties(defaultConfig, null, false, config);
 }
 

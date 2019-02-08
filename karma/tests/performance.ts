@@ -120,7 +120,7 @@ describe("Performance Tests", () => {
         return a.href;
     }
 
-    function triggerNextPerformancePoll() {
+    function triggerNextPerformancePoll(): void {
         jasmine.clock().tick(100000);
     }
 });

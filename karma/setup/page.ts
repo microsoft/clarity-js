@@ -8,7 +8,7 @@ import { installWorkerProxy, uninstallWorkerProxy } from "./proxyapis/worker";
 import { revokeAllMessages, unsubscribeAll } from "./pubsub";
 import { stopWatching } from "./watch";
 
-export async function setupPage(done: DoneFn, _config?: IConfig, _startOptions?: IStartClarityOptions) {
+export async function setupPage(done: DoneFn, _config?: IConfig, _startOptions?: IStartClarityOptions): Promise<void> {
     // Relative to karma config location
     fixture.setBase("karma/fixtures");
     fixture.load("clarity.fixture.html");
@@ -24,7 +24,7 @@ export async function setupPage(done: DoneFn, _config?: IConfig, _startOptions?:
     done();
 }
 
-export function cleanupPage() {
+export function cleanupPage(): void {
     stopWatching();
     stopClarity();
 

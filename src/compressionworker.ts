@@ -19,7 +19,7 @@ export function createCompressionWorker(
   return worker;
 }
 
-function workerContext() {
+function workerContext(): void {
   let workerGlobalScope = self as any;
   let compress = workerGlobalScope.compress;
   let config = workerGlobalScope.config;
@@ -33,7 +33,7 @@ function workerContext() {
   // Infinite loop comes from sending instrumentation about failing to deliver previous delivery failure instrumentation.
   let nextBatchIsSingleXhrErrorEvent: boolean =  false;
 
-  self.onmessage = (evt: MessageEvent) => {
+  self.onmessage = (evt: MessageEvent): void => {
     let message = evt.data;
     switch (message.type) {
       case WorkerMessageType.AddEvent:

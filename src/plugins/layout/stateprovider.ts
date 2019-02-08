@@ -1,6 +1,6 @@
 import {
   IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState,
-  ILayoutRectangle, ILayoutState, IStyleLayoutState, ITextLayoutState
+  ILayoutRectangle, ILayoutState, ILayoutStyle, IStyleLayoutState, ITextLayoutState
 } from "@clarity-types/layout";
 import { config } from "@src/config";
 import { mask } from "@src/utils";
@@ -29,7 +29,7 @@ const DefaultAttributeMaskList = ["value", "placeholder", "alt", "title"];
 let defaultColor: string;
 let attributeMaskList: string[];
 
-export function resetStateProvider() {
+export function resetStateProvider(): void {
   attributeMaskList = DefaultAttributeMaskList.concat(config.sensitiveAttributes);
   defaultColor = "";
 }
@@ -110,7 +110,7 @@ export function createStyleLayoutState(styleNode: HTMLStyleElement, forceMask: b
   return layoutState;
 }
 
-export function getCssRules(element: HTMLStyleElement) {
+export function getCssRules(element: HTMLStyleElement): string[] {
   let cssRules = null;
 
   let rules = [];
@@ -169,7 +169,7 @@ export function createGenericLayoutState(node: Node, tag: string): ILayoutState 
   return state;
 }
 
-function getLayout(element): ILayoutRectangle {
+function getLayout(element: Element): ILayoutRectangle {
   let layout: ILayoutRectangle = null;
   // In IE, calling getBoundingClientRect on a node that is disconnected
   // from a DOM tree, sometimes results in a 'Unspecified Error'
@@ -221,7 +221,7 @@ function getAttributes(element: Element, forceMask: boolean): IAttributes {
   return stateAttributes;
 }
 
-function getStyles(element) {
+function getStyles(element: Element): ILayoutStyle {
   let computed = window.getComputedStyle(element);
   let style = {};
 

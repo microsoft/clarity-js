@@ -35,7 +35,7 @@ export default class PerformanceProfiler implements IPlugin {
   private timing: PerformanceTiming;
   private getEntriesByType: (type: string) => PerformanceEntry[];
 
-  public activate() {
+  public activate(): void {
     if (this.timing) {
       this.logTimingTimeout = window.setTimeout(this.logTiming.bind(this), this.timeoutLength);
     }
@@ -63,15 +63,15 @@ export default class PerformanceProfiler implements IPlugin {
       && performance.getEntriesByType.bind(performance);
   }
 
-  public teardown() {
+  public teardown(): void {
     clearTimeout(this.logTimingTimeout);
     clearTimeout(this.logResourceTimingTimeout);
   }
 
-  private logTiming() {
+  private logTiming(): void {
     if (this.timing.loadEventEnd > 0) {
       let formattedTiming = this.timing.toJSON ? this.timing.toJSON() : this.timing;
-      formattedTiming = mapProperties(formattedTiming, (name: string, value) => {
+      formattedTiming = mapProperties(formattedTiming, (name: string) => {
         return (formattedTiming[name] === 0) ? 0 : Math.round(formattedTiming[name] - formattedTiming.navigationStart);
       }, false);
       let navigationTimingEventState: IPerformanceTimingState = {
@@ -83,8 +83,8 @@ export default class PerformanceProfiler implements IPlugin {
     }
   }
 
-  private logResourceTiming() {
-    let entries = this.getEntriesByType("resource");
+  private logResourceTiming(): void {
+    let entries = this.getEntriesByType("resource") as PerformanceResourceTiming[];
 
     // If entries.length < lastInspectedEntry + 1, most likely some entries have
     // been cleared, which would cause inconsistencies in further entries inspection.
@@ -124,7 +124,7 @@ export default class PerformanceProfiler implements IPlugin {
     this.logResourceTimingTimeout = window.setTimeout(this.logResourceTiming.bind(this), this.timeoutLength);
   }
 
-  private inspectEntry(entry, entryIndex): IPerformanceResourceTimingState {
+  private inspectEntry(entry: PerformanceResourceTiming, entryIndex: number): IPerformanceResourceTimingState {
     let networkData: IPerformanceResourceTimingState = null;
     if (entry && entry.responseEnd > 0) {
       if (this.urlBlacklist.indexOf(entry.name) < 0) {
@@ -155,7 +155,7 @@ export default class PerformanceProfiler implements IPlugin {
           networkData.protocol = entry.nextHopProtocol;
         }
 
-        networkData = mapProperties(networkData, (name: string, value) => {
+        networkData = mapProperties(networkData, (name: string, value: any) => {
           return (typeof value === "number") ? Math.round(value) : value;
         }, true) as IPerformanceResourceTimingState;
       }

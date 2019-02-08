@@ -5,17 +5,17 @@ let _removeEventListener: typeof Node.prototype.removeEventListener = null;
 
 const CLARITY_TEST_PROXY_LISTENER_ATTRIBUTE = "CLARITY_TEST_PROXY_LISTENER";
 
-export function installEventListenerProxies() {
+export function installEventListenerProxies(): void {
     installAddEventListenerProxy();
     installRemoveEventListenerProxy();
 }
 
-export function uninstallEventListenerProxies() {
+export function uninstallEventListenerProxies(): void {
     uninstallAddEventListenerProxy();
     uninstallRemoveEventListenerProxy();
 }
 
-function installAddEventListenerProxy() {
+function installAddEventListenerProxy(): void {
     if (_addEventListener === null) {
         _addEventListener = Node.prototype.addEventListener;
     }
@@ -40,7 +40,7 @@ function installAddEventListenerProxy() {
     Node.prototype.addEventListener = proxyAddEventListener;
 }
 
-function installRemoveEventListenerProxy() {
+function installRemoveEventListenerProxy(): void {
     if (_removeEventListener === null) {
         _removeEventListener = Node.prototype.removeEventListener;
     }
@@ -55,14 +55,14 @@ function installRemoveEventListenerProxy() {
     Node.prototype.removeEventListener = proxyRemoveEventListener;
 }
 
-function uninstallAddEventListenerProxy() {
+function uninstallAddEventListenerProxy(): void {
     if (_addEventListener !== null) {
         Node.prototype.addEventListener = _addEventListener;
         _addEventListener = null;
     }
 }
 
-function uninstallRemoveEventListenerProxy() {
+function uninstallRemoveEventListenerProxy(): void {
     if (_removeEventListener !== null) {
         Node.prototype.removeEventListener = _removeEventListener;
         _removeEventListener = null;
