@@ -1,7 +1,7 @@
 import Compress from "./compress";
 
-import { IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, WorkerMessageType } from "../types/compressionworker";
-import { IEnvelope, IEventArray, IPayload } from "../types/core";
+import { IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, WorkerMessageType } from "@clarity-types/compressionworker";
+import { IEnvelope, IEventArray, IPayload } from "@clarity-types/core";
 import { config as Config } from "./config";
 
 export function createCompressionWorker(

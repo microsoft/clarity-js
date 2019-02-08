@@ -1,9 +1,9 @@
 import uncompress from "./uncompress";
 
-import { decode } from "../../src/converters/convert";
-import { SchemaManager } from "../../src/converters/schema";
-import { IAddEventMessage, ICompressedBatchMessage } from "../../types/compressionworker";
-import { IEvent, IEventArray, IPayload } from "../../types/core";
+import { IAddEventMessage, ICompressedBatchMessage } from "@clarity-types/compressionworker";
+import { IEvent, IEventArray, IPayload } from "@clarity-types/core";
+import { decode } from "@src/converters/convert";
+import { SchemaManager } from "@src/converters/schema";
 import { PubSubEvents } from "./pubsub";
 
 interface IWatchResult {
@@ -86,6 +86,6 @@ export function onUpload(message: any, data: any): void {
     }
 }
 
-export function filterEventByType(events: IEvent[], type: string): IEvent[] {
+export function filterEventsByType(events: IEvent[], type: string): IEvent[] {
     return events.filter((event: IEvent): boolean => event.type === type);
 }

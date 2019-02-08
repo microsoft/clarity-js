@@ -1,8 +1,7 @@
 import * as merge from "merge";
-import * as Clarity from "../../types/index";
 
-import { UploadCallback } from "../../types/core";
-import { IConfig } from "../../types/index";
+import { UploadCallback } from "@clarity-types/core";
+import { ClarityJs, IConfig } from "@clarity-types/index";
 import { setRealTimeout } from "./proxyapis/jasmineclock";
 import { publishAsync, publishSync, PubSubEvents, waitFor } from "./pubsub";
 import { getFullImpressionWatchResult, resetWatcher } from "./watch";
@@ -11,7 +10,7 @@ export interface IStartClarityOptions {
     flushInitialActivity: boolean;
 }
 
-declare var clarity: typeof Clarity.ClarityJs;
+declare var clarity: typeof ClarityJs;
 
 const uploadDelay: number = 500;
 const defaultStartOptions: IStartClarityOptions = {

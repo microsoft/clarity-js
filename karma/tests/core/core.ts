@@ -1,10 +1,10 @@
 import * as PubSub from "pubsub-js";
 
+import { getActiveConfig, getVersion, triggerMutationEvent } from "@karma/setup/clarity";
+import { cleanupPage, setupPage } from "@karma/setup/page";
+import { PubSubEvents, waitFor, yieldThread } from "@karma/setup/pubsub";
+import { testAsync } from "@karma/setup/testasync";
 import { assert } from "chai";
-import { getActiveConfig, getVersion, triggerMutationEvent } from "../../setup/clarity";
-import { cleanupPage, setupPage } from "../../setup/page";
-import { PubSubEvents, waitFor, yieldThread } from "../../setup/pubsub";
-import { testAsync } from "../../setup/testasync";
 
 describe("Core Tests", () => {
 

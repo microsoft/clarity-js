@@ -1,9 +1,9 @@
+import { restartClarity } from "@karma/setup/clarity";
+import { cleanupPage, setupPage } from "@karma/setup/page";
+import { setRealTimeout } from "@karma/setup/proxyapis/jasmineclock";
+import { testAsync } from "@karma/setup/testasync";
+import { getFullImpressionWatchResult, stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
-import { restartClarity } from "../../setup/clarity";
-import { cleanupPage, setupPage } from "../../setup/page";
-import { setRealTimeout } from "../../setup/proxyapis/jasmineclock";
-import { testAsync } from "../../setup/testasync";
-import { getFullImpressionWatchResult, stopWatching, watch } from "../../setup/watch";
 
 describe("Setup: Asynchronous clarity start tests", () => {
 

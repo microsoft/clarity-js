@@ -2,14 +2,14 @@ import compress from "./compress";
 import EventToArray from "./converters/toarray";
 import getPlugin from "./plugins";
 
-import { IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, WorkerMessageType } from "../types/compressionworker";
+import { IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, WorkerMessageType } from "@clarity-types/compressionworker";
 import {
   IBindingContainer, IClarityFields, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IPayload, IPlugin, State
-} from "../types/core";
+} from "@clarity-types/core";
 import {
   IClarityActivateErrorState, IClarityDuplicatedEventState, IInstrumentationEventState,
   IMissingFeatureEventState, Instrumentation, ITriggerState
-} from "../types/instrumentation";
+} from "@clarity-types/instrumentation";
 import { createCompressionWorker } from "./compressionworker";
 import { config, resetConfig } from "./config";
 import { resetSchemas } from "./converters/schema";

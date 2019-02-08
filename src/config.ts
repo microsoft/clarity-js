@@ -1,4 +1,4 @@
-import { IConfig } from "../types/config";
+import { IConfig } from "@clarity-types/config";
 import { mapProperties } from "./utils";
 
 // Default configuration

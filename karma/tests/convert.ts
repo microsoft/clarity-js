@@ -1,9 +1,9 @@
-import FromArray from "../../src/converters/fromarray";
-import ToArray from "../../src/converters/toarray";
+import FromArray from "@src/converters/fromarray";
+import ToArray from "@src/converters/toarray";
 
+import { IEvent } from "@clarity-types/core";
+import { createMockEvent } from "@karma/setup/mocks/event";
 import { assert } from "chai";
-import { IEvent } from "../../types/core";
-import { createMockEvent } from "../setup/mocks/event";
 
 describe("Data Conversion Tests", () => {
 

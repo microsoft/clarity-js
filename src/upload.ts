@@ -1,5 +1,5 @@
-import { IPayload, IPayloadInfo, State, UploadCallback } from "../types/core";
-import { Instrumentation, ITotalByteLimitExceededEventState, IXhrErrorEventState } from "../types/instrumentation";
+import { IPayload, IPayloadInfo, State, UploadCallback } from "@clarity-types/core";
+import { Instrumentation, ITotalByteLimitExceededEventState, IXhrErrorEventState } from "@clarity-types/instrumentation";
 import { config } from "./config";
 import { ClarityAttribute, instrument, state, teardown } from "./core";
 import { debug, getEventId } from "./utils";

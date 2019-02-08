@@ -1,19 +1,19 @@
-import schemas from "../../src/converters/schema";
+import schemas from "@src/converters/schema";
 
+import { IAddEventMessage, ITimestampedWorkerMessage, WorkerMessageType } from "@clarity-types/compressionworker";
+import { IEvent } from "@clarity-types/core";
+import { Instrumentation, IXhrErrorEventState } from "@clarity-types/instrumentation";
+import { createMockEnvelope, createMockEvent, MockEventName } from "@karma/setup/mocks/event";
+import { installWorkerProxy, uninstallWorkerProxy } from "@karma/setup/proxyapis/worker";
+import { PubSubEvents, unsubscribeAll, waitFor } from "@karma/setup/pubsub";
+import { testAsync } from "@karma/setup/testasync";
+import { resetWatcher, stopWatching, watch } from "@karma/setup/watch";
+import { createCompressionWorker } from "@src/compressionworker";
+import { encode } from "@src/converters/convert";
 import { assert } from "chai";
-import { createCompressionWorker } from "../../src/compressionworker";
-import { encode } from "../../src/converters/convert";
-import { IAddEventMessage, ITimestampedWorkerMessage, WorkerMessageType } from "../../types/compressionworker";
-import { IEvent } from "../../types/core";
-import { Instrumentation, IXhrErrorEventState } from "../../types/instrumentation";
-import { createMockEnvelope, createMockEvent, MockEventName } from "../setup/mocks/event";
-import { installWorkerProxy, uninstallWorkerProxy } from "../setup/proxyapis/worker";
-import { PubSubEvents, unsubscribeAll, waitFor } from "../setup/pubsub";
-import { testAsync } from "../setup/testasync";
-import { resetWatcher, stopWatching, watch } from "../setup/watch";
 
 // TODO: Remove src imports and modify compression worker to accept batchLimit as an argument
-import { config } from "../../src/config";
+import { config } from "@src/config";
 
 const InstrumentationEventName = "Instrumentation";
 const WorkerMessageWaitTime = 1000;

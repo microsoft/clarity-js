@@ -1,5 +1,5 @@
-import { IConfig } from "../types/config";
-import { State } from "../types/core";
+import { IConfig } from "@clarity-types/config";
+import { State } from "@clarity-types/core";
 import { config } from "./config";
 import { activate, onTrigger, state, teardown } from "./core";
 import { mapProperties } from "./utils";

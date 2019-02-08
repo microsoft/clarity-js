@@ -1,4 +1,4 @@
-import { publishAsync, PubSubEvents } from "../pubsub";
+import { publishAsync, PubSubEvents } from "@karma/setup/pubsub";
 
 let _addEventListener: typeof Node.prototype.addEventListener = null;
 let _removeEventListener: typeof Node.prototype.removeEventListener = null;

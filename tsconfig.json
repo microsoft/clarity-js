@@ -14,7 +14,13 @@
         "removeComments": true,
         "noLib": false,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true
+        "suppressImplicitAnyIndexErrors": true,
+        "baseUrl": ".",
+        "paths": {
+            "@src/*": ["src/*"],
+            "@karma/*": ["karma/*"],
+            "@clarity-types/*": ["types/*"]
+        }
     },
     "include":[
        "src/**/*.ts",

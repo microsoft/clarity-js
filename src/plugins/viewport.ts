@@ -1,6 +1,6 @@
-import { IPlugin } from "../../types/core";
-import { IViewportState } from "../../types/viewport";
-import { addEvent, bind } from "../core";
+import { IPlugin } from "@clarity-types/core";
+import { IViewportState } from "@clarity-types/viewport";
+import { addEvent, bind } from "@src/core";
 
 export default class Viewport implements IPlugin {
   private eventName = "Viewport";

@@ -1,8 +1,8 @@
+import { restartClarity, stopClarity, triggerMutationEventAndWaitForUpload } from "@karma/setup/clarity";
+import { cleanupPage, setupPage } from "@karma/setup/page";
+import { testAsync } from "@karma/setup/testasync";
+import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
-import { restartClarity, stopClarity, triggerMutationEventAndWaitForUpload } from "../../setup/clarity";
-import { cleanupPage, setupPage } from "../../setup/page";
-import { testAsync } from "../../setup/testasync";
-import { stopWatching, watch } from "../../setup/watch";
 
 describe("Core: Teardown Tests", () => {
 

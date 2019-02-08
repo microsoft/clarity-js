@@ -1,5 +1,5 @@
-import compress from "../../../src/compress";
-import uncompress from "../../setup/uncompress";
+import uncompress from "@karma/setup/uncompress";
+import compress from "@src/compress";
 
 import { assert } from "chai";
 

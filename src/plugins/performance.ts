@@ -1,8 +1,8 @@
-import { IPlugin } from "../../types/core";
-import { IPerformanceResourceTimingState, IPerformanceTimingState } from "../../types/performance";
-import { config } from "../config";
-import { addEvent } from "../core";
-import { mapProperties } from "../utils";
+import { IPlugin } from "@clarity-types/core";
+import { IPerformanceResourceTimingState, IPerformanceTimingState } from "@clarity-types/performance";
+import { config } from "@src/config";
+import { addEvent } from "@src/core";
+import { mapProperties } from "@src/utils";
 
 export const NavigationTimingEventType = "NavigationTiming";
 export const ResourceTimingEventType = "ResourceTiming";

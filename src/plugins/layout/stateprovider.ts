@@ -1,9 +1,9 @@
 import {
   IAttributes, IDoctypeLayoutState, IElementLayoutState, IIgnoreLayoutState,
   ILayoutRectangle, ILayoutState, IStyleLayoutState, ITextLayoutState
-} from "../../../types/layout";
-import { config } from "../../config";
-import { mask } from "../../utils";
+} from "@clarity-types/layout";
+import { config } from "@src/config";
+import { mask } from "@src/utils";
 
 export const NodeIndex = "clarity-index";
 

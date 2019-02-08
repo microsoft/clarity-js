@@ -1,5 +1,5 @@
-import { INodeInfo, IShadowDomMutationSummary, IShadowDomNode, NumberJson } from "../../../types/layout";
-import { assert, isNumber, traverseNodeTree } from "../../utils";
+import { INodeInfo, IShadowDomMutationSummary, IShadowDomNode, NumberJson } from "@clarity-types/layout";
+import { assert, isNumber, traverseNodeTree } from "@src/utils";
 import { createNodeInfo } from "./nodeinfo";
 import { getNodeIndex, NodeIndex } from "./stateprovider";
 
