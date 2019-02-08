@@ -1,6 +1,6 @@
+import { cleanupPage, setupPage } from "@karma/setup/page";
+import { getFullImpressionWatchResult } from "@karma/setup/watch";
 import { assert } from "chai";
-import { cleanupPage, setupPage } from "../../setup/page";
-import { getFullImpressionWatchResult } from "../../setup/watch";
 
 describe("Setup: Synchronous clarity start tests", () => {
 

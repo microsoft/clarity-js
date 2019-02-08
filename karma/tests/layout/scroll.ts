@@ -1,9 +1,9 @@
+import { cleanupPage, setupPage } from "@karma/setup/page";
+import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
+import { testAsync } from "@karma/setup/testasync";
+import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
 import { Action, Source } from "../../../types/layout";
-import { cleanupPage, setupPage } from "../../setup/page";
-import { PubSubEvents, waitFor } from "../../setup/pubsub";
-import { testAsync } from "../../setup/testasync";
-import { stopWatching, watch } from "../../setup/watch";
 
 describe("Layout: Scroll Tests", () => {
 

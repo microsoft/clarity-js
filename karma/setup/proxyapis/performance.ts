@@ -1,4 +1,4 @@
-import { createMockPerformanceObject } from "../mocks/performance";
+import { createMockPerformanceObject } from "@karma/setup/mocks/performance";
 
 const w: any = window;
 let _performance: Performance = null;

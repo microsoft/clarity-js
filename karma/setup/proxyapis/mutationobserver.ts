@@ -1,4 +1,4 @@
-import { publishAsync, PubSubEvents } from "../pubsub";
+import { publishAsync, PubSubEvents } from "@karma/setup/pubsub";
 
 let _MutationObserver: typeof MutationObserver = null;
 

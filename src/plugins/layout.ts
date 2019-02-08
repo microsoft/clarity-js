@@ -1,12 +1,12 @@
+import { config } from "@src/config";
+import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "@src/core";
+import { debug, mask, traverseNodeTree } from "@src/utils";
 import { IEventData, IPlugin } from "../../types/core";
 import { Instrumentation, IShadowDomInconsistentEventState } from "../../types/instrumentation";
 import {
   Action, IElementLayoutState, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo, INodeInfo, InsertRuleHandler,
   IShadowDomMutationSummary, IShadowDomNode, IStyleLayoutState, LayoutRoutine, NumberJson, Source
 } from "../../types/layout";
-import { config } from "./../config";
-import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "./../core";
-import { debug, mask, traverseNodeTree } from "./../utils";
 import { ShadowDom } from "./layout/shadowdom";
 import { getCssRules, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 

@@ -1,12 +1,12 @@
+import { restartClarity } from "@karma/setup/clarity";
+import { cleanupPage, setupPage } from "@karma/setup/page";
+import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
+import { testAsync } from "@karma/setup/testasync";
+import { stopWatching, watch } from "@karma/setup/watch";
 import { ForceMaskAttribute } from "@src/plugins/layout/nodeinfo";
 import { mask } from "@src/utils";
 import { assert } from "chai";
 import { Action, Source } from "../../../types/layout";
-import { restartClarity } from "../../setup/clarity";
-import { cleanupPage, setupPage } from "../../setup/page";
-import { PubSubEvents, waitFor } from "../../setup/pubsub";
-import { testAsync } from "../../setup/testasync";
-import { stopWatching, watch } from "../../setup/watch";
 
 describe("Layout: Privacy Tests", () => {
 

@@ -1,6 +1,6 @@
+import { bind, instrument } from "@src/core";
 import { IPlugin } from "../../types/core";
 import { IJsErrorEventState, Instrumentation } from "../../types/instrumentation";
-import { bind, instrument } from "../core";
 
 export default class ErrorMonitor implements IPlugin {
 

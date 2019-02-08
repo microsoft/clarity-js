@@ -1,11 +1,11 @@
+import { restartClarity } from "@karma/setup/clarity";
+import { createMockPerformanceResourceTimings, IMockPerformance } from "@karma/setup/mocks/performance";
+import { cleanupPage, setupPage } from "@karma/setup/page";
+import { testAsync } from "@karma/setup/testasync";
+import { filterEventsByType, getFullImpressionWatchResult, stopWatching, watch } from "@karma/setup/watch";
 import { ResourceTimingEventType } from "@src/plugins/performance";
 import { assert } from "chai";
 import { IPerformanceResourceTimingState, IPerformanceTiming } from "../../types/performance";
-import { restartClarity } from "../setup/clarity";
-import { createMockPerformanceResourceTimings as createMockPerformanceResourceTimings, IMockPerformance } from "../setup/mocks/performance";
-import { cleanupPage, setupPage } from "../setup/page";
-import { testAsync } from "../setup/testasync";
-import { filterEventByType as filterEventsByType, getFullImpressionWatchResult, stopWatching, watch } from "../setup/watch";
 
 let resourceTimingEventName = "ResourceTiming";
 let stateErrorEventName = "PerformanceStateError";

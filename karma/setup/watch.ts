@@ -86,6 +86,6 @@ export function onUpload(message: any, data: any): void {
     }
 }
 
-export function filterEventByType(events: IEvent[], type: string): IEvent[] {
+export function filterEventsByType(events: IEvent[], type: string): IEvent[] {
     return events.filter((event: IEvent): boolean => event.type === type);
 }

@@ -1,10 +1,10 @@
+import { restartClarity } from "@karma/setup/clarity";
+import { cleanupPage, setupPage } from "@karma/setup/page";
+import { testAsync } from "@karma/setup/testasync";
+import { getFullImpressionWatchResult } from "@karma/setup/watch";
 import { ClarityAttribute } from "@src/core";
 import { assert } from "chai";
 import { Instrumentation } from "../../../types/instrumentation";
-import { restartClarity } from "../../setup/clarity";
-import { cleanupPage, setupPage } from "../../setup/page";
-import { testAsync } from "../../setup/testasync";
-import { getFullImpressionWatchResult } from "../../setup/watch";
 
 const instrumentationEventName = "Instrumentation";
 

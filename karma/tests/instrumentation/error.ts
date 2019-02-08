@@ -1,10 +1,10 @@
 import * as merge from "merge";
 
+import { MockErrorInit, MockErrorMessage } from "@karma/setup/mocks/error";
+import { cleanupPage, setupPage } from "@karma/setup/page";
+import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
 import { Instrumentation } from "../../../types/instrumentation";
-import { MockErrorInit, MockErrorMessage } from "../../setup/mocks/error";
-import { cleanupPage, setupPage } from "../../setup/page";
-import { stopWatching, watch } from "../../setup/watch";
 
 describe("Error Tests", () => {
 
