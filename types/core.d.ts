@@ -6,10 +6,10 @@ export const enum State {
   Unloading
 }
 
-export abstract class IPlugin {
-  public abstract activate(): void;
-  public abstract teardown(): void;
-  public abstract reset(): void;
+export interface IPlugin {
+  activate(): void;
+  teardown(): void;
+  reset(): void;
 }
 
 export interface IPayload {
