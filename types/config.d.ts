@@ -38,10 +38,6 @@ export interface IConfig {
     // Names of the attributes that need to be masked (on top of default ones), when showText is false
     sensitiveAttributes?: string[];
 
-    // Maximum number of milliseconds, after which Clarity should yield the thread
-    // It is used to avoid freezing the page during large object serialization
-    timeToYield?: number;
-
     // Send back instrumentation data, if set to true
     instrument?: boolean;
 
