@@ -6,9 +6,9 @@ import { IPointerModule, IPointerState } from "@clarity-types/pointer";
 import { addEvent, bind } from "@src/core";
 
 export default class Pointer implements IPlugin {
-  private eventName = "Pointer";
-  private distanceThreshold = 20;
-  private timeThreshold = 500;
+  private eventName: string = "Pointer";
+  private distanceThreshold: number = 20;
+  private timeThreshold: number = 500;
   private lastMoveState: IPointerState;
   private lastMoveTime: number;
 

@@ -10,7 +10,7 @@ export const PerformanceStateErrorEventType = "PerformanceStateError";
 
 export default class PerformanceProfiler implements IPlugin {
 
-  private readonly timeoutLength = 1000;
+  private readonly timeoutLength: number = 1000;
 
   private urlBlacklist: string[];
   private lastInspectedEntryIndex: number;
@@ -22,7 +22,7 @@ export default class PerformanceProfiler implements IPlugin {
   // If that is not the case (e.g. performance.clearResourceTimings() was used), then
   // some entries may be missed and consistency is not guaranteed.
   // Set this flag to 'true' if we detect that something went wrong (e.g. new array length < lastInspectedEntryIndex)
-  private stateError = false;
+  private stateError: boolean = false;
 
   // IE has a very 'unique' way of working with performance entries
   // Each time you invoke getEntries() it returns a list of brand new objects,

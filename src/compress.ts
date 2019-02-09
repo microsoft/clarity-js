@@ -12,6 +12,7 @@
 export default function(uncompressed: string) {
   var bitsPerChar = 6;
   var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  // @ts-ignore: Implicity 'any' type
   var getCharFromInt = function(a) { return keyStrBase64.charAt(a); }
   if (uncompressed == null) return "";
   var i, value,

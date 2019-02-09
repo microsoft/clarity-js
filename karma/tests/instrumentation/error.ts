@@ -1,3 +1,4 @@
+// @ts-ignore: 'merge' implicityly has 'any' type. There are no typings for 'merge'
 import * as merge from "merge";
 
 import { Instrumentation } from "@clarity-types/instrumentation";

@@ -10,9 +10,11 @@ export default function(compressed: string) {
   var f = String.fromCharCode;
   var length = compressed.length;
   var resetValue = 32;
+  // @ts-ignore: Implicit 'any' type
   var getNextValue = function(index) { return getBaseValue(keyStrBase64, compressed.charAt(index)); }
   var baseReverseDic = {};
 
+  // @ts-ignore: Implicit 'any' type
   function getBaseValue(alphabet, character) {
     if (!baseReverseDic[alphabet]) {
       baseReverseDic[alphabet] = {};
@@ -162,6 +164,7 @@ export default function(compressed: string) {
     }
 
     if (dictionary[c]) {
+      // @ts-ignore: Type 'string | number' is not assignable to type 'string'
       entry = dictionary[c];
     } else {
       if (c === dictSize) {

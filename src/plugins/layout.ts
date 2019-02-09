@@ -11,9 +11,9 @@ import { ShadowDom } from "./layout/shadowdom";
 import { getCssRules, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
-  private readonly cssTimeoutLength = 50;
-  private eventName = "Layout";
-  private distanceThreshold = 5;
+  private readonly cssTimeoutLength: number = 50;
+  private eventName: string = "Layout";
+  private distanceThreshold: number = 5;
   private shadowDom: ShadowDom;
   private inconsistentShadowDomCount: number;
   private observer: MutationObserver;

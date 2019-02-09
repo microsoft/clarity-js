@@ -71,7 +71,6 @@ describe("Layout: Scroll Tests", () => {
         // Add a scrollable DIV
         let outerDiv = document.createElement("div");
         let innerDiv = document.createElement("div");
-        let mutationCount = 0;
         outerDiv.style.overflowY = "visible";
         outerDiv.style.width = "200px";
         innerDiv.style.height = "300px";

@@ -3,11 +3,11 @@ import { IViewportState } from "@clarity-types/viewport";
 import { addEvent, bind } from "@src/core";
 
 export default class Viewport implements IPlugin {
-  private eventName = "Viewport";
-  private distanceThreshold = 20;
+  private eventName: string = "Viewport";
+  private distanceThreshold: number = 20;
   private lastViewportState: IViewportState;
-  private body = document.body;
-  private documentElement = document.documentElement;
+  private body: HTMLElement = document.body;
+  private documentElement: HTMLElement = document.documentElement;
 
   public activate(): void {
     this.processState(this.getViewport("discover"));
