@@ -9,7 +9,7 @@ export default class Viewport implements IPlugin {
   private body = document.body;
   private documentElement = document.documentElement;
 
-  public activate() {
+  public activate(): void {
     this.processState(this.getViewport("discover"));
     bind(window, "scroll", this.viewportHandler.bind(this));
     bind(window, "resize", this.viewportHandler.bind(this));
@@ -18,7 +18,7 @@ export default class Viewport implements IPlugin {
     bind(document, "visibilitychange", this.viewportHandler.bind(this));
   }
 
-  public teardown() {
+  public teardown(): void {
     // Nothing to teardown
   }
 
@@ -26,7 +26,7 @@ export default class Viewport implements IPlugin {
     this.lastViewportState = null;
   }
 
-  private viewportHandler(evt: Event) {
+  private viewportHandler(evt: Event): void {
     let viewportState = this.getViewport(evt.type);
     this.processState(viewportState);
   }
@@ -64,7 +64,7 @@ export default class Viewport implements IPlugin {
      return documentHeight;
   }
 
-  private processState(state: IViewportState) {
+  private processState(state: IViewportState): void {
     let recordState = true;
     if (state.event === "scroll"
       && this.lastViewportState !== null
@@ -77,7 +77,7 @@ export default class Viewport implements IPlugin {
     }
   }
 
-  private checkDistance(stateOne: IViewportState, stateTwo: IViewportState) {
+  private checkDistance(stateOne: IViewportState, stateTwo: IViewportState): boolean {
     let dx = stateOne.viewport.x - stateTwo.viewport.x;
     let dy = stateOne.viewport.y - stateTwo.viewport.y;
     return (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold);

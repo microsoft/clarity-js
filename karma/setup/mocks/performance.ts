@@ -23,7 +23,7 @@ export function createMockPerformanceObject(): IMockPerformance {
         getEntriesByType(type: string): IMockPerformanceEntry[] {
             return entries.filter((entry: IMockPerformanceEntry): boolean => entry.entryType === type);
         },
-        clearResourceTimings() {
+        clearResourceTimings(): void {
             entries = entries.filter((entry: IMockPerformanceEntry): boolean => entry.entryType !== "resource");
         }
     };

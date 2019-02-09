@@ -12,7 +12,7 @@ export default class Pointer implements IPlugin {
   private lastMoveState: IPointerState;
   private lastMoveTime: number;
 
-  public activate() {
+  public activate(): void {
     bind(document, "mousedown", this.pointerHandler.bind(this, mouse));
     bind(document, "mouseup", this.pointerHandler.bind(this, mouse));
     bind(document, "mousemove", this.pointerHandler.bind(this, mouse));
@@ -33,14 +33,14 @@ export default class Pointer implements IPlugin {
     this.lastMoveTime = 0;
   }
 
-  private pointerHandler(handler: IPointerModule, evt: Event) {
+  private pointerHandler(handler: IPointerModule, evt: Event): void {
     let states = handler.transform(evt);
     for (let state of states) {
       this.processState(state, evt.timeStamp);
     }
   }
 
-  private processState(state: IPointerState, time: number) {
+  private processState(state: IPointerState, time: number): void {
     switch (state.event) {
       case "mousemove":
       case "touchmove":
@@ -58,13 +58,13 @@ export default class Pointer implements IPlugin {
     }
   }
 
-  private checkDistance(stateOne: IPointerState, stateTwo: IPointerState) {
+  private checkDistance(stateOne: IPointerState, stateTwo: IPointerState): boolean {
     let dx = stateOne.x - stateTwo.x;
     let dy = stateOne.y - stateTwo.y;
     return (dx * dx + dy * dy > this.distanceThreshold * this.distanceThreshold);
   }
 
-  private checkTime(time: number) {
+  private checkTime(time: number): boolean {
     return time - this.lastMoveTime > this.timeThreshold;
   }
 }

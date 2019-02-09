@@ -4,7 +4,7 @@ import { bind, instrument } from "@src/core";
 
 export default class ErrorMonitor implements IPlugin {
 
-    public activate() {
+    public activate(): void {
         bind(window, "error", logError);
     }
 
@@ -12,12 +12,12 @@ export default class ErrorMonitor implements IPlugin {
         return;
     }
 
-    public teardown() {
+    public teardown(): void {
         return;
     }
 }
 
-export function logError(errorToLog: Event) {
+export function logError(errorToLog: Event): void {
     // if errorToLog["error"] doesn't exist, occasionally we can get information directly from errorToLog
     let error = errorToLog["error"] || errorToLog;
     let source = errorToLog["filename"];

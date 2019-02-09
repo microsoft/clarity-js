@@ -2,7 +2,7 @@ import { IEnvelope, IEvent, IPayload } from "@clarity-types/core";
 
 export const MockEventName = "ClarityTestMockEvent";
 
-export function createMockEvent(eventName?: string) {
+export function createMockEvent(eventName?: string): IEvent {
     let mockEvent: IEvent = {
         id: -1,
         state: {},

@@ -62,7 +62,7 @@ export function mapProperties(sourceObj: object,
   return outObj;
 }
 
-export function traverseNodeTree(root: Node, processingFunc: (node: Node) => void, includeRoot: boolean = true) {
+export function traverseNodeTree(root: Node, processingFunc: (node: Node) => void, includeRoot: boolean = true): void {
   let queue = [root];
   while (queue.length > 0) {
     let next = queue.shift();
@@ -77,7 +77,7 @@ export function traverseNodeTree(root: Node, processingFunc: (node: Node) => voi
   }
 }
 
-export function roundingMapFunction(name: string, value: any) {
+export function roundingMapFunction(name: string, value: any): any {
   return (isNumber(value)) ? Math.round(value) : value;
 }
 
@@ -85,7 +85,7 @@ export function isNumber(value: any): boolean {
   return (typeof value === "number" && !isNaN(value));
 }
 
-export function assert(condition: boolean, source: string, comment: string) {
+export function assert(condition: boolean, source: string, comment: string): void {
   if (condition === false) {
     debug(`>>> Clarity Assert failed\nSource: ${source}\nComment: ${comment}`);
     let eventState: IClarityAssertFailedEventState = {
@@ -97,20 +97,20 @@ export function assert(condition: boolean, source: string, comment: string) {
   }
 }
 
-export function debug(text) {
+export function debug(text: string): void {
   if (config.debug && console.log) {
     console.log(`(Clarity) ${text}`);
   }
 }
 
-export function getEventId(eventArray: IEventArray) {
+export function getEventId(eventArray: IEventArray): number {
   return eventArray[0];
 }
 
-export function getEventType(eventArray: IEventArray) {
+export function getEventType(eventArray: IEventArray): string {
   return eventArray[1];
 }
 
-export function mask(text: string) {
+export function mask(text: string): string {
   return text.replace(/\S/gi, "*");
 }

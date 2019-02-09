@@ -11,13 +11,13 @@ const _publishSync = PubSub.publishSync;
 // Our tests are instrumented with Jasmine clock, which means that async publish wouldn't trigger until we manually
 // move the clock forward. However, jasmine clock tick is synchronous, so then publish would work as publishSync.
 // One should use an explicit publishAsync utility function provided below to achieve true async behavior.
-(PubSub as any).publish = () => {
+(PubSub as any).publish = (): boolean => {
     throw new Error("Direct use of PubSub 'publish' is disallowed.");
 };
 
 // Synchronous publishing can get out of control very easily and result in some complicated bugs - avoid using it
 // If it is absolutely required, use an explicity publishSync utility function provided below.
-(PubSub as any).publishSync = () => {
+(PubSub as any).publishSync = (): boolean => {
     throw new Error("Direct use of PubSub 'publishSync' is disallowed.");
 };
 
@@ -63,11 +63,11 @@ export function publishAsync(message: any, data: any): void {
     timeouts[timeoutId] = timeoutId;
 }
 
-export function unsubscribeAll() {
+export function unsubscribeAll(): void {
     PubSub.clearAllSubscriptions();
 }
 
-export function revokeAllMessages() {
+export function revokeAllMessages(): void {
     const timeoutIds = Object.keys(timeouts);
     for (const timeoutIdStr of timeoutIds) {
         const timeoutId = timeouts[timeoutIdStr];
@@ -77,13 +77,13 @@ export function revokeAllMessages() {
 }
 
 export async function waitFor(message: any, abandonAfterMs?: number): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-        function onMessage() {
+    return new Promise((resolve: any, reject: any): void => {
+        function onMessage(): void {
             PubSub.unsubscribe(subToken);
             clearRealTimeout(abandonTimeout);
             resolve(true);
         }
-        function onTimeout() {
+        function onTimeout(): void {
             PubSub.unsubscribe(subToken);
             resolve(false);
         }
@@ -97,7 +97,7 @@ export async function waitFor(message: any, abandonAfterMs?: number): Promise<bo
 
 // Yielding thread allows subscribers receive and process async messages
 export async function yieldThread(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: any, reject: any): void => {
         setRealTimeout(resolve, 0);
     });
 }

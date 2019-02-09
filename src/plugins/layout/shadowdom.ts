@@ -42,7 +42,7 @@ export class ShadowDom {
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
     shadowNode.id = "" + index;
     shadowNode.node = node;
-    shadowNode.computeInfo = () => {
+    shadowNode.computeInfo = (): INodeInfo => {
       let parentNode = shadowNode.parentNode as IShadowDomNode;
       let info = createNodeInfo(node, parentNode ? parentNode.info : null);
       shadowNode.info = info;
@@ -93,14 +93,14 @@ export class ShadowDom {
     return shadowNode;
   }
 
-  public updateShadowNode(index: number) {
+  public updateShadowNode(index: number): void {
     let shadowNode = this.getShadowNode(index);
     if (shadowNode && this.classifyNodes) {
       this.setClass(shadowNode, UpdatedNodeClassName);
     }
   }
 
-  public removeShadowNode(index: number) {
+  public removeShadowNode(index: number): void {
     let shadowNode = this.getShadowNode(index);
     if (shadowNode) {
       this.setClass(shadowNode, MovedNodeClassName);
@@ -182,23 +182,23 @@ export class ShadowDom {
     return summary;
   }
 
-  public hasClass(shadowNode: IShadowDomNode, className: string) {
+  public hasClass(shadowNode: IShadowDomNode, className: string): boolean {
     return shadowNode ? shadowNode.classList.contains(className) : false;
   }
 
-  public setClass(shadowNode: IShadowDomNode, className: string) {
+  public setClass(shadowNode: IShadowDomNode, className: string): void {
     if (shadowNode) {
       shadowNode.classList.add(className);
     }
   }
 
-  public removeClass(shadowNode: IShadowDomNode, className: string) {
+  public removeClass(shadowNode: IShadowDomNode, className: string): void {
     if (shadowNode) {
       shadowNode.classList.remove(className);
     }
   }
 
-  public removeAllClasses(shadowNode: IShadowDomNode) {
+  public removeAllClasses(shadowNode: IShadowDomNode): void {
     if (shadowNode) {
       shadowNode.removeAttribute("class");
     }
@@ -263,7 +263,7 @@ export class ShadowDom {
     return this.isConstentSubtree(document, this.shadowDocument);
   }
 
-  private cleanUp() {
+  private cleanUp(): void {
 
     // For each removed dom node, remove its index and its shadow dom reference
     traverseNodeTree(this.removedNodes, (removedNode: IShadowDomNode) => {
@@ -281,7 +281,7 @@ export class ShadowDom {
     this.classifyNodes = false;
   }
 
-  private writeIndexToJson(node: Node, json: NumberJson, getIndexFromNode: (node: Node) => number) {
+  private writeIndexToJson(node: Node, json: NumberJson, getIndexFromNode: (node: Node) => number): void {
     let index = getIndexFromNode(node);
     let childJson: number[] = [];
     let nextChild = node.firstChild;
@@ -318,7 +318,7 @@ export class ShadowDom {
     return isConsistent;
   }
 
-  private applyInsert(addedNode: Node, parent: Node, previousSibling: Node, nextSibling: Node, force: boolean) {
+  private applyInsert(addedNode: Node, parent: Node, previousSibling: Node, nextSibling: Node, force: boolean): void {
     let addedNodeIndex = getNodeIndex(addedNode);
     let parentIndex = getNodeIndex(parent);
     let nextSiblingIndex = getNodeIndex(nextSibling);
@@ -343,7 +343,7 @@ export class ShadowDom {
     }
   }
 
-  private applyRemove(removedNode: Node, parent: Node) {
+  private applyRemove(removedNode: Node, parent: Node): void {
     let removedNodeIndex = getNodeIndex(removedNode);
     if (removedNodeIndex !== null) {
       let validMutation = this.shouldProcessChildListMutation(removedNode, parent);
@@ -353,7 +353,7 @@ export class ShadowDom {
     }
   }
 
-  private applyUpdate(updatedNode: Node, attrName: string, oldValue: string) {
+  private applyUpdate(updatedNode: Node, attrName: string, oldValue: string): void {
     let updatedNodeIndex = getNodeIndex(updatedNode);
     if (updatedNodeIndex != null) {
       this.updateShadowNode(updatedNodeIndex);
@@ -368,7 +368,7 @@ export class ShadowDom {
   //     nodes, we have already processed their entire child list in the real page DOM and all children received an insert action.
   //     This means that any other mutations are either temporary (insert something that will end up being removed) or redundant, so
   //     we can skip them
-  private shouldProcessChildListMutation(child: Node, parent: Node) {
+  private shouldProcessChildListMutation(child: Node, parent: Node): boolean {
     let childNodeIndex = getNodeIndex(child);
     let parentIndex = getNodeIndex(parent);
     let parentShadowNode = null;
@@ -386,7 +386,7 @@ export class ShadowDom {
   // thus 'stealing' an index with them. Since we don't instrument nodes that were added and removed within the same
   // mutation batch, we have no records of these stolen indices. To maintain consistency on the backend, at the end of the mutation,
   // we can re-assign indices for all nodes that remained attached to the DOM such that they all go in increasing order without gaps
-  private reIndexNewNodes(newNodes: IShadowDomNode[], nextIndex: number) {
+  private reIndexNewNodes(newNodes: IShadowDomNode[], nextIndex: number): void {
     newNodes.map((shadowNode: IShadowDomNode) => {
       let index = getNodeIndex(shadowNode.node);
       delete this.nodeMap[index];

@@ -12,7 +12,7 @@ export class SchemaManager {
     this.reset();
   }
 
-  public reset() {
+  public reset(): void {
     this.schemas = [];
     this.schemaToIdMap = {};
   }
@@ -88,7 +88,7 @@ export class SchemaManager {
   }
 }
 
-export function resetSchemas() {
+export function resetSchemas(): void {
   schemaManager.reset();
 }
 

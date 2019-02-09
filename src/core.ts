@@ -43,7 +43,7 @@ let timeout: number;
 
 export let state: State = State.Loaded;
 
-export function activate() {
+export function activate(): void {
   state = State.Activating;
 
   // First, try to initalize core variables to allow Clarity perform minimal logging and safe teardowns.
@@ -73,7 +73,7 @@ export function activate() {
   state = State.Activated;
 }
 
-export function teardown() {
+export function teardown(): void {
   if (state === State.Activating || state === State.Activated) {
     state = State.Unloading;
     for (let plugin of activePlugins) {
@@ -108,7 +108,7 @@ export function teardown() {
   }
 }
 
-export function bind(target: EventTarget, event: string, listener: EventListener) {
+export function bind(target: EventTarget, event: string, listener: EventListener): void {
   let eventBindings = bindings[event] || [];
   target.addEventListener(event, listener, false);
   eventBindings.push({
@@ -118,7 +118,7 @@ export function bind(target: EventTarget, event: string, listener: EventListener
   bindings[event] = eventBindings;
 }
 
-export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
+export function addEvent(event: IEventData, scheduleUpload: boolean = true): void {
   let evtJson: IEvent = {
     id: eventCount++,
     time: isNumber(event.time) ? event.time : getTimestamp(),
@@ -142,7 +142,7 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true) {
   }
 }
 
-export function addMultipleEvents(events: IEventData[]) {
+export function addMultipleEvents(events: IEventData[]): void {
   if (events.length > 0) {
     // Don't schedule upload until we add the last event
     for (let i = 0; i < events.length - 1; i++) {
@@ -153,7 +153,7 @@ export function addMultipleEvents(events: IEventData[]) {
   }
 }
 
-export function onTrigger(key: string) {
+export function onTrigger(key: string): void {
   if (state === State.Activated) {
     let triggerState: ITriggerState = {
       type: Instrumentation.Trigger,
@@ -165,7 +165,7 @@ export function onTrigger(key: string) {
   }
 }
 
-export function forceCompression() {
+export function forceCompression(): void {
   if (compressionWorker) {
     let forceCompressionMessage: ITimestampedWorkerMessage = {
       type: WorkerMessageType.ForceCompression,
@@ -175,18 +175,18 @@ export function forceCompression() {
   }
 }
 
-export function getTimestamp(unix?: boolean, raw?: boolean) {
+export function getTimestamp(unix?: boolean, raw?: boolean): number {
   let time = unix ? getUnixTimestamp() : getPageContextBasedTimestamp();
   return (raw ? time : Math.round(time));
 }
 
-export function instrument(eventState: IInstrumentationEventState) {
+export function instrument(eventState: IInstrumentationEventState): void {
   if (config.instrument) {
     addEvent({type: InstrumentationEventName, state: eventState});
   }
 }
 
-export function onWorkerMessage(evt: MessageEvent) {
+export function onWorkerMessage(evt: MessageEvent): void {
   if (state !== State.Unloaded) {
     let message = evt.data;
     switch (message.type) {
@@ -228,7 +228,7 @@ function getPageContextBasedTimestamp(): number {
     : new Date().getTime() - startTime;
 }
 
-function uploadPendingEvents() {
+function uploadPendingEvents(): void {
   // We don't want to upload any data if Clarity is in background mode
   if (backgroundMode) {
     return;
@@ -249,7 +249,7 @@ function uploadPendingEvents() {
   }
 }
 
-function init() {
+function init(): void {
   // Set ClarityID cookie, if it's not set already and is allowed by config
   if (!config.disableCookie && !getCookie(Cookie)) {
     // setting our ClarityId cookie for 2 years
@@ -298,7 +298,7 @@ function init() {
   compressionWorker = createCompressionWorker(envelope, onWorkerMessage);
 }
 
-function prepare() {
+function prepare(): boolean {
   // If critical API is missing, don't activate Clarity
   if (!checkFeatures()) {
     return false;
@@ -320,7 +320,7 @@ function prepare() {
   return true;
 }
 
-function activatePlugins() {
+function activatePlugins(): void {
   for (let plugin of config.plugins) {
     let pluginClass = getPlugin(plugin);
     if (pluginClass) {
@@ -332,7 +332,7 @@ function activatePlugins() {
   }
 }
 
-function onActivateErrorUnsafe(e: Error) {
+function onActivateErrorUnsafe(e: Error): void {
   try {
     onActivateError(e);
   } catch (e) {
@@ -340,7 +340,7 @@ function onActivateErrorUnsafe(e: Error) {
   }
 }
 
-function onActivateError(e: Error) {
+function onActivateError(e: Error): void {
   let clarityActivateError: IClarityActivateErrorState = {
     type: Instrumentation.ClarityActivateError,
     error: e.message
@@ -349,7 +349,7 @@ function onActivateError(e: Error) {
   teardown();
 }
 
-function checkFeatures() {
+function checkFeatures(): boolean {
   let missingFeatures = [];
   let expectedFeatures = [
     "document.implementation.createHTMLDocument",

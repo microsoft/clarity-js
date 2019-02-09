@@ -55,8 +55,8 @@ export default class Layout implements IPlugin {
       // by injecting CSS using insertRule API vs. appending text node. A side effect of
       // using javascript API is that it doesn't trigger DOM mutation and therefore we
       // need to override the insertRule API and listen for changes manually.
-      CSSStyleSheet.prototype.insertRule = function(style, index) {
-        let value = that.insertRule.call(this, style, index);
+      CSSStyleSheet.prototype.insertRule = function(rule: string, index?: number): number {
+        let value = that.insertRule.call(this, rule, index);
         that.queueCss(this.ownerNode);
         return value;
       };
@@ -94,7 +94,7 @@ export default class Layout implements IPlugin {
     }
   }
 
-  private discoverDom() {
+  private discoverDom(): void {
     // All 'Discover' events together should be treated as an atomic 'Discover' operation and should have the same timestamp
     const discoverTime = getTimestamp();
     traverseNodeTree(document, (node: Node) => {
@@ -120,7 +120,7 @@ export default class Layout implements IPlugin {
     return nodeInfo;
   }
 
-  private watch(node: Node, nodeLayoutState: ILayoutState) {
+  private watch(node: Node, nodeLayoutState: ILayoutState): void {
 
     // We only wish to watch elements once and then wait on the events to push changes
     if (node.nodeType !== Node.ELEMENT_NODE || this.watchList[nodeLayoutState.index]) {
@@ -148,7 +148,7 @@ export default class Layout implements IPlugin {
     }
   }
 
-  private queueCss(element: Element) {
+  private queueCss(element: Element): void {
     // Clear the timeout if it already exists
     if (this.cssTimeout) {
       clearTimeout(this.cssTimeout);
@@ -162,13 +162,13 @@ export default class Layout implements IPlugin {
     this.cssTimeout = window.setTimeout(this.cssDequeue.bind(this), this.cssTimeoutLength);
   }
 
-  private cssDequeue() {
+  private cssDequeue(): void {
     for (let element of this.cssElementQueue) {
       this.layoutHandler(element, Source.Css);
     }
   }
 
-  private layoutHandler(element: Element, source: Source) {
+  private layoutHandler(element: Element, source: Source): void {
     let index = getNodeIndex(element);
     let nodeInfo = this.shadowDom.getNodeInfo(index);
     if (nodeInfo) {
@@ -208,7 +208,7 @@ export default class Layout implements IPlugin {
     }
   }
 
-  private mutation(mutations: MutationRecord[]) {
+  private mutation(mutations: MutationRecord[]): void {
 
     // Don't process mutations on top of the inconsistent state.
     // ShadowDom mutation processing logic requires consistent state as a prerequisite.

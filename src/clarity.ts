@@ -5,17 +5,17 @@ import { activate, onTrigger, state, teardown } from "./core";
 import { mapProperties } from "./utils";
 export { version } from "./core";
 
-export function start(customConfig?: IConfig) {
+export function start(customConfig?: IConfig): void {
   if (state !== State.Activated) {
     mapProperties(customConfig, null, true, config);
     activate();
   }
 }
 
-export function stop() {
+export function stop(): void {
   teardown();
 }
 
-export function trigger(key: string) {
+export function trigger(key: string): void {
   onTrigger(key);
 }

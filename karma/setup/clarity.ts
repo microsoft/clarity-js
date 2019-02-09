@@ -24,7 +24,7 @@ export async function startClarity(_config?: Partial<IConfig>, _startOptions?: I
     testConfig.delay = uploadDelay;
 
     const _uploadHandler = testConfig.uploadHandler;
-    testConfig.uploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback) => {
+    testConfig.uploadHandler = (payload: string, onSuccess?: UploadCallback, onFailure?: UploadCallback): void => {
         testUploadHandler(payload, onSuccess, onFailure);
         if (_uploadHandler) {
             _uploadHandler(payload, onSuccess, onFailure);
@@ -41,7 +41,7 @@ export async function startClarity(_config?: Partial<IConfig>, _startOptions?: I
     }
 }
 
-export function stopClarity() {
+export function stopClarity(): void {
     clarity.stop();
 }
 
@@ -62,7 +62,7 @@ export function triggerClarity(key?: string): void {
 }
 
 export async function triggerClarityAndWaitForUpload(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: any, reject: any): void => {
         waitFor(PubSubEvents.UPLOAD).then(() => resolve());
         triggerClarity();
     });
@@ -84,7 +84,7 @@ export function triggerMutationEvent(attrs?: { [key: string]: string }): HTMLEle
 export async function triggerMutationEventAndWaitForUpload(
     attrs?: { [key: string]: string }
 ): Promise<HTMLElement> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: any, reject: any): void => {
         const triggerElem = triggerMutationEvent(attrs);
         waitFor(PubSubEvents.MUTATION).then(() => {
             waitFor(PubSubEvents.UPLOAD).then(() => resolve(triggerElem));
@@ -107,8 +107,8 @@ function testUploadHandler(payload: string, onSuccess?: UploadCallback, onFailur
 }
 
 async function flushInitialActivity(): Promise<void> {
-    return new Promise((resolve, reject) => {
-        function tryResolve() {
+    return new Promise((resolve: any, reject: any): void => {
+        function tryResolve(): void {
             hasActivity()
                 .then((active: boolean) => {
                     if (active) {
@@ -129,7 +129,7 @@ async function flushInitialActivity(): Promise<void> {
 }
 
 async function hasActivity(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: any, reject: any): void => {
         const allWatch = getFullImpressionWatchResult();
         const processedEvents = activeConfig.backgroundMode ? allWatch.compressedEvents : allWatch.sentEvents;
         if (allWatch.coreEvents.length === processedEvents.length) {

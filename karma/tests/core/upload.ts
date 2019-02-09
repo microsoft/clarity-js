@@ -18,7 +18,7 @@ describe("Data Upload Tests", () => {
 
     it("validates that custom upload handler is invoked when passed through config", testAsync(async (done: DoneFn) => {
         let customerUploadHandlerInvoked: boolean = false;
-        function customUploadHandler(payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) {
+        function customUploadHandler(payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback): void {
             customerUploadHandlerInvoked = true;
         }
         await restartClarity({ uploadHandler: customUploadHandler });
@@ -30,7 +30,7 @@ describe("Data Upload Tests", () => {
     it("validates that XhrError is logged for failed requests through the 'onFailure' upload callback",
         testAsync(async (done: DoneFn) => {
             let shouldMockFailure: boolean = false;
-            function customUploadHandler(payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) {
+            function customUploadHandler(payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback): void {
                 if (shouldMockFailure) {
                     // Suppose XHR was opened and returned a 400 code
                     onFailure(400);
@@ -63,7 +63,7 @@ describe("Data Upload Tests", () => {
     it("validates that Clarity tears down and logs instrumentation when total byte limit is exceeded",
         testAsync(async (done: DoneFn) => {
             let shouldMockSuccess: boolean = false;
-            function customUploadHandler(payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) {
+            function customUploadHandler(payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback): void {
                 if (shouldMockSuccess) {
                     // Internal onSuccess callback is where clarity increments uploaded bytes and matches it against the configured limit
                     onSuccess(200);
@@ -98,7 +98,7 @@ describe("Data Upload Tests", () => {
             const triggerKeyAttrName: string = "data-trigger-key";
             let shouldMockSuccess: boolean = false;
             let shouldMockFailure: boolean = false;
-            function customUploadHandler(payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback) {
+            function customUploadHandler(payload: string, onSuccess: UploadCallback, onFailure?: UploadCallback): void {
                 if (shouldMockSuccess) {
                     // Internal onSuccess callback is where clarity increments uploaded bytes and matches it against the configured limit
                     onSuccess(200);

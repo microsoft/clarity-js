@@ -10,7 +10,7 @@ describe("Error Tests", () => {
 
     let jasmineErrorHandler: ErrorEventHandler = null;
 
-    function preventDefault(e: Event) {
+    function preventDefault(e: Event): void {
         e.preventDefault();
     }
 
@@ -80,7 +80,7 @@ describe("Error Tests", () => {
         done();
     });
 
-    function throwError(errMessage?: string, errEventInit?: ErrorEventInit) {
+    function throwError(errMessage?: string, errEventInit?: ErrorEventInit): void {
         const errInit = merge(true, MockErrorInit, errEventInit);
         const script = document.createElement("script");
         script.type = "text/javascript";
