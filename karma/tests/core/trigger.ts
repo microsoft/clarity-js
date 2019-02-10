@@ -1,7 +1,7 @@
 import { stopClarity, triggerClarityAndWaitForUpload } from "@karma/setup/clarity";
 import { cleanupPage, setupPage } from "@karma/setup/page";
 import { testAsync } from "@karma/setup/testasync";
-import { getFullImpressionWatchResult, stopWatching, watch } from "@karma/setup/watch";
+import { getFullImpressionWatchResult } from "@karma/setup/watch";
 import { assert } from "chai";
 
 describe("Core: Trigger Tests", () => {

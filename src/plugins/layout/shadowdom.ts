@@ -12,11 +12,11 @@ const UpdatedNodeClassName = "cl-updated";
 export class ShadowDom {
   public shadowDocument: IShadowDomNode;
 
-  private doc = document.implementation.createHTMLDocument("ShadowDom");
-  private nextIndex = 0;
-  private removedNodes = this.doc.createElement("div");
-  private shadowDomRoot = this.doc.createElement("div");
-  private classifyNodes = false;
+  private doc: Document = document.implementation.createHTMLDocument("ShadowDom");
+  private nextIndex: number = 0;
+  private removedNodes: HTMLDivElement = this.doc.createElement("div");
+  private shadowDomRoot: HTMLDivElement = this.doc.createElement("div");
+  private classifyNodes: boolean = false;
   private nodeMap: { [key: number]: IShadowDomNode } = {};
 
   constructor() {
@@ -371,12 +371,12 @@ export class ShadowDom {
   private shouldProcessChildListMutation(child: Node, parent: Node): boolean {
     let childNodeIndex = getNodeIndex(child);
     let parentIndex = getNodeIndex(parent);
-    let parentShadowNode = null;
+    let parentShadowNode: IShadowDomNode = null;
     if (childNodeIndex === null) {
       parentShadowNode = this.getShadowNode(parentIndex);
     } else {
       let childShadowNode = this.getShadowNode(childNodeIndex);
-      parentShadowNode = childShadowNode && childShadowNode.parentNode;
+      parentShadowNode = childShadowNode && childShadowNode.parentNode as IShadowDomNode;
     }
     return parentShadowNode && !this.hasClass(parentShadowNode, FinalClassName);
   }

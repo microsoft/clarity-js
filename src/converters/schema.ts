@@ -6,7 +6,7 @@ import { ClarityDataSchema, ObjectType } from "@clarity-types/core";
 export class SchemaManager {
 
   private schemas: ClarityDataSchema[];
-  private schemaToIdMap;
+  private schemaToIdMap: { [key: string]: number };
 
   constructor() {
     this.reset();
