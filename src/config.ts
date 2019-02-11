@@ -15,7 +15,6 @@ export let config: IConfig = {
   showLinks: false,
   showImages: false,
   sensitiveAttributes: [],
-  timeToYield: 50,
   instrument: false,
   uploadHandler: null,
   uploadHeaders: {
