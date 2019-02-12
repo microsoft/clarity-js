@@ -29,7 +29,7 @@ export function shouldIgnoreNode(node: Node, parentIgnored: boolean): boolean {
         // Since iterating over css rules can be 100X slower on certain browsers,
         // we limit ignoring text nodes to STYLE elements with empty text content
         let parent = node.parentNode as Element;
-        if (parent && parent.tagName === "STYLE" && parent.textContent.length === 0) {
+        if (parent && parent.tagName === "STYLE") {
           ignore = true;
         }
       default:

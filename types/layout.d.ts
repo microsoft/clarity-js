@@ -1,6 +1,7 @@
 export type NumberJson = Array<number | number[]>;
 
 export type InsertRuleHandler = (rule: string, index?: number) => number;
+export type DeleteRuleHandler = (index: number) => void;
 
 export interface IShadowDomNode extends HTMLDivElement {
   node: Node;
@@ -127,4 +128,11 @@ export interface IShadowDomMutationSummary {
   movedNodes: IShadowDomNode[];
   removedNodes: IShadowDomNode[];
   updatedNodes: IShadowDomNode[];
+}
+
+export interface ICssRuleState extends ILayoutState {
+  sheetOwnerIndex: number;
+  ruleId: string;
+  css: string;
+  insertIndex: number;
 }

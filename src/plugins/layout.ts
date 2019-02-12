@@ -1,25 +1,27 @@
 import { IEventData, IPlugin } from "@clarity-types/core";
 import { Instrumentation, IShadowDomInconsistentEventState } from "@clarity-types/instrumentation";
 import {
-  Action, IElementLayoutState, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo, INodeInfo, InsertRuleHandler,
-  IShadowDomMutationSummary, IShadowDomNode, IStyleLayoutState, LayoutRoutine, NumberJson, Source
+  Action, DeleteRuleHandler, IElementLayoutState, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo, INodeInfo,
+  InsertRuleHandler, IShadowDomMutationSummary, IShadowDomNode, IStyleLayoutState, LayoutRoutine, NumberJson, Source
 } from "@clarity-types/layout";
 import { config } from "@src/config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "@src/core";
 import { debug, mask, traverseNodeTree } from "@src/utils";
+import { addRule, discoverCss, resetCss } from "./layout/css";
 import { ShadowDom } from "./layout/shadowdom";
 import { getCssRules, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
 
 export default class Layout implements IPlugin {
-  private readonly cssTimeoutLength: number = 50;
+  // private readonly cssTimeoutLength: number = 50;
   private eventName: string = "Layout";
   private distanceThreshold: number = 5;
   private shadowDom: ShadowDom;
   private inconsistentShadowDomCount: number;
   private observer: MutationObserver;
   private insertRule: InsertRuleHandler;
+  private deleteRule: DeleteRuleHandler;
   private cssTimeout: number;
-  private cssElementQueue: Element[];
+  // private cssElementQueue: Element[];
   private watchList: boolean[];
   private mutationSequence: number;
   private lastConsistentDomJson: NumberJson;
@@ -29,17 +31,20 @@ export default class Layout implements IPlugin {
     this.shadowDom = new ShadowDom();
     this.inconsistentShadowDomCount = 0;
     this.watchList = [];
-    this.cssElementQueue = [];
+    // this.cssElementQueue = [];
     this.observer = window["MutationObserver"] ? new MutationObserver(this.mutation.bind(this)) : null;
     this.insertRule = CSSStyleSheet.prototype.insertRule;
+    this.deleteRule = CSSStyleSheet.prototype.deleteRule;
     this.mutationSequence = 0;
     this.lastConsistentDomJson = null;
     this.firstShadowDomInconsistentEvent = null;
     resetStateProvider();
+    resetCss();
   }
 
   public activate(): void {
     this.discoverDom();
+    discoverCss();
     if (this.observer) {
       this.observer.observe(document, {
         attributes: true,
@@ -56,9 +61,20 @@ export default class Layout implements IPlugin {
       // using javascript API is that it doesn't trigger DOM mutation and therefore we
       // need to override the insertRule API and listen for changes manually.
       CSSStyleSheet.prototype.insertRule = function(rule: string, index?: number): number {
-        let value = that.insertRule.call(this, rule, index);
-        that.queueCss(this.ownerNode);
+        const cssSheet: CSSStyleSheet = this;
+        const value = that.insertRule.call(cssSheet, rule, index);
+        const ruleIndex = index || 0;
+        const insertedRule = cssSheet.cssRules[ruleIndex];
+        const sheetOwnerNodeIndex = cssSheet.ownerNode[NodeIndex];
+        addRule(insertedRule, sheetOwnerNodeIndex, index);
         return value;
+      };
+
+      CSSStyleSheet.prototype.deleteRule = function(index: number): void {
+        const cssSheet: CSSStyleSheet = this;
+        const deletedRule = cssSheet.cssRules[index];
+        console.log(deletedRule);
+        that.deleteRule.call(cssSheet, index);
       };
     }
   }
@@ -148,25 +164,25 @@ export default class Layout implements IPlugin {
     }
   }
 
-  private queueCss(element: Element): void {
-    // Clear the timeout if it already exists
-    if (this.cssTimeout) {
-      clearTimeout(this.cssTimeout);
-    }
+  // private queueCss(element: Element): void {
+  //   // Clear the timeout if it already exists
+  //   if (this.cssTimeout) {
+  //     clearTimeout(this.cssTimeout);
+  //   }
 
-    // Queue element to be processed after the timeout triggers
-    if (this.cssElementQueue.indexOf(element) === -1) {
-      this.cssElementQueue.push(element);
-    }
+  //   // Queue element to be processed after the timeout triggers
+  //   if (this.cssElementQueue.indexOf(element) === -1) {
+  //     this.cssElementQueue.push(element);
+  //   }
 
-    this.cssTimeout = window.setTimeout(this.cssDequeue.bind(this), this.cssTimeoutLength);
-  }
+  //   this.cssTimeout = window.setTimeout(this.cssDequeue.bind(this), this.cssTimeoutLength);
+  // }
 
-  private cssDequeue(): void {
-    for (let element of this.cssElementQueue) {
-      this.layoutHandler(element, Source.Css);
-    }
-  }
+  // private cssDequeue(): void {
+  //   for (let element of this.cssElementQueue) {
+  //     this.layoutHandler(element, Source.Css);
+  //   }
+  // }
 
   private layoutHandler(element: Element, source: Source): void {
     let index = getNodeIndex(element);
@@ -251,6 +267,17 @@ export default class Layout implements IPlugin {
       all[i].time = time;
     }
     addMultipleEvents(all);
+
+    for (let i = 0; i < summary.newNodes.length; i++) {
+      let newShadowNode = summary.newNodes[i];
+      let nodeSheet = (newShadowNode.node as any).sheet;
+      if (nodeSheet && nodeSheet instanceof CSSStyleSheet) {
+        const cssRules = (nodeSheet as CSSStyleSheet).cssRules;
+        for (let j = 0; j < cssRules.length; j++) {
+          addRule(cssRules[j], newShadowNode.info.state.index, j);
+        }
+      }
+    }
   }
 
   private processMutation(action: Action, shadowNode: IShadowDomNode): IEventData {
