@@ -4,7 +4,7 @@ import { cleanupPage, setupPage } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
-import { NodeIndex, Tags } from "@src/plugins/layout/stateprovider";
+import { NodeIndex, Tags } from "@src/plugins/layout/states/generic";
 import { assert } from "chai";
 
 describe("Layout: Mutation Tests", () => {

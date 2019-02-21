@@ -1,5 +1,5 @@
-import * as mouse from "./pointer/mouse";
-import * as touch from "./pointer/touch";
+import * as mouse from "./mouse";
+import * as touch from "./touch";
 
 import { IPlugin } from "@clarity-types/core";
 import { IPointerModule, IPointerState } from "@clarity-types/pointer";

@@ -7,8 +7,10 @@ import {
 import { config } from "@src/config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "@src/core";
 import { debug, mask, traverseNodeTree } from "@src/utils";
-import { ShadowDom } from "./layout/shadowdom";
-import { getCssRules, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
+import { ShadowDom } from "./shadowdom";
+import { getNodeIndex, NodeIndex } from "./states/generic";
+import { resetStateProvider } from "./states/stateprovider";
+import { getCssRules } from "./states/style";
 
 export default class Layout implements IPlugin {
   private readonly cssTimeoutLength: number = 50;
@@ -189,8 +191,7 @@ export default class Layout implements IPlugin {
           break;
         case Source.Input:
           let input = element as HTMLInputElement;
-          let showText = config.showText && !nodeInfo.forceMask;
-          layoutState.attributes.value = showText ? input.value : mask(input.value);
+          layoutState.attributes.value = mask(input.value);
           layoutState.source = source;
           layoutState.action = Action.Update;
           addEvent({type: this.eventName, state: layoutState});

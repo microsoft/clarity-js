@@ -26,15 +26,6 @@ export interface IConfig {
     // If set to 'true', clarity-js will NOT write CID (Clarity ID) cookie
     disableCookie?: boolean;
 
-    // If set to false, text on the page will be masked with asterisks
-    showText?: boolean;
-
-    // If set to false, links on the page will be masked with asterisks
-    showLinks?: boolean;
-
-    // If set to false, src of images won't be captured
-    showImages?: boolean;
-
     // Names of the attributes that need to be masked (on top of default ones), when showText is false
     sensitiveAttributes?: string[];
 

@@ -1,7 +1,7 @@
 import { INodeInfo, IShadowDomMutationSummary, IShadowDomNode, NumberJson } from "@clarity-types/layout";
 import { assert, isNumber, traverseNodeTree } from "@src/utils";
 import { createNodeInfo } from "./nodeinfo";
-import { getNodeIndex, NodeIndex } from "./stateprovider";
+import { getNodeIndex, NodeIndex } from "./states/generic";
 
 // Class names to tag actions that happen to nodes in a single mutation batch
 const FinalClassName = "cl-final";

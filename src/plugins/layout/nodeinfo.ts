@@ -1,5 +1,6 @@
 import { ILayoutState, INodeInfo } from "@clarity-types/layout";
-import { createLayoutState, getNodeIndex, Tags } from "./stateprovider";
+import { getNodeIndex, Tags } from "./states/generic";
+import { createLayoutState } from "./states/stateprovider";
 
 export const ForceMaskAttribute = "data-clarity-mask";
 
