@@ -6,6 +6,7 @@ export interface IShadowDomNode extends HTMLDivElement {
   node: Node;
   info: INodeInfo;
   state: ILayoutState;
+  computeInfo: () => INodeInfo;
   computeState: () => ILayoutState;
 }
 

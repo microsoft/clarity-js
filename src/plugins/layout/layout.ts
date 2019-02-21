@@ -117,6 +117,7 @@ export default class Layout implements IPlugin {
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
   private discoverNode(node: Node): IShadowDomNode {
     let shadowNode = this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
+    shadowNode.computeInfo();
     shadowNode.computeState();
     this.watch(node, shadowNode.state);
     return shadowNode;
@@ -255,6 +256,7 @@ export default class Layout implements IPlugin {
   }
 
   private processMutation(action: Action, shadowNode: IShadowDomNode): IEventData {
+    shadowNode.computeInfo();
     let state = shadowNode.computeState();
     state.action = action;
     state.source = Source.Mutation;

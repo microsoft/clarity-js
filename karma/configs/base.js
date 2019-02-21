@@ -13,7 +13,7 @@ module.exports = function (config) {
         files: [
             "karma/fixtures/**/*.html",
             "package.json",
-            "build/clarity.min.js",
+            "build/clarity.js",
             "src/converters/**/*.ts",
             "karma/setup/**/*.ts",
             "karma/tests/**/*.ts",

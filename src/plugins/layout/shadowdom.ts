@@ -1,4 +1,4 @@
-import { ILayoutState, IShadowDomMutationSummary, IShadowDomNode, NumberJson } from "@clarity-types/layout";
+import { ILayoutState, INodeInfo, IShadowDomMutationSummary, IShadowDomNode, NumberJson } from "@clarity-types/layout";
 import { assert, isNumber, traverseNodeTree } from "@src/utils";
 import { createNodeInfo } from "./nodeinfo";
 import { getNodeIndex, NodeIndex } from "./states/generic";
@@ -39,8 +39,11 @@ export class ShadowDom {
     shadowNode.id = "" + index;
     shadowNode.node = node;
 
-    let parentNode = shadowNode.parentNode as IShadowDomNode;
-    shadowNode.info = createNodeInfo(node, parentNode ? parentNode.info : null);
+    shadowNode.computeInfo = (): INodeInfo => {
+      const parentShadowNode = shadowNode.parentNode as IShadowDomNode;
+      shadowNode.info = createNodeInfo(node, parentShadowNode && parentShadowNode.info);
+      return shadowNode.info;
+    };
     shadowNode.computeState = (): ILayoutState => {
       shadowNode.state = createLayoutState(node, shadowNode.info);
       return shadowNode.state;
