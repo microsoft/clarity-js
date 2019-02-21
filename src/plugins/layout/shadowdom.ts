@@ -1,7 +1,8 @@
-import { INodeInfo, IShadowDomMutationSummary, IShadowDomNode, NumberJson } from "@clarity-types/layout";
+import { ILayoutState, IShadowDomMutationSummary, IShadowDomNode, NumberJson } from "@clarity-types/layout";
 import { assert, isNumber, traverseNodeTree } from "@src/utils";
 import { createNodeInfo } from "./nodeinfo";
 import { getNodeIndex, NodeIndex } from "./states/generic";
+import { createLayoutState } from "./states/stateprovider";
 
 // Class names to tag actions that happen to nodes in a single mutation batch
 const FinalClassName = "cl-final";
@@ -29,11 +30,6 @@ export class ShadowDom {
     return node;
   }
 
-  public getNodeInfo(index: number): INodeInfo {
-    let shadowNode = this.getShadowNode(index);
-    return shadowNode ? shadowNode.info : null;
-  }
-
   public insertShadowNode(node: Node, parentIndex: number, nextSiblingIndex: number): IShadowDomNode {
     let isDocument = (node === document);
     let index = this.assignNodeIndex(node);
@@ -42,11 +38,12 @@ export class ShadowDom {
     let shadowNode = this.doc.createElement("div") as IShadowDomNode;
     shadowNode.id = "" + index;
     shadowNode.node = node;
-    shadowNode.computeInfo = (): INodeInfo => {
-      let parentNode = shadowNode.parentNode as IShadowDomNode;
-      let info = createNodeInfo(node, parentNode ? parentNode.info : null);
-      shadowNode.info = info;
-      return info;
+
+    let parentNode = shadowNode.parentNode as IShadowDomNode;
+    shadowNode.info = createNodeInfo(node, parentNode ? parentNode.info : null);
+    shadowNode.computeState = (): ILayoutState => {
+      shadowNode.state = createLayoutState(node, shadowNode.info);
+      return shadowNode.state;
     };
     this.nodeMap[index] = shadowNode;
 

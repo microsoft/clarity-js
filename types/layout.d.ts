@@ -5,7 +5,8 @@ export type InsertRuleHandler = (rule: string, index?: number) => number;
 export interface IShadowDomNode extends HTMLDivElement {
   node: Node;
   info: INodeInfo;
-  computeInfo: () => INodeInfo;
+  state: ILayoutState;
+  computeState: () => ILayoutState;
 }
 
 /* Computed CSS styles associated with a layout element */
@@ -47,10 +48,9 @@ export interface IAttributes {
 }
 
 export interface INodeInfo {
-  index: number;
   ignore: boolean;
-  forceMask: boolean;
-  state: ILayoutState;
+  unmask: boolean;
+  isCss: boolean;
 }
 
 export interface ILayoutState {

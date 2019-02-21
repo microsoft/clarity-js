@@ -11,7 +11,6 @@ export function createStyleLayoutState(styleNode: HTMLStyleElement): IStyleLayou
 
 export function getCssRules(element: HTMLStyleElement): string[] {
     let cssRules = null;
-
     let rules = [];
     // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
     try {
