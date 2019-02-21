@@ -12,7 +12,7 @@ export function createNodeInfo(node: Node, parentInfo: INodeInfo): INodeInfo {
 }
 
 function shouldUnmaskNode(node: Node, parentInfo: INodeInfo): boolean {
-  const parentUnmasked = parentInfo && parentInfo.unmask;
+  const parentUnmasked = parentInfo ? parentInfo.unmask : false;
   const hasUnmaskAttribute = (
     node && node.nodeType === Node.ELEMENT_NODE
       ? (node as Element).getAttribute(UnmaskAttribute) === "true"

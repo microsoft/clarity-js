@@ -5,7 +5,7 @@ import { testAsync } from "@karma/setup/testasync";
 import { getFullImpressionWatchResult, stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
 
-describe("Setup: Asynchronous clarity start tests", () => {
+xdescribe("Setup: Asynchronous clarity start tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

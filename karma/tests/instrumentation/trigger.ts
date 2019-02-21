@@ -7,7 +7,7 @@ import { assert } from "chai";
 
 const instrumentationEventName = "Instrumentation";
 
-describe("Instrumentation: Trigger Tests", () => {
+xdescribe("Instrumentation: Trigger Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

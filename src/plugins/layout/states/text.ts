@@ -5,8 +5,9 @@ import { createGenericLayoutState, Tags } from "./generic";
 export function createTextLayoutState(textNode: Text, info: INodeInfo): ITextLayoutState {
     // Text nodes that are children of the STYLE elements contain CSS code, so we don't want to hide it
     // Checking parentNode, instead of parentElement, because in IE textNode.parentElement returns 'undefined'.
-    let textState = createGenericLayoutState(textNode, Tags.Text) as ITextLayoutState;
-    textState.content = info.isCss ? textNode.nodeValue : mask(textNode.nodeValue);
+    const textState = createGenericLayoutState(textNode, Tags.Text) as ITextLayoutState;
+    const unmask = info.isCss || info.unmask;
+    textState.content = unmask ? textNode.nodeValue : mask(textNode.nodeValue);
     return textState;
 }
 

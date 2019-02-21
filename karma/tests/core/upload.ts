@@ -11,7 +11,7 @@ import { assert } from "chai";
 const InstrumentationEventName = "Instrumentation";
 const LayoutEventName = "Layout";
 
-describe("Data Upload Tests", () => {
+xdescribe("Data Upload Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

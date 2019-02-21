@@ -4,7 +4,7 @@ import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
 
-describe("Setup: PubSub Tests", () => {
+xdescribe("Setup: PubSub Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

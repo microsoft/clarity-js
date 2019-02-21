@@ -8,7 +8,7 @@ import { assert } from "chai";
 let distanceThreshold = 20;
 let timeThreshold = 500;
 
-describe("Pointer Tests", () => {
+xdescribe("Pointer Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

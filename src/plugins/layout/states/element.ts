@@ -83,8 +83,6 @@ function getAttributes(element: Element): IAttributes {
 
     for (let i = 0; i < elementAttributes.length; i++) {
         let attr = elementAttributes[i];
-        // TODO: Handle hiding image attributes
-        // TODO: Handle optional show value
         stateAttributes[attr.name] = attributeMaskList.indexOf(attr.name) < 0 ? attr.value : mask(attr.value);
     }
 

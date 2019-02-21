@@ -7,7 +7,7 @@ import { stopWatching, watch } from "@karma/setup/watch";
 import { NodeIndex, Tags } from "@src/plugins/layout/states/generic";
 import { assert } from "chai";
 
-describe("Layout: Mutation Tests", () => {
+xdescribe("Layout: Mutation Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);
