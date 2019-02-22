@@ -1,4 +1,4 @@
-import { IAttributes, IElementLayoutState, ILayoutRectangle, ILayoutStyle } from "@clarity-types/layout";
+import { IAttributes, IElementLayoutState, ILayoutRectangle, ILayoutStyle, INodeInfo } from "@clarity-types/layout";
 import { config } from "@src/config";
 import { mask } from "@src/utils";
 import { createGenericLayoutState, Tags } from "./generic";
@@ -17,7 +17,7 @@ let attributeMaskList: string[];
 
 const DefaultAttributeMaskList = ["value", "placeholder", "alt", "title"];
 
-export function createElementLayoutState(element: Element): IElementLayoutState {
+export function createElementLayoutState(element: Element, info: INodeInfo): IElementLayoutState {
     let tagName = element.tagName;
     let elementState = createGenericLayoutState(element, tagName) as IElementLayoutState;
     if (tagName === Tags.Script || tagName === Tags.Meta) {
@@ -26,7 +26,7 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
     }
 
     // Get attributes for the element
-    elementState.attributes = getAttributes(element);
+    elementState.attributes = getAttributes(element, info);
 
     // Get layout bounding box for the element
     elementState.layout = getLayout(element);
@@ -46,6 +46,12 @@ export function createElementLayoutState(element: Element): IElementLayoutState 
 export function resetElementStateProvider(): void {
     attributeMaskList = DefaultAttributeMaskList.concat(config.sensitiveAttributes);
     defaultColor = "";
+}
+
+export function getAttributeValue(element: Element, info: INodeInfo, attrName: string): string {
+    const sensitiveAttribute = attributeMaskList.indexOf(attrName) > -1;
+    const maskAttribute = sensitiveAttribute && !info.unmask;
+    return maskAttribute ? mask(element.attributes[attrName].value) : element.attributes[attrName];
 }
 
 function getLayout(element: Element): ILayoutRectangle {
@@ -77,13 +83,13 @@ function getLayout(element: Element): ILayoutRectangle {
     return layout;
 }
 
-function getAttributes(element: Element): IAttributes {
+function getAttributes(element: Element, info: INodeInfo): IAttributes {
     let elementAttributes = element.attributes;
     let stateAttributes: IAttributes = {};
 
     for (let i = 0; i < elementAttributes.length; i++) {
-        let attr = elementAttributes[i];
-        stateAttributes[attr.name] = attributeMaskList.indexOf(attr.name) < 0 ? attr.value : mask(attr.value);
+        let attrName = elementAttributes[i].name;
+        stateAttributes[attrName] = getAttributeValue(element, info, attrName);
     }
 
     return stateAttributes;

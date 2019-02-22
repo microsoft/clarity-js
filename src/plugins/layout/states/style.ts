@@ -1,8 +1,8 @@
-import { IStyleLayoutState } from "@clarity-types/layout";
+import { INodeInfo, IStyleLayoutState } from "@clarity-types/layout";
 import { createElementLayoutState } from "./element";
 
-export function createStyleLayoutState(styleNode: HTMLStyleElement): IStyleLayoutState {
-    let layoutState = createElementLayoutState(styleNode) as IStyleLayoutState;
+export function createStyleLayoutState(styleNode: HTMLStyleElement, info: INodeInfo): IStyleLayoutState {
+    let layoutState = createElementLayoutState(styleNode, info) as IStyleLayoutState;
     if (styleNode.textContent.length === 0) {
         layoutState.cssRules = getCssRules(styleNode);
     }
