@@ -6,7 +6,7 @@ import { PubSubEvents, waitFor, yieldThread } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { assert } from "chai";
 
-xdescribe("Core Tests", () => {
+describe("Core Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

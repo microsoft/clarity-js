@@ -6,7 +6,7 @@ import { cleanupPage, setupPage } from "@karma/setup/page";
 // import { stopWatching, watch } from "@karma/setup/watch";
 // import { assert } from "chai";
 
-xdescribe("Layout: Input Tests", () => {
+describe("Layout: Input Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

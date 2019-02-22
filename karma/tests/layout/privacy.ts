@@ -7,7 +7,7 @@ import { stopWatching, watch } from "@karma/setup/watch";
 import { mask } from "@src/utils";
 import { assert } from "chai";
 
-xdescribe("Layout: Privacy Tests", () => {
+describe("Layout: Privacy Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

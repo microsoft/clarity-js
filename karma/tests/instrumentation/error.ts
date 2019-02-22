@@ -7,7 +7,7 @@ import { cleanupPage, setupPage } from "@karma/setup/page";
 import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
 
-xdescribe("Error Tests", () => {
+describe("Error Tests", () => {
 
     let jasmineErrorHandler: ErrorEventHandler = null;
 

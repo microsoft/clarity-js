@@ -4,7 +4,7 @@ import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
 
-xdescribe("Core: Teardown Tests", () => {
+describe("Core: Teardown Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

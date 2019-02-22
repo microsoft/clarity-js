@@ -2,7 +2,7 @@ import { cleanupPage, setupPage } from "@karma/setup/page";
 import { getFullImpressionWatchResult } from "@karma/setup/watch";
 import { assert } from "chai";
 
-xdescribe("Setup: Synchronous clarity start tests", () => {
+describe("Setup: Synchronous clarity start tests", () => {
 
     beforeEach((done: DoneFn) => setupPage(done, {}, { flushInitialActivity: false }));
     afterEach(cleanupPage);

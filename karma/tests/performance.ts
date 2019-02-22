@@ -13,7 +13,7 @@ let navigationTimingEventName = "NavigationTiming";
 
 declare const performance: IMockPerformance;
 
-xdescribe("Performance Tests", () => {
+describe("Performance Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

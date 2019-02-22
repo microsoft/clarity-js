@@ -3,7 +3,7 @@ import compress from "@src/compress";
 
 import { assert } from "chai";
 
-xdescribe("Data Compression Tests", () => {
+describe("Data Compression Tests", () => {
 
     it("validates that compression works", () => {
         let str = "This is a string with some repetitions in the string.";

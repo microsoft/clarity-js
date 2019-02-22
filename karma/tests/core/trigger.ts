@@ -4,7 +4,7 @@ import { testAsync } from "@karma/setup/testasync";
 import { getFullImpressionWatchResult } from "@karma/setup/watch";
 import { assert } from "chai";
 
-xdescribe("Core: Trigger Tests", () => {
+describe("Core: Trigger Tests", () => {
 
     beforeEach((done: DoneFn) => setupPage(done, { backgroundMode: true }));
     afterEach(cleanupPage);

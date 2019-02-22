@@ -5,7 +5,7 @@ import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
 
-xdescribe("Layout: Scroll Tests", () => {
+describe("Layout: Scroll Tests", () => {
 
     beforeEach(setupPage);
     afterEach(cleanupPage);

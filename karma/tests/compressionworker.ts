@@ -18,7 +18,7 @@ import { config } from "@src/config";
 const InstrumentationEventName = "Instrumentation";
 const WorkerMessageWaitTime = 1000;
 
-xdescribe("Compression Worker Tests", () => {
+describe("Compression Worker Tests", () => {
     let worker: Worker = null;
 
     beforeEach(() => {
