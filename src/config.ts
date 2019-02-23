@@ -11,7 +11,7 @@ export let config: IConfig = {
   totalLimit: 20 * 1024 * 1024,  // 20 megabytes
   reUploadLimit: 1,
   disableCookie: false,
-  sensitiveAttributes: [],
+  sensitiveAttributes: ["value"],
   instrument: false,
   uploadHandler: null,
   uploadHeaders: {

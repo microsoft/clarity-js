@@ -77,6 +77,7 @@ export interface IElementLayoutState extends ILayoutState {
   attributes: IAttributes;  /* Attributes associated with an element */
   layout: ILayoutRectangle; /* Layout rectangle */
   style: ILayoutStyle; /* Layout computed styles */
+  value?: string; /* Applies to certain elements only https://www.w3schools.com/tags/att_value.asp + HTMLTextAreaElement */
 }
 
 export interface IStyleLayoutState extends IElementLayoutState {

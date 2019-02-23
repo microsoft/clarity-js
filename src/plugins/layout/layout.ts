@@ -8,7 +8,7 @@ import { config } from "@src/config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "@src/core";
 import { debug, traverseNodeTree } from "@src/utils";
 import { ShadowDom } from "./shadowdom";
-import { getAttributeValue } from "./states/element";
+import { getElementValue } from "./states/element";
 import { getNodeIndex, NodeIndex } from "./states/generic";
 import { resetStateProvider } from "./states/stateprovider";
 import { getCssRules } from "./states/style";
@@ -193,7 +193,7 @@ export default class Layout implements IPlugin {
           break;
         case Source.Input:
           let input = element as HTMLInputElement;
-          layoutState.attributes.value = getAttributeValue(input, shadowNode.info, "value");
+          layoutState.value = getElementValue(input, shadowNode.info);
           layoutState.source = source;
           layoutState.action = Action.Update;
           addEvent({type: this.eventName, state: layoutState});

@@ -40,6 +40,13 @@ export function createElementLayoutState(element: Element, info: INodeInfo): IEl
         elementState.layout.scrollY = Math.round(element.scrollTop);
     }
 
+    // Certain elements might contain 'value' field, which means different things for different types of elements,
+    // but is ultimately important for each of them, so we must capture it as well. It is expected to be a string.
+    // https://www.w3schools.com/tags/att_value.asp (+ HTMLTextAreaElement)
+    if ("value" in element && typeof (element as any).value === "string") {
+        elementState.value = getElementValue(element, info);
+    }
+
     return elementState;
 }
 
@@ -51,7 +58,13 @@ export function resetElementStateProvider(): void {
 export function getAttributeValue(element: Element, info: INodeInfo, attrName: string): string {
     const sensitiveAttribute = attributeMaskList.indexOf(attrName) > -1;
     const maskAttribute = sensitiveAttribute && !info.unmask;
-    return maskAttribute ? mask(element.attributes[attrName].value) : element.attributes[attrName];
+    const attrValue = element.attributes[attrName].value;
+    return maskAttribute ? mask(attrValue) : attrValue;
+}
+
+export function getElementValue(element: Element, info: INodeInfo): string {
+    const valueStr = (element as any).value;
+    return info.unmask ? valueStr : mask(valueStr);
 }
 
 function getLayout(element: Element): ILayoutRectangle {

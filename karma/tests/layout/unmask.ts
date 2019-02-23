@@ -4,7 +4,6 @@ import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
 import { UnmaskAttribute } from "@src/plugins/layout/nodeinfo";
-import { mask } from "@src/utils";
 import { assert } from "chai";
 
 describe("Layout: Unmasking Tests", () => {
@@ -65,7 +64,6 @@ describe("Layout: Unmasking Tests", () => {
             watch();
             let input = document.createElement("input");
             let valueString = "value";
-            let maskedValueString = mask(valueString);
             input.setAttribute("value", valueString);
             input.setAttribute(UnmaskAttribute, "true");
             document.body.appendChild(input);
@@ -75,7 +73,7 @@ describe("Layout: Unmasking Tests", () => {
             assert.equal(events.length, 1);
             assert.equal(events[0].state.tag, "INPUT");
             assert.equal(events[0].state.action, Action.Insert);
-            assert.equal(events[0].state.attributes["value"], maskedValueString);
+            assert.equal(events[0].state.value, valueString);
             done();
         })
     );

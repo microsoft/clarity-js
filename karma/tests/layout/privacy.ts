@@ -63,7 +63,7 @@ describe("Layout: Privacy Tests", () => {
         assert.equal(events.length, 1);
         assert.equal(events[0].state.tag, "INPUT");
         assert.equal(events[0].state.action, Action.Insert);
-        assert.equal(events[0].state.attributes["value"], maskedValueString);
+        assert.equal(events[0].state.value, maskedValueString);
         done();
     }));
 
@@ -87,7 +87,7 @@ describe("Layout: Privacy Tests", () => {
         assert.equal(events.length, 1);
         assert.equal(events[0].state.action, Action.Update);
         assert.equal(events[0].state.source, Source.Input);
-        assert.equal(events[0].state.attributes.value, maskedValueString);
+        assert.equal(events[0].state.value, maskedValueString);
         done();
     }));
 

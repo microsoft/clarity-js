@@ -19,10 +19,13 @@ export function createLayoutState(node: Node, info: INodeInfo): ILayoutState {
             break;
         case Node.ELEMENT_NODE:
             let elem = node as Element;
-            if (elem.tagName === "STYLE") {
-                state = createStyleLayoutState(elem as HTMLStyleElement, info);
-            } else {
-                state = createElementLayoutState(elem, info);
+            switch (elem.tagName) {
+                case "STYLE":
+                    state = createStyleLayoutState(elem as HTMLStyleElement, info);
+                    break;
+                default:
+                    state = createElementLayoutState(elem, info);
+                    break;
             }
             break;
         default:
