@@ -1,14 +1,17 @@
 import { IEventData, IPlugin } from "@clarity-types/core";
 import { Instrumentation, IShadowDomInconsistentEventState } from "@clarity-types/instrumentation";
 import {
-  Action, IElementLayoutState, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo, INodeInfo, InsertRuleHandler,
+  Action, IElementLayoutState, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo, InsertRuleHandler,
   IShadowDomMutationSummary, IShadowDomNode, IStyleLayoutState, LayoutRoutine, NumberJson, Source
 } from "@clarity-types/layout";
 import { config } from "@src/config";
 import { addEvent, addMultipleEvents, bind, getTimestamp, instrument } from "@src/core";
-import { debug, mask, traverseNodeTree } from "@src/utils";
-import { ShadowDom } from "./layout/shadowdom";
-import { getCssRules, getNodeIndex, NodeIndex, resetStateProvider } from "./layout/stateprovider";
+import { debug, traverseNodeTree } from "@src/utils";
+import { ShadowDom } from "./shadowdom";
+import { getElementValue } from "./states/element";
+import { getNodeIndex, NodeIndex } from "./states/generic";
+import { resetStateProvider } from "./states/stateprovider";
+import { getCssRules } from "./states/style";
 
 export default class Layout implements IPlugin {
   private readonly cssTimeoutLength: number = 50;
@@ -98,12 +101,12 @@ export default class Layout implements IPlugin {
     // All 'Discover' events together should be treated as an atomic 'Discover' operation and should have the same timestamp
     const discoverTime = getTimestamp();
     traverseNodeTree(document, (node: Node) => {
-      let nodeInfo = this.discoverNode(node);
-      nodeInfo.state.action = Action.Insert;
-      nodeInfo.state.source = Source.Discover;
+      let shadowNode = this.discoverNode(node);
+      shadowNode.state.action = Action.Insert;
+      shadowNode.state.source = Source.Discover;
       addEvent({
         type: this.eventName,
-        state: nodeInfo.state,
+        state: shadowNode.state,
         time: discoverTime,
       });
     });
@@ -113,11 +116,12 @@ export default class Layout implements IPlugin {
   }
 
   // Add node to the ShadowDom to store initial adjacent node info in a layout and obtain an index
-  private discoverNode(node: Node): INodeInfo {
+  private discoverNode(node: Node): IShadowDomNode {
     let shadowNode = this.shadowDom.insertShadowNode(node, getNodeIndex(node.parentNode), getNodeIndex(node.nextSibling));
-    let nodeInfo = shadowNode.computeInfo();
-    this.watch(node, nodeInfo.state);
-    return nodeInfo;
+    shadowNode.computeInfo();
+    shadowNode.computeState();
+    this.watch(node, shadowNode.state);
+    return shadowNode;
   }
 
   private watch(node: Node, nodeLayoutState: ILayoutState): void {
@@ -170,9 +174,9 @@ export default class Layout implements IPlugin {
 
   private layoutHandler(element: Element, source: Source): void {
     let index = getNodeIndex(element);
-    let nodeInfo = this.shadowDom.getNodeInfo(index);
-    if (nodeInfo) {
-      let layoutState = nodeInfo.state as IElementLayoutState;
+    let shadowNode = this.shadowDom.getShadowNode(index);
+    if (shadowNode) {
+      let layoutState = shadowNode.state as IElementLayoutState;
       switch (source) {
         case Source.Scroll:
           let scrollX = Math.round(element.scrollLeft);
@@ -189,14 +193,13 @@ export default class Layout implements IPlugin {
           break;
         case Source.Input:
           let input = element as HTMLInputElement;
-          let showText = config.showText && !nodeInfo.forceMask;
-          layoutState.attributes.value = showText ? input.value : mask(input.value);
+          layoutState.value = getElementValue(input, shadowNode.info);
           layoutState.source = source;
           layoutState.action = Action.Update;
           addEvent({type: this.eventName, state: layoutState});
           break;
         case Source.Css:
-          let styleState = nodeInfo.state as IStyleLayoutState;
+          let styleState = shadowNode.state as IStyleLayoutState;
           styleState.cssRules = getCssRules(element as HTMLStyleElement);
           styleState.source = source;
           styleState.action = Action.Update;
@@ -254,7 +257,8 @@ export default class Layout implements IPlugin {
   }
 
   private processMutation(action: Action, shadowNode: IShadowDomNode): IEventData {
-    let state = shadowNode.computeInfo().state;
+    shadowNode.computeInfo();
+    let state = shadowNode.computeState();
     state.action = action;
     state.source = Source.Mutation;
     state.mutationSequence = this.mutationSequence;

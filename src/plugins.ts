@@ -1,7 +1,7 @@
 import errors from "./plugins/errors";
-import layout from "./plugins/layout";
+import layout from "./plugins/layout/layout";
 import performance from "./plugins/performance";
-import pointer from "./plugins/pointer";
+import pointer from "./plugins/pointer/pointer";
 import viewport from "./plugins/viewport";
 
 type ClarityPlugin = typeof errors | typeof layout | typeof performance | typeof pointer | typeof viewport;

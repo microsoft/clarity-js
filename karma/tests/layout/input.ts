@@ -1,9 +1,9 @@
 import { Action, Source } from "@clarity-types/layout";
-import { restartClarity } from "@karma/setup/clarity";
 import { cleanupPage, setupPage } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
+import { mask } from "@src/utils";
 import { assert } from "chai";
 
 describe("Layout: Input Tests", () => {
@@ -12,8 +12,6 @@ describe("Layout: Input Tests", () => {
     afterEach(cleanupPage);
 
     it("checks that input change capturing works on inserted element", testAsync(async (done: DoneFn) => {
-        await restartClarity({ showText: true });
-
         let newValueString = "new value";
         let input = document.createElement("input");
         document.body.appendChild(input);
@@ -32,13 +30,11 @@ describe("Layout: Input Tests", () => {
         assert.equal(events.length, 1);
         assert.equal(events[0].state.action, Action.Update);
         assert.equal(events[0].state.source, Source.Input);
-        assert.equal(events[0].state.attributes.value, newValueString);
+        assert.equal(events[0].state.value, mask(newValueString));
         done();
     }));
 
     it("checks that input change capturing works on inserted textarea element", testAsync(async (done: DoneFn) => {
-        await restartClarity({ showText: true });
-
         let newValueString = "new value";
         let textarea = document.createElement("textarea");
         document.body.appendChild(textarea);
@@ -57,7 +53,7 @@ describe("Layout: Input Tests", () => {
         assert.equal(events.length, 1);
         assert.equal(events[0].state.action, Action.Update);
         assert.equal(events[0].state.source, Source.Input);
-        assert.equal(events[0].state.attributes.value, newValueString);
+        assert.equal(events[0].state.value, mask(newValueString));
         done();
     }));
 

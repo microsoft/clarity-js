@@ -1,5 +1,5 @@
 import { IPointerState } from "@clarity-types/pointer";
-import { NodeIndex } from "@src/plugins/layout/stateprovider";
+import { NodeIndex } from "@src/plugins/layout/states/generic";
 
 // Accessing any evt property can sometimes (rarely) throw exception "Permission denied to access property..."
 // Not adding try/catch by design for perf reasons

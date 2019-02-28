@@ -5,7 +5,9 @@ export type InsertRuleHandler = (rule: string, index?: number) => number;
 export interface IShadowDomNode extends HTMLDivElement {
   node: Node;
   info: INodeInfo;
+  state: ILayoutState;
   computeInfo: () => INodeInfo;
+  computeState: () => ILayoutState;
 }
 
 /* Computed CSS styles associated with a layout element */
@@ -47,10 +49,9 @@ export interface IAttributes {
 }
 
 export interface INodeInfo {
-  index: number;
   ignore: boolean;
-  forceMask: boolean;
-  state: ILayoutState;
+  unmask: boolean;
+  isCss: boolean;
 }
 
 export interface ILayoutState {
@@ -76,6 +77,7 @@ export interface IElementLayoutState extends ILayoutState {
   attributes: IAttributes;  /* Attributes associated with an element */
   layout: ILayoutRectangle; /* Layout rectangle */
   style: ILayoutStyle; /* Layout computed styles */
+  value?: string; /* Applies to certain elements only https://www.w3schools.com/tags/att_value.asp + HTMLTextAreaElement */
 }
 
 export interface IStyleLayoutState extends IElementLayoutState {
