@@ -33,6 +33,7 @@ export function shouldIgnoreNode(node: Node, parentInfo: INodeInfo): boolean {
             if (parentInfo && parentInfo.captureCssRules) {
                 ignore = true;
             }
+            break;
         default:
             break;
     }

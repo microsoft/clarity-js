@@ -36,12 +36,15 @@ export function getCssRules(element: HTMLStyleElement): string[] {
 export function shouldCaptureCssRules(node: Node): boolean {
     let captureCssRules = false;
     if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === "STYLE") {
-        // If 'cssRules' is set to true, capture rules on all style nodes.
-        // Otherwise, optimistically hope that rules match the textContent,
-        // except for the case when there is no inner text. 'Empty' <style>
-        // node is a rather common way to add styles to the page by using
-        // <style>.insertRule API instead of appending css text children.
-        // (e.g. styled-components library; https://www.npmjs.com/package/styled-components)
+        // Capturing CSS rules associated with a style node is more precise than relying on its childlist CSS text,
+        // because rules can be added/modified without affecting child text nodes, but it is also costly for performance.
+        // As a compromise, we are going to capture CSS rules in two cases:
+        // 1. If the config explicitly tells us to do so
+        // 2. If style node has no children. A rather common technique is to control page styles by inserting rules
+        // directly into the 'sheet holder' style node. So, when we encounter a style node with no inner text,
+        // chances are high that there are non-child-text rules associated with it and if we don't capture them,
+        // page visualization is likely to be broken. An popular example library that uses such technique is 'styled-components'.
+        // https://www.npmjs.com/package/styled-components
         captureCssRules = config.cssRules || node.textContent.length === 0;
     }
     return captureCssRules;
