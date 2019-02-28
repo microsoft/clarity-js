@@ -52,6 +52,7 @@ export interface INodeInfo {
   ignore: boolean;
   unmask: boolean;
   isCss: boolean;
+  captureCssRules: boolean;
 }
 
 export interface ILayoutState {
