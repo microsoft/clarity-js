@@ -1,5 +1,6 @@
 import { INodeInfo } from "@clarity-types/layout";
 import { shouldIgnoreNode } from "./states/ignore";
+import { shouldCaptureCssRules } from "./states/style";
 import { isCssText } from "./states/text";
 
 export const UnmaskAttribute = "data-clarity-unmask";
@@ -8,7 +9,8 @@ export function createNodeInfo(node: Node, parentInfo: INodeInfo): INodeInfo {
   let ignore = shouldIgnoreNode(node, parentInfo);
   let unmask = shouldUnmaskNode(node, parentInfo);
   let isCss = isCssText(node);
-  return { ignore, unmask, isCss };
+  let captureCssRules = shouldCaptureCssRules(node);
+  return { ignore, unmask, isCss, captureCssRules };
 }
 
 function shouldUnmaskNode(node: Node, parentInfo: INodeInfo): boolean {

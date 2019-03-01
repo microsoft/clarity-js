@@ -32,6 +32,9 @@ export interface IConfig {
     // Send back instrumentation data, if set to true
     instrument?: boolean;
 
+    // Inspect CSSRuleList for style elements and send CSSRules data instead of style's text children
+    cssRules?: boolean;
+
     // Pointer to the function which would be responsible for sending the data
     // If left unspecified, raw payloads will be uploaded to the uploadUrl endpoint
     uploadHandler?: UploadHandler;

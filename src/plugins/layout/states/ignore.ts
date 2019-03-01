@@ -30,10 +30,10 @@ export function shouldIgnoreNode(node: Node, parentInfo: INodeInfo): boolean {
             // If we capture CSSRules on style elements, ignore its text children nodes
             // Since iterating over css rules can be 100X slower on certain browsers,
             // we limit ignoring text nodes to STYLE elements with empty text content
-            let parent = node.parentNode as Element;
-            if (parent && parent.tagName === "STYLE" && parent.textContent.length === 0) {
+            if (parentInfo && parentInfo.captureCssRules) {
                 ignore = true;
             }
+            break;
         default:
             break;
     }

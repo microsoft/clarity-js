@@ -13,6 +13,7 @@ export let config: IConfig = {
   disableCookie: false,
   sensitiveAttributes: ["value"],
   instrument: false,
+  cssRules: false,
   uploadHandler: null,
   uploadHeaders: {
     "Content-Type": "application/json"
