@@ -43,7 +43,7 @@ export function shouldCaptureCssRules(node: Node): boolean {
         // 2. If style node has no children. A rather common technique is to control page styles by inserting rules
         // directly into the 'sheet holder' style node. So, when we encounter a style node with no inner text,
         // chances are high that there are non-child-text rules associated with it and if we don't capture them,
-        // page visualization is likely to be broken. An popular example library that uses such technique is 'styled-components'.
+        // page visualization is likely to be broken. A popular example library that uses such technique is 'styled-components'.
         // https://www.npmjs.com/package/styled-components
         captureCssRules = config.cssRules || node.textContent.length === 0;
     }
