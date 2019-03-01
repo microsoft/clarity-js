@@ -127,21 +127,27 @@ describe("Data Upload Tests", () => {
             secondTriggerAttrs[triggerKeyAttrName] = "2";
             const secondTrigger = await triggerMutationEventAndWaitForUpload(secondTriggerAttrs);
 
-            // We expect to have 3 events:
+            // We expect to have 5 events:
             // 1. XHR error: this event got generated immediately after trigger event 1 upload failed
             // 2. Trigger event 2: Our manually-crafted second trigger, after which we waited for upload (#1 + #2 event batch)
-            // 3. Trigger event 1: Upload from the line above, synchronously triggers a re-upload of event trigger 1
+            // 3. Mutation perf
+            // 4. Trigger event 1: Upload from the line above, synchronously triggers a re-upload of event trigger 1
+            // 5. Mutation perf
             const sentEvents = stopWatching().sentEvents;
-            assert.equal(sentEvents.length, 3);
+            assert.equal(sentEvents.length, 5);
             assert.equal(sentEvents[0].type, InstrumentationEventName);
             assert.equal(sentEvents[0].state.type, Instrumentation.XhrError);
             assert.equal(sentEvents[0].state.requestStatus, 400);
             assert.equal(sentEvents[1].type, LayoutEventName);
             assert.equal(sentEvents[1].state.action, Action.Insert);
             assert.equal(sentEvents[1].state.attributes[triggerKeyAttrName], secondTrigger.attributes[triggerKeyAttrName].value);
-            assert.equal(sentEvents[2].type, LayoutEventName);
-            assert.equal(sentEvents[2].state.action, Action.Insert);
-            assert.equal(sentEvents[2].state.attributes[triggerKeyAttrName], firstTrigger.attributes[triggerKeyAttrName].value);
+            assert.equal(sentEvents[2].type, InstrumentationEventName);
+            assert.equal(sentEvents[2].state.procedure, "Mutation");
+            assert.equal(sentEvents[3].type, LayoutEventName);
+            assert.equal(sentEvents[3].state.action, Action.Insert);
+            assert.equal(sentEvents[3].state.attributes[triggerKeyAttrName], firstTrigger.attributes[triggerKeyAttrName].value);
+            assert.equal(sentEvents[4].type, InstrumentationEventName);
+            assert.equal(sentEvents[4].state.procedure, "Mutation");
             done();
         })
     );
