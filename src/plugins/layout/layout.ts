@@ -1,5 +1,7 @@
 import { IEventData, IPlugin } from "@clarity-types/core";
-import { Instrumentation, IShadowDomInconsistentEventState } from "@clarity-types/instrumentation";
+import {
+  IMutationPerformanceState, INodeStateGenPerformanceState, Instrumentation, IShadowDomInconsistentEventState
+} from "@clarity-types/instrumentation";
 import {
   Action, IElementLayoutState, ILayoutRoutineInfo, ILayoutState, IMutationRoutineInfo, InsertRuleHandler,
   IShadowDomMutationSummary, IShadowDomNode, IStyleLayoutState, LayoutRoutine, NumberJson, Source
@@ -14,8 +16,10 @@ import { resetStateProvider } from "./states/stateprovider";
 import { getCssRules } from "./states/style";
 
 export default class Layout implements IPlugin {
+  private readonly eventName: string = "Layout";
+  private readonly discoverPerfInstName: string = "Discover";
+  private readonly mutationPerfInstName: string = "Mutation";
   private readonly cssTimeoutLength: number = 50;
-  private eventName: string = "Layout";
   private distanceThreshold: number = 5;
   private shadowDom: ShadowDom;
   private inconsistentShadowDomCount: number;
@@ -99,7 +103,8 @@ export default class Layout implements IPlugin {
 
   private discoverDom(): void {
     // All 'Discover' events together should be treated as an atomic 'Discover' operation and should have the same timestamp
-    const discoverTime = getTimestamp();
+    const discoverStartTime = getTimestamp();
+    let nodeCount = 0;
     traverseNodeTree(document, (node: Node) => {
       let shadowNode = this.discoverNode(node);
       shadowNode.state.action = Action.Insert;
@@ -107,9 +112,17 @@ export default class Layout implements IPlugin {
       addEvent({
         type: this.eventName,
         state: shadowNode.state,
-        time: discoverTime,
+        time: discoverStartTime,
       });
+      nodeCount++;
     });
+    const discoverPerfState: INodeStateGenPerformanceState = {
+      type: Instrumentation.Performance,
+      procedure: this.discoverPerfInstName,
+      duration: getTimestamp() - discoverStartTime,
+      nodeCount
+    };
+    instrument(discoverPerfState);
     this.checkConsistency({
       action: LayoutRoutine.DiscoverDom
     });
@@ -213,6 +226,10 @@ export default class Layout implements IPlugin {
 
   private mutation(mutations: MutationRecord[]): void {
 
+    const mutationStartTime = getTimestamp();
+    let stateGenDuration = 0;
+    let summaryCounts: IMutationPerformanceState["summaryCounts"] = null;
+
     // Don't process mutations on top of the inconsistent state.
     // ShadowDom mutation processing logic requires consistent state as a prerequisite.
     // If we end up in the inconsistent state, that means that something went wrong already,
@@ -221,19 +238,36 @@ export default class Layout implements IPlugin {
     if (this.allowMutation()) {
 
       // Perform mutations on the shadow DOM and make sure ShadowDom arrived to the consistent state
-      let time = getTimestamp();
       let summary = this.shadowDom.applyMutationBatch(mutations);
       let actionInfo: IMutationRoutineInfo = {
         action: LayoutRoutine.Mutation,
         mutationSequence: this.mutationSequence,
         batchSize: mutations.length
       };
+      summaryCounts = {
+        inserts: summary.newNodes.length,
+        moves: summary.movedNodes.length,
+        updates: summary.updatedNodes.length,
+        removes: summary.removedNodes.length
+      };
       this.checkConsistency(actionInfo);
       if (this.allowMutation()) {
-        this.processMutations(summary, time);
+        const stateGenStartTime = getTimestamp();
+        this.processMutations(summary, mutationStartTime);
+        stateGenDuration = getTimestamp() - stateGenStartTime;
       }
     }
 
+    const mutationPerfState: IMutationPerformanceState = {
+      type: Instrumentation.Performance,
+      procedure: this.mutationPerfInstName,
+      duration: getTimestamp() - mutationStartTime,
+      mutationCount: mutations.length,
+      mutationSequence: this.mutationSequence,
+      stateGenDuration,
+      summaryCounts
+    };
+    instrument(mutationPerfState);
     this.mutationSequence++;
   }
 

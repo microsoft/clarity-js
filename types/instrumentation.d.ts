@@ -10,7 +10,8 @@ export const enum Instrumentation {
   ClarityDuplicated,
   ShadowDomInconsistent,
   ClarityActivateError,
-  Trigger
+  Trigger,
+  Performance
 }
 
 export interface IInstrumentationEventState {
@@ -78,4 +79,25 @@ export interface IClarityActivateErrorState extends IInstrumentationEventState {
 
 export interface ITriggerState extends IInstrumentationEventState {
   key: string;
+}
+
+export interface IPerformanceState extends IInstrumentationEventState {
+  procedure: string;
+  duration: number;
+}
+
+export interface INodeStateGenPerformanceState extends IPerformanceState {
+  nodeCount: number;
+}
+
+export interface IMutationPerformanceState extends IPerformanceState {
+  mutationCount: number;
+  mutationSequence: number;
+  stateGenDuration: number;
+  summaryCounts: {
+    inserts: number;
+    moves: number;
+    updates: number;
+    removes: number;
+  };
 }
