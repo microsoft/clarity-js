@@ -227,8 +227,8 @@ export default class Layout implements IPlugin {
   private mutation(mutations: MutationRecord[]): void {
 
     const mutationStartTime = getTimestamp();
-    let stateGenCount = 0;
     let stateGenDuration = 0;
+    let summaryCounts: IMutationPerformanceState["summaryCounts"] = null;
 
     // Don't process mutations on top of the inconsistent state.
     // ShadowDom mutation processing logic requires consistent state as a prerequisite.
@@ -244,16 +244,16 @@ export default class Layout implements IPlugin {
         mutationSequence: this.mutationSequence,
         batchSize: mutations.length
       };
+      summaryCounts = {
+        inserts: summary.newNodes.length,
+        moves: summary.movedNodes.length,
+        updates: summary.updatedNodes.length,
+        removes: summary.removedNodes.length
+      };
       this.checkConsistency(actionInfo);
       if (this.allowMutation()) {
         const stateGenStartTime = getTimestamp();
         this.processMutations(summary, mutationStartTime);
-        stateGenCount = (
-          summary.newNodes.length
-          + summary.movedNodes.length
-          + summary.updatedNodes.length
-          + summary.removedNodes.length
-        );
         stateGenDuration = getTimestamp() - stateGenStartTime;
       }
     }
@@ -264,8 +264,8 @@ export default class Layout implements IPlugin {
       duration: getTimestamp() - mutationStartTime,
       mutationCount: mutations.length,
       mutationSequence: this.mutationSequence,
-      stateGenCount,
-      stateGenDuration
+      stateGenDuration,
+      summaryCounts
     };
     instrument(mutationPerfState);
     this.mutationSequence++;

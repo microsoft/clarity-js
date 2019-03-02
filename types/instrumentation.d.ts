@@ -94,5 +94,10 @@ export interface IMutationPerformanceState extends IPerformanceState {
   mutationCount: number;
   mutationSequence: number;
   stateGenDuration: number;
-  stateGenCount: number;
+  summaryCounts: {
+    inserts: number;
+    moves: number;
+    updates: number;
+    removes: number;
+  };
 }
