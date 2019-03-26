@@ -21,7 +21,8 @@ export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
 
-let startTime: number;
+let unixStartTime: number;
+let highResStartTime: number;
 let cid: string;
 let impressionId: string;
 let sequence: number;
@@ -224,8 +225,8 @@ function getUnixTimestamp(): number {
 // especially if Clarity script is post-loaded or injected after page load.
 function getPageContextBasedTimestamp(): number {
   return (window.performance && performance.now)
-    ? performance.now()
-    : new Date().getTime() - startTime;
+    ? performance.now() - highResStartTime
+    : new Date().getTime() - unixStartTime;
 }
 
 function uploadPendingEvents(): void {
@@ -259,7 +260,8 @@ function init(): void {
   cid = config.disableCookie ? guid() : getCookie(Cookie);
   impressionId = guid();
 
-  startTime = getUnixTimestamp();
+  unixStartTime = getUnixTimestamp();
+  highResStartTime = window.performance && performance.now ? performance.now() : 0;
   sequence = 0;
 
   envelope = {
