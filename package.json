@@ -1,6 +1,6 @@
 {
   "name": "clarity-js",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "An analytics library that uses web page interactions to generate aggregated insights",
   "author": "Microsoft Corp.",
   "license": "MIT",
@@ -67,10 +67,6 @@
     "build:cjs": "webpack --config webpack/configs/prod.ts",
     "build:cjs:dev": "webpack --config webpack/configs/dev.ts",
     "build:clean": "del-cli build/*",
-    "test": "karma start karma/configs/headless.js",
-    "test:chrome": "karma start karma/configs/chrome.js",
-    "test:firefox": "karma start karma/configs/firefox.js",
-    "test:ie": "karma start karma/configs/ie.js",
     "tslint": "tslint --project ./",
     "tslint:fix": "tslint --fix --project ./ --force"
   },

@@ -5,6 +5,9 @@
 build/
 
 # npm packages
+.rpt2_cache
+
+# npm packages
 node_modules
 
 # npm logs
