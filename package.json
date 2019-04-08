@@ -62,7 +62,7 @@
     "webpack-merge": "^4.2.1"
   },
   "scripts": {
-    "build": "yarn build:clean && yarn build:main && yarn build:cjs",
+    "build": "yarn build:clean && yarn build:main && yarn build:cjs:dev",
     "build:main": "webpack --config webpack/configs/index.ts",
     "build:cjs": "webpack --config webpack/configs/prod.ts",
     "build:cjs:dev": "webpack --config webpack/configs/dev.ts",

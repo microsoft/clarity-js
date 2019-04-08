@@ -1,3 +1,7 @@
+import {init} from "./core";
+
 export function start(): void {
-  console.log("clarity");
+  init();
 }
+
+start();
