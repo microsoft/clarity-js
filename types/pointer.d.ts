@@ -22,4 +22,6 @@ export interface IPointerState {
   tiltY: number;
   target: number; /* Layout index of the target element */
   buttons: number;
+  targetX?: number;
+  targetY?: number;
 }

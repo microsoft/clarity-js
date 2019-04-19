@@ -64,4 +64,7 @@ export interface IConfig {
 
     // Identifier of the project to which this impression will be merged on the backend
     projectId?: string;
+
+    // For pointer events, compute and record pointe event coordinates relative to its target's top left corner
+    pointerTargetCoords?: boolean;
 }
