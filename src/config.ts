@@ -21,7 +21,8 @@ export let config: IConfig = {
   customInstrumentation: null,
   debug: false,
   validateConsistency: false,
-  backgroundMode: false
+  backgroundMode: false,
+  pointerTargetCoords: false
 };
 
 export function resetConfig(): void {

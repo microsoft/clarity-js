@@ -3,6 +3,7 @@ import * as touch from "./touch";
 
 import { IPlugin } from "@clarity-types/core";
 import { IPointerModule, IPointerState } from "@clarity-types/pointer";
+import { config } from "@src/config";
 import { addEvent, bind } from "@src/core";
 
 export default class Pointer implements IPlugin {
@@ -36,23 +37,29 @@ export default class Pointer implements IPlugin {
   private pointerHandler(handler: IPointerModule, evt: Event): void {
     let states = handler.transform(evt);
     for (let state of states) {
-      this.processState(state, evt.timeStamp);
+      this.processState(state, evt);
     }
   }
 
-  private processState(state: IPointerState, time: number): void {
+  private processState(state: IPointerState, evt: Event): void {
     switch (state.event) {
       case "mousemove":
       case "touchmove":
         if (this.lastMoveState == null
           || this.checkDistance(this.lastMoveState, state)
-          || this.checkTime(time)) {
+          || this.checkTime(evt.timeStamp)) {
           this.lastMoveState = state;
-          this.lastMoveTime = time;
+          this.lastMoveTime = evt.timeStamp;
+          if (config.pointerTargetCoords) {
+            this.addTargetCoords(state, evt.target);
+          }
           addEvent({type: this.eventName, state});
         }
         break;
       default:
+        if (config.pointerTargetCoords) {
+          this.addTargetCoords(state, evt.target);
+        }
         addEvent({type: this.eventName, state});
         break;
     }
@@ -66,5 +73,19 @@ export default class Pointer implements IPlugin {
 
   private checkTime(time: number): boolean {
     return time - this.lastMoveTime > this.timeThreshold;
+  }
+
+  private addTargetCoords(state: IPointerState, target: EventTarget): void {
+    if (target && target instanceof Element) {
+      const rect = (target as Element).getBoundingClientRect();
+      const de = document.documentElement;
+      const rectLeft = rect.left + de.scrollLeft;
+      const rectTop = rect.top + de.scrollTop;
+      state.targetX = state.x - rectLeft;
+      state.targetY = state.y - rectTop;
+    } else {
+      state.targetX = null;
+      state.targetY = null;
+    }
   }
 }
