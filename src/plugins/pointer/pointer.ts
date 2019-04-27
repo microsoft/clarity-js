@@ -51,14 +51,14 @@ export default class Pointer implements IPlugin {
           this.lastMoveState = state;
           this.lastMoveTime = evt.timeStamp;
           if (config.pointerTargetCoords) {
-            this.addTargetCoords(state, evt.target);
+            this.addTargetCoords(state, evt);
           }
           addEvent({type: this.eventName, state});
         }
         break;
       default:
         if (config.pointerTargetCoords) {
-          this.addTargetCoords(state, evt.target);
+          this.addTargetCoords(state, evt);
         }
         addEvent({type: this.eventName, state});
         break;
@@ -75,17 +75,41 @@ export default class Pointer implements IPlugin {
     return time - this.lastMoveTime > this.timeThreshold;
   }
 
-  private addTargetCoords(state: IPointerState, target: EventTarget): void {
+  private addTargetCoords(state: IPointerState, evt: Event): void {
+    const target = evt && evt.target;
+    let targetX: number = null;
+    let targetY: number = null;
     if (target && target instanceof Element) {
-      const rect = (target as Element).getBoundingClientRect();
-      const de = document.documentElement;
-      const rectLeft = rect.left + de.scrollLeft;
-      const rectTop = rect.top + de.scrollTop;
-      state.targetX = state.x - rectLeft;
-      state.targetY = state.y - rectTop;
-    } else {
-      state.targetX = null;
-      state.targetY = null;
+
+      // In IE, calling getBoundingClientRect on a node that is disconnected
+      // from a DOM tree, sometimes results in a 'Unspecified Error'
+      // Wrapping this in try/catch is faster than checking whether element is connected to DOM
+      let targetRect = null;
+      try {
+        targetRect = target.getBoundingClientRect();
+      } catch (e) {
+          // Ignore
+      }
+
+      const evtX: number = "clientX" in evt ? evt["clientX"] : null;
+      const evtY: number = "clientY" in evt ? evt["clientY"] : null;
+      if (targetRect && evtX !== null && evtY !== null) {
+        // targetRect contains coordinates of the target element relative to the viewport
+        // evtX and evtY contain event coordinates relative to the viewport as well
+        targetX = evtX - Math.floor(targetRect.left);
+        targetY = evtY - Math.floor(targetRect.top);
+      }
+    }
+    state.targetX = targetX;
+    state.targetY = targetY;
+
+    console.log("Event");
+    console.log(evt);
+    console.log("Target");
+    console.log(evt.target);
+    console.log("targetX: " + state.targetX + ", targetY: " + state.targetY);
+    if (targetX < 0 || targetX > state.width || targetY < 0 || targetY > state.height) {
+      alert("Error");
     }
   }
 }
