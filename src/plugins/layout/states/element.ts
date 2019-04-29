@@ -1,6 +1,6 @@
 import { IAttributes, IElementLayoutState, ILayoutRectangle, ILayoutStyle, INodeInfo } from "@clarity-types/layout";
 import { config } from "@src/config";
-import { mask } from "@src/utils";
+import { getBoundingClientRect, mask } from "@src/utils";
 import { createGenericLayoutState, Tags } from "./generic";
 
 enum Styles {
@@ -69,17 +69,8 @@ export function getElementValue(element: Element, info: INodeInfo): string {
 
 function getLayout(element: Element): ILayoutRectangle {
     let layout: ILayoutRectangle = null;
-    // In IE, calling getBoundingClientRect on a node that is disconnected
-    // from a DOM tree, sometimes results in a 'Unspecified Error'
-    // Wrapping this in try/catch is faster than checking whether element is connected to DOM
-    let rect = null;
-    let doc = document.documentElement;
-    try {
-        rect = element.getBoundingClientRect();
-    } catch (e) {
-        // Ignore
-    }
-
+    const rect = getBoundingClientRect(element);
+    const doc = document.documentElement;
     if (rect) {
         // getBoundingClientRect returns relative positioning to viewport and therefore needs
         // addition of window scroll position to get position relative to document

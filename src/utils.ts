@@ -114,3 +114,16 @@ export function getEventType(eventArray: IEventArray): string {
 export function mask(text: string): string {
   return text.replace(/\S/gi, "*");
 }
+
+export function getBoundingClientRect(element: Element): ClientRect | DOMRect {
+  // In IE, calling getBoundingClientRect on a node that is disconnected
+  // from a DOM tree, sometimes results in a 'Unspecified Error'
+  // Wrapping this in try/catch is faster than checking whether element is connected to DOM
+  let targetRect: ClientRect | DOMRect = null;
+  try {
+    targetRect = element.getBoundingClientRect();
+  } catch (e) {
+      // Ignore
+  }
+  return targetRect;
+}
