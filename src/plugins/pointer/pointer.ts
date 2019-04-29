@@ -5,6 +5,7 @@ import { IPlugin } from "@clarity-types/core";
 import { IPointerModule, IPointerState } from "@clarity-types/pointer";
 import { config } from "@src/config";
 import { addEvent, bind } from "@src/core";
+import { getBoundingClientRect } from "@src/utils";
 
 export default class Pointer implements IPlugin {
   private eventName: string = "Pointer";
@@ -43,6 +44,12 @@ export default class Pointer implements IPlugin {
 
   private processState(state: IPointerState, evt: Event): void {
     switch (state.event) {
+      case "click":
+        if (config.pointerTargetCoords) {
+          this.addClickTargetCoords(state, evt);
+        }
+        addEvent({type: this.eventName, state});
+        break;
       case "mousemove":
       case "touchmove":
         if (this.lastMoveState == null
@@ -50,16 +57,10 @@ export default class Pointer implements IPlugin {
           || this.checkTime(evt.timeStamp)) {
           this.lastMoveState = state;
           this.lastMoveTime = evt.timeStamp;
-          if (config.pointerTargetCoords) {
-            this.addTargetCoords(state, evt.target);
-          }
           addEvent({type: this.eventName, state});
         }
         break;
       default:
-        if (config.pointerTargetCoords) {
-          this.addTargetCoords(state, evt.target);
-        }
         addEvent({type: this.eventName, state});
         break;
     }
@@ -75,17 +76,23 @@ export default class Pointer implements IPlugin {
     return time - this.lastMoveTime > this.timeThreshold;
   }
 
-  private addTargetCoords(state: IPointerState, target: EventTarget): void {
+  private addClickTargetCoords(state: IPointerState, evt: Event): void {
+    const target = evt && evt.target;
+    let targetX: number = null;
+    let targetY: number = null;
     if (target && target instanceof Element) {
-      const rect = (target as Element).getBoundingClientRect();
-      const de = document.documentElement;
-      const rectLeft = rect.left + de.scrollLeft;
-      const rectTop = rect.top + de.scrollTop;
-      state.targetX = state.x - rectLeft;
-      state.targetY = state.y - rectTop;
-    } else {
-      state.targetX = null;
-      state.targetY = null;
+      const targetRect = getBoundingClientRect(target);
+      const evtX: number = "clientX" in evt ? Math.floor(evt["clientX"]) : null;
+      const evtY: number = "clientY" in evt ? Math.floor(evt["clientY"]) : null;
+      if (targetRect && evtX !== null && evtY !== null) {
+        // 1. Both targetXY and evtXY contain coordinates offset from the top left corner of the viewport.
+        // 2. evtXY are provided as integers by the browser (Math.floor of the exact coordinate), while rectangle
+        // left/top values are floats. To avoid negative targetXY, we need to floor rectangle values as well.
+        targetX = evtX - Math.floor(targetRect.left);
+        targetY = evtY - Math.floor(targetRect.top);
+      }
     }
+    state.targetX = targetX;
+    state.targetY = targetY;
   }
 }
