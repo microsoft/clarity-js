@@ -86,8 +86,8 @@ export default class Pointer implements IPlugin {
       const evtY: number = "clientY" in evt ? Math.floor(evt["clientY"]) : null;
       if (targetRect && evtX !== null && evtY !== null) {
         // 1. Both targetXY and evtXY contain coordinates offset from the top left corner of the viewport.
-        // 2. evtXY are provided by the browser integers (Math.floor of the actual coordinate), while rectangle
-        // left/top are floats. To avoid negative targetXY, we need to floor rectangle values as well.
+        // 2. evtXY are provided as integers by the browser (Math.floor of the exact coordinate), while rectangle
+        // left/top values are floats. To avoid negative targetXY, we need to floor rectangle values as well.
         targetX = evtX - Math.floor(targetRect.left);
         targetY = evtY - Math.floor(targetRect.top);
       }
