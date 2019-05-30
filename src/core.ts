@@ -252,8 +252,8 @@ function uploadPendingEvents(): void {
 function init(): void {
   // Set ClarityID cookie, if it's not set already and is allowed by config
   if (!config.disableCookie && !getCookie(Cookie)) {
-    // setting our ClarityId cookie for 2 years
-    setCookie(Cookie, guid(), 7 * 52 * 2);
+    // setting our ClarityId cookie for 1 year (52 weeks)
+    setCookie(Cookie, guid(), 7 * 52);
   }
 
   cid = config.disableCookie ? guid() : getCookie(Cookie);
