@@ -16,7 +16,7 @@ import { resetSchemas } from "./converters/schema";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.3.1";
+export const version = "0.3.2";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
@@ -252,8 +252,8 @@ function uploadPendingEvents(): void {
 function init(): void {
   // Set ClarityID cookie, if it's not set already and is allowed by config
   if (!config.disableCookie && !getCookie(Cookie)) {
-    // setting our ClarityId cookie for 2 years
-    setCookie(Cookie, guid(), 7 * 52 * 2);
+    // setting our ClarityId cookie for 1 year (52 weeks)
+    setCookie(Cookie, guid(), 7 * 52);
   }
 
   cid = config.disableCookie ? guid() : getCookie(Cookie);
