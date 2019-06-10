@@ -8,6 +8,7 @@ export default function(node: Node): void {
         case Node.DOCUMENT_TYPE_NODE:
             let doctype = node as DocumentType;
             nodes.add(parent, node, {
+                tag: "*DOC*",
                 attributes: {
                     name: doctype.name,
                     publicId: doctype.publicId,
@@ -20,6 +21,7 @@ export default function(node: Node): void {
             if (parent && nodes.has(parent)) {
                 // nodes.update(parent, {leaf: true});
                 nodes.add(parent, node, {
+                    tag: "*TXT*",
                     leaf: false,
                     value: node.nodeValue,
                     layout: getTextLayout(node)
@@ -35,6 +37,7 @@ export default function(node: Node): void {
                     break;
                 default:
                     nodes.add(parent, node, {
+                        tag: element.tagName,
                         leaf: node.childNodes.length === 0,
                         attributes: getAttributes(element.attributes),
                         layout: getLayout(element)

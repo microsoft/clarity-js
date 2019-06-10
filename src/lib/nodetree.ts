@@ -1,15 +1,16 @@
-interface IAttributes {
+export interface IAttributes {
     [key: string]: string;
 }
 
-interface INodeData {
+export interface INodeData {
+    tag: string;
     attributes?: IAttributes;
     layout?: string;
     leaf?: boolean;
     value?: string;
 }
 
-interface INodeValue {
+export interface INodeValue {
     parent: number;
     children: number[];
     active: boolean;
@@ -71,6 +72,13 @@ export class NodeTree {
                 this.values[id][key] = value[key];
             }
         }
+    }
+
+    public node(id: number): Node {
+        if (id in this.nodes) {
+            return this.nodes[id];
+        }
+        return null;
     }
 
     public get(node: Node): INodeValue {
