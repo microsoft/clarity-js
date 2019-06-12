@@ -28,7 +28,7 @@ export default function serialize(node: Node): string {
                 case "value":
                     let parent = nodes.node(value.parent);
                     let parentTag = nodes.get(parent).data.tag;
-                    markup.push(`"${text(parentTag, data[key])}"`);
+                    markup.push(`${text(parentTag, data[key])}`);
                     break;
                 case "children":
                     if (value[key].length > 0) {
@@ -46,27 +46,23 @@ export default function serialize(node: Node): string {
 }
 
 function text(tag: string, value: string): string {
-    tag = tag.toLowerCase();
     switch (tag) {
-        case "style":
-        case "title":
+        case "STYLE":
+        case "TITLE":
             return value;
         default:
             let masked = "";
-            let activeCode = "x";
-            let activeCount = 0;
-            let currentCode = "y";
+            let wasWhiteSpace = false;
+            let textCount = 0;
+            let wordCount = 0;
             for (let i = 0; i < value.length; i++) {
                 let code = value.charCodeAt(i);
-                currentCode = (code === 32 || code === 10 || code === 13) ? "y" : "x";
-                if (currentCode !== activeCode) {
-                    masked += activeCount > 0 ? `${activeCode}${activeCount}` : "";
-                    activeCode = currentCode;
-                    activeCount = 0;
-                }
-                activeCount++;
+                let isWhiteSpace = (code === 32 || code === 10 || code === 9 || code === 13);
+                textCount += isWhiteSpace ? 0 : 1;
+                wordCount += isWhiteSpace && !wasWhiteSpace ? 1 : 0;
+                wasWhiteSpace = isWhiteSpace;
             }
-            masked += `${activeCode}${activeCount}`;
+            masked += `${textCount}x${wordCount}`;
             return masked;
     }
 }

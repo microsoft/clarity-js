@@ -94,7 +94,7 @@ function getLayout(element: Element): string {
         // Ignore
     }
 
-    if (rect) {
+    if (rect && rect.width > 0 && rect.height > 0) {
         // getBoundingClientRect returns relative positioning to viewport and therefore needs
         // addition of window scroll position to get position relative to document
         // Also: using Math.floor() instead of Math.round() below because in Edge,
