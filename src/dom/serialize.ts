@@ -1,9 +1,13 @@
 import {nodes} from "../data/state";
 import {INodeData, INodeValue} from "../lib/nodetree";
 
-export default function serialize(node: Node): string {
+export default function(node: Node): string {
+    let markup = serialize(node);
+    return JSON.stringify(markup);
+}
+
+function serialize(node: Node): any {
     let markup = [];
-    let children = [];
     let value: INodeValue = nodes.get(node);
     let data: INodeData = value.data;
     let keys = ["tag", "attributes", "layout", "value", "children"];
@@ -11,14 +15,14 @@ export default function serialize(node: Node): string {
         if (data[key] || value[key]) {
             switch (key) {
                 case "tag":
-                    if (data[key] !== "*TXT*") {
-                        markup.push(data[key]);
-                    }
+                    markup.push(value.id);
+                    markup.push(value.parent);
+                    markup.push(data[key]);
                     break;
                 case "attributes":
                     for (let attr in data[key]) {
                         if (data[key][attr]) {
-                            markup.push(`"${attr}=${data[key][attr]}"`);
+                            markup.push(`${attr}=${data[key][attr]}`);
                         }
                     }
                     break;
@@ -34,15 +38,17 @@ export default function serialize(node: Node): string {
                     if (value[key].length > 0) {
                         for (let i = 0; i < value[key].length; i++) {
                             let childNode = nodes.node(value[key][i]);
-                            children.push(serialize(childNode));
+                            let child = serialize(childNode);
+                            for (let j = 0; j < child.length; j++) {
+                                markup.push(child[j]);
+                            }
                         }
-                        markup.push(`[${children.join(",")}]`);
                     }
                     break;
             }
         }
     }
-    return markup.join(" ");
+    return markup;
 }
 
 function text(tag: string, value: string): string {
@@ -51,7 +57,6 @@ function text(tag: string, value: string): string {
         case "TITLE":
             return value;
         default:
-            let masked = "";
             let wasWhiteSpace = false;
             let textCount = 0;
             let wordCount = 0;
@@ -62,7 +67,6 @@ function text(tag: string, value: string): string {
                 wordCount += isWhiteSpace && !wasWhiteSpace ? 1 : 0;
                 wasWhiteSpace = isWhiteSpace;
             }
-            masked += `${textCount}x${wordCount}`;
-            return masked;
+            return `${textCount}x${wordCount}`;
     }
 }

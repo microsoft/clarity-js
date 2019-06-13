@@ -11,6 +11,7 @@ export interface INodeData {
 }
 
 export interface INodeValue {
+    id: number;
     parent: number;
     children: number[];
     active: boolean;
@@ -57,6 +58,7 @@ export class NodeTree {
 
         this.nodes[id] = node;
         this.values[id] = {
+            id,
             parent: parentId,
             children: [],
             active: true,
