@@ -12,5 +12,6 @@ export default async function(): Promise<void> {
         processNode(node);
         node = walker.nextNode();
     }
-    counter.stop(Method.Discover);
+    console.log("Finished discovering");
+    counter.stop(method);
 }

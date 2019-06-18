@@ -1,47 +1,37 @@
 import {nodes} from "../data/state";
 
-let ignoreAttributes = ["title", "alt"];
+let ignoreAttributes = ["title", "alt", "onload", "onfocus"];
 
 export default function(node: Node): void {
-    let parent = node.parentElement;
+    let call = nodes.has(node) ? "update" : "add";
     switch (node.nodeType) {
         case Node.DOCUMENT_TYPE_NODE:
             let doctype = node as DocumentType;
-            nodes.add(parent, node, {
-                tag: "*DOC*",
-                attributes: {
-                    name: doctype.name,
-                    publicId: doctype.publicId,
-                    systemId: doctype.systemId
-                }
-            });
+            let docAttributes = { name: doctype.name, publicId: doctype.publicId, systemId: doctype.systemId };
+            let docData = { tag: "*D", attributes: docAttributes };
+            nodes[call](node, docData);
             break;
         case Node.TEXT_NODE:
             // Account for this text node only if we are tracking the parent node
+            // We do not wish to track text nodes for ignored parent nodes, like script tags
+            let parent = node.parentElement;
             if (parent && nodes.has(parent)) {
-                // nodes.update(parent, {leaf: true});
-                nodes.add(parent, node, {
-                    tag: "*TXT*",
-                    leaf: false,
-                    value: node.nodeValue,
-                    layout: getTextLayout(node)
-                });
+                let textData = { tag: "*T", value: node.nodeValue };
+                textData["layout"] = getTextLayout(node);
+                nodes[call](node, textData);
             }
             break;
         case Node.ELEMENT_NODE:
-            let element = ( node as HTMLElement);
+            let element = (node as HTMLElement);
             switch (element.tagName) {
                 case "SCRIPT":
                 case "NOSCRIPT":
                 case "META":
                     break;
                 default:
-                    nodes.add(parent, node, {
-                        tag: element.tagName,
-                        leaf: node.childNodes.length === 0,
-                        attributes: getAttributes(element.attributes),
-                        layout: getLayout(element)
-                    });
+                    let data = { tag: element.tagName, attributes: getAttributes(element.attributes) };
+                    data["layout"] = getLayout(element);
+                    nodes[call](node, data);
                     break;
             }
             break;
@@ -63,25 +53,25 @@ function getAttributes(attributes: NamedNodeMap): {[key: string]: string} {
     return output;
 }
 
-function getTextLayout(textNode: Node): string {
-    let layouts: string[] = [];
+function getTextLayout(textNode: Node): number[] {
+    return [];
+    let layout: number[] = [];
     let range = document.createRange();
     range.selectNodeContents(textNode);
     let rects = range.getClientRects();
     let doc = document.documentElement;
     for (let i = 0; i < rects.length; i++) {
         let rect = rects[i];
-        layouts.push([
-            Math.floor(rect.left) + ("pageXOffset" in window ? window.pageXOffset : doc.scrollLeft),
-            Math.floor(rect.top) + ("pageYOffset" in window ? window.pageYOffset : doc.scrollTop),
-            Math.round(rect.width),
-            Math.round(rect.height)
-        ].join("x"));
+        layout.push(Math.floor(rect.left) + ("pageXOffset" in window ? window.pageXOffset : doc.scrollLeft));
+        layout.push(Math.floor(rect.top) + ("pageYOffset" in window ? window.pageYOffset : doc.scrollTop));
+        layout.push(Math.round(rect.width));
+        layout.push(Math.round(rect.height));
     }
-    return layouts.join(".");
+    return layout;
 }
 
-function getLayout(element: Element): string {
+function getLayout(element: Element): number[] {
+    return [];
     // In IE, calling getBoundingClientRect on a node that is disconnected
     // from a DOM tree, sometimes results in a 'Unspecified Error'
     // Wrapping this in try/catch is faster than checking whether element is connected to DOM
@@ -107,5 +97,5 @@ function getLayout(element: Element): string {
             Math.round(rect.height)
         ];
     }
-    return layout.join("x");
+    return layout;
 }

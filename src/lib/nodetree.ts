@@ -5,14 +5,14 @@ export interface IAttributes {
 export interface INodeData {
     tag: string;
     attributes?: IAttributes;
-    layout?: string;
-    leaf?: boolean;
+    layout?: number[];
     value?: string;
 }
 
 export interface INodeValue {
     id: number;
     parent: number;
+    previous: number;
     children: number[];
     active: boolean;
     update: boolean;
@@ -22,7 +22,7 @@ export interface INodeValue {
 export class NodeTree {
 
     private static NODE_ID_PROP: string = "__node_index__";
-    private static index: number = 0;
+    private static index: number = 1;
 
     private nodes: Node[];
     private values: INodeValue[];
@@ -45,21 +45,20 @@ export class NodeTree {
         return id;
     }
 
-    public add(parent: Node, node: Node, data: INodeData): void {
+    public add(node: Node, data: INodeData): void {
         let id = this.id(node);
-        let parentId = -1;
+        let parentId = node.parentElement ? this.id(node.parentElement) : 0;
+        let previousId = node.previousSibling ? this.id(node.previousSibling) : 0;
 
-        if (parent) {
-            parentId = this.id(parent);
-            if (this.values[parentId]) {
-                this.values[parentId].children.push(id);
-            }
+        if (parentId >= 0 && this.values[parentId]) {
+            this.values[parentId].children.push(id);
         }
 
         this.nodes[id] = node;
         this.values[id] = {
             id,
             parent: parentId,
+            previous: previousId,
             children: [],
             active: true,
             update: true,
@@ -67,12 +66,55 @@ export class NodeTree {
         };
     }
 
-    public update(node: Node, value: INodeValue): void {
+    public update(node: Node, data: INodeData): void {
         let id = this.id(node);
-        for (let key in value) {
-            if (key in this.values[id]) {
-                this.values[id][key] = value[key];
+        console.log("Updating node: " + id);
+        let parentId = node.parentElement ? this.id(node.parentElement) : 0;
+        let previousId = node.previousSibling ? this.id(node.previousSibling) : 0;
+
+        if (id in this.values) {
+            let value = this.values[id];
+            console.log("Previous value: " + JSON.stringify(value));
+
+            // Handle case where internal ordering may have changed
+            if (value["previous"] !== previousId) {
+                let oldPreviousId = value["previous"];
+                value["previous"] = previousId;
+                console.log("Old previous id: " + oldPreviousId + " | " + previousId);
             }
+
+            // Handle case where parent might have been updated
+            if (value["parent"] !== parentId) {
+                let oldParentId = value["parent"];
+                value["parent"] = parentId;
+                console.log("Old parent id: " + oldParentId + " | " + parentId);
+                // Move this node to the right location under new parent
+                if (parentId >= 0) {
+                    if (previousId >= 0) {
+                        this.values[parentId].children.splice(previousId + 1, 0 , id);
+                    } else {
+                        this.values[parentId].children.push(id);
+                    }
+                } else {
+                    // Mark this element as deleted if the parent has been updated to null
+                    value["active"] = false;
+                }
+
+                // Remove reference to this node from the old parent
+                let index = this.values[oldParentId].children.indexOf(id);
+                if (index >= 0) {
+                    this.values[oldParentId].children.splice(index, 1);
+                }
+            }
+
+            // Update data
+            for (let key in data) {
+                if (key in value["data"]) {
+                    value["data"][key] = data[key];
+                }
+            }
+
+            value["update"] = true;
         }
     }
 
@@ -97,7 +139,7 @@ export class NodeTree {
         this.delete(id);
     }
 
-    public keys(): Node[] {
+    public getNodes(): Node[] {
         let nodes: Node[] = [];
         for (let id in this.nodes) {
             if (this.nodes[id]) {
@@ -105,6 +147,16 @@ export class NodeTree {
             }
         }
         return nodes;
+    }
+
+    public getValues(): INodeValue[] {
+        let values = [];
+        for (let id in this.values) {
+            if (this.values[id] && this.values[id]["update"] === true) {
+                values.push(this.values[id]);
+            }
+        }
+        return values;
     }
 
     public backup(): void {

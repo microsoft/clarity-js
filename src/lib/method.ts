@@ -1,5 +1,6 @@
 export enum Method {
     Discover,
     Mutation,
-    Layout
+    Layout,
+    Serialize
 }
