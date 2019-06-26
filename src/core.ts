@@ -1,3 +1,4 @@
+import deserialize from "./dom/deserialize";
 import discover from "./dom/discover";
 import mutation from "./dom/mutation";
 import serialize from "./dom/serialize";
@@ -17,6 +18,10 @@ export function init(): void {
       console.log("Serialized DOM Length: " + output.length);
       console.log("done serialization!");
       console.log(window["TRACKER"][3]["duration"] + "ms in " + window["TRACKER"][3]["count"] + " iterations");
+      console.log("====================");
+      let deserialized = deserialize(output);
+      console.log("Deserialized DOM: " + deserialized);
+      console.log("Deserialized DOM Length: " + deserialized.length);
     });
   });
 }

@@ -53,7 +53,7 @@ export default async function(): Promise<string> {
         metadata = meta(metadata);
         for (let token of metadata) {
             let index: number = typeof token === "string" ? markup.indexOf(token) : -1;
-            markup.push(index >= 0 ? [index] : token);
+            markup.push(index >= 0 && token.length > index.toString().length ? [index] : token);
         }
 
         // Mark this node as processed, so we don't serialize it again
@@ -66,9 +66,8 @@ export default async function(): Promise<string> {
 
 function meta(metadata: string[]): string[] | string[][] {
     let value = JSON.stringify(metadata);
-    let length = value.length;
     let hashed = hash(value);
-    return check(hashed, length) ? [[hashed]] : metadata;
+    return check(hashed, metadata) && hashed.length < value.length ? [[hashed]] : metadata;
 }
 
 function text(tag: string, value: string): string {

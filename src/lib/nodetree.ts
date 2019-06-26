@@ -14,9 +14,9 @@ export interface INodeValue {
     parent: number;
     previous: number;
     children: number[];
-    active: boolean;
-    update: boolean;
     data: INodeData;
+    active?: boolean;
+    update?: boolean;
 }
 
 export class NodeTree {
