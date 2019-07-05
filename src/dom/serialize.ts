@@ -17,15 +17,16 @@ export default async function(): Promise<string> {
     for (let value of values) {
         if (counter.longtasks(method)) { await counter.idle(method); }
         let metadata = [];
+        let layouts = [];
         let data: INodeData = value.data;
-        let keys = ["tag", "attributes", "layout", "value"];
+        let keys = ["tag", "layout", "attributes", "value"];
         for (let key of keys) {
             if (data[key]) {
                 switch (key) {
                     case "tag":
-                        markup.push(number(value.parent));
-                        markup.push(number(value.previous));
                         markup.push(number(value.id));
+                        if (value.parent) { markup.push(number(value.parent)); }
+                        if (value.next) { markup.push(number(value.next)); }
                         metadata.push(data[key]);
                         break;
                     case "attributes":
@@ -37,7 +38,10 @@ export default async function(): Promise<string> {
                         break;
                     case "layout":
                         if (data[key].length > 0) {
-                            markup.push(layout(data[key]));
+                            let boxes = layout(data[key]);
+                            for (let box of boxes) {
+                                layouts.push(box);
+                            }
                         }
                         break;
                     case "value":
@@ -54,6 +58,10 @@ export default async function(): Promise<string> {
         for (let token of metadata) {
             let index: number = typeof token === "string" ? markup.indexOf(token) : -1;
             markup.push(index >= 0 && token.length > index.toString().length ? [index] : token);
+        }
+        // Add layout boxes
+        for (let entry of layouts) {
+            markup.push(entry);
         }
 
         // Mark this node as processed, so we don't serialize it again
@@ -87,16 +95,16 @@ function text(tag: string, value: string): string {
                 wordCount += isWhiteSpace && !wasWhiteSpace ? 1 : 0;
                 wasWhiteSpace = isWhiteSpace;
             }
-            return `${textCount}x${wordCount}`;
+            return `${textCount.toString(36)}*${wordCount.toString(36)}`;
     }
 }
 
-function layout(l: number[]): string {
+function layout(l: number[]): string[] {
     let output = [];
     for (let i = 0; i < l.length; i = i + 4) {
-        output.push([l[i + 0].toString(36), l[i + 1].toString(36), l[i + 2].toString(36), l[i + 3].toString(36)].join("."));
+        output.push([l[i + 0].toString(36), l[i + 1].toString(36), l[i + 2].toString(36), l[i + 3].toString(36)].join("*"));
     }
-    return output.join("|");
+    return output;
 }
 
 function number(id: number): number {

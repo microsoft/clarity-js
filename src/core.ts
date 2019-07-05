@@ -4,6 +4,7 @@ import mutation from "./dom/mutation";
 import serialize from "./dom/serialize";
 
 window["SERIALIZE"] = serialize;
+window["DESERIALIZE"] = deserialize;
 
 /* Initial discovery of DOM */
 export function init(): void {

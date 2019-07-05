@@ -54,7 +54,6 @@ function getAttributes(attributes: NamedNodeMap): {[key: string]: string} {
 }
 
 function getTextLayout(textNode: Node): number[] {
-    return [];
     let layout: number[] = [];
     let range = document.createRange();
     range.selectNodeContents(textNode);
@@ -71,7 +70,6 @@ function getTextLayout(textNode: Node): number[] {
 }
 
 function getLayout(element: Element): number[] {
-    return [];
     // In IE, calling getBoundingClientRect on a node that is disconnected
     // from a DOM tree, sometimes results in a 'Unspecified Error'
     // Wrapping this in try/catch is faster than checking whether element is connected to DOM

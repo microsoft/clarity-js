@@ -12,7 +12,7 @@ export interface INodeData {
 export interface INodeValue {
     id: number;
     parent: number;
-    previous: number;
+    next: number;
     children: number[];
     data: INodeData;
     active?: boolean;
@@ -36,19 +36,19 @@ export class NodeTree {
         this.values = [];
     }
 
-    public id(node: Node): number {
+    public id(node: Node, autogen: boolean = true): number {
         if (node === null) { return null; }
         let id = node[NodeTree.NODE_ID_PROP];
-        if (!id) {
+        if (!id && autogen) {
             id = node[NodeTree.NODE_ID_PROP] = NodeTree.index++;
         }
-        return id;
+        return id ? id : null;
     }
 
     public add(node: Node, data: INodeData): void {
         let id = this.id(node);
-        let parentId = node.parentElement ? this.id(node.parentElement) : 0;
-        let previousId = node.previousSibling ? this.id(node.previousSibling) : 0;
+        let parentId = node.parentElement ? this.id(node.parentElement) : null;
+        let nextId = node.nextSibling ? this.id(node.nextSibling, false) : null;
 
         if (parentId >= 0 && this.values[parentId]) {
             this.values[parentId].children.push(id);
@@ -58,7 +58,7 @@ export class NodeTree {
         this.values[id] = {
             id,
             parent: parentId,
-            previous: previousId,
+            next: nextId,
             children: [],
             active: true,
             update: true,
@@ -69,18 +69,18 @@ export class NodeTree {
     public update(node: Node, data: INodeData): void {
         let id = this.id(node);
         console.log("Updating node: " + id);
-        let parentId = node.parentElement ? this.id(node.parentElement) : 0;
-        let previousId = node.previousSibling ? this.id(node.previousSibling) : 0;
+        let parentId = node.parentElement ? this.id(node.parentElement) : null;
+        let nextId = node.nextSibling ? this.id(node.nextSibling) : null;
 
         if (id in this.values) {
             let value = this.values[id];
             console.log("Previous value: " + JSON.stringify(value));
 
             // Handle case where internal ordering may have changed
-            if (value["previous"] !== previousId) {
-                let oldPreviousId = value["previous"];
-                value["previous"] = previousId;
-                console.log("Old previous id: " + oldPreviousId + " | " + previousId);
+            if (value["next"] !== nextId) {
+                let oldNextId = value["next"];
+                value["next"] = nextId;
+                console.log("Old next id: " + oldNextId + " | " + nextId);
             }
 
             // Handle case where parent might have been updated
@@ -90,8 +90,8 @@ export class NodeTree {
                 console.log("Old parent id: " + oldParentId + " | " + parentId);
                 // Move this node to the right location under new parent
                 if (parentId >= 0) {
-                    if (previousId >= 0) {
-                        this.values[parentId].children.splice(previousId + 1, 0 , id);
+                    if (nextId >= 0) {
+                        this.values[parentId].children.splice(nextId + 1, 0 , id);
                     } else {
                         this.values[parentId].children.push(id);
                     }
