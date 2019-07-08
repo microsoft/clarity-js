@@ -1,4 +1,4 @@
-import {Method} from "../lib/method";
+import {Method} from "../lib/enums";
 
 interface ICounter {
     [key: number]: ICounterValue;

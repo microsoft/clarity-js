@@ -1,5 +1,5 @@
 import * as counter from "../instrument/counter";
-import { Method } from "../lib/method";
+import { Method } from "../lib/enums";
 import processNode from "./node";
 
 let observer: MutationObserver;

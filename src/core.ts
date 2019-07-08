@@ -1,7 +1,7 @@
-import deserialize from "./dom/deserialize";
+import deserialize from "./data/deserialize";
+import serialize from "./data/serialize";
 import discover from "./dom/discover";
 import mutation from "./dom/mutation";
-import serialize from "./dom/serialize";
 
 window["SERIALIZE"] = serialize;
 window["DESERIALIZE"] = deserialize;

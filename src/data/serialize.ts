@@ -1,9 +1,9 @@
-import {nodes} from "../data/state";
-import {check} from "../data/token";
 import * as counter from "../instrument/counter";
+import { Method } from "../lib/enums";
 import hash from "../lib/hash";
-import { Method } from "../lib/method";
 import {INodeData, INodeValue} from "../lib/nodetree";
+import {nodes} from "./state";
+import {check} from "./token";
 
 window["HASH"] = hash;
 let reference: number = 0;
