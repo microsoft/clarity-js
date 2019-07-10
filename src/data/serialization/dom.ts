@@ -1,21 +1,22 @@
-import * as counter from "../instrument/counter";
-import { Method } from "../lib/enums";
-import hash from "../lib/hash";
-import {INodeData, INodeValue} from "../lib/nodetree";
-import {nodes} from "./state";
-import {check} from "./token";
+import hash from "../../lib/hash";
+import {INodeData} from "../../lib/nodetree";
+import * as counter from "../../metrics/counter";
+import { Counter, Timer } from "../../metrics/enums";
+import * as timer from "../../metrics/timer";
+import {nodes} from "../state";
+import {check} from "../token";
 
 window["HASH"] = hash;
 let reference: number = 0;
 
 export default async function(): Promise<string> {
-    let method = Method.Serialize;
-    counter.start(method);
+    let method = Timer.Serialize;
+    timer.start(method);
     let markup = [];
-    let values: INodeValue[] = nodes.getValues();
+    let values = nodes.summarize();
     reference = 0;
     for (let value of values) {
-        if (counter.longtasks(method)) { await counter.idle(method); }
+        if (timer.longtasks(method)) { await timer.idle(method); }
         let metadata = [];
         let layouts = [];
         let data: INodeData = value.data;
@@ -24,6 +25,7 @@ export default async function(): Promise<string> {
             if (data[key]) {
                 switch (key) {
                     case "tag":
+                        counter.increment(Counter.Nodes);
                         markup.push(number(value.id));
                         if (value.parent) { markup.push(number(value.parent)); }
                         if (value.next) { markup.push(number(value.next)); }
@@ -63,12 +65,9 @@ export default async function(): Promise<string> {
         for (let entry of layouts) {
             markup.push(entry);
         }
-
-        // Mark this node as processed, so we don't serialize it again
-        value["update"] = false;
     }
     let json = JSON.stringify(markup);
-    counter.stop(method);
+    timer.stop(method);
     return json;
 }
 

@@ -1,5 +1,5 @@
-import * as counter from "../instrument/counter";
-import { Method } from "../lib/enums";
+import { Timer } from "../metrics/enums";
+import * as counter from "../metrics/timer";
 import processNode from "./node";
 
 let observer: MutationObserver;
@@ -15,7 +15,7 @@ export default function(): void {
 }
 
 function handle(mutations: MutationRecord[]): void {
-    let method = Method.Mutation;
+    let method = Timer.Mutation;
     counter.start(method);
     let length = mutations.length;
     for (let i = 0; i < length; i++) {
@@ -25,7 +25,7 @@ function handle(mutations: MutationRecord[]): void {
 }
 
 async function process(mutation: MutationRecord): Promise<void> {
-    let method = Method.Mutation;
+    let method = Timer.Mutation;
     console.log("Received mutation: " + mutation.type + " | " + mutation.target);
     window["MUTATIONS"].push(mutation);
 

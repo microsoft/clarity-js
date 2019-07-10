@@ -149,11 +149,12 @@ export class NodeTree {
         return nodes;
     }
 
-    public getValues(): INodeValue[] {
+    public summarize(): INodeValue[] {
         let values = [];
         for (let id in this.values) {
-            if (this.values[id] && this.values[id]["update"] === true) {
+            if (this.values[id].update) {
                 values.push(this.values[id]);
+                this.values[id].update = false;
             }
         }
         return values;
