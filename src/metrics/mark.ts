@@ -1,17 +1,5 @@
+import {IMark, IMarkSummary} from "@clarity-types/metrics";
 import {Mark} from "./enums";
-
-interface IMark {
-    mark: string;
-    updated: boolean;
-    start: number;
-    end: number;
-}
-
-interface IMarkSummary {
-    mark: string;
-    start: number;
-    end: number;
-}
 
 let tracker: IMark[] = [];
 let summary: IMarkSummary[] = [];

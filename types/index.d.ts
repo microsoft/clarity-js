@@ -3,3 +3,7 @@ interface IClarityJs {
 }
 
 declare const ClarityJs: IClarityJs;
+
+export * from "./data";
+export * from "./dom";
+export * from "./metrics";

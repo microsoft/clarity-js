@@ -1,24 +1,5 @@
+import {IHistogram, IHistogramSummary} from "@clarity-types/metrics";
 import {Histogram} from "./enums";
-
-interface IHistogram {
-    [key: number]: IHistogramValue;
-}
-
-interface IHistogramValue {
-    updated: boolean;
-    values: [number];
-}
-
-interface IHistogramSummary {
-    [key: string]: IHistogramSummaryValue;
-}
-interface IHistogramSummaryValue {
-    sum: number;
-    min: number;
-    max: number;
-    count: number;
-    sumsquared: number;
-}
 
 let tracker: IHistogram = {};
 let summary: IHistogramSummary = {};

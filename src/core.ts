@@ -1,5 +1,5 @@
 import deserialize from "./data/deserialize";
-import serialize from "./data/serialization/dom";
+import serialize from "./data/serialize";
 import discover from "./dom/discover";
 import mutation from "./dom/mutation";
 
@@ -12,13 +12,13 @@ export function init(): void {
   discover().then(() => {
     // DEBUG: Remove later
     console.log("done discovery!");
-    console.log(window["TRACKER"][0]["duration"] + "ms in " + window["TRACKER"][0]["count"] + " iterations");
+    console.log(window["TRACKER"]["dt"]["duration"] + "ms in " + window["TRACKER"]["dt"]["count"] + " iterations");
     // DEBUG: Serialize DOM
     serialize().then((output: string) => {
       console.log("Serialized DOM: " + output);
       console.log("Serialized DOM Length: " + output.length);
       console.log("done serialization!");
-      console.log(window["TRACKER"][3]["duration"] + "ms in " + window["TRACKER"][3]["count"] + " iterations");
+      console.log(window["TRACKER"]["st"]["duration"] + "ms in " + window["TRACKER"]["st"]["count"] + " iterations");
       console.log("====================");
       let deserialized = deserialize(output);
       console.log("Deserialized DOM: " + deserialized);

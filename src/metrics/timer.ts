@@ -1,25 +1,5 @@
+import {ITimer, ITimerSummary} from "@clarity-types/metrics";
 import {Timer} from "./enums";
-
-interface ITimer {
-    [key: number]: ITimerValue;
-}
-
-interface ITimerValue {
-    updated: boolean;
-    start: number;
-    end: number;
-    duration: number;
-    count: number;
-}
-
-interface ITimerSummary {
-    [key: number]: ITimerSummaryValue;
-}
-
-interface ITimerSummaryValue {
-    duration: number;
-    count: number;
-}
 
 let tracker: ITimer = {};
 let summary: ITimerSummary = {};

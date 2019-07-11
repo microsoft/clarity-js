@@ -1,20 +1,5 @@
+import {ICounter, ICounterSummary} from "@clarity-types/metrics";
 import {Counter} from "./enums";
-
-interface ICounter {
-    [key: number]: ICounterValue;
-}
-
-interface ICounterValue {
-    updated: boolean;
-    counter: number;
-}
-
-interface ICounterSummary {
-    [key: string]: ICounterSummaryValue;
-}
-interface ICounterSummaryValue {
-    counter: number;
-}
 
 let tracker: ICounter = {};
 let summary: ICounterSummary = {};
