@@ -1,11 +1,11 @@
 import {Token} from "@clarity-types/data";
 import {INodeData} from "@clarity-types/dom";
-import hash from "../../lib/hash";
-import * as counter from "../../metrics/counter";
-import { Counter, Timer } from "../../metrics/enums";
-import * as timer from "../../metrics/timer";
-import {nodes} from "../state";
-import {check} from "../token";
+import {nodes} from "../data/state";
+import {check} from "../data/token";
+import hash from "../lib/hash";
+import * as counter from "../metrics/counter";
+import { Counter, Timer } from "../metrics/enums";
+import * as timer from "../metrics/timer";
 
 window["HASH"] = hash;
 let reference: number = 0;

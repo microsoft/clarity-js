@@ -1,7 +1,7 @@
+import serializeDOM from "../dom/serialize";
 import { Timer } from "../metrics/enums";
+import serializeMetrics from "../metrics/serialize";
 import * as timer from "../metrics/timer";
-import serializeDOM from "./serialization/dom";
-import serializeMetrics from "./serialization/metrics";
 
 export default async function(): Promise<string> {
     let tracker = Timer.Serialize;

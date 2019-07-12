@@ -1,5 +1,5 @@
 import deserialize from "./data/deserialize";
-import serialize from "./data/serialize";
+import serialize from "./data/send";
 import discover from "./dom/discover";
 import mutation from "./dom/mutation";
 
