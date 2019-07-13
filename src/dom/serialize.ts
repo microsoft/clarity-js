@@ -1,11 +1,11 @@
 import {Token} from "@clarity-types/data";
 import {INodeData} from "@clarity-types/dom";
-import {nodes} from "../data/state";
+import hash from "../data/hash";
 import {check} from "../data/token";
-import hash from "../lib/hash";
 import * as counter from "../metrics/counter";
 import { Counter, Timer } from "../metrics/enums";
 import * as timer from "../metrics/timer";
+import * as nodes from "./virtualdom";
 
 window["HASH"] = hash;
 let reference: number = 0;
@@ -47,7 +47,7 @@ export default async function(): Promise<Token[]> {
                         }
                         break;
                     case "value":
-                        let parent = nodes.node(value.parent);
+                        let parent = nodes.getNode(value.parent);
                         let parentTag = nodes.get(parent).data.tag;
                         metadata.push(text(parentTag, data[key]));
                         break;

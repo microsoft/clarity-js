@@ -1,4 +1,4 @@
-import {nodes} from "../data/state";
+import * as nodes from "./virtualdom";
 
 let ignoreAttributes = ["title", "alt", "onload", "onfocus"];
 
