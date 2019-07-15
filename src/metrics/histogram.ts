@@ -1,5 +1,4 @@
-import {IHistogram, IHistogramSummary} from "@clarity-types/metrics";
-import {Histogram} from "./enums";
+import { Histogram, IHistogram, IHistogramSummary} from "@clarity-types/metrics";
 
 let tracker: IHistogram = {};
 let summary: IHistogramSummary = {};

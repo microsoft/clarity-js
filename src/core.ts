@@ -1,28 +1,40 @@
-import deserialize from "./data/deserialize";
-import serialize from "./data/send";
-import discover from "./dom/discover";
-import mutation from "./dom/mutation";
+import { IBindingContainer, IEventBindingPair } from "@clarity-types/core";
+import deserialize from "@src/data/deserialize";
+import discover from "@src/dom/discover";
+import mutation from "@src/dom/mutation";
 
-window["SERIALIZE"] = serialize;
+let bindings: IBindingContainer;
 window["DESERIALIZE"] = deserialize;
 
 /* Initial discovery of DOM */
 export function init(): void {
+  bindings = {};
   mutation();
-  discover().then(() => {
-    // DEBUG: Remove later
-    console.log("done discovery!");
-    console.log(window["TRACKER"]["dt"]["duration"] + "ms in " + window["TRACKER"]["dt"]["count"] + " iterations");
-    // DEBUG: Serialize DOM
-    serialize().then((output: string) => {
-      console.log("Serialized DOM: " + output);
-      console.log("Serialized DOM Length: " + output.length);
-      console.log("done serialization!");
-      console.log(window["TRACKER"]["st"]["duration"] + "ms in " + window["TRACKER"]["st"]["count"] + " iterations");
-      console.log("====================");
-      let deserialized = deserialize(output);
-      console.log("Deserialized DOM: " + deserialized);
-      console.log("Deserialized DOM Length: " + deserialized.length);
-    });
+  discover();
+}
+
+export function time(): number {
+  return performance.now();
+}
+
+export function bind(target: EventTarget, event: string, listener: EventListener): void {
+  let eventBindings = bindings[event] || [];
+  target.addEventListener(event, listener, false);
+  eventBindings.push({
+    target,
+    listener
   });
+  bindings[event] = eventBindings;
+}
+
+export function teardown(): void {
+  // Walk through existing list of bindings and remove them all
+  for (let evt in bindings) {
+    if (bindings.hasOwnProperty(evt)) {
+      let eventBindings = bindings[evt] as IEventBindingPair[];
+      for (let i = 0; i < eventBindings.length; i++) {
+        (eventBindings[i].target).removeEventListener(evt, eventBindings[i].listener);
+      }
+    }
+  }
 }

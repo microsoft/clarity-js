@@ -1,5 +1,4 @@
-import {ITimer, ITimerSummary} from "@clarity-types/metrics";
-import {Timer} from "./enums";
+import {ITimer, ITimerSummary, Timer } from "@clarity-types/metrics";
 
 let tracker: ITimer = {};
 let summary: ITimerSummary = {};

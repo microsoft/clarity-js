@@ -1,14 +1,11 @@
 import {Token} from "@clarity-types/data";
 import * as counter from "./counter";
-import { Timer } from "./enums";
 import * as histogram from "./histogram";
 import * as mark from "./mark";
 import * as timer from "./timer";
 
-export default async function(): Promise<Token[]> {
-    let tracker = Timer.Serialize;
+export default function(): Token[] {
     let metrics = [];
-    if (timer.longtasks(tracker)) { await timer.idle(tracker); }
 
     // Serialize counters
     let counters = counter.summarize();

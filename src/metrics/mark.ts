@@ -1,5 +1,4 @@
-import {IMark, IMarkSummary} from "@clarity-types/metrics";
-import {Mark} from "./enums";
+import {IMark, IMarkSummary, Mark } from "@clarity-types/metrics";
 
 let tracker: IMark[] = [];
 let summary: IMarkSummary[] = [];

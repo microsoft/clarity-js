@@ -1,5 +1,4 @@
-import {ICounter, ICounterSummary} from "@clarity-types/metrics";
-import {Counter} from "./enums";
+import { Counter, ICounter, ICounterSummary} from "@clarity-types/metrics";
 
 let tracker: ICounter = {};
 let summary: ICounterSummary = {};
