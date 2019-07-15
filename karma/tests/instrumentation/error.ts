@@ -9,7 +9,7 @@ import { assert } from "chai";
 
 describe("Error Tests", () => {
 
-    let jasmineErrorHandler: ErrorEventHandler = null;
+    let jasmineErrorHandler: GlobalEventHandlers["onerror"] = null;
 
     function preventDefault(e: Event): void {
         e.preventDefault();
