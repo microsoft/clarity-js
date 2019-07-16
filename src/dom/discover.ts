@@ -1,12 +1,12 @@
 import { Event, Token } from "@clarity-types/data";
 import { Timer } from "@clarity-types/metrics";
-import { time } from "@src/core";
+import { time } from "@src/clarity";
 import { queue } from "@src/data/upload";
 import serialize from "@src/dom/serialize";
 import * as timer from "@src/metrics/timer";
 import processNode from "./node";
 
-export default function(): void {
+export function start(): void {
     discover().then((data: Token[]) => {
         queue(time(), Event.Discover, data);
       });

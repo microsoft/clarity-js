@@ -1,6 +1,6 @@
 import { Event } from "@clarity-types/data";
 import { IMouseInteraction, Mouse } from "@clarity-types/interactions";
-import { bind, time } from "@src/core";
+import { bind, time } from "@src/clarity";
 import {queue} from "@src/data/upload";
 import { getId } from "@src/dom/virtualdom";
 import serialize from "./serialize";
@@ -11,12 +11,12 @@ let distance = 20;
 let timeout: number = null;
 let timestamp: number = null;
 
-export function activate(): void {
-    bind(document, "mousedown", handler.bind(Mouse.Down));
-    bind(document, "mouseup", handler.bind(Mouse.Up));
-    bind(document, "mousemove", handler.bind(Mouse.Move));
-    bind(document, "mousewheel", handler.bind(Mouse.Wheel));
-    bind(document, "click", handler.bind(Mouse.Click));
+export function start(): void {
+    bind(document, "mousedown", handler.bind(this, Mouse.Down));
+    bind(document, "mouseup", handler.bind(this, Mouse.Up));
+    bind(document, "mousemove", handler.bind(this, Mouse.Move));
+    bind(document, "mousewheel", handler.bind(this, Mouse.Wheel));
+    bind(document, "click", handler.bind(this, Mouse.Click));
 }
 
 function handler(type: Mouse, evt: MouseEvent): void {

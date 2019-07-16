@@ -1,6 +1,6 @@
 import { Event, Token } from "@clarity-types/data";
 import { Timer } from "@clarity-types/metrics";
-import { time } from "@src/core";
+import { time } from "@src/clarity";
 import { queue } from "@src/data/upload";
 import serialize from "@src/dom/serialize";
 import * as timer from "@src/metrics/timer";
@@ -9,13 +9,18 @@ import processNode from "./node";
 let observer: MutationObserver;
 window["MUTATIONS"] = [];
 
-export default function(): void {
+export function start(): void {
     console.log("Listening for mutations...");
     if (observer) {
         observer.disconnect();
     }
     observer = window["MutationObserver"] ? new MutationObserver(handle) : null;
     observer.observe(document, { attributes: true, childList: true, characterData: true, subtree: true });
+}
+
+export function end(): void {
+  observer.disconnect();
+  observer = null;
 }
 
 function handle(mutations: MutationRecord[]): void {

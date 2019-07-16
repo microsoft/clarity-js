@@ -1,12 +1,12 @@
 import { Event } from "@clarity-types/data";
 import { IResizeViewport } from "@clarity-types/viewport";
-import { bind, time } from "@src/core";
+import { bind, time } from "@src/clarity";
 import {queue} from "@src/data/upload";
 import serialize from "./serialize";
 
 let data: IResizeViewport;
 
-export function activate(): void {
+export function start(): void {
     bind(window, "resize", recompute);
     recompute();
 }

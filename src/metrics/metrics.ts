@@ -1,5 +1,5 @@
 import { Event, Flush } from "@clarity-types/data";
-import { time } from "@src/core";
+import { time } from "@src/clarity";
 import { queue } from "@src/data/upload";
 import serialize from "./serialize";
 

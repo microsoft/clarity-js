@@ -1,6 +1,6 @@
 import { Event } from "@clarity-types/data";
 import { IScrollViewport } from "@clarity-types/viewport";
-import { bind, time } from "@src/core";
+import { bind, time } from "@src/clarity";
 import {queue} from "@src/data/upload";
 import serialize from "./serialize";
 
@@ -10,7 +10,7 @@ let distance = 20;
 let timeout: number = null;
 let timestamp: number = null;
 
-export function activate(): void {
+export function start(): void {
     bind(window, "scroll", recompute);
     recompute();
 }

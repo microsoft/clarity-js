@@ -1,12 +1,12 @@
 import { Event } from "@clarity-types/data";
 import { IPageVisibility } from "@clarity-types/viewport";
-import { bind, time } from "@src/core";
+import { bind, time } from "@src/clarity";
 import {queue} from "@src/data/upload";
 import serialize from "./serialize";
 
 let data: IPageVisibility;
 
-export function activate(): void {
+export function start(): void {
     bind(window, "pagehide", recompute);
     bind(window, "pageshow", recompute);
     bind(document, "visibilitychange", recompute);
