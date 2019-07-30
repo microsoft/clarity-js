@@ -16,10 +16,11 @@ import { resetSchemas } from "./converters/schema";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.3.2";
+export const version = "0.3.3";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
+const OversizedPayload = "OversizedPayload";
 
 let startTime: number;
 let cid: string;
@@ -119,12 +120,23 @@ export function bind(target: EventTarget, event: string, listener: EventListener
 }
 
 export function addEvent(event: IEventData, scheduleUpload: boolean = true): void {
-  let evtJson: IEvent = {
-    id: eventCount++,
-    time: isNumber(event.time) ? event.time : getTimestamp(),
-    type: event.type,
-    state: event.state
-  };
+  const stateLength = event.state ? JSON.stringify(event.state).length : -1;
+  let evtJson: IEvent = config.eventLimit && stateLength > config.eventLimit
+    ? {
+      id: eventCount++,
+      time: isNumber(event.time) ? event.time : getTimestamp(),
+      type: InstrumentationEventName,
+      state: {
+        type: OversizedPayload,
+        length: stateLength
+      }
+    }
+    : {
+      id: eventCount++,
+      time: isNumber(event.time) ? event.time : getTimestamp(),
+      type: event.type,
+      state: event.state
+    };
   let evt = EventToArray(evtJson);
   let addEventMessage: IAddEventMessage = {
     type: WorkerMessageType.AddEvent,
