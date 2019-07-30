@@ -1,7 +1,8 @@
 import { Event } from "@clarity-types/data";
 import { IMouseInteraction, Mouse } from "@clarity-types/interactions";
-import { bind, time } from "@src/clarity";
-import {queue} from "@src/data/upload";
+import { bind } from "@src/core/event";
+import queue from "@src/core/queue";
+import time from "@src/core/time";
 import { getId } from "@src/dom/virtualdom";
 import serialize from "./serialize";
 

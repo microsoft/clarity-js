@@ -1,7 +1,7 @@
 import { Event, Flush } from "@clarity-types/data";
 import { IDocumentSize } from "@clarity-types/viewport";
-import { time } from "@src/clarity";
-import {queue} from "@src/data/upload";
+import queue from "@src/core/queue";
+import time from "@src/core/time";
 import serialize from "./serialize";
 
 let data: IDocumentSize;

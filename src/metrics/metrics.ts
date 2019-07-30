@@ -1,6 +1,6 @@
 import { Event, Flush } from "@clarity-types/data";
-import { time } from "@src/clarity";
-import { queue } from "@src/data/upload";
+import queue from "@src/core/queue";
+import time from "@src/core/time";
 import serialize from "./serialize";
 
 export function compute(): void {

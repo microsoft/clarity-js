@@ -1,7 +1,8 @@
 import { Event } from "@clarity-types/data";
 import { IResizeViewport } from "@clarity-types/viewport";
-import { bind, time } from "@src/clarity";
-import {queue} from "@src/data/upload";
+import { bind } from "@src/core/event";
+import queue from "@src/core/queue";
+import time from "@src/core/time";
 import serialize from "./serialize";
 
 let data: IResizeViewport;
