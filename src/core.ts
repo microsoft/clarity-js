@@ -20,7 +20,6 @@ export const version = "0.3.3";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 const Cookie = "ClarityID";
-const OversizedPayload = "OversizedPayload";
 
 let startTime: number;
 let cid: string;
@@ -127,8 +126,8 @@ export function addEvent(event: IEventData, scheduleUpload: boolean = true): voi
       time: isNumber(event.time) ? event.time : getTimestamp(),
       type: InstrumentationEventName,
       state: {
-        type: OversizedPayload,
-        length: stateLength
+        type: Instrumentation.OversizedEvent,
+        size: stateLength
       }
     }
     : {
