@@ -1,4 +1,4 @@
-import { IClarityFields, UploadHandler } from "./core";
+import { UploadHandler } from "./core";
 
 export interface IConfig {
     // Active plugins
@@ -43,10 +43,6 @@ export interface IConfig {
     // Object is a map from header names to header values
     uploadHeaders?: { [key: string]: string; };
 
-    // Pointer to the function which will be responsible for giving Clarity
-    // a dictionary of strings that the user wants logged in each Clarity payload
-    customInstrumentation?: (fields: IClarityFields) => { [key: string]: string; };
-
     // Setting to enable debug features (e.g. console.log statements)
     debug?: boolean;
 
@@ -67,4 +63,10 @@ export interface IConfig {
 
     // For pointer events, compute and record pointe event coordinates relative to its target's top left corner
     pointerTargetCoords?: boolean;
+
+    // Identifier of the user which generated this impression, if not provided Clarity will generate its own
+    userId?: string;
+
+    // Identifier for this impression, if not provided Clarity will generate its own
+    impressionId?: string;
 }

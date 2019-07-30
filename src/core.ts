@@ -4,7 +4,7 @@ import getPlugin from "./plugins";
 
 import { IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, WorkerMessageType } from "@clarity-types/compressionworker";
 import {
-  IBindingContainer, IClarityFields, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IPayload, IPlugin, State
+  IBindingContainer, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IPayload, IPlugin, State
 } from "@clarity-types/core";
 import {
   IClarityActivateErrorState, IClarityDuplicatedEventState, IInstrumentationEventState,
@@ -16,9 +16,10 @@ import { resetSchemas } from "./converters/schema";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.3.2";
+export const version = "0.3.4";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
+export const CustomEventName = "Custom";
 const Cookie = "ClarityID";
 
 let startTime: number;
@@ -165,6 +166,17 @@ export function onTrigger(key: string): void {
   }
 }
 
+export function onCustomLog(kvps: { [key: string]: any }): void {
+  if (state === State.Activated) {
+    const event: IEventData = {
+      type: CustomEventName,
+      state: kvps,
+      time: getTimestamp(),
+    };
+    addEvent(event);
+  }
+}
+
 export function forceCompression(): void {
   if (compressionWorker) {
     let forceCompressionMessage: ITimestampedWorkerMessage = {
@@ -263,8 +275,8 @@ function init(): void {
   sequence = 0;
 
   envelope = {
-    clarityId: cid,
-    impressionId,
+    clarityId: config.userId || cid,
+    impressionId: config.impressionId || impressionId,
     projectId: config.projectId || null,
     url: window.location.href,
     version
@@ -272,21 +284,6 @@ function init(): void {
 
   resetSchemas();
   resetUploads();
-
-  if (config.customInstrumentation) {
-    let fields: IClarityFields = {
-      impressionId,
-      clientId: cid,
-      projectId: config.projectId
-    };
-    let customInst = config.customInstrumentation(fields);
-    envelope.extraInfo = {};
-    for (let key in customInst) {
-      if (customInst.hasOwnProperty(key) && customInst[key]) {
-        envelope.extraInfo[key] = customInst[key];
-      }
-    }
-  }
 
   activePlugins = [];
   bindings = {};

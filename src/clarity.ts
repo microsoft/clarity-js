@@ -1,7 +1,7 @@
 import { IConfig } from "@clarity-types/config";
 import { State } from "@clarity-types/core";
 import { config } from "./config";
-import { activate, onTrigger, state, teardown } from "./core";
+import { activate, onCustomLog, onTrigger, state, teardown } from "./core";
 import { mapProperties } from "./utils";
 export { version } from "./core";
 
@@ -18,4 +18,8 @@ export function stop(): void {
 
 export function trigger(key: string): void {
   onTrigger(key);
+}
+
+export function log(kvps: { [key: string]: any }): void {
+  onCustomLog(kvps);
 }

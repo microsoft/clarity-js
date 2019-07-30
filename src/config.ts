@@ -18,11 +18,12 @@ export let config: IConfig = {
   uploadHeaders: {
     "Content-Type": "application/json"
   },
-  customInstrumentation: null,
   debug: false,
   validateConsistency: false,
   backgroundMode: false,
-  pointerTargetCoords: false
+  pointerTargetCoords: false,
+  userId: null,
+  impressionId: null
 };
 
 export function resetConfig(): void {

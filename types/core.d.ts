@@ -31,7 +31,6 @@ export interface IEnvelope {
   version: string;
   time?: number;
   sequenceNumber?: number;
-  extraInfo?: object;
 }
 
 export interface IEventData {
@@ -52,12 +51,6 @@ export interface IEventBindingPair {
 
 export interface IBindingContainer {
   [key: string]: IEventBindingPair[];
-}
-
-export interface IClarityFields {
-  impressionId: string;
-  clientId: string;
-  projectId: string;
 }
 
 export type UploadCallback = (status: number) => void;
