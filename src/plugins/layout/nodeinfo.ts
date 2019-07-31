@@ -4,6 +4,7 @@ import { shouldCaptureCssRules } from "./states/style";
 import { isCssText } from "./states/text";
 
 export const UnmaskAttribute = "data-clarity-unmask";
+export const MaskAttribute = "data-clarity-mask";
 
 export function createNodeInfo(node: Node, parentInfo: INodeInfo): INodeInfo {
   let ignore = shouldIgnoreNode(node, parentInfo);
@@ -20,5 +21,11 @@ function shouldUnmaskNode(node: Node, parentInfo: INodeInfo): boolean {
       ? (node as Element).getAttribute(UnmaskAttribute) === "true"
       : false
   );
-  return hasUnmaskAttribute || parentUnmasked;
+  // mask attribute takes precedence over any unmask above
+  const hasMaskAttribute = (
+    node && node.nodeType === Node.ELEMENT_NODE
+      ? (node as Element).getAttribute(MaskAttribute) === "true"
+      : false
+  );
+  return !hasMaskAttribute && (hasUnmaskAttribute || parentUnmasked);
 }
