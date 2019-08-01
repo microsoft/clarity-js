@@ -131,3 +131,6 @@ export interface IShadowDomMutationSummary {
   removedNodes: IShadowDomNode[];
   updatedNodes: IShadowDomNode[];
 }
+
+export const UnmaskAttribute = "data-clarity-unmask";
+export const MaskAttribute = "data-clarity-mask";
