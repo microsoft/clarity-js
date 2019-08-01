@@ -1,5 +1,6 @@
 import { Event } from "@clarity-types/data";
 import { IMouseInteraction, Mouse } from "@clarity-types/interactions";
+import { config } from "@src/core/config";
 import { bind } from "@src/core/event";
 import queue from "@src/core/queue";
 import time from "@src/core/time";
@@ -7,8 +8,8 @@ import { getId } from "@src/dom/virtualdom";
 import serialize from "./serialize";
 
 let data: IMouseInteraction[] = [];
-let wait = 1000;
-let distance = 20;
+let wait = config.lookahead;
+let distance = config.distance;
 let timeout: number = null;
 let timestamp: number = null;
 

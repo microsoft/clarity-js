@@ -1,4 +1,4 @@
-import { IBindingContainer, IEventBindingPair } from "@clarity-types/clarity";
+import { IBindingContainer, IEventBindingPair } from "@clarity-types/core";
 
 let bindings: IBindingContainer = {};
 

@@ -9,11 +9,7 @@ let timeout: number = null;
 window["PAYLOAD"] = [];
 
 export default function(timestamp: number, event: Event, data: Token[], flush: Flush = Flush.Schedule): void {
-    events.push({
-        t: timestamp,
-        e: event,
-        d: data
-    });
+    events.push({t: timestamp, e: event, d: data});
 
     switch (flush) {
         case Flush.Schedule:
