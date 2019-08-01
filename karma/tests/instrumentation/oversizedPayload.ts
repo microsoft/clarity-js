@@ -35,10 +35,13 @@ describe("Instrumentation: Oversized Payload Tests", () => {
         assert.equal(events.length, 1);
         assert.equal(events[0].type, instrumentationEventName);
         assert.equal(events[0].state.type, Instrumentation.OversizedEvent);
+        assert.equal(events[0].state.cutInfo.type, "Layout");
+        assert.equal(events[0].state.cutInfo.action, Action.Update);
+        assert.equal(events[0].state.cutInfo.event, null);
         // giving some wiggle room to the size component as the size of the state that was deemed oversized
         // is slightly variable based on ids of the event and its parents/siblings
-        assert.isAtLeast(events[0].state.size, 365);
-        assert.isAtMost(events[0].state.size, 385);
+        assert.isAtLeast(events[0].state.cutInfo.stateLength, 365);
+        assert.isAtMost(events[0].state.cutInfo.stateLength, 385);
         done();
     }));
 
