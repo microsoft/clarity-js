@@ -94,6 +94,10 @@ export async function triggerMutationEventAndWaitForUpload(
     });
 }
 
+export function triggerClarityCustomEvent(kvps: { [key: string]: any }): void {
+    clarity.log(kvps);
+}
+
 export function getActiveConfig(): Partial<IConfig> {
     return activeConfig;
 }

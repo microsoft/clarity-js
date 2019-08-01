@@ -15,6 +15,7 @@ interface IClarityJs {
   start(config?: IConfig): void;
   stop(): void;
   trigger(key: string): void;
+  log(kvps: { [key: string]: any }): void;
 }
 
 interface IPayloadEncoder {
