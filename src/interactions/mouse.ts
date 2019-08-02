@@ -5,7 +5,7 @@ import { bind } from "@src/core/event";
 import queue from "@src/core/queue";
 import time from "@src/core/time";
 import { getId } from "@src/dom/virtualdom";
-import serialize from "./serialize";
+import encode from "./encode";
 
 let data: IMouseInteraction[] = [];
 let wait = config.lookahead;
@@ -37,7 +37,7 @@ function handler(type: Mouse, evt: MouseEvent): void {
 }
 
 function schedule(): void {
-    queue(timestamp, Event.Mouse, serialize(Event.Mouse));
+    queue(timestamp, Event.Mouse, encode(Event.Mouse));
 }
 
 export function summarize(): IMouseInteraction[] {

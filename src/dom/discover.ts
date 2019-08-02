@@ -2,7 +2,7 @@ import { Event, Token } from "@clarity-types/data";
 import { Timer } from "@clarity-types/metrics";
 import queue from "@src/core/queue";
 import time from "@src/core/time";
-import serialize from "@src/dom/serialize";
+import encode from "@src/dom/encode";
 import * as timer from "@src/metrics/timer";
 import processNode from "./node";
 
@@ -23,7 +23,7 @@ async function discover(): Promise<Token[]> {
         node = walker.nextNode();
     }
     console.log("Finished discovering");
-    let data = await serialize(method);
+    let data = await encode(method);
     timer.stop(method);
     return data;
 }

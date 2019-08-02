@@ -9,12 +9,14 @@
         "baseUrl": ".",
         "paths": {
             "@src/*": ["src/*"],
+            "@decode/*": ["decode/*"],
             "@karma/*": ["karma/*"],
             "@clarity-types/*": ["types/*"]
         }
     },
     "include":[
        "src/**/*.ts",
+       "decode/**/*.ts",
        "types/**/*.d.ts",
        "karma/**/*.ts",
     ],

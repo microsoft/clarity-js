@@ -3,7 +3,7 @@ import { IResizeViewport } from "@clarity-types/viewport";
 import { bind } from "@src/core/event";
 import queue from "@src/core/queue";
 import time from "@src/core/time";
-import serialize from "./serialize";
+import encode from "./encode";
 
 let data: IResizeViewport;
 
@@ -18,7 +18,7 @@ function recompute(): void {
         height: "innerHeight" in window ? window.innerHeight : document.documentElement.clientHeight,
         updated: true
     };
-    queue(time(), Event.Resize, serialize(Event.Resize));
+    queue(time(), Event.Resize, encode(Event.Resize));
 }
 
 export function summarize(): IResizeViewport {

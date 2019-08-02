@@ -1,4 +1,4 @@
-export type Token = (string | number | number[] | string[]);
+export type Token = (any | string | number | number[] | string[]);
 
 export const enum Event {
     Discover,
@@ -26,4 +26,10 @@ export interface IEvent {
     t: number;
     e: Event;
     d: Token[];
+}
+
+export interface IDecodedEvent {
+    time: number;
+    event: Event;
+    data: Token[];
 }

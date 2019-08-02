@@ -2,7 +2,7 @@ import { Event, Flush } from "@clarity-types/data";
 import { IDocumentSize } from "@clarity-types/viewport";
 import queue from "@src/core/queue";
 import time from "@src/core/time";
-import serialize from "./serialize";
+import encode from "./encode";
 
 let data: IDocumentSize;
 
@@ -28,7 +28,7 @@ function recompute(): void {
         updated: true
     };
 
-    queue(time(), Event.Document, serialize(Event.Document), Flush.None);
+    queue(time(), Event.Document, encode(Event.Document), Flush.None);
 }
 
 export function compute(): void {

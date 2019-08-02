@@ -18,3 +18,13 @@ export interface INodeValue {
     active?: boolean;
     update?: boolean;
 }
+
+export interface IDecodedNode {
+    id: number;
+    parent: number;
+    next: number;
+    tag: string;
+    attributes?: IAttributes;
+    layout?: number[][];
+    value?: string;
+}

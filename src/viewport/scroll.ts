@@ -3,7 +3,7 @@ import { IScrollViewport } from "@clarity-types/viewport";
 import { bind } from "@src/core/event";
 import queue from "@src/core/queue";
 import time from "@src/core/time";
-import serialize from "./serialize";
+import encode from "./encode";
 
 let data: IScrollViewport[] = [];
 let wait = 1000;
@@ -25,7 +25,7 @@ function recompute(): void {
 }
 
 function schedule(): void {
-    queue(timestamp, Event.Scroll, serialize(Event.Scroll));
+    queue(timestamp, Event.Scroll, encode(Event.Scroll));
 }
 
 export function summarize(): IScrollViewport[] {

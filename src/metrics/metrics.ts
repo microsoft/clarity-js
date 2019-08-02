@@ -1,8 +1,8 @@
 import { Event, Flush } from "@clarity-types/data";
 import queue from "@src/core/queue";
 import time from "@src/core/time";
-import serialize from "./serialize";
+import encode from "./encode";
 
 export function compute(): void {
-    queue(time(), Event.Metrics, serialize(), Flush.None);
+    queue(time(), Event.Metrics, encode(), Flush.None);
 }

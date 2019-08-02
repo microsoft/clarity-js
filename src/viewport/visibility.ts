@@ -3,7 +3,7 @@ import { IPageVisibility } from "@clarity-types/viewport";
 import { bind } from "@src/core/event";
 import queue from "@src/core/queue";
 import time from "@src/core/time";
-import serialize from "./serialize";
+import encode from "./encode";
 
 let data: IPageVisibility;
 
@@ -19,7 +19,7 @@ function recompute(): void {
         visible: "visibilityState" in document ? document.visibilityState : "default",
         updated: true
     };
-    queue(time(), Event.Visibility, serialize(Event.Visibility));
+    queue(time(), Event.Visibility, encode(Event.Visibility));
 }
 
 export function summarize(): IPageVisibility {
