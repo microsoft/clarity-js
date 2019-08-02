@@ -1,7 +1,10 @@
-import { INodeInfo, MaskAttribute, UnmaskAttribute } from "@clarity-types/layout";
+import { INodeInfo } from "@clarity-types/layout";
 import { shouldIgnoreNode } from "./states/ignore";
 import { shouldCaptureCssRules } from "./states/style";
 import { isCssText } from "./states/text";
+
+export const UnmaskAttribute = "data-clarity-unmask";
+export const MaskAttribute = "data-clarity-mask";
 
 export function createNodeInfo(node: Node, parentInfo: INodeInfo): INodeInfo {
   let ignore = shouldIgnoreNode(node, parentInfo);

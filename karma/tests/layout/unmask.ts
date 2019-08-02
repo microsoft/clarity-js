@@ -1,9 +1,9 @@
 import { Action } from "@clarity-types/layout";
-import { UnmaskAttribute } from "@clarity-types/layout";
 import { cleanupPage, setupPage } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
+import { UnmaskAttribute } from "@src/plugins/layout/nodeinfo";
 import { assert } from "chai";
 
 describe("Layout: Unmasking Tests", () => {
