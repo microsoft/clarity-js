@@ -11,7 +11,8 @@ export const enum Instrumentation {
   ShadowDomInconsistent,
   ClarityActivateError,
   Trigger,
-  Performance
+  Performance,
+  OversizedEvent
 }
 
 export interface IInstrumentationEventState {

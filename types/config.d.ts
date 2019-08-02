@@ -14,6 +14,9 @@ export interface IConfig {
     // Each new event is going to delay data upload to server by this number of milliseconds
     delay?: number;
 
+    // Maximum number of bytes that Clarity can send for a single event's state
+    eventLimit?: number;
+
     // Maximum number of event bytes that Clarity can send in a single upload
     batchLimit?: number;
 
