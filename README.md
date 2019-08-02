@@ -26,6 +26,10 @@ Here are some example sessions on popular websites visualized to demonstrate the
 Clarity handles sensitive data with care. By default content on the page is masked before upload, so no actual text from the page is sent to the server.
 All data collection is performed solely with the purpose of providing better insights into customers' pages interactions and improving their users' experiences.
 
+If there are specific regions of the page which a webmaster is completely confident will have no personal data and there is value in sending the regular text nodes,
+DOM nodes can be marked with the "data-clarity-unmask" attribute. This will cause the given node and all children to return unmasked text. Masking can be turned back 
+on for arbitrary child DOM nodes by adding the "data-clarity-mask" attribute.
+
 ## Improving Clarity
 If you haven't already done so, start contributing by following instructions in CONTRIBUTING.md.
 

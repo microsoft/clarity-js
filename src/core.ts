@@ -120,12 +120,35 @@ export function bind(target: EventTarget, event: string, listener: EventListener
 }
 
 export function addEvent(event: IEventData, scheduleUpload: boolean = true): void {
-  let evtJson: IEvent = {
-    id: eventCount++,
-    time: isNumber(event.time) ? event.time : getTimestamp(),
-    type: event.type,
-    state: event.state
-  };
+  const stateLength = event.state ? JSON.stringify(event.state).length : -1;
+  // when we see an event that is too large to process, remove it from the upload queue
+  // and replace it with a note indicating some information about what payload was dropped.
+  // This is a short term mitigation and may mean that the rest of the playback
+  // is broken, but it's better than failing to upload and then needing to teardown Clarity
+  let evtJson: IEvent = config.eventLimit && stateLength > config.eventLimit
+    ? {
+      id: eventCount++,
+      time: isNumber(event.time) ? event.time : getTimestamp(),
+      type: InstrumentationEventName,
+      state: {
+        type: Instrumentation.OversizedEvent,
+        cutInfo: {
+          stateLength,
+          type: event.type,
+          // if event or action were specified log them as well, if they weren't set these
+          // will be null and won't be sent to the server. These values help identify
+          // what sorts of events were lost.
+          event: event.state.event,
+          action: event.state.action
+        }
+      }
+    }
+    : {
+      id: eventCount++,
+      time: isNumber(event.time) ? event.time : getTimestamp(),
+      type: event.type,
+      state: event.state
+    };
   let evt = EventToArray(evtJson);
   let addEventMessage: IAddEventMessage = {
     type: WorkerMessageType.AddEvent,

@@ -4,6 +4,7 @@ import { cleanupPage, setupPage } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
+import { MaskAttribute, UnmaskAttribute } from "@src/plugins/layout/nodeinfo";
 import { mask } from "@src/utils";
 import { assert } from "chai";
 
@@ -90,5 +91,33 @@ describe("Layout: Privacy Tests", () => {
         assert.equal(events[0].state.value, maskedValueString);
         done();
     }));
+
+    it("checks that node value is masked event when explicitly masked if unmask attribute is applied to parent",
+        testAsync(async (done: DoneFn) => {
+            watch();
+            let valueString = "value";
+            let maskedValueString = mask(valueString);
+            let skipParent = document.createElement("div");
+            let parent = document.createElement("div");
+            let child = document.createTextNode(valueString);
+            parent.appendChild(child);
+            skipParent.appendChild(parent);
+            skipParent.setAttribute(UnmaskAttribute, "true");
+            parent.setAttribute(MaskAttribute, "true");
+            document.body.appendChild(skipParent);
+            await waitFor(PubSubEvents.MUTATION);
+
+            const events = stopWatching().coreEvents;
+            assert.equal(events.length, 3);
+            assert.equal(events[0].state.action, Action.Insert);
+            assert.equal(events[0].state.tag, skipParent.tagName);
+            assert.equal(events[1].state.action, Action.Insert);
+            assert.equal(events[1].state.tag, parent.tagName);
+            assert.equal(events[2].state.action, Action.Insert);
+            assert.equal(events[2].state.tag, "*TXT*");
+            assert.equal(events[2].state.content, maskedValueString);
+            done();
+        })
+    );
 
 });

@@ -7,6 +7,7 @@ export let config: IConfig = {
   uploadUrl: "",
   urlBlacklist: [],
   delay: 500,
+  eventLimit: 95 * 1024, // 95 kilobytes
   batchLimit: 100 * 1024, // 100 kilobytes
   totalLimit: 20 * 1024 * 1024,  // 20 megabytes
   reUploadLimit: 1,
