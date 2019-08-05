@@ -10,7 +10,7 @@ const IndexConfig: webpack.Configuration = {
     mode: "production",
 
     entry: {
-        clarity: "./webpack/globalize.ts",
+        index: "./src/index.ts",
         decode: "./decode/clarity.ts"
     },
 

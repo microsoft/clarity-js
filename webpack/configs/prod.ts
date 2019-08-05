@@ -10,6 +10,11 @@ const ProdConfig: webpack.Configuration = {
 
     mode: "production",
 
+    entry: {
+        clarity: "./webpack/globalize.ts",
+        decode: "./decode/clarity.ts"
+    },
+
     output: {
         filename: "[name].min.js"
     },

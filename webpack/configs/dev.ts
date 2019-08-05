@@ -9,8 +9,13 @@ const DevConfig: webpack.Configuration = {
 
     mode: "development",
 
+    entry: {
+        clarity: "./webpack/globalize.ts",
+        decode: "./decode/clarity.ts"
+    },
+
     output: {
-        filename: "[name].js"
+        filename: "[name].dev.js"
     },
 
     devtool: "inline-source-map"

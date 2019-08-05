@@ -6,11 +6,6 @@ import { TsConfigPathsPlugin } from "awesome-typescript-loader";
 // https://webpack.js.org/configuration
 const CommongConfig: webpack.Configuration = {
 
-    entry: {
-        clarity: "./webpack/globalize.ts",
-        decode: "./decode/clarity.ts"
-    },
-
     output: {
         path: `${__dirname}/../../build`
     },
