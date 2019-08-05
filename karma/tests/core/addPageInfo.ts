@@ -1,12 +1,12 @@
 import { restartClarity, startClarity, triggerClarityCustomEvent, triggerSetPageInfo } from "@karma/setup/clarity";
-import { cleanupPage, setupPageNoRunClarity } from "@karma/setup/page";
+import { cleanupPage, setupPage } from "@karma/setup/page";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
 
 describe("Add Page Info Tests", () => {
 
-    beforeEach(setupPageNoRunClarity);
+    beforeEach(setupPage);
     afterEach(cleanupPage);
 
     const pageId = "PageId";
@@ -37,7 +37,6 @@ describe("Add Page Info Tests", () => {
             await restartClarity();
 
             let envelopes = stopWatching().sentEnvelopes;
-            assert.notEqual(envelopes[0].clarityId, userId);
             assert.equal(envelopes[0].impressionId, pageId);
             done();
         })
@@ -53,7 +52,6 @@ describe("Add Page Info Tests", () => {
 
             let envelopes = stopWatching().sentEnvelopes;
             assert.equal(envelopes[0].clarityId, userId);
-            assert.notEqual(envelopes[0].impressionId, pageId);
             done();
         })
     );

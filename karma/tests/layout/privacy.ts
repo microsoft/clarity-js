@@ -1,6 +1,6 @@
 import { Action, Source } from "@clarity-types/layout";
 import { restartClarity } from "@karma/setup/clarity";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
@@ -10,7 +10,7 @@ import { assert } from "chai";
 
 describe("Layout: Privacy Tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("checks that default sensitive attributes are masked", testAsync(async (done: DoneFn) => {

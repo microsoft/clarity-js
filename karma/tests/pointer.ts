@@ -1,4 +1,4 @@
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
@@ -10,7 +10,7 @@ let timeThreshold = 500;
 
 describe("Pointer Tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("validates that mouse events are processed by clarity", testAsync(async (done: DoneFn) => {

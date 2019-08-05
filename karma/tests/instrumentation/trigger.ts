@@ -1,6 +1,6 @@
 import { Instrumentation } from "@clarity-types/instrumentation";
 import { restartClarity, triggerClarity } from "@karma/setup/clarity";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
@@ -9,7 +9,7 @@ const instrumentationEventName = "Instrumentation";
 
 describe("Instrumentation: Trigger Tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("validates that trigger instrumentation is logged when Clarity trigger is fired", testAsync(async (done: DoneFn) => {

@@ -1,6 +1,6 @@
 import { Instrumentation } from "@clarity-types/instrumentation";
 import { Action, Source } from "@clarity-types/layout";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
@@ -12,7 +12,7 @@ const instrumentationEventName = "Instrumentation";
 describe("Instrumentation: Oversized Payload Tests", () => {
 
     beforeEach((done: DoneFn) => {
-        setupPage(done, ({ eventLimit: 350 }));
+        setupPageAndStartClarity(done, ({ eventLimit: 350 }));
     });
     afterEach(cleanupPage);
 

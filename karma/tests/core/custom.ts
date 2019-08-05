@@ -1,12 +1,12 @@
 import { triggerClarityCustomEvent } from "@karma/setup/clarity";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
 import { assert } from "chai";
 
 describe("Core: Custom Event Tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("validates single key value pair is captured by Clarity", testAsync(async (done: DoneFn) => {

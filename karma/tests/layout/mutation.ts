@@ -1,6 +1,6 @@
 import { IEvent } from "@clarity-types/core";
 import { Action } from "@clarity-types/layout";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
@@ -9,7 +9,7 @@ import { assert } from "chai";
 
 describe("Layout: Mutation Tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("checks that dom additions are captured by clarity", testAsync(async (done: DoneFn) => {

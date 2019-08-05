@@ -8,7 +8,7 @@ import {
 } from "@clarity-types/core";
 import {
   IClarityActivateErrorState, IClarityDuplicatedEventState, IInstrumentationEventState,
-  IMissingFeatureEventState, Instrumentation, ITriggerState
+  IMissingFeatureEventState, Instrumentation, ISetPageInfoState, ITriggerState
 } from "@clarity-types/instrumentation";
 import { createCompressionWorker } from "./compressionworker";
 import { config, resetConfig } from "./config";
@@ -16,7 +16,7 @@ import { resetSchemas } from "./converters/schema";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.3.4";
+export const version = "0.4.0";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
 export const CustomEventName = "Custom";
@@ -189,7 +189,7 @@ export function onTrigger(key: string): void {
   }
 }
 
-export function onCustomLog(kvps: { [key: string]: any }): void {
+export function onCustomEvent(kvps: { [key: string]: any }): void {
   if (state === State.Activated) {
     const event: IEventData = {
       type: CustomEventName,
@@ -203,9 +203,21 @@ export function onCustomLog(kvps: { [key: string]: any }): void {
 export function onSetPageInfo(pageId: string, userId: string): void {
   // only allow setting pageId and userId if Clarity isn't currently running
   if (state === State.Loaded || state === State.Unloaded) {
-    cid = userId;
-    setClarityCookie(userId);
-    impressionId = pageId;
+    if (userId) {
+      cid = userId;
+      setClarityCookie(userId);
+    }
+    if (pageId) {
+      impressionId = pageId;
+    }
+  } else {
+    let setPageInfoState: ISetPageInfoState = {
+      type: Instrumentation.SetPageInfo,
+      state,
+      userId,
+      pageId
+    };
+    instrument(setPageInfoState);
   }
 }
 
