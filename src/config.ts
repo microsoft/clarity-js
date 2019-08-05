@@ -22,9 +22,7 @@ export let config: IConfig = {
   debug: false,
   validateConsistency: false,
   backgroundMode: false,
-  pointerTargetCoords: false,
-  userId: null,
-  impressionId: null
+  pointerTargetCoords: false
 };
 
 export function resetConfig(): void {

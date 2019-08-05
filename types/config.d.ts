@@ -66,10 +66,4 @@ export interface IConfig {
 
     // For pointer events, compute and record pointe event coordinates relative to its target's top left corner
     pointerTargetCoords?: boolean;
-
-    // Identifier of the user which generated this impression, if not provided Clarity will generate its own
-    userId?: string;
-
-    // Identifier for this impression, if not provided Clarity will generate its own
-    impressionId?: string;
 }

@@ -200,6 +200,15 @@ export function onCustomLog(kvps: { [key: string]: any }): void {
   }
 }
 
+export function onSetPageInfo(pageId: string, userId: string): void {
+  // only allow setting pageId and userId if Clarity isn't currently running
+  if (state === State.Loaded || state === State.Unloaded) {
+    cid = userId;
+    setClarityCookie(userId);
+    impressionId = pageId;
+  }
+}
+
 export function forceCompression(): void {
   if (compressionWorker) {
     let forceCompressionMessage: ITimestampedWorkerMessage = {
@@ -284,22 +293,34 @@ function uploadPendingEvents(): void {
   }
 }
 
-function init(): void {
+function setClarityCookie(value: string): void {
   // Set ClarityID cookie, if it's not set already and is allowed by config
-  if (!config.disableCookie && !getCookie(Cookie)) {
+  if (!config.disableCookie) {
     // setting our ClarityId cookie for 1 year (52 weeks)
-    setCookie(Cookie, guid(), 7 * 52);
+    setCookie(Cookie, value, 7 * 52);
+  }
+}
+
+function init(): void {
+  if (!getCookie(Cookie)) {
+    setClarityCookie(guid());
   }
 
-  cid = config.disableCookie ? guid() : getCookie(Cookie);
-  impressionId = guid();
+  // if cid has already been set, use it. Otherwise we will grab our
+  // Clarity cookie value (unless using cookies is disabled)
+  if (!cid) {
+    cid = config.disableCookie ? guid() : getCookie(Cookie);
+  }
+  // if impressionId was set by the user, use it. Otherwise generate
+  // a random guid
+  impressionId = impressionId || guid();
 
   startTime = getUnixTimestamp();
   sequence = 0;
 
   envelope = {
-    clarityId: config.userId || cid,
-    impressionId: config.impressionId || impressionId,
+    clarityId: cid,
+    impressionId,
     projectId: config.projectId || null,
     url: window.location.href,
     version
