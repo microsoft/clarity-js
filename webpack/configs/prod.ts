@@ -11,7 +11,7 @@ const ProdConfig: webpack.Configuration = {
     mode: "production",
 
     output: {
-        filename: "clarity.min.js"
+        filename: "[name].min.js"
     },
 
     optimization: {

@@ -1,21 +1,22 @@
 import {Token} from "@clarity-types/data";
 import {INodeData} from "@clarity-types/dom";
 import { Counter, Timer } from "@clarity-types/metrics";
+import * as task from "@src/core/task";
 import hash from "@src/data/hash";
 import {check} from "@src/data/token";
 import * as counter from "@src/metrics/counter";
-import * as timer from "@src/metrics/timer";
+
 import * as nodes from "./virtualdom";
 
 window["HASH"] = hash;
 let reference: number = 0;
 
-export default async function(method: Timer): Promise<Token[]> {
+export default async function(timer: Timer): Promise<Token[]> {
     let markup = [];
     let values = nodes.summarize();
     reference = 0;
     for (let value of values) {
-        if (timer.longtasks(method)) { await timer.idle(method); }
+        if (task.longtask(timer)) { await task.idle(timer); }
         let metadata = [];
         let layouts = [];
         let data: INodeData = value.data;

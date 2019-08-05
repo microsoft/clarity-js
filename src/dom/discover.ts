@@ -1,9 +1,9 @@
 import { Event, Token } from "@clarity-types/data";
 import { Timer } from "@clarity-types/metrics";
 import queue from "@src/core/queue";
+import * as task from "@src/core/task";
 import time from "@src/core/time";
 import encode from "@src/dom/encode";
-import * as timer from "@src/metrics/timer";
 import processNode from "./node";
 
 export function start(): void {
@@ -13,17 +13,17 @@ export function start(): void {
 }
 
 async function discover(): Promise<Token[]> {
-    let method = Timer.Discover;
-    timer.start(method);
+    let timer = Timer.Discover;
+    task.start(timer);
     let walker = document.createTreeWalker(document, NodeFilter.SHOW_ALL, null, false);
     let node = walker.nextNode();
     while (node) {
-        if (timer.longtasks(method)) { await timer.idle(method); }
+        if (task.longtask(timer)) { await task.idle(timer); }
         processNode(node);
         node = walker.nextNode();
     }
     console.log("Finished discovering");
-    let data = await encode(method);
-    timer.stop(method);
+    let data = await encode(timer);
+    task.stop(timer);
     return data;
 }

@@ -1,6 +1,7 @@
-import { Event, IDecodedEvent, IEvent, Token } from "@clarity-types/data";
+import { DecodedToken, Event, IDecodedEvent, IEvent } from "@clarity-types/data";
 import { IDecodedNode } from "@clarity-types/dom";
 import dom from "@decode/dom";
+import metrics from "@decode/metrics";
 
 let nodes = {};
 let placeholder = document.createElement("iframe");
@@ -9,15 +10,20 @@ export function json(payload: string): IDecodedEvent[] {
     let decoded: IDecodedEvent[] = [];
     let encoded: IEvent[] = JSON.parse(payload);
     for (let entry of encoded) {
-        let exploded = { time: entry.t, event: entry.e, data: null as Token[] };
+        let exploded = { time: entry.t, event: entry.e, data: entry.d as DecodedToken[] };
         switch (entry.e) {
             case Event.Discover:
             case Event.Mutation:
                 exploded.data = dom(entry.d);
                 break;
+            case Event.Metrics:
+                exploded.data = metrics(entry.d);
+                break;
         }
         decoded.push(exploded);
     }
+    console.log("DECODED JSON Length: " + JSON.stringify(decoded).length);
+    console.log("DECODED JSON: " + JSON.stringify(decoded));
     return decoded;
 }
 

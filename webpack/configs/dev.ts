@@ -10,7 +10,7 @@ const DevConfig: webpack.Configuration = {
     mode: "development",
 
     output: {
-        filename: "clarity.js"
+        filename: "[name].js"
     },
 
     devtool: "inline-source-map"

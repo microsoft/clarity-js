@@ -10,7 +10,7 @@ export function mark(key: Mark, tag: string, start: number, end: number = 0): vo
 
 export function summarize(): IMarkSummary[] {
     for (let entry of tracker) {
-        if (entry.updated) {
+        if (entry) {
             summary.push({mark: entry.mark, start: entry.start, end: entry.end });
             entry.updated = false;
         }

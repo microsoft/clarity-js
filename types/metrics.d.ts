@@ -1,4 +1,11 @@
 // Metric Names
+export const enum Metric {
+    Timer = "t",
+    Counter = "c",
+    Histogram = "h",
+    Mark = "m"
+}
+
 export const enum Timer {
     Discover = "dt",
     Mutation = "mt",
@@ -26,7 +33,7 @@ export const enum Histogram {
 export const enum Mark {
     Click = "cm",
     Error = "em",
-    Interaction = "ic"
+    Interaction = "im"
 }
 
 // Counter
@@ -90,10 +97,7 @@ export interface ITimer {
 
 interface ITimerValue {
     updated: boolean;
-    start: number;
-    end: number;
-    duration: number;
-    count: number;
+    values: [number];
 }
 
 export interface ITimerSummary {

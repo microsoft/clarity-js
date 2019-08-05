@@ -1,19 +1,19 @@
-import { Token } from "@clarity-types/data";
+import { DecodedToken, Token } from "@clarity-types/data";
 import { IDecodedNode } from "@clarity-types/dom";
 import { resolve } from "@src/data/token";
 
-export default function(tokens: Token[]): Token[] {
+export default function(tokens: Token[]): DecodedToken[] {
     let number = 0;
     let lastType = null;
     let node = [];
-    let decoded: Token[] = [];
+    let decoded: DecodedToken[] = [];
     let tagIndex = 0;
     for (let token of tokens) {
         let type = typeof(token);
         switch (type) {
             case "number":
                 if (type !== lastType && lastType !== null) {
-                    decoded.push(process(node, tagIndex) as Token);
+                    decoded.push(process(node, tagIndex));
                     node = [];
                     tagIndex = 0;
                 }

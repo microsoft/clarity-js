@@ -8,6 +8,8 @@ export interface IBindingContainer {
 }
 
 export interface IConfig {
+    /* Core */
+    longtask: number;
     /* Interactions */
     // Each interaction is going to wait until the specified milliseconds below before marking the end of interaction
     lookahead: number;
@@ -18,4 +20,16 @@ export interface IConfig {
     // Pointer to the function which would be responsible for sending the data
     // If left unspecified, raw payloads will be uploaded to the upload url endpoint
     upload: () => void;
+}
+
+// Task
+export const enum Task {
+    Discover,
+    Mutation,
+    Wireup,
+    Active
+}
+
+export interface ITask {
+    [key: number]: number;
 }

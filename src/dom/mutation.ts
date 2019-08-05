@@ -1,9 +1,9 @@
 import { Event, Token } from "@clarity-types/data";
 import { Timer } from "@clarity-types/metrics";
 import queue from "@src/core/queue";
+import * as task from "@src/core/task";
 import time from "@src/core/time";
 import encode from "@src/dom/encode";
-import * as timer from "@src/metrics/timer";
 import processNode from "./node";
 
 let observer: MutationObserver;
@@ -30,8 +30,8 @@ function handle(mutations: MutationRecord[]): void {
 }
 
 async function process(mutations: MutationRecord[]): Promise<Token[]> {
-    let method = Timer.Mutation;
-    timer.start(method);
+    let timer = Timer.Mutation;
+    task.start(timer);
     let length = mutations.length;
     for (let i = 0; i < length; i++) {
       let mutation = mutations[i];
@@ -43,7 +43,7 @@ async function process(mutations: MutationRecord[]): Promise<Token[]> {
       switch (mutation.type) {
         case "attributes":
         case "characterData":
-            if (timer.longtasks(method)) { await timer.idle(method); }
+            if (task.longtask(timer)) { await task.idle(timer); }
             processNode(target);
             break;
         case "childList":
@@ -53,7 +53,7 @@ async function process(mutations: MutationRecord[]): Promise<Token[]> {
             let walker = document.createTreeWalker(mutation.addedNodes[j], NodeFilter.SHOW_ALL, null, false);
             let node = walker.currentNode;
             while (node) {
-                if (timer.longtasks(method)) { await timer.idle(method); }
+                if (task.longtask(timer)) { await task.idle(timer); }
                 processNode(node);
                 node = walker.nextNode();
             }
@@ -61,7 +61,7 @@ async function process(mutations: MutationRecord[]): Promise<Token[]> {
           // Process removes
           let removedLength = mutation.removedNodes.length;
           for (let j = 0; j < removedLength; j++) {
-            if (timer.longtasks(method)) { await timer.idle(method); }
+            if (task.longtask(timer)) { await task.idle(timer); }
             processNode(mutation.removedNodes[j]);
           }
           break;
@@ -69,7 +69,7 @@ async function process(mutations: MutationRecord[]): Promise<Token[]> {
           break;
       }
     }
-    let data = await encode(method);
-    timer.stop(method);
+    let data = await encode(timer);
+    task.stop(timer);
     return data;
 }

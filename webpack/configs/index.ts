@@ -9,15 +9,22 @@ const IndexConfig: webpack.Configuration = {
 
     mode: "production",
 
-    entry: "./src/index.ts",
+    entry: {
+        clarity: "./webpack/globalize.ts",
+        decode: "./decode/clarity.ts"
+    },
 
     output: {
         libraryTarget: "commonjs",
-        filename: "index.js"
+        filename: "[name].js"
     },
 
     optimization: {
-        minimize: false
+        minimize: false,
+        splitChunks: {
+            // include all types of chunks
+            chunks: "all"
+        }
     }
 
 };

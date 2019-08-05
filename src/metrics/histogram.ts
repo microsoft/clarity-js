@@ -13,7 +13,7 @@ export function observe(key: Histogram, value: number): void {
 
 export function summarize(): IHistogramSummary {
     for (let key in tracker) {
-        if (tracker[key].updated) {
+        if (tracker[key]) {
             summary[key] = { sum: 0, min: -1, max: -1, sumsquared: 0, count: 0 };
             for (let value of tracker[key].values) {
                 summary[key].sum += value;

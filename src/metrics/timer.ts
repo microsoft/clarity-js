@@ -1,44 +1,24 @@
-import {ITimer, ITimerSummary, Timer } from "@clarity-types/metrics";
+import { ITimer, ITimerSummary, Timer } from "@clarity-types/metrics";
 
 let tracker: ITimer = {};
 let summary: ITimerSummary = {};
-let threshold = 50;
-window["TRACKER"] = tracker; // DEBUG: Remove later
 
-export function longtasks(method: Timer): boolean {
-    let elapsed = Date.now() - tracker[method].start;
-    return (elapsed > threshold);
-}
-
-export function start(method: Timer): void {
-    if (!(method in tracker)) {
-        tracker[method] = { start: 0, end: 0, duration: 0, count: 0 };
+export function observe(key: Timer, value: number): void {
+    if (!(key in tracker)) {
+        tracker[key] = { updated: true, values: [] };
     }
-    tracker[method].start = Date.now();
-}
-
-export function stop(method: Timer): void {
-    tracker[method].end = Date.now();
-    tracker[method].duration += tracker[method]["end"] - tracker[method]["start"];
-    tracker[method].count++;
-}
-
-export async function idle(method: Timer): Promise<void> {
-    stop(method);
-    await wait();
-    start(method);
-}
-
-async function wait(): Promise<number> {
-    return new Promise<number>((resolve: FrameRequestCallback): void => {
-        requestAnimationFrame(resolve);
-    });
+    tracker[key].updated = true;
+    tracker[key].values.push(value);
 }
 
 export function summarize(): ITimerSummary {
     for (let key in tracker) {
-        if (tracker[key].updated) {
-            summary[key] = { duration: tracker[key].duration, count: tracker[key].count };
+        if (tracker[key]) {
+            summary[key] = { duration: 0, count: 0 };
+            for (let value of tracker[key].values) {
+                summary[key].duration += value;
+                summary[key].count++;
+            }
             tracker[key].updated = false;
         }
     }

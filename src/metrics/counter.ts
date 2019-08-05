@@ -13,7 +13,7 @@ export function increment(key: Counter, counter: number = 1): void {
 
 export function summarize(): ICounterSummary {
     for (let key in tracker) {
-        if (tracker[key].updated) {
+        if (tracker[key]) {
             summary[key] = { counter: tracker[key].counter };
             tracker[key].updated = false;
         }
