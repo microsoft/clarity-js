@@ -1,3 +1,5 @@
+import { IConfig } from "@clarity-types/core";
+import config from "@src/core/config";
 import * as event from "@src/core/event";
 import * as discover from "@src/dom/discover";
 import * as mutation from "@src/dom/mutation";
@@ -8,7 +10,13 @@ import * as scroll from "@src/viewport/scroll";
 import * as visibility from "@src/viewport/visibility";
 
 /* Initial discovery of DOM */
-export function start(): void {
+export function start(configuration: IConfig = {}): void {
+
+  // Process custom configuration, if available
+  for (let key in configuration) {
+    if (key in config) { config[key] = configuration[key]; }
+  }
+
   event.reset();
 
   // DOM
@@ -30,5 +38,3 @@ export function end(): void {
   event.reset();
   mutation.end();
 }
-
-start();

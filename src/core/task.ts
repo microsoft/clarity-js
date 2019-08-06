@@ -1,6 +1,6 @@
 import {ITask } from "@clarity-types/core";
 import { Timer } from "@clarity-types/metrics";
-import { config } from "@src/core/config";
+import config from "@src/core/config";
 import * as timer from "@src/metrics/timer";
 
 let tracker: ITask = {};

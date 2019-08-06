@@ -1,7 +1,7 @@
-import { DecodedToken, Event, IDecodedEvent, IEvent } from "@clarity-types/data";
-import { IDecodedNode } from "@clarity-types/dom";
-import dom from "@decode/dom";
-import metrics from "@decode/metrics";
+import { DecodedToken, Event, IDecodedEvent, IEvent } from "../types/data";
+import { IDecodedNode } from "../types/dom";
+import dom from "./dom";
+import metrics from "./metrics";
 
 let nodes = {};
 let placeholder = document.createElement("iframe");

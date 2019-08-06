@@ -1,6 +1,6 @@
 import { Event } from "@clarity-types/data";
 import { IMouseInteraction, Mouse } from "@clarity-types/interactions";
-import { config } from "@src/core/config";
+import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import queue from "@src/core/queue";
 import time from "@src/core/time";

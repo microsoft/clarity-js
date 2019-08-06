@@ -1,5 +1,5 @@
-import { DecodedToken, Token } from "@clarity-types/data";
-import { Metric } from "@clarity-types/metrics";
+import { DecodedToken, Token } from "../types/data";
+import { Metric } from "../types/metrics";
 
 export default function(tokens: Token[]): DecodedToken[] {
     let lastType = null;

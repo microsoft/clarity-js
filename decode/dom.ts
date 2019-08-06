@@ -1,6 +1,6 @@
-import { DecodedToken, Token } from "@clarity-types/data";
-import { IDecodedNode } from "@clarity-types/dom";
-import { resolve } from "@src/data/token";
+import { resolve } from "../src/data/token";
+import { DecodedToken, Token } from "../types/data";
+import { IDecodedNode } from "../types/dom";
 
 export default function(tokens: Token[]): DecodedToken[] {
     let number = 0;

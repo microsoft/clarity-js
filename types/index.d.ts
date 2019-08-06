@@ -1,13 +1,17 @@
+import { IConfig } from "./core";
+
 interface IClarityJs {
   version: string;
-  start: () => void;
+  start: (config: IConfig) => void;
   end: () => void;
 }
 
-declare const ClarityJs: IClarityJs;
+declare const clarity: IClarityJs;
 
 export * from "./data";
 export * from "./dom";
+export * from "./interactions";
 export * from "./metrics";
+export * from "./viewport";
 
-export { ClarityJs };
+export { clarity };

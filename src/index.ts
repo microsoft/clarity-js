@@ -1,3 +1,3 @@
-import * as ClarityJs from "./clarity";
+import * as clarity from "./clarity";
 
-export { ClarityJs };
+export { clarity };
