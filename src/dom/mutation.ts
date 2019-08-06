@@ -37,9 +37,6 @@ async function process(mutations: MutationRecord[]): Promise<Token[]> {
       let mutation = mutations[i];
       let target = mutation.target;
 
-      console.log("Received mutation: " + mutation.type + " | " + mutation.target);
-      window["MUTATIONS"].push(mutation);
-
       switch (mutation.type) {
         case "attributes":
         case "characterData":
