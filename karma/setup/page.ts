@@ -8,18 +8,8 @@ import { installWorkerProxy, uninstallWorkerProxy } from "./proxyapis/worker";
 import { revokeAllMessages, unsubscribeAll } from "./pubsub";
 import { stopWatching } from "./watch";
 
-export async function setupPage(done: DoneFn, _config?: IConfig, _startOptions?: IStartClarityOptions): Promise<void> {
-    // Relative to karma config location
-    fixture.setBase("karma/fixtures");
-    fixture.load("clarity.fixture.html");
-
-    // Install API proxies
-    installJasmineClock();
-    installMutationObserverProxy();
-    installEventListenerProxies();
-    installWorkerProxy();
-    installPerformanceProxy();
-
+export async function setupPageAndStartClarity(done: DoneFn, _config?: IConfig, _startOptions?: IStartClarityOptions): Promise<void> {
+    setupPageHelper();
     await startClarity(_config, _startOptions);
     done();
 }
@@ -40,4 +30,22 @@ export function cleanupPage(): void {
     revokeAllMessages();
 
     fixture.cleanup();
+}
+
+export async function setupPage(done: DoneFn): Promise<void> {
+    setupPageHelper();
+    done();
+}
+
+function setupPageHelper(): void {
+    // Relative to karma config location
+    fixture.setBase("karma/fixtures");
+    fixture.load("clarity.fixture.html");
+
+    // Install API proxies
+    installJasmineClock();
+    installMutationObserverProxy();
+    installEventListenerProxies();
+    installWorkerProxy();
+    installPerformanceProxy();
 }

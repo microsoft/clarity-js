@@ -19,7 +19,6 @@ export let config: IConfig = {
   uploadHeaders: {
     "Content-Type": "application/json"
   },
-  customInstrumentation: null,
   debug: false,
   validateConsistency: false,
   backgroundMode: false,

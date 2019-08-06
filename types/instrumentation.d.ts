@@ -1,3 +1,4 @@
+import { State } from "@clarity-types/core";
 import { ILayoutRoutineInfo, NumberJson } from "./layout";
 
 export const enum Instrumentation {
@@ -12,7 +13,8 @@ export const enum Instrumentation {
   ClarityActivateError,
   Trigger,
   Performance,
-  OversizedEvent
+  OversizedEvent,
+  SetPageInfo
 }
 
 export interface IInstrumentationEventState {
@@ -80,6 +82,12 @@ export interface IClarityActivateErrorState extends IInstrumentationEventState {
 
 export interface ITriggerState extends IInstrumentationEventState {
   key: string;
+}
+
+export interface ISetPageInfoState extends IInstrumentationEventState {
+  state: State;
+  userId: string;
+  pageId: string;
 }
 
 export interface IPerformanceState extends IInstrumentationEventState {

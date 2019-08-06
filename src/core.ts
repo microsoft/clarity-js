@@ -4,11 +4,11 @@ import getPlugin from "./plugins";
 
 import { IAddEventMessage, ICompressedBatchMessage, ITimestampedWorkerMessage, WorkerMessageType } from "@clarity-types/compressionworker";
 import {
-  IBindingContainer, IClarityFields, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IPayload, IPlugin, State
+  IBindingContainer, IEnvelope, IEvent, IEventArray, IEventBindingPair, IEventData, IPayload, IPlugin, State
 } from "@clarity-types/core";
 import {
   IClarityActivateErrorState, IClarityDuplicatedEventState, IInstrumentationEventState,
-  IMissingFeatureEventState, Instrumentation, ITriggerState
+  IMissingFeatureEventState, Instrumentation, ISetPageInfoState, ITriggerState
 } from "@clarity-types/instrumentation";
 import { createCompressionWorker } from "./compressionworker";
 import { config, resetConfig } from "./config";
@@ -16,9 +16,10 @@ import { resetSchemas } from "./converters/schema";
 import { enqueuePayload, flushPayloadQueue, resetUploads, upload } from "./upload";
 import { getCookie, getEventId, guid, isNumber, setCookie } from "./utils";
 
-export const version = "0.3.4";
+export const version = "0.4.0";
 export const ClarityAttribute = "clarity-iid";
 export const InstrumentationEventName = "Instrumentation";
+export const CustomEventName = "Custom";
 const Cookie = "ClarityID";
 
 let startTime: number;
@@ -188,6 +189,38 @@ export function onTrigger(key: string): void {
   }
 }
 
+export function onCustomEvent(kvps: { [key: string]: any }): void {
+  if (state === State.Activated) {
+    const event: IEventData = {
+      type: CustomEventName,
+      state: kvps,
+      time: getTimestamp(),
+    };
+    addEvent(event);
+  }
+}
+
+export function onSetPageInfo(pageId: string, userId: string): void {
+  // only allow setting pageId and userId if Clarity isn't currently running
+  if (state === State.Loaded || state === State.Unloaded) {
+    if (userId) {
+      cid = userId;
+      setClarityCookie(userId);
+    }
+    if (pageId) {
+      impressionId = pageId;
+    }
+  } else {
+    let setPageInfoState: ISetPageInfoState = {
+      type: Instrumentation.SetPageInfo,
+      state,
+      userId,
+      pageId
+    };
+    instrument(setPageInfoState);
+  }
+}
+
 export function forceCompression(): void {
   if (compressionWorker) {
     let forceCompressionMessage: ITimestampedWorkerMessage = {
@@ -272,15 +305,27 @@ function uploadPendingEvents(): void {
   }
 }
 
-function init(): void {
+function setClarityCookie(value: string): void {
   // Set ClarityID cookie, if it's not set already and is allowed by config
-  if (!config.disableCookie && !getCookie(Cookie)) {
+  if (!config.disableCookie) {
     // setting our ClarityId cookie for 1 year (52 weeks)
-    setCookie(Cookie, guid(), 7 * 52);
+    setCookie(Cookie, value, 7 * 52);
+  }
+}
+
+function init(): void {
+  if (!getCookie(Cookie)) {
+    setClarityCookie(guid());
   }
 
-  cid = config.disableCookie ? guid() : getCookie(Cookie);
-  impressionId = guid();
+  // if cid has already been set, use it. Otherwise we will grab our
+  // Clarity cookie value (unless using cookies is disabled)
+  if (!cid) {
+    cid = config.disableCookie ? guid() : getCookie(Cookie);
+  }
+  // if impressionId was set by the user, use it. Otherwise generate
+  // a random guid
+  impressionId = impressionId || guid();
 
   startTime = getUnixTimestamp();
   sequence = 0;
@@ -295,21 +340,6 @@ function init(): void {
 
   resetSchemas();
   resetUploads();
-
-  if (config.customInstrumentation) {
-    let fields: IClarityFields = {
-      impressionId,
-      clientId: cid,
-      projectId: config.projectId
-    };
-    let customInst = config.customInstrumentation(fields);
-    envelope.extraInfo = {};
-    for (let key in customInst) {
-      if (customInst.hasOwnProperty(key) && customInst[key]) {
-        envelope.extraInfo[key] = customInst[key];
-      }
-    }
-  }
 
   activePlugins = [];
   bindings = {};

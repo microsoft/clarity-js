@@ -1,7 +1,7 @@
 import { IPerformanceResourceTimingState, IPerformanceTiming } from "@clarity-types/performance";
 import { restartClarity } from "@karma/setup/clarity";
 import { createMockPerformanceResourceTimings, IMockPerformance } from "@karma/setup/mocks/performance";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { testAsync } from "@karma/setup/testasync";
 import { filterEventsByType, getFullImpressionWatchResult, stopWatching, watch } from "@karma/setup/watch";
 import { ResourceTimingEventType } from "@src/plugins/performance";
@@ -15,7 +15,7 @@ declare const performance: IMockPerformance;
 
 describe("Performance Tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("checks that w3c performance timing is logged by clarity", (done: DoneFn) => {

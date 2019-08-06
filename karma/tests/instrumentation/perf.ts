@@ -1,7 +1,7 @@
 import { IEvent } from "@clarity-types/core";
 import { Instrumentation } from "@clarity-types/instrumentation";
 import { restartClarity } from "@karma/setup/clarity";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { getFullImpressionWatchResult, stopWatching, watch } from "@karma/setup/watch";
@@ -11,7 +11,7 @@ const instrumentationEventName = "Instrumentation";
 
 describe("Instrumentation: Performance Tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("validates that discover performance instrumentation is logged", testAsync(async (done: DoneFn) => {

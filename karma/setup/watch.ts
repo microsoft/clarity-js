@@ -1,7 +1,7 @@
 import uncompress from "./uncompress";
 
 import { IAddEventMessage, ICompressedBatchMessage } from "@clarity-types/compressionworker";
-import { IEvent, IEventArray, IPayload } from "@clarity-types/core";
+import { IEnvelope, IEvent, IEventArray, IPayload } from "@clarity-types/core";
 import { decode } from "@src/converters/convert";
 import { SchemaManager } from "@src/converters/schema";
 import { PubSubEvents } from "./pubsub";
@@ -10,6 +10,7 @@ interface IWatchResult {
     coreEvents: IEvent[];
     compressedEvents: IEvent[];
     sentEvents: IEvent[];
+    sentEnvelopes: IEnvelope[];
 }
 
 let schemas: SchemaManager = new SchemaManager();
@@ -27,7 +28,8 @@ export function watch(): any {
         watchResult = {
             coreEvents: [],
             compressedEvents: [],
-            sentEvents: []
+            sentEvents: [],
+            sentEnvelopes: []
         };
         watching = true;
     }
@@ -46,7 +48,8 @@ export function resetWatcher(): void {
     fullImpression = {
         coreEvents: [],
         compressedEvents: [],
-        sentEvents: []
+        sentEvents: [],
+        sentEnvelopes: []
     };
     schemas.reset();
 
@@ -81,8 +84,10 @@ export function onUpload(message: any, data: any): void {
     const payload: IPayload = JSON.parse(uncompress(compressedPayload));
     const decodedEvents = payload.events.map((encodedEvent: IEventArray): IEvent => decode(encodedEvent, schemas));
     fullImpression.sentEvents.push(...decodedEvents);
+    fullImpression.sentEnvelopes.push(payload.envelope);
     if (watching) {
         watchResult.sentEvents.push(...decodedEvents);
+        watchResult.sentEnvelopes.push(payload.envelope);
     }
 }
 

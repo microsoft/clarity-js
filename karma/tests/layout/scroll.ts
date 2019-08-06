@@ -1,5 +1,5 @@
 import { Action, Source } from "@clarity-types/layout";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { PubSubEvents, waitFor } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { stopWatching, watch } from "@karma/setup/watch";
@@ -7,7 +7,7 @@ import { assert } from "chai";
 
 describe("Layout: Scroll Tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("checks that scroll capturing works on inserted element", testAsync(async (done: DoneFn) => {

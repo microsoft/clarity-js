@@ -1,6 +1,6 @@
 import { Instrumentation } from "@clarity-types/instrumentation";
 import { restartClarity } from "@karma/setup/clarity";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { testAsync } from "@karma/setup/testasync";
 import { getFullImpressionWatchResult } from "@karma/setup/watch";
 import { ClarityAttribute } from "@src/core";
@@ -10,7 +10,7 @@ const instrumentationEventName = "Instrumentation";
 
 describe("Instrumentation: Activate Tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("validates that missing feature event is sent when required feature is missing", testAsync(async (done: DoneFn) => {

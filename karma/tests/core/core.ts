@@ -1,14 +1,14 @@
 import * as PubSub from "pubsub-js";
 
 import { getActiveConfig, getVersion, triggerMutationEvent } from "@karma/setup/clarity";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { PubSubEvents, waitFor, yieldThread } from "@karma/setup/pubsub";
 import { testAsync } from "@karma/setup/testasync";
 import { assert } from "chai";
 
 describe("Core Tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("validates that core.ts version matches package.json", (done: DoneFn) => {

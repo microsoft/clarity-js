@@ -94,6 +94,14 @@ export async function triggerMutationEventAndWaitForUpload(
     });
 }
 
+export function triggerClarityCustomEvent(kvps: { [key: string]: any }): void {
+    clarity.event(kvps);
+}
+
+export function triggerSetPageInfo(pageId: string, userId: string): void {
+    clarity.setPageInfo(pageId, userId);
+}
+
 export function getActiveConfig(): Partial<IConfig> {
     return activeConfig;
 }

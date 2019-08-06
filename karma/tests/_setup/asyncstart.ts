@@ -1,5 +1,5 @@
 import { restartClarity } from "@karma/setup/clarity";
-import { cleanupPage, setupPage } from "@karma/setup/page";
+import { cleanupPage, setupPageAndStartClarity } from "@karma/setup/page";
 import { setRealTimeout } from "@karma/setup/proxyapis/jasmineclock";
 import { testAsync } from "@karma/setup/testasync";
 import { getFullImpressionWatchResult, stopWatching, watch } from "@karma/setup/watch";
@@ -7,7 +7,7 @@ import { assert } from "chai";
 
 describe("Setup: Asynchronous clarity start tests", () => {
 
-    beforeEach(setupPage);
+    beforeEach(setupPageAndStartClarity);
     afterEach(cleanupPage);
 
     it("checks that intial activity events have been generated and sent on async start", (done: DoneFn) => {

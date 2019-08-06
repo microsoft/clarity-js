@@ -1,4 +1,4 @@
-import { IClarityFields, UploadHandler } from "./core";
+import { UploadHandler } from "./core";
 
 export interface IConfig {
     // Active plugins
@@ -45,10 +45,6 @@ export interface IConfig {
     // XHLHttpRequest headers to be added to every upload request with the default upload handler
     // Object is a map from header names to header values
     uploadHeaders?: { [key: string]: string; };
-
-    // Pointer to the function which will be responsible for giving Clarity
-    // a dictionary of strings that the user wants logged in each Clarity payload
-    customInstrumentation?: (fields: IClarityFields) => { [key: string]: string; };
 
     // Setting to enable debug features (e.g. console.log statements)
     debug?: boolean;
