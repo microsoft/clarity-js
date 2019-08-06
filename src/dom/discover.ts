@@ -22,7 +22,6 @@ async function discover(): Promise<Token[]> {
         processNode(node);
         node = walker.nextNode();
     }
-    console.log("Finished discovering");
     let data = await encode(timer);
     task.stop(timer);
     return data;

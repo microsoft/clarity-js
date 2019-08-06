@@ -9,7 +9,5 @@ export default function(events: IEvent[]): void {
 }
 
 function send(payload: string): void {
-    console.log("JSON Length: " + JSON.stringify(payload).length);
-    console.log("JSON: " + JSON.stringify(payload));
     decode.json(payload);
 }

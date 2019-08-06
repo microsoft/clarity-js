@@ -42,26 +42,21 @@ export function add(node: Node, data: INodeData): void {
 
 export function update(node: Node, data: INodeData): void {
     let id = getId(node);
-    console.log("Updating node: " + id);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = node.nextSibling ? getId(node.nextSibling) : null;
 
     if (id in values) {
         let value = values[id];
-        console.log("Previous value: " + JSON.stringify(value));
 
         // Handle case where internal ordering may have changed
         if (value["next"] !== nextId) {
-            let oldNextId = value["next"];
             value["next"] = nextId;
-            console.log("Old next id: " + oldNextId + " | " + nextId);
         }
 
         // Handle case where parent might have been updated
         if (value["parent"] !== parentId) {
             let oldParentId = value["parent"];
             value["parent"] = parentId;
-            console.log("Old parent id: " + oldParentId + " | " + parentId);
             // Move this node to the right location under new parent
             if (parentId >= 0) {
                 if (nextId >= 0) {

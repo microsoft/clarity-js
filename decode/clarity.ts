@@ -22,8 +22,6 @@ export function json(payload: string): IDecodedEvent[] {
         }
         decoded.push(exploded);
     }
-    console.log("DECODED JSON Length: " + JSON.stringify(decoded).length);
-    console.log("DECODED JSON: " + JSON.stringify(decoded));
     return decoded;
 }
 
