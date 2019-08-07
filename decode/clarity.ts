@@ -108,7 +108,7 @@ function element(nodeId: number): Node {
 }
 
 function insert(id: number, parent: Node, node: Node, next: Node): void {
-    parent.insertBefore(node, next);
+    if (parent !== null) { parent.insertBefore(node, next); }
     nodes[id] = node;
 }
 

@@ -1,3 +1,17 @@
+export const enum Source {
+    Discover,
+    ChildListAdd,
+    ChildListRemove,
+    Attributes,
+    CharacterData
+}
+
+export const enum Action {
+    Add,
+    Update,
+    Remove
+}
+
 export interface IAttributes {
     [key: string]: string;
 }
@@ -15,6 +29,7 @@ export interface INodeValue {
     next: number;
     children: number[];
     data: INodeData;
+    track: number[];
     active?: boolean;
     update?: boolean;
 }

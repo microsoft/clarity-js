@@ -1,4 +1,5 @@
 import { Event, Token } from "@clarity-types/data";
+import { Source } from "@clarity-types/dom";
 import { Timer } from "@clarity-types/metrics";
 import queue from "@src/core/queue";
 import * as task from "@src/core/task";
@@ -24,6 +25,7 @@ export function end(): void {
 }
 
 function handle(mutations: MutationRecord[]): void {
+    window["MUTATIONS"].push(time());
     window["MUTATIONS"].push(mutations);
     process(mutations).then((data: Token[]) => {
       queue(time(), Event.Mutation, data);
@@ -40,9 +42,12 @@ async function process(mutations: MutationRecord[]): Promise<Token[]> {
 
       switch (mutation.type) {
         case "attributes":
+            if (task.longtask(timer)) { await task.idle(timer); }
+            processNode(target, Source.Attributes);
+            break;
         case "characterData":
             if (task.longtask(timer)) { await task.idle(timer); }
-            processNode(target);
+            processNode(target, Source.CharacterData);
             break;
         case "childList":
           // Process additions
@@ -52,7 +57,7 @@ async function process(mutations: MutationRecord[]): Promise<Token[]> {
             let node = walker.currentNode;
             while (node) {
                 if (task.longtask(timer)) { await task.idle(timer); }
-                processNode(node);
+                processNode(node, Source.ChildListAdd);
                 node = walker.nextNode();
             }
           }
@@ -60,7 +65,7 @@ async function process(mutations: MutationRecord[]): Promise<Token[]> {
           let removedLength = mutation.removedNodes.length;
           for (let j = 0; j < removedLength; j++) {
             if (task.longtask(timer)) { await task.idle(timer); }
-            processNode(mutation.removedNodes[j]);
+            processNode(mutation.removedNodes[j], Source.ChildListRemove);
           }
           break;
         default:

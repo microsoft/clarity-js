@@ -1,4 +1,5 @@
 import { Event, Token } from "@clarity-types/data";
+import { Source } from "@clarity-types/dom";
 import { Timer } from "@clarity-types/metrics";
 import queue from "@src/core/queue";
 import * as task from "@src/core/task";
@@ -19,7 +20,7 @@ async function discover(): Promise<Token[]> {
     let node = walker.nextNode();
     while (node) {
         if (task.longtask(timer)) { await task.idle(timer); }
-        processNode(node);
+        processNode(node, Source.Discover);
         node = walker.nextNode();
     }
     let data = await encode(timer);

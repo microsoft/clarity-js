@@ -1,15 +1,19 @@
+import { Source } from "@clarity-types/dom";
 import * as nodes from "./virtualdom";
 
 let ignoreAttributes = ["title", "alt", "onload", "onfocus"];
 
-export default function(node: Node): void {
+export default function(node: Node, source: Source): void {
+    // Do not track this change if we are attempting to remove a node before discovering it
+    if (source === Source.ChildListRemove && nodes.has(node) === false) { return; }
+
     let call = nodes.has(node) ? "update" : "add";
     switch (node.nodeType) {
         case Node.DOCUMENT_TYPE_NODE:
             let doctype = node as DocumentType;
             let docAttributes = { name: doctype.name, publicId: doctype.publicId, systemId: doctype.systemId };
             let docData = { tag: "*D", attributes: docAttributes };
-            nodes[call](node, docData);
+            nodes[call](node, docData, source);
             break;
         case Node.TEXT_NODE:
             // Account for this text node only if we are tracking the parent node
@@ -18,7 +22,7 @@ export default function(node: Node): void {
             if (parent && nodes.has(parent)) {
                 let textData = { tag: "*T", value: node.nodeValue };
                 textData["layout"] = getTextLayout(node);
-                nodes[call](node, textData);
+                nodes[call](node, textData, source);
             }
             break;
         case Node.ELEMENT_NODE:
@@ -31,7 +35,7 @@ export default function(node: Node): void {
                 default:
                     let data = { tag: element.tagName, attributes: getAttributes(element.attributes) };
                     data["layout"] = getLayout(element);
-                    nodes[call](node, data);
+                    nodes[call](node, data, source);
                     break;
             }
             break;
