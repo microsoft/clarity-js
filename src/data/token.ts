@@ -1,11 +1,10 @@
-let tokens = {};
+let tokens: string[] = [];
 
-export function check(hash: string, metadata: string[]): boolean {
-    let output = hash in tokens;
-    tokens[hash] = metadata;
+export function check(hash: string): boolean {
+    let output = tokens.indexOf(hash) >= 0;
     return output;
 }
 
 export function resolve(hash: string): string[] {
-    return hash in tokens ? tokens[hash] : [];
+    return check(hash) ? tokens[hash] : [];
 }

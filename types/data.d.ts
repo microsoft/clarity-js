@@ -29,6 +29,14 @@ export interface IEvent {
     d: Token[];
 }
 
+export interface IPayload {
+    p: string;
+    s: string;
+    t: string;
+    n: number;
+    d: string;
+}
+
 export interface IDecodedEvent {
     time: number;
     event: Event;

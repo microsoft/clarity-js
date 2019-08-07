@@ -1,3 +1,5 @@
+import { IPayload } from "./data";
+
 export interface IEventBindingPair {
     target: EventTarget;
     listener: EventListener;
@@ -12,7 +14,8 @@ export interface IConfig {
     lookahead?: number;
     distance?: number;
     delay?: number;
-    upload?: (payload: string) => void;
+    tokens?: string[];
+    upload?: (payload: IPayload) => void;
 }
 
 // Task

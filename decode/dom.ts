@@ -18,7 +18,7 @@ export default function(tokens: Token[]): DecodedToken[] {
                     tagIndex = 0;
                 }
                 number += token as number;
-                token = token === 0 ? token : number;
+                token = number;
                 node.push(token);
                 tagIndex++;
                 break;
@@ -85,5 +85,6 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
     if (hasAttribute) { output.attributes = attributes; }
     if (value) { output.value = value; }
 
+    console.log("Node: " + JSON.stringify(output));
     return output;
 }

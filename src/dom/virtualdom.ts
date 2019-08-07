@@ -10,6 +10,9 @@ let backupIndex: number;
 let backupNodes: Node[];
 let backupValues: Node[];
 
+// For debugging
+window["DOM"] = { getId, get };
+
 export function getId(node: Node, autogen: boolean = true): number {
     if (node === null) { return null; }
     let id = node[NODE_ID_PROP];
@@ -58,7 +61,7 @@ export function update(node: Node, data: INodeData): void {
             let oldParentId = value["parent"];
             value["parent"] = parentId;
             // Move this node to the right location under new parent
-            if (parentId >= 0) {
+            if (parentId !== null && parentId >= 0) {
                 if (nextId >= 0) {
                     values[parentId].children.splice(nextId + 1, 0 , id);
                 } else {

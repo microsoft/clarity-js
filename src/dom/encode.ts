@@ -72,7 +72,7 @@ export default async function(timer: Timer): Promise<Token[]> {
 function meta(metadata: string[]): string[] | string[][] {
     let value = JSON.stringify(metadata);
     let hashed = hash(value);
-    return check(hashed, metadata) && hashed.length < value.length ? [[hashed]] : metadata;
+    return check(hashed) && hashed.length < value.length ? [[hashed]] : metadata;
 }
 
 function text(tag: string, value: string): string {

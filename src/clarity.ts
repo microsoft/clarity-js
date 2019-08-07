@@ -1,6 +1,7 @@
 import { IConfig } from "@clarity-types/core";
 import config from "@src/core/config";
 import * as event from "@src/core/event";
+import * as track from "@src/data/track";
 import * as discover from "@src/dom/discover";
 import * as mutation from "@src/dom/mutation";
 import * as mouse from "@src/interactions/mouse";
@@ -18,6 +19,7 @@ export function start(configuration: IConfig = {}): void {
   }
 
   event.reset();
+  track.start();
 
   // DOM
   mutation.start();
@@ -37,4 +39,5 @@ export function start(configuration: IConfig = {}): void {
 export function end(): void {
   event.reset();
   mutation.end();
+  track.end();
 }

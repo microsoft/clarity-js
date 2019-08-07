@@ -24,6 +24,7 @@ export function end(): void {
 }
 
 function handle(mutations: MutationRecord[]): void {
+    window["MUTATIONS"].push(mutations);
     process(mutations).then((data: Token[]) => {
       queue(time(), Event.Mutation, data);
     });
