@@ -1,4 +1,5 @@
 import { Source } from "@clarity-types/dom";
+import config from "@src/core/config";
 import * as nodes from "./virtualdom";
 
 let ignoreAttributes = ["title", "alt", "onload", "onfocus"];
@@ -18,8 +19,9 @@ export default function(node: Node, source: Source): void {
         case Node.TEXT_NODE:
             // Account for this text node only if we are tracking the parent node
             // We do not wish to track text nodes for ignored parent nodes, like script tags
+            // Also, we do not track text nodes for STYLE tags
             let parent = node.parentElement;
-            if (parent && nodes.has(parent)) {
+            if (parent && nodes.has(parent) && parent.tagName !== "STYLE") {
                 let textData = { tag: "*T", value: node.nodeValue };
                 textData["layout"] = getTextLayout(node);
                 nodes[call](node, textData, source);
@@ -27,13 +29,19 @@ export default function(node: Node, source: Source): void {
             break;
         case Node.ELEMENT_NODE:
             let element = (node as HTMLElement);
-            switch (element.tagName) {
+            let tag = element.tagName;
+            switch (tag) {
                 case "SCRIPT":
                 case "NOSCRIPT":
                 case "META":
                     break;
+                case "STYLE":
+                    let attributes = getAttributes(element.attributes);
+                    let styleData = { tag, attributes, value: getStyleValue(element as HTMLStyleElement) };
+                    nodes[call](node, styleData, source);
+                    break;
                 default:
-                    let data = { tag: element.tagName, attributes: getAttributes(element.attributes) };
+                    let data = { tag, attributes: getAttributes(element.attributes) };
                     data["layout"] = getLayout(element);
                     nodes[call](node, data, source);
                     break;
@@ -42,6 +50,30 @@ export default function(node: Node, source: Source): void {
         default:
             break;
     }
+}
+
+function getStyleValue(style: HTMLStyleElement): string {
+    let value = style.textContent;
+    if (value.length === 0 || config.cssRules) {
+        let cssRules = null;
+
+        // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
+        try {
+            let sheet = style.sheet as CSSStyleSheet;
+            cssRules = sheet ? sheet.cssRules : [];
+        } catch (e) {
+            if (e.name !== "SecurityError") {
+                throw e;
+            }
+        }
+
+        if (cssRules !== null) {
+            for (let i = 0; i < cssRules.length; i++) {
+                value += cssRules[i].cssText;
+            }
+        }
+    }
+    return value;
 }
 
 function getAttributes(attributes: NamedNodeMap): {[key: string]: string} {

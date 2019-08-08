@@ -114,14 +114,20 @@ function markup(data: IDecodedNode[], placeholder: HTMLIFrameElement): void {
                 nodes[node.id] = doc.documentElement;
                 break;
             case "HEAD":
-                let head = element(node.id);
-                head = head ? head : doc.createElement(node.tag);
+                let headElement = element(node.id);
+                headElement = headElement ? headElement : doc.createElement(node.tag);
                 let base = doc.createElement("base");
                 base.href = "https://www.bing.com/";
-                head.appendChild(base);
-                setAttributes(head as HTMLElement, node.attributes);
-                insert(node, parent, head, next);
+                headElement.appendChild(base);
+                setAttributes(headElement as HTMLElement, node.attributes);
+                insert(node, parent, headElement, next);
                 break;
+            case "STYLE":
+                let styleElement = element(node.id);
+                styleElement = styleElement ? styleElement : doc.createElement(node.tag);
+                setAttributes(styleElement as HTMLElement, node.attributes);
+                styleElement.textContent = node.value;
+                insert(node, parent, styleElement, next);
             default:
                 let domElement = element(node.id);
                 domElement = domElement ? domElement : doc.createElement(node.tag);

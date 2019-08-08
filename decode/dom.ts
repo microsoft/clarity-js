@@ -66,7 +66,9 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
         let token = node[i] as string;
         let keyIndex = token.indexOf("=");
         let parts = token.split("*");
-        if (output.tag !== "*T" && keyIndex > 0) {
+        if (i === (node.length - 1) && output.tag === "STYLE") {
+            value = token;
+        } else if (output.tag !== "*T" && keyIndex > 0) {
             hasAttribute = true;
             attributes[token.substr(0, keyIndex)] = token.substr(keyIndex + 1);
         } else if (parts.length === 4) {
