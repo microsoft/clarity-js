@@ -6,12 +6,6 @@ export const enum Source {
     CharacterData
 }
 
-export const enum Action {
-    Add,
-    Update,
-    Remove
-}
-
 export interface IAttributes {
     [key: string]: string;
 }
@@ -29,7 +23,7 @@ export interface INodeValue {
     next: number;
     children: number[];
     data: INodeData;
-    track: number[];
+    track: number[][];
     active?: boolean;
     update?: boolean;
 }

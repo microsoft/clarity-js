@@ -1,7 +1,7 @@
-import { DecodedToken, Token } from "../types/data";
+import { DecodedToken, Event, Token } from "../types/data";
 import { Metric } from "../types/metrics";
 
-export default function(tokens: Token[]): DecodedToken[] {
+export default function(tokens: Token[], event: Event): DecodedToken[] {
     let lastType = null;
     let metric = [];
     let decoded: DecodedToken[] = [];

@@ -1,4 +1,4 @@
-import { Action, INodeData, INodeValue, Source } from "@clarity-types/dom";
+import { INodeData, INodeValue, Source } from "@clarity-types/dom";
 import time from "@src/core/time";
 
 const NODE_ID_PROP: string = "__node_index__";
@@ -26,7 +26,7 @@ export function getId(node: Node, autogen: boolean = true): number {
 export function add(node: Node, data: INodeData, source: Source): void {
     let id = getId(node);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
-    let nextId = node.nextSibling ? getId(node.nextSibling, false) : null;
+    let nextId = getNextId(node);
 
     if (parentId >= 0 && values[parentId]) {
         values[parentId].children.push(id);
@@ -40,7 +40,7 @@ export function add(node: Node, data: INodeData, source: Source): void {
         children: [],
         active: true,
         update: true,
-        track: [time(), Action.Add, source],
+        track: [[time(), source]],
         data
     };
 }
@@ -48,7 +48,7 @@ export function add(node: Node, data: INodeData, source: Source): void {
 export function update(node: Node, data: INodeData, source: Source): void {
     let id = getId(node);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
-    let nextId = node.nextSibling ? getId(node.nextSibling) : null;
+    let nextId = getNextId(node);
 
     if (id in values) {
         let value = values[id];
@@ -89,10 +89,17 @@ export function update(node: Node, data: INodeData, source: Source): void {
         }
 
         value["update"] = true;
-        value["track"].push(time());
-        value["track"].push(Action.Update);
-        value["track"].push(source);
+        value["track"].push([time(), source]);
     }
+}
+
+function getNextId(node: Node): number {
+    let id = null;
+    while (id === null && node.nextSibling) {
+        id = getId(node.nextSibling, false);
+        node = node.nextSibling;
+    }
+    return id;
 }
 
 export function getNode(id: number): Node {

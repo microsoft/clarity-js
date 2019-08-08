@@ -1,8 +1,8 @@
 import { resolve } from "../src/data/token";
-import { DecodedToken, Token } from "../types/data";
+import { DecodedToken, Event, Token } from "../types/data";
 import { IDecodedNode } from "../types/dom";
 
-export default function(tokens: Token[]): DecodedToken[] {
+export default function(tokens: Token[], event: Event): DecodedToken[] {
     let number = 0;
     let lastType = null;
     let node = [];
@@ -43,6 +43,9 @@ export default function(tokens: Token[]): DecodedToken[] {
         }
         lastType = type;
     }
+
+    // Process last node
+    decoded.push(process(node, tagIndex));
 
     return decoded;
 }

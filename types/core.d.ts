@@ -14,6 +14,7 @@ export interface IConfig {
     lookahead?: number;
     distance?: number;
     delay?: number;
+    cssRules?: boolean;
     tokens?: string[];
     upload?: (payload: IPayload) => void;
 }
