@@ -33,7 +33,7 @@ export default async function(timer: Timer): Promise<Token[]> {
                         break;
                     case "attributes":
                         for (let attr in data[key]) {
-                            if (data[key][attr]) {
+                            if (data[key][attr] !== undefined) {
                                 metadata.push(`${attr}=${data[key][attr]}`);
                             }
                         }
@@ -48,6 +48,9 @@ export default async function(timer: Timer): Promise<Token[]> {
                         break;
                     case "value":
                         let parent = nodes.getNode(value.parent);
+                        if (parent === null) {
+                            console.log("Node data: " + JSON.stringify(data));
+                        }
                         let parentTag = nodes.get(parent).data.tag;
                         metadata.push(text(parentTag, data[key]));
                         break;

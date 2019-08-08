@@ -86,7 +86,7 @@ function markup(data: IDecodedNode[], placeholder: HTMLIFrameElement): void {
         let next = element(node.next);
         switch (node.tag) {
             case "*D":
-                if (typeof XMLSerializer !== "undefined" && false) {
+                if (typeof XMLSerializer !== "undefined") {
                     doc.open();
                     doc.write(new XMLSerializer().serializeToString(
                         doc.implementation.createDocumentType(
@@ -156,7 +156,7 @@ function setAttributes(node: HTMLElement, attributes: object): void {
         }
     }
     for (let attribute in attributes) {
-        if (attributes[attribute]) {
+        if (attributes[attribute] !== undefined) {
             node.setAttribute(attribute, attributes[attribute]);
         }
     }
