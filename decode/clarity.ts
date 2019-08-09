@@ -6,6 +6,7 @@ import viewport from "./viewport";
 
 let nodes = {};
 let pageId: string = null;
+let svgns: string = "http://www.w3.org/2000/svg";
 let payloads: IPayload[] = [];
 
 export function json(payload: IPayload): IDecodedEvent[] {
@@ -130,7 +131,7 @@ function markup(data: IDecodedNode[], placeholder: HTMLIFrameElement): void {
                 insert(node, parent, styleElement, next);
             default:
                 let domElement = element(node.id);
-                domElement = domElement ? domElement : doc.createElement(node.tag);
+                domElement = domElement ? domElement : createElement(doc, node.tag, parent as HTMLElement);
                 if (!node.attributes) { node.attributes = {}; }
                 node.attributes["data-id"] = `${node.id}`;
                 setAttributes(domElement as HTMLElement, node.attributes);
@@ -138,6 +139,20 @@ function markup(data: IDecodedNode[], placeholder: HTMLIFrameElement): void {
                 break;
         }
     }
+}
+
+function createElement(doc: Document, tag: string, parent: HTMLElement): HTMLElement {
+    if (tag === "svg") {
+        return doc.createElementNS(svgns, tag) as HTMLElement;
+    } else {
+        while (parent && parent.tagName !== "BODY") {
+            if (parent.tagName === "svg") {
+                return doc.createElementNS(svgns, tag) as HTMLElement;
+            }
+            parent = parent.parentElement;
+        }
+    }
+    return doc.createElement(tag);
 }
 
 function element(nodeId: number): Node {
