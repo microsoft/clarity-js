@@ -51,7 +51,7 @@ export default async function(timer: Timer): Promise<Token[]> {
                         if (parent === null) {
                             console.log("Node data: " + JSON.stringify(data));
                         }
-                        let parentTag = nodes.get(parent).data.tag;
+                        let parentTag = nodes.get(parent) ? nodes.get(parent).data.tag : null;
                         metadata.push(text(parentTag, data[key]));
                         break;
                 }

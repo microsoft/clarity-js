@@ -20,8 +20,10 @@ export default function(node: Node, source: Source): void {
             // Account for this text node only if we are tracking the parent node
             // We do not wish to track text nodes for ignored parent nodes, like script tags
             // Also, we do not track text nodes for STYLE tags
+            // The only exception is when we receive a mutation to remove the text node, in that case
+            // parent will be null, but we can still process the node by checking it's an update call.
             let parent = node.parentElement;
-            if (parent && nodes.has(parent) && parent.tagName !== "STYLE") {
+            if (call === "update" || (parent && nodes.has(parent) && parent.tagName !== "STYLE")) {
                 let textData = { tag: "*T", value: node.nodeValue };
                 textData["layout"] = getTextLayout(node);
                 nodes[call](node, textData, source);

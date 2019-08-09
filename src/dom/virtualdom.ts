@@ -46,7 +46,7 @@ export function add(node: Node, data: INodeData, source: Source): void {
 }
 
 export function update(node: Node, data: INodeData, source: Source): void {
-    let id = getId(node);
+    let id = getId(node, false);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = getNextId(node);
 

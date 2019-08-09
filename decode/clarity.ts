@@ -160,7 +160,12 @@ function element(nodeId: number): Node {
 }
 
 function insert(data: IDecodedNode, parent: Node, node: Node, next: Node): void {
-    if (parent !== null) { parent.insertBefore(node, next); }
+    if (parent !== null) {
+        next = next && next.parentElement !== parent ? null : next;
+        parent.insertBefore(node, next);
+    } else if (parent === null && node.parentElement !== null) {
+        node.parentElement.removeChild(node);
+    }
     nodes[data.id] = node;
 }
 
