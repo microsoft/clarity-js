@@ -1,4 +1,4 @@
-import { INodeData, INodeValue, Source } from "@clarity-types/dom";
+import { INodeChange, INodeData, INodeValue, Source } from "@clarity-types/dom";
 import time from "@src/core/time";
 
 const NODE_ID_PROP: string = "__node_index__";
@@ -6,13 +6,15 @@ let index: number = 1;
 
 let nodes: Node[] = [];
 let values: INodeValue[] = [];
+let updates: number[] = [];
+let changes: INodeChange[][] = [];
 
 let backupIndex: number;
 let backupNodes: Node[];
-let backupValues: Node[];
+let backupValues: INodeValue[];
 
 // For debugging
-window["DOM"] = { getId, get, getNode };
+window["DOM"] = { getId, get, getNode, changes };
 
 export function getId(node: Node, autogen: boolean = true): number {
     if (node === null) { return null; }
@@ -38,11 +40,9 @@ export function add(node: Node, data: INodeData, source: Source): void {
         parent: parentId,
         next: nextId,
         children: [],
-        active: true,
-        update: true,
-        track: [[time(), source]],
         data
     };
+    track(id, source);
 }
 
 export function update(node: Node, data: INodeData, source: Source): void {
@@ -87,9 +87,7 @@ export function update(node: Node, data: INodeData, source: Source): void {
                 value["data"][key] = data[key];
             }
         }
-
-        value["update"] = true;
-        value["track"].push([time(), source]);
+        track(id, source);
     }
 }
 
@@ -118,11 +116,6 @@ export function has(node: Node): boolean {
     return getId(node, false) in nodes;
 }
 
-export function remove(node: Node): void {
-    let id = getId(node);
-    del(id);
-}
-
 export function getNodes(): Node[] {
     let n: Node[] = [];
     for (let id in nodes) {
@@ -135,32 +128,35 @@ export function getNodes(): Node[] {
 
 export function summarize(): INodeValue[] {
     let v = [];
-    for (let id in values) {
-        if (values[id].update) {
-            values[id].update = false;
+    for (let id of updates) {
+        if (id in values) {
             v.push(values[id]);
         }
     }
+    updates = [];
     return v;
 }
 
 export function backup(): void {
     backupNodes = Array.from(nodes);
-    backupValues = JSON.parse(JSON.stringify(values));
+    backupValues = copy(values);
     backupIndex = index;
 }
 
 export function rollback(): void {
     nodes = Array.from(backupNodes);
-    values = JSON.parse(JSON.stringify(backupValues));
+    values = copy(backupValues);
     index = backupIndex;
 }
 
-function del(id: number): void {
-    let children = values[id].children;
-    for (let i = 0; i < children.length; i++) {
-        del(children[i]);
-    }
-    values[id].active = false;
-    values[id].update = true;
+function copy(input: INodeValue[]): INodeValue[] {
+    return JSON.parse(JSON.stringify(input));
+}
+
+function track(id: number, source: Source): void {
+    if (updates.indexOf(id) === -1) { updates.push(id); }
+    let value = copy([values[id]])[0];
+    let change = { time: time(), source, value };
+    if (!(id in changes)) { changes[id] = []; }
+    changes[id].push(change);
 }

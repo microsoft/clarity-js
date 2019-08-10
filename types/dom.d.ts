@@ -23,9 +23,12 @@ export interface INodeValue {
     next: number;
     children: number[];
     data: INodeData;
-    track: number[][];
-    active?: boolean;
-    update?: boolean;
+}
+
+export interface INodeChange {
+    time: number;
+    source: Source;
+    value: INodeValue;
 }
 
 export interface IDecodedNode {

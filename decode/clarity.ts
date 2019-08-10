@@ -106,12 +106,16 @@ function markup(data: IDecodedNode[], placeholder: HTMLIFrameElement): void {
                 insert(node, parent, textElement, next);
                 break;
             case "HTML":
-                let newDoc = doc.implementation.createHTMLDocument("");
-                let docElement = newDoc.documentElement;
-                let pointer = doc.importNode(docElement, true);
-                doc.replaceChild(pointer, doc.documentElement);
-                if (doc.head) { doc.head.parentNode.removeChild(doc.head); }
-                if (doc.body) { doc.body.parentNode.removeChild(doc.body); }
+                let docElement = element(node.id);
+                if (!docElement) {
+                    let newDoc = doc.implementation.createHTMLDocument("");
+                    docElement = newDoc.documentElement;
+                    let pointer = doc.importNode(docElement, true);
+                    doc.replaceChild(pointer, doc.documentElement);
+                    if (doc.head) { doc.head.parentNode.removeChild(doc.head); }
+                    if (doc.body) { doc.body.parentNode.removeChild(doc.body); }
+                }
+                setAttributes(docElement as HTMLElement, node.attributes);
                 nodes[node.id] = doc.documentElement;
                 break;
             case "HEAD":
@@ -170,11 +174,16 @@ function insert(data: IDecodedNode, parent: Node, node: Node, next: Node): void 
 }
 
 function setAttributes(node: HTMLElement, attributes: object): void {
-    for (let attribute in node.attributes) {
-        if (node.hasAttribute(attribute)) {
-            node.removeAttribute(attribute);
+    // First remove all its existing attributes
+    if (node.attributes) {
+        let length = node.attributes.length;
+        while (node.attributes && length > 0) {
+            node.removeAttribute(node.attributes[0].name);
+            length--;
         }
     }
+
+    // Add new attributes
     for (let attribute in attributes) {
         if (attributes[attribute] !== undefined) {
             node.setAttribute(attribute, attributes[attribute]);
