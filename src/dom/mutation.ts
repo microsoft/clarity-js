@@ -1,9 +1,9 @@
 import { Event, Token } from "@clarity-types/data";
 import { Source } from "@clarity-types/dom";
 import { Timer } from "@clarity-types/metrics";
-import queue from "@src/core/queue";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
+import queue from "@src/data/queue";
 import encode from "@src/dom/encode";
 import processNode from "./node";
 

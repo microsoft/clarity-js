@@ -4,6 +4,7 @@ interface IClarityJs {
   version: string;
   start: (config: IConfig) => void;
   end: () => void;
+  active: () => boolean;
 }
 
 declare const clarity: IClarityJs;

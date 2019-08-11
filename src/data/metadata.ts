@@ -1,21 +1,29 @@
+import { Event, Flush, IMetadata } from "@clarity-types/data";
+import time from "@src/core/time";
+import version from "@src/core/version";
+import encode from "@src/data/encode";
 import hash from "@src/data/hash";
+import queue from "@src/data/queue";
 
-export let pageId: string;
-export let sessionId: string;
-export let tenantId: string;
+export let metadata: IMetadata = null;
 let count: number = 0;
 
 export function start(): void {
-    pageId = guid();
-    sessionId = guid();
-    tenantId = hash(top.location.host);
     count = 0;
+    metadata = {
+      version,
+      pageId: guid(),
+      userId: guid(),
+      siteId: hash(location.host),
+      url: location.href,
+      title: document.title
+    };
+
+    queue(time(), Event.Metadata, encode(), Flush.None);
 }
 
 export function end(): void {
-    pageId = null;
-    sessionId = null;
-    tenantId = null;
+    metadata = null;
     count = 0;
 }
 

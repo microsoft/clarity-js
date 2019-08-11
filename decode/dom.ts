@@ -1,12 +1,12 @@
 import { resolve } from "../src/data/token";
-import { DecodedToken, Event, Token } from "../types/data";
+import { Event, Token } from "../types/data";
 import { IDecodedNode } from "../types/dom";
 
-export default function(tokens: Token[], event: Event): DecodedToken[] {
+export default function(tokens: Token[], event: Event): IDecodedNode[] {
     let number = 0;
     let lastType = null;
     let node = [];
-    let decoded: DecodedToken[] = [];
+    let decoded: IDecodedNode[] = [];
     let tagIndex = 0;
     for (let token of tokens) {
         let type = typeof(token);
@@ -90,6 +90,5 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
     if (hasAttribute) { output.attributes = attributes; }
     if (value) { output.value = value; }
 
-    console.log("Node: " + JSON.stringify(output));
     return output;
 }

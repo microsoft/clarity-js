@@ -1,28 +1,25 @@
-import { DecodedToken, Event, IDecodedEvent, IEvent, IPayload } from "../types/data";
-import { IDecodedNode } from "../types/dom";
+import { Event, IDecodedEvent, IEvent, IPayload } from "../types/data";
 import dom from "./dom";
-import metrics from "./metrics";
+import metadata from "./metadata";
+import { markup, reset, resize } from "./render";
 import viewport from "./viewport";
 
-let nodes = {};
 let pageId: string = null;
-let svgns: string = "http://www.w3.org/2000/svg";
 let payloads: IPayload[] = [];
 
 export function json(payload: IPayload): IDecodedEvent[] {
     if (pageId !== payload.p) {
         payloads = [];
-        nodes = {};
         pageId = payload.p;
+        reset();
     }
 
     let decoded: IDecodedEvent[] = [];
     let encoded: IEvent[] = JSON.parse(payload.d);
     payloads.push(payload);
-    let count = 0;
+
     for (let entry of encoded) {
-        let exploded = { time: entry.t, event: entry.e, data: entry.d as DecodedToken[] };
-        count++;
+        let exploded: IDecodedEvent = { time: entry.t, event: entry.e, data: null };
         switch (entry.e) {
             case Event.Scroll:
             case Event.Document:
@@ -31,13 +28,10 @@ export function json(payload: IPayload): IDecodedEvent[] {
                 break;
             case Event.Discover:
             case Event.Mutation:
-                console.warn("!Event: " + (entry.e === Event.Mutation ? "Mutation" : "Discover") +
-                " | Payload #" + payload.n + " | Event #" + count + " | Nodes #" + entry.d.length +
-                " | First Id: " + (entry.d.length > 0 ? entry.d[0] : -1) + " | Events: " + JSON.stringify(entry.d));
                 exploded.data = dom(entry.d, entry.e);
                 break;
-            case Event.Metrics:
-                exploded.data = metrics(entry.d, entry.e);
+            case Event.Metadata:
+                exploded.data = metadata(entry.d, entry.e);
                 break;
         }
         decoded.push(exploded);
@@ -62,131 +56,6 @@ export function render(payload: IPayload, placeholder: HTMLIFrameElement): void 
             case Event.Resize:
                 resize(entry.data, placeholder);
                 break;
-        }
-    }
-}
-
-function resize(data: DecodedToken[], placeholder: HTMLIFrameElement): void {
-    let availableWidth = placeholder.contentWindow.innerWidth;
-    let width = data[0].width;
-    let height = data[0].height;
-    let scale = Math.min(availableWidth / width, 1);
-    placeholder.style.width = width + "px";
-    placeholder.style.height = height + "px";
-    placeholder.style.transformOrigin = "0px 0px 0px";
-    placeholder.style.transform = "scale(" + scale + ")";
-    placeholder.style.border = "1px solid #ccc";
-    placeholder.style.overflow = "hidden";
-}
-
-function markup(data: IDecodedNode[], placeholder: HTMLIFrameElement): void {
-    let doc = placeholder.contentDocument;
-    for (let node of data) {
-        console.log("Markup Node: " + JSON.stringify(node));
-        let parent = element(node.parent);
-        let next = element(node.next);
-        switch (node.tag) {
-            case "*D":
-                if (typeof XMLSerializer !== "undefined") {
-                    doc.open();
-                    doc.write(new XMLSerializer().serializeToString(
-                        doc.implementation.createDocumentType(
-                            node.attributes["name"],
-                            node.attributes["publicId"],
-                            node.attributes["systemId"]
-                        )
-                    ));
-                    doc.close();
-                }
-                break;
-            case "*T":
-                let textElement = element(node.id);
-                textElement = textElement ? textElement : doc.createTextNode(null);
-                textElement.nodeValue = node.value;
-                insert(node, parent, textElement, next);
-                break;
-            case "HTML":
-                let docElement = element(node.id);
-                if (!docElement) {
-                    let newDoc = doc.implementation.createHTMLDocument("");
-                    docElement = newDoc.documentElement;
-                    let pointer = doc.importNode(docElement, true);
-                    doc.replaceChild(pointer, doc.documentElement);
-                    if (doc.head) { doc.head.parentNode.removeChild(doc.head); }
-                    if (doc.body) { doc.body.parentNode.removeChild(doc.body); }
-                }
-                setAttributes(docElement as HTMLElement, node.attributes);
-                nodes[node.id] = doc.documentElement;
-                break;
-            case "HEAD":
-                let headElement = element(node.id);
-                headElement = headElement ? headElement : doc.createElement(node.tag);
-                let base = doc.createElement("base");
-                base.href = "https://www.bing.com/";
-                headElement.appendChild(base);
-                setAttributes(headElement as HTMLElement, node.attributes);
-                insert(node, parent, headElement, next);
-                break;
-            case "STYLE":
-                let styleElement = element(node.id);
-                styleElement = styleElement ? styleElement : doc.createElement(node.tag);
-                setAttributes(styleElement as HTMLElement, node.attributes);
-                styleElement.textContent = node.value;
-                insert(node, parent, styleElement, next);
-            default:
-                let domElement = element(node.id);
-                domElement = domElement ? domElement : createElement(doc, node.tag, parent as HTMLElement);
-                if (!node.attributes) { node.attributes = {}; }
-                node.attributes["data-id"] = `${node.id}`;
-                setAttributes(domElement as HTMLElement, node.attributes);
-                insert(node, parent, domElement, next);
-                break;
-        }
-    }
-}
-
-function createElement(doc: Document, tag: string, parent: HTMLElement): HTMLElement {
-    if (tag === "svg") {
-        return doc.createElementNS(svgns, tag) as HTMLElement;
-    } else {
-        while (parent && parent.tagName !== "BODY") {
-            if (parent.tagName === "svg") {
-                return doc.createElementNS(svgns, tag) as HTMLElement;
-            }
-            parent = parent.parentElement;
-        }
-    }
-    return doc.createElement(tag);
-}
-
-function element(nodeId: number): Node {
-    return nodeId !== null && nodeId > 0 && nodeId in nodes ? nodes[nodeId] : null;
-}
-
-function insert(data: IDecodedNode, parent: Node, node: Node, next: Node): void {
-    if (parent !== null) {
-        next = next && next.parentElement !== parent ? null : next;
-        parent.insertBefore(node, next);
-    } else if (parent === null && node.parentElement !== null) {
-        node.parentElement.removeChild(node);
-    }
-    nodes[data.id] = node;
-}
-
-function setAttributes(node: HTMLElement, attributes: object): void {
-    // First remove all its existing attributes
-    if (node.attributes) {
-        let length = node.attributes.length;
-        while (node.attributes && length > 0) {
-            node.removeAttribute(node.attributes[0].name);
-            length--;
-        }
-    }
-
-    // Add new attributes
-    for (let attribute in attributes) {
-        if (attributes[attribute] !== undefined) {
-            node.setAttribute(attribute, attributes[attribute]);
         }
     }
 }

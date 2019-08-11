@@ -37,6 +37,12 @@ export default function(node: Node, source: Source): void {
                 case "NOSCRIPT":
                 case "META":
                     break;
+                case "HEAD":
+                    let head = { tag, attributes: getAttributes(element.attributes) };
+                    // Capture base href as part of discovering DOM
+                    if (call === "add") { head.attributes["*B"] = location.protocol + "//" + location.hostname; }
+                    nodes[call](node, head, source);
+                    break;
                 case "STYLE":
                     let attributes = getAttributes(element.attributes);
                     let styleData = { tag, attributes, value: getStyleValue(element as HTMLStyleElement) };

@@ -1,7 +1,7 @@
 import { Event, Flush } from "@clarity-types/data";
 import { IDocumentSize } from "@clarity-types/viewport";
-import queue from "@src/core/queue";
 import time from "@src/core/time";
+import queue from "@src/data/queue";
 import encode from "./encode";
 
 let data: IDocumentSize;

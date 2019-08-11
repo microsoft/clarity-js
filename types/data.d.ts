@@ -2,6 +2,7 @@ export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
 
 export const enum Event {
+    Metadata,
     Discover,
     Mutation,
     Metrics,
@@ -30,15 +31,27 @@ export interface IEvent {
 }
 
 export interface IPayload {
-    p: string;
-    s: string;
-    t: string;
+    t: number;
     n: number;
+    v: string;
+    p: string;
+    u: string;
+    s: string;
+    m: string;
     d: string;
 }
 
 export interface IDecodedEvent {
     time: number;
     event: Event;
-    data: DecodedToken[];
+    data: any;
+}
+
+export interface IMetadata {
+    version: string;
+    pageId: string;
+    userId: string;
+    siteId: string;
+    url: string;
+    title: string;
 }

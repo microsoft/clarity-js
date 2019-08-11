@@ -27,7 +27,7 @@ export function getId(node: Node, autogen: boolean = true): number {
 
 export function add(node: Node, data: INodeData, source: Source): void {
     let id = getId(node);
-    let parentId = node.parentElement ? getId(node.parentElement) : null;
+    let parentId = node.parentElement ? getId(node.parentElement, false) : null;
     let nextId = getNextId(node);
 
     if (parentId >= 0 && values[parentId]) {
@@ -47,7 +47,7 @@ export function add(node: Node, data: INodeData, source: Source): void {
 
 export function update(node: Node, data: INodeData, source: Source): void {
     let id = getId(node, false);
-    let parentId = node.parentElement ? getId(node.parentElement) : null;
+    let parentId = node.parentElement ? getId(node.parentElement, false) : null;
     let nextId = getNextId(node);
 
     if (id in values) {
@@ -64,7 +64,7 @@ export function update(node: Node, data: INodeData, source: Source): void {
             value["parent"] = parentId;
             // Move this node to the right location under new parent
             if (parentId !== null && parentId >= 0) {
-                if (nextId >= 0) {
+                if (nextId !== null && nextId >= 0) {
                     values[parentId].children.splice(nextId + 1, 0 , id);
                 } else {
                     values[parentId].children.push(id);
@@ -75,9 +75,11 @@ export function update(node: Node, data: INodeData, source: Source): void {
             }
 
             // Remove reference to this node from the old parent
-            let nodeIndex = values[oldParentId].children.indexOf(id);
-            if (nodeIndex >= 0) {
-                values[oldParentId].children.splice(nodeIndex, 1);
+            if (oldParentId !== null && oldParentId >= 0) {
+                let nodeIndex = values[oldParentId].children.indexOf(id);
+                if (nodeIndex >= 0) {
+                    values[oldParentId].children.splice(nodeIndex, 1);
+                }
             }
         }
 

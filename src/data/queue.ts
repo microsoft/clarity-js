@@ -1,6 +1,6 @@
 import { Event, Flush, IEvent, Token } from "@clarity-types/data";
 import upload from "@src/data/upload";
-import recompute from "./recompute";
+import recompute from "../core/recompute";
 
 let events: IEvent[] = [];
 let wait = 1000;

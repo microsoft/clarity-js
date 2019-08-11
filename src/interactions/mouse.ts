@@ -2,8 +2,8 @@ import { Event } from "@clarity-types/data";
 import { IMouseInteraction, Mouse } from "@clarity-types/interactions";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
-import queue from "@src/core/queue";
 import time from "@src/core/time";
+import queue from "@src/data/queue";
 import { getId } from "@src/dom/virtualdom";
 import encode from "./encode";
 

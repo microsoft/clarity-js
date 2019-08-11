@@ -1,7 +1,7 @@
 import { IConfig } from "@clarity-types/core";
 import config from "@src/core/config";
 import * as event from "@src/core/event";
-import * as track from "@src/data/track";
+import * as metadata from "@src/data/metadata";
 import * as discover from "@src/dom/discover";
 import * as mutation from "@src/dom/mutation";
 import * as mouse from "@src/interactions/mouse";
@@ -9,6 +9,8 @@ import * as document from "@src/viewport/document";
 import * as resize from "@src/viewport/resize";
 import * as scroll from "@src/viewport/scroll";
 import * as visibility from "@src/viewport/visibility";
+
+let status = false;
 
 /* Initial discovery of DOM */
 export function start(configuration: IConfig = {}): void {
@@ -19,7 +21,7 @@ export function start(configuration: IConfig = {}): void {
   }
 
   event.reset();
-  track.start();
+  metadata.start();
 
   // DOM
   mutation.start();
@@ -34,10 +36,17 @@ export function start(configuration: IConfig = {}): void {
   // Pointer
   mouse.start();
 
+  // Mark Clarity session as active
+  status = true;
 }
 
 export function end(): void {
   event.reset();
+  metadata.end();
   mutation.end();
-  track.end();
+  status = false;
+}
+
+export function active(): boolean {
+  return status;
 }

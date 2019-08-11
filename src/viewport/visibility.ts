@@ -1,8 +1,8 @@
 import { Event } from "@clarity-types/data";
 import { IPageVisibility } from "@clarity-types/viewport";
 import { bind } from "@src/core/event";
-import queue from "@src/core/queue";
 import time from "@src/core/time";
+import queue from "@src/data/queue";
 import encode from "./encode";
 
 let data: IPageVisibility;
