@@ -4,7 +4,7 @@ import time from "@src/core/time";
 import queue from "@src/data/queue";
 import encode from "./encode";
 
-let data: IDocumentSize;
+export let data: IDocumentSize;
 
 export function start(): void {
     recompute();
@@ -24,8 +24,7 @@ function recompute(): void {
 
     data = {
         width: body ? body.clientWidth : null,
-        height: documentHeight,
-        updated: true
+        height: documentHeight
     };
 
     queue(time(), Event.Document, encode(Event.Document), Flush.None);
@@ -35,6 +34,6 @@ export function compute(): void {
     recompute();
 }
 
-export function summarize(): IDocumentSize {
-    return data.updated ? data : null;
+export function reset(): void {
+    data = null;
 }

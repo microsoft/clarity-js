@@ -1,5 +1,5 @@
-import { DecodedToken } from "../types/data";
 import { IDecodedNode } from "../types/dom";
+import { IResizeViewport } from "../types/viewport";
 
 let nodes = {};
 let svgns: string = "http://www.w3.org/2000/svg";
@@ -8,12 +8,12 @@ export function reset(): void {
     nodes = {};
 }
 
-export function resize(data: DecodedToken[], placeholder: HTMLIFrameElement): void {
+export function resize(data: IResizeViewport, placeholder: HTMLIFrameElement): void {
     placeholder.removeAttribute("style");
     let margin = 10;
     let px = "px";
-    let width = data[0].width;
-    let height = data[0].height;
+    let width = data.width;
+    let height = data.height;
     let availableWidth = (placeholder.contentWindow.innerWidth - (2 * margin));
     let scaleWidth = Math.min(availableWidth / width, 1);
     let scaleHeight = Math.min((placeholder.contentWindow.innerHeight - (22 * margin)) / height, 1);

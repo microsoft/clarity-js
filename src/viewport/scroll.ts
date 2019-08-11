@@ -19,7 +19,7 @@ export function start(): void {
 function recompute(): void {
     let x = "pageXOffset" in window ? window.pageXOffset : document.documentElement.scrollLeft;
     let y = "pageYOffset" in window ? window.pageYOffset : document.documentElement.scrollTop;
-    data.push({time: time(), x, y, updated: true});
+    data.push({ time: time(), x, y });
     if (timeout) { clearTimeout(timeout); }
     timeout = window.setTimeout(schedule, wait);
 }
@@ -28,23 +28,24 @@ function schedule(): void {
     queue(timestamp, Event.Scroll, encode(Event.Scroll));
 }
 
+export function reset(): void {
+    data = [];
+}
+
 export function summarize(): IScrollViewport[] {
     let summary: IScrollViewport[] = [];
     let index = 0;
     let last = null;
     for (let entry of data) {
-        if (entry.updated) {
-            let isFirst = index === 0;
-            if (isFirst
-                || index === data.length - 1
-                || checkDistance(last, entry)) {
-                timestamp = isFirst ? entry.time : timestamp;
-                summary.push(entry);
-            }
-            index++;
-            entry.updated = false;
-            last = entry;
+        let isFirst = index === 0;
+        if (isFirst
+            || index === data.length - 1
+            || checkDistance(last, entry)) {
+            timestamp = isFirst ? entry.time : timestamp;
+            summary.push(entry);
         }
+        index++;
+        last = entry;
     }
     return summary;
 }

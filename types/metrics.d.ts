@@ -38,30 +38,12 @@ export const enum Mark {
 
 // Counter
 export interface ICounter {
-    [key: number]: ICounterValue;
-}
-
-interface ICounterValue {
-    updated: boolean;
-    counter: number;
-}
-
-export interface ICounterSummary {
-    [key: string]: ICounterSummaryValue;
-}
-
-interface ICounterSummaryValue {
-    counter: number;
+    [key: number]: number;
 }
 
 // Histogram
 export interface IHistogram {
-    [key: number]: IHistogramValue;
-}
-
-interface IHistogramValue {
-    updated: boolean;
-    values: [number];
+    [key: number]: [number];
 }
 
 export interface IHistogramSummary {
@@ -79,25 +61,13 @@ interface IHistogramSummaryValue {
 // Mark
 export interface IMark {
     mark: string;
-    updated: boolean;
-    start: number;
-    end: number;
-}
-
-export interface IMarkSummary {
-    mark: string;
     start: number;
     end: number;
 }
 
 // Timer
 export interface ITimer {
-    [key: number]: ITimerValue;
-}
-
-interface ITimerValue {
-    updated: boolean;
-    values: [number];
+    [key: number]: [number];
 }
 
 export interface ITimerSummary {

@@ -8,12 +8,12 @@ export default function(): Token[] {
     let metrics = [];
 
     // Encode counters
-    let counters = counter.summarize();
+    let counters = counter.data;
     for (let key in counters) {
         if (counters[key]) {
             let c = counters[key];
             metrics.push(key);
-            metrics.push(c.counter);
+            metrics.push(c);
         }
     }
 
@@ -43,7 +43,7 @@ export default function(): Token[] {
     }
 
     // Encode marks
-    let marks = mark.summarize();
+    let marks = mark.data;
     for (let m of marks) {
         metrics.push(m.mark);
         metrics.push(m.start);

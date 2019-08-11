@@ -54,7 +54,7 @@ export function render(payload: IPayload, placeholder: HTMLIFrameElement): void 
                 markup(entry.data, placeholder);
                 break;
             case Event.Resize:
-                resize(entry.data, placeholder);
+                resize(entry.data[0], placeholder);
                 break;
         }
     }

@@ -7,7 +7,6 @@ export const enum Mouse {
 }
 
 interface IMouseInteraction {
-    updated: boolean;
     time: number;
     type: Mouse;
     x: number;

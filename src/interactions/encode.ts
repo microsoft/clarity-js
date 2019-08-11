@@ -18,6 +18,7 @@ export default function(type: Event): Token[] {
                 tokens.push(entry.target);
                 if (entry.buttons > 0) { tokens.push(entry.buttons); }
             }
+            mouse.reset();
             break;
     }
 

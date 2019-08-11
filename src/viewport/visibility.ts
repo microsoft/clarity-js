@@ -5,7 +5,7 @@ import time from "@src/core/time";
 import queue from "@src/data/queue";
 import encode from "./encode";
 
-let data: IPageVisibility;
+export let data: IPageVisibility;
 
 export function start(): void {
     bind(window, "pagehide", recompute);
@@ -15,13 +15,10 @@ export function start(): void {
 }
 
 function recompute(): void {
-    data = {
-        visible: "visibilityState" in document ? document.visibilityState : "default",
-        updated: true
-    };
+    data = { visible: "visibilityState" in document ? document.visibilityState : "default" };
     queue(time(), Event.Visibility, encode(Event.Visibility));
 }
 
-export function summarize(): IPageVisibility {
-    return data.updated ? data : null;
+export function reset(): void {
+    data = null;
 }

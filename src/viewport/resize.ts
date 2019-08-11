@@ -5,7 +5,7 @@ import time from "@src/core/time";
 import queue from "@src/data/queue";
 import encode from "./encode";
 
-let data: IResizeViewport;
+export let data: IResizeViewport;
 
 export function start(): void {
     bind(window, "resize", recompute);
@@ -15,12 +15,11 @@ export function start(): void {
 function recompute(): void {
     data = {
         width: "innerWidth" in window ? window.innerWidth : document.documentElement.clientWidth,
-        height: "innerHeight" in window ? window.innerHeight : document.documentElement.clientHeight,
-        updated: true
+        height: "innerHeight" in window ? window.innerHeight : document.documentElement.clientHeight
     };
     queue(time(), Event.Resize, encode(Event.Resize));
 }
 
-export function summarize(): IResizeViewport {
-    return data.updated ? data : null;
+export function reset(): void {
+    data = null;
 }

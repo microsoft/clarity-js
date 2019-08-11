@@ -24,7 +24,6 @@ export function start(): void {
 function handler(type: Mouse, evt: MouseEvent): void {
     let de = document.documentElement;
     data.push({
-        updated: true,
         time: time(),
         type,
         x: "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null),
@@ -40,23 +39,24 @@ function schedule(): void {
     queue(timestamp, Event.Mouse, encode(Event.Mouse));
 }
 
+export function reset(): void {
+    data = [];
+}
+
 export function summarize(): IMouseInteraction[] {
     let summary: IMouseInteraction[] = [];
     let index = 0;
     let last = null;
     for (let entry of data) {
-        if (entry.updated) {
-            let isFirst = index === 0;
-            if (isFirst
-                || index === data.length - 1
-                || checkDistance(last, entry)) {
-                timestamp = isFirst ? entry.time : timestamp;
-                summary.push(entry);
-            }
-            index++;
-            entry.updated = false;
-            last = entry;
+        let isFirst = index === 0;
+        if (isFirst
+            || index === data.length - 1
+            || checkDistance(last, entry)) {
+            timestamp = isFirst ? entry.time : timestamp;
+            summary.push(entry);
         }
+        index++;
+        last = entry;
     }
     return summary;
 }
