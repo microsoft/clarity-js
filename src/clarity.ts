@@ -5,6 +5,7 @@ import * as metadata from "@src/data/metadata";
 import * as discover from "@src/dom/discover";
 import * as mutation from "@src/dom/mutation";
 import * as mouse from "@src/interactions/mouse";
+import * as metrics from "@src/metrics";
 import * as document from "@src/viewport/document";
 import * as resize from "@src/viewport/resize";
 import * as scroll from "@src/viewport/scroll";
@@ -22,6 +23,7 @@ export function start(configuration: IConfig = {}): void {
 
   event.reset();
   metadata.start();
+  metrics.start();
 
   // DOM
   mutation.start();
@@ -43,6 +45,7 @@ export function start(configuration: IConfig = {}): void {
 export function end(): void {
   event.reset();
   metadata.end();
+  metrics.end();
   mutation.end();
   status = false;
 }

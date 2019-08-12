@@ -1,3 +1,5 @@
+import { IMetric } from "./metrics";
+
 export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
 
@@ -5,7 +7,6 @@ export const enum Event {
     Metadata,
     Discover,
     Mutation,
-    Metrics,
     Mouse,
     Touch,
     Keyboard,
@@ -41,6 +42,16 @@ export interface IPayload {
     d: string;
 }
 
+export interface IDecodedPayload {
+    time: number;
+    sequence: number;
+    version: string;
+    pageId: string;
+    userId: string;
+    siteId: string;
+    metrics: IMetric;
+    data: IDecodedEvent[];
+}
 export interface IDecodedEvent {
     time: number;
     event: Event;

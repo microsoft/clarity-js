@@ -1,4 +1,6 @@
+import Metric from "../src/metrics/metric";
 import { IDecodedNode } from "../types/dom";
+import { IMetric } from "../types/metrics";
 import { IResizeViewport } from "../types/viewport";
 
 let nodes = {};
@@ -16,9 +18,9 @@ export function resize(data: IResizeViewport, placeholder: HTMLIFrameElement): v
     let height = data.height;
     let availableWidth = (placeholder.contentWindow.innerWidth - (2 * margin));
     let scaleWidth = Math.min(availableWidth / width, 1);
-    let scaleHeight = Math.min((placeholder.contentWindow.innerHeight - (22 * margin)) / height, 1);
+    let scaleHeight = Math.min((placeholder.contentWindow.innerHeight - (16 * margin)) / height, 1);
     let scale = Math.min(scaleWidth, scaleHeight);
-    placeholder.style.position = "absolute";
+    placeholder.style.position = "relative";
     placeholder.style.width = width + px;
     placeholder.style.height = height + px;
     placeholder.style.left = ((availableWidth - (width * scale)) / 2) + px;
@@ -29,8 +31,35 @@ export function resize(data: IResizeViewport, placeholder: HTMLIFrameElement): v
     placeholder.style.overflow = "hidden";
 }
 
-export function markup(data: IDecodedNode[], placeholder: HTMLIFrameElement): void {
-    let doc = placeholder.contentDocument;
+export function metrics(data: IMetric, header: HTMLElement): void {
+    let html = [];
+
+    // Counters
+    for (let metric in data.counter) {
+        if (data.counter[metric]) {
+            html.push(`<li><h2>${data.counter[metric]}</h2>${Metric[metric]}</li>`);
+        }
+    }
+
+    // Timing
+    for (let metric in data.timing) {
+        if (data.timing[metric]) {
+            html.push(`<li><h2>${data.timing[metric].duration}</h2>${Metric[metric]}</li>`);
+        }
+    }
+
+    // Summary
+    for (let metric in data.summary) {
+        if (data.summary[metric]) {
+            html.push(`<li><h2>${data.summary[metric].max}</h2>${Metric[metric]}</li>`);
+        }
+    }
+
+    header.innerHTML = `<ul>${html.join()}</ul>`;
+}
+
+export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {
+    let doc = iframe.contentDocument;
     for (let node of data) {
         let parent = element(node.parent);
         let next = element(node.next);

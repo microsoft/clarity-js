@@ -1,20 +1,32 @@
-import { Event, IDecodedEvent, IEvent, IPayload } from "../types/data";
+import { Event, IDecodedEvent, IDecodedPayload, IEvent, IPayload } from "../types/data";
 import dom from "./dom";
 import metadata from "./metadata";
-import { markup, reset, resize } from "./render";
+import metrics from "./metrics";
+import * as r from "./render";
 import viewport from "./viewport";
 
 let pageId: string = null;
 let payloads: IPayload[] = [];
 
-export function json(payload: IPayload): IDecodedEvent[] {
+export function json(payload: IPayload): IDecodedPayload {
     if (pageId !== payload.p) {
         payloads = [];
         pageId = payload.p;
-        reset();
+        r.reset();
     }
 
-    let decoded: IDecodedEvent[] = [];
+    let decoded: IDecodedPayload = {
+        time: payload.t,
+        sequence: payload.n,
+        version: payload.v,
+        pageId: payload.p,
+        userId: payload.u,
+        siteId: payload.s,
+        metrics: metrics(JSON.parse(payload.m)),
+        data: null
+    };
+
+    let data: IDecodedEvent[] = [];
     let encoded: IEvent[] = JSON.parse(payload.d);
     payloads.push(payload);
 
@@ -34,8 +46,10 @@ export function json(payload: IPayload): IDecodedEvent[] {
                 exploded.data = metadata(entry.d, entry.e);
                 break;
         }
-        decoded.push(exploded);
+        data.push(exploded);
     }
+    decoded.data = data;
+
     return decoded;
 }
 
@@ -45,16 +59,25 @@ export function html(payload: IPayload): string {
     return placeholder.contentDocument.documentElement.outerHTML;
 }
 
-export function render(payload: IPayload, placeholder: HTMLIFrameElement): void {
+export function render(payload: IPayload, placeholder: HTMLElement): void {
     let decoded = json(payload);
-    for (let entry of decoded) {
+
+    let header = placeholder.firstElementChild as HTMLElement;
+    let iframe = placeholder.lastElementChild as HTMLIFrameElement;
+
+    // Render metrics
+    r.metrics(decoded.metrics, header);
+
+    // Render events
+    let events = decoded.data;
+    for (let entry of events) {
         switch (entry.event) {
             case Event.Discover:
             case Event.Mutation:
-                markup(entry.data, placeholder);
+                r.markup(entry.data, iframe);
                 break;
             case Event.Resize:
-                resize(entry.data[0], placeholder);
+                r.resize(entry.data[0], iframe);
                 break;
         }
     }

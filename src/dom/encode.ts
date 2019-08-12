@@ -1,17 +1,17 @@
 import {Token} from "@clarity-types/data";
 import {INodeData} from "@clarity-types/dom";
-import { Counter, Timer } from "@clarity-types/metrics";
 import * as task from "@src/core/task";
 import hash from "@src/data/hash";
 import {check} from "@src/data/token";
-import * as counter from "@src/metrics/counter";
+import * as metrics from "@src/metrics";
+import Metric from "@src/metrics/metric";
 
 import * as nodes from "./virtualdom";
 
 window["HASH"] = hash;
 let reference: number = 0;
 
-export default async function(timer: Timer): Promise<Token[]> {
+export default async function(timer: Metric): Promise<Token[]> {
     let markup = [];
     let values = nodes.summarize();
     reference = 0;
@@ -25,7 +25,7 @@ export default async function(timer: Timer): Promise<Token[]> {
             if (data[key]) {
                 switch (key) {
                     case "tag":
-                        counter.increment(Counter.Nodes);
+                        metrics.counter(Metric.Nodes);
                         markup.push(number(value.id));
                         if (value.parent) { markup.push(number(value.parent)); }
                         if (value.next) { markup.push(number(value.next)); }
@@ -49,7 +49,7 @@ export default async function(timer: Timer): Promise<Token[]> {
                     case "value":
                         let parent = nodes.getNode(value.parent);
                         if (parent === null) {
-                            console.log("Node data: " + JSON.stringify(data));
+                            console.warn("Unexpected | Node data: " + JSON.stringify(data));
                         }
                         let parentTag = nodes.get(parent) ? nodes.get(parent).data.tag : null;
                         metadata.push(text(parentTag, data[key]));

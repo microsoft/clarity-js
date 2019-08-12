@@ -3,7 +3,7 @@ import * as decode from "@decode/clarity";
 import config from "@src/core/config";
 import time from "@src/core/time";
 import { metadata, sequence } from "@src/data/metadata";
-import * as metrics from "@src/metrics/metrics";
+import * as metrics from "@src/metrics";
 
 export default function(events: IEvent[]): void {
     let payload: IPayload = {
