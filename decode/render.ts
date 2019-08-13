@@ -37,25 +37,29 @@ export function metrics(data: IMetric, header: HTMLElement): void {
     // Counters
     for (let metric in data.counter) {
         if (data.counter[metric]) {
-            html.push(`<li><h2>${data.counter[metric]}</h2>${Metric[metric]}</li>`);
+            html.push(`<li><h2>${data.counter[metric]}</h2>${getMetricName(parseInt(metric, 10))}</li>`);
         }
     }
 
     // Timing
     for (let metric in data.timing) {
         if (data.timing[metric]) {
-            html.push(`<li><h2>${data.timing[metric].duration}</h2>${Metric[metric]}</li>`);
+            html.push(`<li><h2>${data.timing[metric].duration}</h2>${getMetricName(parseInt(metric, 10))}</li>`);
         }
     }
 
     // Summary
     for (let metric in data.summary) {
         if (data.summary[metric]) {
-            html.push(`<li><h2>${data.summary[metric].max}</h2>${Metric[metric]}</li>`);
+            html.push(`<li><h2>${data.summary[metric].max}</h2>${getMetricName(parseInt(metric, 10))}</li>`);
         }
     }
 
-    header.innerHTML = `<ul>${html.join()}</ul>`;
+    header.innerHTML = `<ul>${html.join("")}</ul>`;
+}
+
+function getMetricName(metric: Metric): string {
+    return Metric[metric].replace(/([A-Z])/g, " $1").replace(/^./, function(str: string): string { return str.toUpperCase(); });
 }
 
 export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {

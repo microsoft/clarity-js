@@ -1,5 +1,6 @@
 import { Event, IDecodedEvent, IDecodedPayload, IEvent, IPayload } from "../types/data";
 import dom from "./dom";
+import envelope from "./envelope";
 import metadata from "./metadata";
 import metrics from "./metrics";
 import * as r from "./render";
@@ -8,26 +9,22 @@ import viewport from "./viewport";
 let pageId: string = null;
 let payloads: IPayload[] = [];
 
-export function json(payload: IPayload): IDecodedPayload {
-    if (pageId !== payload.p) {
-        payloads = [];
-        pageId = payload.p;
-        r.reset();
-    }
-
+export function json(data: string): IDecodedPayload {
+    let payload = JSON.parse(data);
     let decoded: IDecodedPayload = {
-        time: payload.t,
-        sequence: payload.n,
-        version: payload.v,
-        pageId: payload.p,
-        userId: payload.u,
-        siteId: payload.s,
-        metrics: metrics(JSON.parse(payload.m)),
+        envelope: envelope(payload.e),
+        metrics: metrics(payload.m),
         data: null
     };
 
-    let data: IDecodedEvent[] = [];
-    let encoded: IEvent[] = JSON.parse(payload.d);
+    if (pageId !== decoded.envelope.pageId) {
+        payloads = [];
+        pageId = decoded.envelope.pageId;
+        r.reset();
+    }
+
+    let events: IDecodedEvent[] = [];
+    let encoded: IEvent[] = payload.d;
     payloads.push(payload);
 
     for (let entry of encoded) {
@@ -46,24 +43,21 @@ export function json(payload: IPayload): IDecodedPayload {
                 exploded.data = metadata(entry.d, entry.e);
                 break;
         }
-        data.push(exploded);
+        events.push(exploded);
     }
-    decoded.data = data;
+    decoded.data = events;
 
     return decoded;
 }
 
-export function html(payload: IPayload): string {
-    let placeholder = document.createElement("iframe");
-    render(payload, placeholder);
-    return placeholder.contentDocument.documentElement.outerHTML;
+export function html(data: string): string {
+    let iframe = document.createElement("iframe");
+    render(data, iframe);
+    return iframe.contentDocument.documentElement.outerHTML;
 }
 
-export function render(payload: IPayload, placeholder: HTMLElement): void {
-    let decoded = json(payload);
-
-    let header = placeholder.firstElementChild as HTMLElement;
-    let iframe = placeholder.lastElementChild as HTMLIFrameElement;
+export function render(data: string, iframe: HTMLIFrameElement, header?: HTMLElement): void {
+    let decoded = json(data);
 
     // Render metrics
     r.metrics(decoded.metrics, header);

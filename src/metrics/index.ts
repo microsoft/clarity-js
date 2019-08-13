@@ -1,7 +1,6 @@
 import { IMetric } from "@clarity-types/metrics";
 import time from "@src/core/time";
 import Metric from "@src/metrics/metric";
-import encode from "./encode";
 
 export let metrics: IMetric = null;
 
@@ -11,10 +10,6 @@ export function start(): void {
 
 export function end(): void {
     metrics = null;
-}
-
-export function compute(): string {
-    return JSON.stringify(encode());
 }
 
 export function counter(metric: Metric, increment: number = 1): void {

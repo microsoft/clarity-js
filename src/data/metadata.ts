@@ -1,4 +1,4 @@
-import { Event, Flush, IMetadata } from "@clarity-types/data";
+import { Event, Flush, IMetadata, Token } from "@clarity-types/data";
 import time from "@src/core/time";
 import version from "@src/core/version";
 import encode from "@src/data/encode";
@@ -6,15 +6,14 @@ import hash from "@src/data/hash";
 import queue from "@src/data/queue";
 
 export let metadata: IMetadata = null;
-let count: number = 0;
 
 export function start(): void {
-    count = 0;
     metadata = {
+      sequence: 0,
       version,
       pageId: guid(),
       userId: guid(),
-      siteId: hash(location.host),
+      projectId: hash(location.host),
       url: location.href,
       title: document.title
     };
@@ -24,11 +23,11 @@ export function start(): void {
 
 export function end(): void {
     metadata = null;
-    count = 0;
 }
 
-export function sequence(): number {
-    return count++;
+export function envelope(): Token[] {
+  metadata.sequence++;
+  return encode(true);
 }
 
 // Credit: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript

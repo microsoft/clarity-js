@@ -32,37 +32,32 @@ export interface IEvent {
 }
 
 export interface IPayload {
-    t: number;
-    n: number;
-    v: string;
-    p: string;
-    u: string;
-    s: string;
-    m: string;
-    d: string;
+    e: Token[];
+    m: Token[];
+    d: IEvent[];
 }
 
 export interface IDecodedPayload {
-    time: number;
-    sequence: number;
-    version: string;
-    pageId: string;
-    userId: string;
-    siteId: string;
+    envelope: IEnvelope;
     metrics: IMetric;
     data: IDecodedEvent[];
 }
+
 export interface IDecodedEvent {
     time: number;
     event: Event;
     data: any;
 }
 
-export interface IMetadata {
+export interface IEnvelope {
+    sequence: number;
     version: string;
     pageId: string;
     userId: string;
-    siteId: string;
+    projectId: string;
+}
+
+export interface IMetadata extends IEnvelope {
     url: string;
     title: string;
 }

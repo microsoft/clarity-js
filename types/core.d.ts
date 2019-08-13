@@ -16,7 +16,7 @@ export interface IConfig {
     delay?: number;
     cssRules?: boolean;
     tokens?: string[];
-    upload?: (payload: IPayload) => void;
+    upload?: (data: string) => void;
 }
 
 // Task
