@@ -4,19 +4,19 @@ import { IDecodedMetric, IMetricMap, Metric, MetricType } from "../types/metrics
 let map: IMetricMap = {};
 
 map[Metric.NodeCount] = { name: "Node Count", unit: ""};
-map[Metric.ByteCount] = { name: "Byte Count", unit: ""};
+map[Metric.ByteCount] = { name: "Byte Count", unit: "KB"};
 map[Metric.MutationCount] = { name: "Mutation Count", unit: ""};
 map[Metric.InteractionCount] = { name: "Interaction Count", unit: ""};
 map[Metric.ClickCount] = { name: "Click Count", unit: ""};
 map[Metric.ErrorCount] = { name: "Error Count", unit: ""};
 map[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};
 map[Metric.MutationTime] = { name: "Mutation Time", unit: "ms"};
-map[Metric.WireupDelay] = { name: "Wireup Delay", unit: "ms"};
+map[Metric.WireupLag] = { name: "Wireup Delay", unit: "ms"};
 map[Metric.ActiveTime] = { name: "Active Time", unit: "ms"};
-map[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px"};
-map[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px"};
-map[Metric.DocumentWidth] = { name: "Document Width", unit: "px"};
-map[Metric.DocumentHeight] = { name: "Document Height", unit: "px"};
+map[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px", value: "max"};
+map[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px", value: "max"};
+map[Metric.DocumentWidth] = { name: "Document Width", unit: "px", value: "max"};
+map[Metric.DocumentHeight] = { name: "Document Height", unit: "px", value: "max"};
 map[Metric.ClickEvent] = { name: "Click Event", unit: ""};
 map[Metric.InteractionEvent] = { name: "Interaction Event", unit: ""};
 

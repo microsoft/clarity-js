@@ -1,5 +1,5 @@
 import { IDecodedNode } from "../types/dom";
-import { IDecodedMetric } from "../types/metrics";
+import { IDecodedMetric, IMetricMapValue } from "../types/metrics";
 import { IResizeViewport } from "../types/viewport";
 
 let nodes = {};
@@ -15,22 +15,33 @@ export function metrics(data: IDecodedMetric, header: HTMLElement): void {
     // Counters
     for (let metric in data.counters) {
         if (data.counters[metric]) {
-            html.push(metricBox(data.counters[metric], data.map[metric].name, data.map[metric].unit));
+            let map = data.map[metric];
+            let value = getValue(data.counters[metric], map.unit);
+            html.push(metricBox(value, data.map[metric]));
         }
     }
 
     // Summary
     for (let metric in data.measures) {
         if (data.measures[metric]) {
-            html.push(metricBox(data.measures[metric].max, data.map[metric].name, data.map[metric].unit));
+            let m = data.measures[metric];
+            let map = data.map[metric];
+            let value = getValue(map.value ? m[map.value] : m.sum, map.unit);
+            html.push(metricBox(value, data.map[metric]));
         }
     }
 
     header.innerHTML = `<ul>${html.join("")}</ul>`;
 }
 
-function metricBox(value: number, name: string, unit: string): string {
-    return `<li><h2>${value}<span>${unit}</span></h2>${name}</li>`;
+function getValue(value: number, unit: string): number {
+    switch (unit) {
+        case "KB": return Math.round(value / 1024);
+    }
+}
+
+function metricBox(value: number, map: IMetricMapValue, metadata: string = null): string {
+    return `<li><h2>${value}<span>${map.unit}</span><div>${metadata}</div></h2>${map.name}</li>`;
 }
 
 export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {

@@ -1,13 +1,17 @@
 import { Event, Flush, IMetadata, Token } from "@clarity-types/data";
+import { Metric } from "@clarity-types/metrics";
 import time from "@src/core/time";
 import version from "@src/core/version";
 import encode from "@src/data/encode";
 import hash from "@src/data/hash";
 import queue from "@src/data/queue";
+import * as metrics from "@src/metrics";
 
 export let metadata: IMetadata = null;
 
 export function start(): void {
+    metrics.measure(Metric.WireupLag, time());
+
     metadata = {
       sequence: 0,
       version,
@@ -26,8 +30,8 @@ export function end(): void {
 }
 
 export function envelope(): Token[] {
-  metadata.sequence++;
-  return encode(true);
+    metadata.sequence++;
+    return encode(true);
 }
 
 // Credit: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript

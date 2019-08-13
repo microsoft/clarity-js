@@ -22,8 +22,8 @@ export function start(configuration: IConfig = {}): void {
   }
 
   event.reset();
-  metadata.start();
   metrics.start();
+  metadata.start();
 
   // DOM
   mutation.start();
@@ -45,8 +45,8 @@ export function start(configuration: IConfig = {}): void {
 export function end(): void {
   event.reset();
   metadata.end();
-  metrics.end();
   mutation.end();
+  metrics.end();
   status = false;
 }
 

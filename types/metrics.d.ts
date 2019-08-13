@@ -17,7 +17,7 @@ export const enum Metric {
     /* Summary */
     DiscoverTime,
     MutationTime,
-    WireupDelay,
+    WireupLag,
     ActiveTime,
     ViewportWidth,
     ViewportHeight,
@@ -29,10 +29,13 @@ export const enum Metric {
 }
 
 export interface IMetricMap {
-    [key: number]: {
-        name: string;
-        unit: string;
-    };
+    [key: number]: IMetricMapValue;
+}
+
+export interface IMetricMapValue {
+    name: string;
+    unit: string;
+    value?: string;
 }
 
 export interface IMetric {
