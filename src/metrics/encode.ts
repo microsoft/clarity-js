@@ -7,7 +7,7 @@ export default function(): Token[] {
 
     // Encode counter metrics
     output.push(MetricType.Counter);
-    let counters = metrics.counter;
+    let counters = metrics.counters;
     for (let metric in counters) {
         if (counters[metric]) {
             output.push(parseInt(metric, 10));
@@ -17,7 +17,7 @@ export default function(): Token[] {
 
     // Encode summary metrics
     output.push(MetricType.Summary);
-    let summaries = metrics.summary;
+    let summaries = metrics.measures;
     for (let metric in summaries) {
         if (summaries[metric]) {
             let h = summaries[metric];
@@ -27,18 +27,6 @@ export default function(): Token[] {
             output.push(h.max);
             output.push(h.sumsquared);
             output.push(h.count);
-        }
-    }
-
-    // Encode timing metrics
-    output.push(MetricType.Timing);
-    let timings = metrics.timing;
-    for (let metric in timings) {
-        if (timings[metric]) {
-            let l = timings[metric];
-            output.push(parseInt(metric, 10));
-            output.push(l.duration);
-            output.push(l.count);
         }
     }
 

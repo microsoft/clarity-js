@@ -1,10 +1,10 @@
 import {Token} from "@clarity-types/data";
 import {INodeData} from "@clarity-types/dom";
+import { Metric } from "@clarity-types/metrics";
 import * as task from "@src/core/task";
 import hash from "@src/data/hash";
 import {check} from "@src/data/token";
 import * as metrics from "@src/metrics";
-import Metric from "@src/metrics/metric";
 
 import * as nodes from "./virtualdom";
 
@@ -25,7 +25,7 @@ export default async function(timer: Metric): Promise<Token[]> {
             if (data[key]) {
                 switch (key) {
                     case "tag":
-                        metrics.counter(Metric.Nodes);
+                        metrics.counter(Metric.NodeCount);
                         markup.push(number(value.id));
                         if (value.parent) { markup.push(number(value.parent)); }
                         if (value.next) { markup.push(number(value.next)); }

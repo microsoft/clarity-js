@@ -6,26 +6,51 @@ export const enum MetricType {
     Marks = "M"
 }
 
+export const enum Metric {
+    /* Counter */
+    NodeCount,
+    ByteCount,
+    MutationCount,
+    InteractionCount,
+    ClickCount,
+    ErrorCount,
+    /* Summary */
+    DiscoverTime,
+    MutationTime,
+    WireupDelay,
+    ActiveTime,
+    ViewportWidth,
+    ViewportHeight,
+    DocumentWidth,
+    DocumentHeight,
+    /* Semantic Events */
+    ClickEvent,
+    InteractionEvent
+}
+
+export interface IMetricMap {
+    [key: number]: {
+        name: string;
+        unit: string;
+    };
+}
+
 export interface IMetric {
-    timing: ITiming;
-    counter: ICounter;
-    summary: ISummary;
+    counters: ICounter;
+    measures: IMeasure;
     events: ISemanticEvent[];
     marks: IMark[];
 }
 
-export interface ITiming {
-    [key: number]: {
-        duration: number;
-        count: number;
-    };
+export interface IDecodedMetric extends IMetric {
+    map: IMetricMap;
 }
 
 export interface ICounter {
     [key: number]: number;
 }
 
-export interface ISummary {
+export interface IMeasure {
     [key: number]: {
         sum: number;
         min: number;

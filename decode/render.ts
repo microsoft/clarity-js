@@ -1,6 +1,5 @@
-import Metric from "../src/metrics/metric";
 import { IDecodedNode } from "../types/dom";
-import { IMetric } from "../types/metrics";
+import { IDecodedMetric } from "../types/metrics";
 import { IResizeViewport } from "../types/viewport";
 
 let nodes = {};
@@ -10,56 +9,28 @@ export function reset(): void {
     nodes = {};
 }
 
-export function resize(data: IResizeViewport, placeholder: HTMLIFrameElement): void {
-    placeholder.removeAttribute("style");
-    let margin = 10;
-    let px = "px";
-    let width = data.width;
-    let height = data.height;
-    let availableWidth = (placeholder.contentWindow.innerWidth - (2 * margin));
-    let scaleWidth = Math.min(availableWidth / width, 1);
-    let scaleHeight = Math.min((placeholder.contentWindow.innerHeight - (16 * margin)) / height, 1);
-    let scale = Math.min(scaleWidth, scaleHeight);
-    placeholder.style.position = "relative";
-    placeholder.style.width = width + px;
-    placeholder.style.height = height + px;
-    placeholder.style.left = ((availableWidth - (width * scale)) / 2) + px;
-    placeholder.style.transformOrigin = "0 0 0";
-    placeholder.style.transform = "scale(" + scale + ")";
-    placeholder.style.border = "1px solid #cccccc";
-    placeholder.style.margin = margin + px;
-    placeholder.style.overflow = "hidden";
-}
-
-export function metrics(data: IMetric, header: HTMLElement): void {
+export function metrics(data: IDecodedMetric, header: HTMLElement): void {
     let html = [];
 
     // Counters
-    for (let metric in data.counter) {
-        if (data.counter[metric]) {
-            html.push(`<li><h2>${data.counter[metric]}</h2>${getMetricName(parseInt(metric, 10))}</li>`);
-        }
-    }
-
-    // Timing
-    for (let metric in data.timing) {
-        if (data.timing[metric]) {
-            html.push(`<li><h2>${data.timing[metric].duration}</h2>${getMetricName(parseInt(metric, 10))}</li>`);
+    for (let metric in data.counters) {
+        if (data.counters[metric]) {
+            html.push(metricBox(data.counters[metric], data.map[metric].name, data.map[metric].unit));
         }
     }
 
     // Summary
-    for (let metric in data.summary) {
-        if (data.summary[metric]) {
-            html.push(`<li><h2>${data.summary[metric].max}</h2>${getMetricName(parseInt(metric, 10))}</li>`);
+    for (let metric in data.measures) {
+        if (data.measures[metric]) {
+            html.push(metricBox(data.measures[metric].max, data.map[metric].name, data.map[metric].unit));
         }
     }
 
     header.innerHTML = `<ul>${html.join("")}</ul>`;
 }
 
-function getMetricName(metric: Metric): string {
-    return Metric[metric].replace(/([A-Z])/g, " $1").replace(/^./, function(str: string): string { return str.toUpperCase(); });
+function metricBox(value: number, name: string, unit: string): string {
+    return `<li><h2>${value}<span>${unit}</span></h2>${name}</li>`;
 }
 
 export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {
@@ -174,4 +145,25 @@ function setAttributes(node: HTMLElement, attributes: object): void {
             node.setAttribute(attribute, attributes[attribute]);
         }
     }
+}
+
+export function resize(data: IResizeViewport, placeholder: HTMLIFrameElement): void {
+    placeholder.removeAttribute("style");
+    let margin = 10;
+    let px = "px";
+    let width = data.width;
+    let height = data.height;
+    let availableWidth = (placeholder.contentWindow.innerWidth - (2 * margin));
+    let scaleWidth = Math.min(availableWidth / width, 1);
+    let scaleHeight = Math.min((placeholder.contentWindow.innerHeight - (16 * margin)) / height, 1);
+    let scale = Math.min(scaleWidth, scaleHeight);
+    placeholder.style.position = "relative";
+    placeholder.style.width = width + px;
+    placeholder.style.height = height + px;
+    placeholder.style.left = ((availableWidth - (width * scale)) / 2) + px;
+    placeholder.style.transformOrigin = "0 0 0";
+    placeholder.style.transform = "scale(" + scale + ")";
+    placeholder.style.border = "1px solid #cccccc";
+    placeholder.style.margin = margin + px;
+    placeholder.style.overflow = "hidden";
 }

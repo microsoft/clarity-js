@@ -1,10 +1,11 @@
 import { Event, Token } from "@clarity-types/data";
 import { Source } from "@clarity-types/dom";
+import { Metric } from "@clarity-types/metrics";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
 import queue from "@src/data/queue";
 import encode from "@src/dom/encode";
-import Metric from "@src/metrics/metric";
+
 import processNode from "./node";
 
 export function start(): void {

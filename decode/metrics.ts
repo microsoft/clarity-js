@@ -1,9 +1,27 @@
-import Metric from "../src/metrics/metric";
 import { Token } from "../types/data";
-import { IMetric, MetricType } from "../types/metrics";
+import { IDecodedMetric, IMetricMap, Metric, MetricType } from "../types/metrics";
 
-export default function(tokens: Token[]): IMetric {
-    let metrics: IMetric = { counter: {}, timing: {}, summary: {}, events: [], marks: [] };
+let map: IMetricMap = {};
+
+map[Metric.NodeCount] = { name: "Node Count", unit: ""};
+map[Metric.ByteCount] = { name: "Byte Count", unit: ""};
+map[Metric.MutationCount] = { name: "Mutation Count", unit: ""};
+map[Metric.InteractionCount] = { name: "Interaction Count", unit: ""};
+map[Metric.ClickCount] = { name: "Click Count", unit: ""};
+map[Metric.ErrorCount] = { name: "Error Count", unit: ""};
+map[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};
+map[Metric.MutationTime] = { name: "Mutation Time", unit: "ms"};
+map[Metric.WireupDelay] = { name: "Wireup Delay", unit: "ms"};
+map[Metric.ActiveTime] = { name: "Active Time", unit: "ms"};
+map[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px"};
+map[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px"};
+map[Metric.DocumentWidth] = { name: "Document Width", unit: "px"};
+map[Metric.DocumentHeight] = { name: "Document Height", unit: "px"};
+map[Metric.ClickEvent] = { name: "Click Event", unit: ""};
+map[Metric.InteractionEvent] = { name: "Interaction Event", unit: ""};
+
+export default function(tokens: Token[]): IDecodedMetric {
+    let metrics: IDecodedMetric = { counters: {}, measures: {}, events: [], marks: [], map };
 
     let i = 0;
     let metricType = null;
@@ -17,13 +35,10 @@ export default function(tokens: Token[]): IMetric {
         // Parse metrics
         switch (metricType) {
             case MetricType.Counter:
-                metrics.counter[tokens[i++] as Metric] = tokens[i++] as number;
-                break;
-            case MetricType.Timing:
-                metrics.timing[tokens[i++] as Metric] = { duration: tokens[i++] as number, count: tokens[i++] as number };
+                metrics.counters[tokens[i++] as Metric] = tokens[i++] as number;
                 break;
             case MetricType.Summary:
-                metrics.summary[tokens[i++] as Metric] = {
+                metrics.measures[tokens[i++] as Metric] = {
                     sum: tokens[i++] as number,
                     min: tokens[i++] as number,
                     max: tokens[i++] as number,

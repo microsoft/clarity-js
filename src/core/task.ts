@@ -1,7 +1,7 @@
 import {ITask } from "@clarity-types/core";
+import { Metric } from "@clarity-types/metrics";
 import config from "@src/core/config";
 import * as metrics from "@src/metrics";
-import Metric from "@src/metrics/metric";
 
 let tracker: ITask = {};
 let threshold = config.longtask;
@@ -21,7 +21,7 @@ export function start(method: Metric): void {
 export function stop(method: Metric): void {
     let end = Date.now();
     let duration = end - tracker[method];
-    metrics.timing(method, duration);
+    metrics.measure(method, duration);
 }
 
 export async function idle(method: Metric): Promise<void> {
