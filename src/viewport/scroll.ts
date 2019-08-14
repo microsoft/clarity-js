@@ -1,13 +1,12 @@
 import { Event } from "@clarity-types/data";
 import { IScrollViewport } from "@clarity-types/viewport";
+import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
 import queue from "@src/data/queue";
 import encode from "./encode";
 
 let data: IScrollViewport[] = [];
-let wait = 1000;
-let distance = 20;
 let timeout: number = null;
 let timestamp: number = null;
 
@@ -21,7 +20,7 @@ function recompute(): void {
     let y = "pageYOffset" in window ? window.pageYOffset : document.documentElement.scrollTop;
     data.push({ time: time(), x, y });
     if (timeout) { clearTimeout(timeout); }
-    timeout = window.setTimeout(schedule, wait);
+    timeout = window.setTimeout(schedule, config.lookahead);
 }
 
 function schedule(): void {
@@ -53,5 +52,5 @@ export function summarize(): IScrollViewport[] {
 function checkDistance(last: IScrollViewport, current: IScrollViewport): boolean {
     let dx = last.x - current.x;
     let dy = last.y - current.y;
-    return (dx * dx + dy * dy > distance * distance);
+    return (dx * dx + dy * dy > config.distance * config.distance);
 }

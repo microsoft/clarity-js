@@ -73,6 +73,9 @@ export function render(data: string, iframe: HTMLIFrameElement, header?: HTMLEle
             case Event.Resize:
                 r.resize(entry.data[0], iframe);
                 break;
+            case Event.Scroll:
+                r.scroll(entry.data[0], iframe);
+                break;
         }
     }
 }

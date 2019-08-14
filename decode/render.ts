@@ -1,6 +1,6 @@
 import { IDecodedNode } from "../types/dom";
 import { IDecodedMetric, IMetricMapValue } from "../types/metrics";
-import { IResizeViewport } from "../types/viewport";
+import { IResizeViewport, IScrollViewport } from "../types/viewport";
 
 let nodes = {};
 let svgns: string = "http://www.w3.org/2000/svg";
@@ -170,6 +170,10 @@ function setAttributes(node: HTMLElement, attributes: object): void {
             }
         }
     }
+}
+
+export function scroll(data: IScrollViewport, placeholder: HTMLIFrameElement): void {
+    placeholder.contentWindow.scrollTo(data.x, data.y);
 }
 
 export function resize(data: IResizeViewport, placeholder: HTMLIFrameElement): void {

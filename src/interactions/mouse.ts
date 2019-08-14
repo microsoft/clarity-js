@@ -8,8 +8,6 @@ import { getId } from "@src/dom/virtualdom";
 import encode from "./encode";
 
 let data: IMouseInteraction[] = [];
-let wait = config.lookahead;
-let distance = config.distance;
 let timeout: number = null;
 let timestamp: number = null;
 
@@ -32,7 +30,7 @@ function handler(type: Mouse, evt: MouseEvent): void {
         buttons: evt.buttons
     });
     if (timeout) { clearTimeout(timeout); }
-    timeout = window.setTimeout(schedule, wait);
+    timeout = window.setTimeout(schedule, config.lookahead);
 }
 
 function schedule(): void {
@@ -64,5 +62,5 @@ export function summarize(): IMouseInteraction[] {
 function checkDistance(last: IMouseInteraction, current: IMouseInteraction): boolean {
     let dx = last.x - current.x;
     let dy = last.y - current.y;
-    return (dx * dx + dy * dy > distance * distance);
+    return (dx * dx + dy * dy > config.distance * config.distance);
 }
