@@ -16,8 +16,8 @@ export function metrics(data: IDecodedMetric, header: HTMLElement): void {
     for (let metric in data.counters) {
         if (data.counters[metric]) {
             let map = data.map[metric];
-            let value = getValue(data.counters[metric], map.unit);
-            html.push(metricBox(value, data.map[metric]));
+            let v = value(data.counters[metric], map.unit);
+            html.push(metricBox(v, data.map[metric]));
         }
     }
 
@@ -26,22 +26,26 @@ export function metrics(data: IDecodedMetric, header: HTMLElement): void {
         if (data.measures[metric]) {
             let m = data.measures[metric];
             let map = data.map[metric];
-            let value = getValue(map.value ? m[map.value] : m.sum, map.unit);
-            html.push(metricBox(value, data.map[metric]));
+            let unit = map.unit;
+            let v = value(map.value ? m[map.value] : m.sum, unit);
+            let metadata = map.value === "max" ? `#${m.count} Min: ${value(m.min, unit)}` : `#${m.count} Max: ${value(m.max, unit)}`;
+            html.push(metricBox(v, data.map[metric], metadata));
         }
     }
 
     header.innerHTML = `<ul>${html.join("")}</ul>`;
 }
 
-function getValue(value: number, unit: string): number {
+function value(input: number, unit: string): number {
     switch (unit) {
-        case "KB": return Math.round(value / 1024);
+        case "KB": return Math.round(input / 1024);
+        default: return input;
     }
 }
 
-function metricBox(value: number, map: IMetricMapValue, metadata: string = null): string {
-    return `<li><h2>${value}<span>${map.unit}</span><div>${metadata}</div></h2>${map.name}</li>`;
+function metricBox(metric: number, map: IMetricMapValue, metadata: string = null): string {
+    metadata = metadata || "";
+    return `<li><h2>${metric}<span>${map.unit}</span><div>${metadata}</div></h2>${map.name}</li>`;
 }
 
 export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {
@@ -133,7 +137,12 @@ function element(nodeId: number): Node {
 function insert(data: IDecodedNode, parent: Node, node: Node, next: Node): void {
     if (parent !== null) {
         next = next && next.parentElement !== parent ? null : next;
-        parent.insertBefore(node, next);
+        try {
+            parent.insertBefore(node, next);
+        } catch (ex) {
+            console.error("Node: " + node + " | Parent: " + parent);
+            console.error("Exception encountered while inserting node: " + ex);
+        }
     } else if (parent === null && node.parentElement !== null) {
         node.parentElement.removeChild(node);
     }
@@ -153,7 +162,12 @@ function setAttributes(node: HTMLElement, attributes: object): void {
     // Add new attributes
     for (let attribute in attributes) {
         if (attributes[attribute] !== undefined) {
-            node.setAttribute(attribute, attributes[attribute]);
+            try {
+                node.setAttribute(attribute, attributes[attribute]);
+            } catch (ex) {
+                console.error("Node: " + node + " | " + JSON.stringify(attributes));
+                console.error("Exception encountered while adding attributes: " + ex);
+            }
         }
     }
 }

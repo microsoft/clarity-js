@@ -77,7 +77,7 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
                 layout.push(parseInt(part, 36));
             }
             layouts.push(layout);
-        } else if (output.tag === "*T" && parts.length === 2) {
+        } else if (output.tag === "*T" && parts.length === 2 && parts[0].length > 0) {
             let textCount = parseInt(parts[0], 36);
             let wordCount = parseInt(parts[1], 36);
             value = wordCount > 0 && textCount === 0 ? " " : Array((textCount + 1) / 2).join("* ");
