@@ -2,7 +2,7 @@ import { Event, IDecodedEvent, IDecodedPayload, IEvent, IPayload } from "../type
 import dom from "./dom";
 import envelope from "./envelope";
 import metadata from "./metadata";
-import metrics from "./metrics";
+import metric from "./metric";
 import * as r from "./render";
 import viewport from "./viewport";
 
@@ -13,7 +13,7 @@ export function json(data: string): IDecodedPayload {
     let payload = JSON.parse(data);
     let decoded: IDecodedPayload = {
         envelope: envelope(payload.e),
-        metrics: metrics(payload.m),
+        metrics: metric(payload.m),
         data: null
     };
 

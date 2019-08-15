@@ -2,9 +2,9 @@ import { IBindingContainer, IEventBindingPair } from "@clarity-types/core";
 
 let bindings: IBindingContainer = {};
 
-export function bind(target: EventTarget, event: string, listener: EventListener): void {
+export function bind(target: EventTarget, event: string, listener: EventListener, useCapture: boolean = false): void {
     let eventBindings = bindings[event] || [];
-    target.addEventListener(event, listener, false);
+    target.addEventListener(event, listener, useCapture);
     eventBindings.push({
       target,
       listener

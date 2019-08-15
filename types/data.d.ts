@@ -16,7 +16,9 @@ export const enum Event {
     Document,
     Visibility,
     Network,
-    Performance
+    Performance,
+    ScriptError,
+    ImageError
 }
 
 export const enum Flush {

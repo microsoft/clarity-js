@@ -16,7 +16,7 @@ let backupValues: INodeValue[];
 // For debugging
 window["DOM"] = { getId, get, getNode, changes };
 
-export function getId(node: Node, autogen: boolean = true): number {
+export function getId(node: Node, autogen: boolean = false): number {
     if (node === null) { return null; }
     let id = node[NODE_ID_PROP];
     if (!id && autogen) {
@@ -26,8 +26,8 @@ export function getId(node: Node, autogen: boolean = true): number {
 }
 
 export function add(node: Node, data: INodeData, source: Source): void {
-    let id = getId(node);
-    let parentId = node.parentElement ? getId(node.parentElement, false) : null;
+    let id = getId(node, true);
+    let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = getNextId(node);
 
     if (parentId >= 0 && values[parentId]) {
@@ -46,8 +46,8 @@ export function add(node: Node, data: INodeData, source: Source): void {
 }
 
 export function update(node: Node, data: INodeData, source: Source): void {
-    let id = getId(node, false);
-    let parentId = node.parentElement ? getId(node.parentElement, false) : null;
+    let id = getId(node);
+    let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = getNextId(node);
 
     if (id in values) {
@@ -96,7 +96,7 @@ export function update(node: Node, data: INodeData, source: Source): void {
 function getNextId(node: Node): number {
     let id = null;
     while (id === null && node.nextSibling) {
-        id = getId(node.nextSibling, false);
+        id = getId(node.nextSibling);
         node = node.nextSibling;
     }
     return id;
@@ -115,7 +115,7 @@ export function get(node: Node): INodeValue {
 }
 
 export function has(node: Node): boolean {
-    return getId(node, false) in nodes;
+    return getId(node) in nodes;
 }
 
 export function getNodes(): Node[] {

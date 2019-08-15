@@ -13,7 +13,8 @@ export const enum Metric {
     MutationCount,
     InteractionCount,
     ClickCount,
-    ErrorCount,
+    ScriptErrorCount,
+    ImageErrorCount,
     /* Summary */
     DiscoverTime,
     MutationTime,

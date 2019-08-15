@@ -1,20 +1,20 @@
 import { Source } from "@clarity-types/dom";
 import config from "@src/core/config";
-import * as nodes from "./virtualdom";
+import * as virtualdom from "./virtualdom";
 
 let ignoreAttributes = ["title", "alt", "onload", "onfocus"];
 
 export default function(node: Node, source: Source): void {
     // Do not track this change if we are attempting to remove a node before discovering it
-    if (source === Source.ChildListRemove && nodes.has(node) === false) { return; }
+    if (source === Source.ChildListRemove && virtualdom.has(node) === false) { return; }
 
-    let call = nodes.has(node) ? "update" : "add";
+    let call = virtualdom.has(node) ? "update" : "add";
     switch (node.nodeType) {
         case Node.DOCUMENT_TYPE_NODE:
             let doctype = node as DocumentType;
             let docAttributes = { name: doctype.name, publicId: doctype.publicId, systemId: doctype.systemId };
             let docData = { tag: "*D", attributes: docAttributes };
-            nodes[call](node, docData, source);
+            virtualdom[call](node, docData, source);
             break;
         case Node.TEXT_NODE:
             // Account for this text node only if we are tracking the parent node
@@ -23,10 +23,10 @@ export default function(node: Node, source: Source): void {
             // The only exception is when we receive a mutation to remove the text node, in that case
             // parent will be null, but we can still process the node by checking it's an update call.
             let parent = node.parentElement;
-            if (call === "update" || (parent && nodes.has(parent) && parent.tagName !== "STYLE")) {
+            if (call === "update" || (parent && virtualdom.has(parent) && parent.tagName !== "STYLE")) {
                 let textData = { tag: "*T", value: node.nodeValue };
                 textData["layout"] = getTextLayout(node);
-                nodes[call](node, textData, source);
+                virtualdom[call](node, textData, source);
             }
             break;
         case Node.ELEMENT_NODE:
@@ -41,17 +41,17 @@ export default function(node: Node, source: Source): void {
                     let head = { tag, attributes: getAttributes(element.attributes) };
                     // Capture base href as part of discovering DOM
                     if (call === "add") { head.attributes["*B"] = location.protocol + "//" + location.hostname; }
-                    nodes[call](node, head, source);
+                    virtualdom[call](node, head, source);
                     break;
                 case "STYLE":
                     let attributes = getAttributes(element.attributes);
                     let styleData = { tag, attributes, value: getStyleValue(element as HTMLStyleElement) };
-                    nodes[call](node, styleData, source);
+                    virtualdom[call](node, styleData, source);
                     break;
                 default:
                     let data = { tag, attributes: getAttributes(element.attributes) };
                     data["layout"] = getLayout(element);
-                    nodes[call](node, data, source);
+                    virtualdom[call](node, data, source);
                     break;
             }
             break;

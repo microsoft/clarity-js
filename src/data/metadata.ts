@@ -5,12 +5,12 @@ import version from "@src/core/version";
 import encode from "@src/data/encode";
 import hash from "@src/data/hash";
 import queue from "@src/data/queue";
-import * as metrics from "@src/metric";
+import * as metric from "@src/metric";
 
 export let metadata: IMetadata = null;
 
 export function start(): void {
-    metrics.measure(Metric.WireupLag, time());
+    metric.measure(Metric.WireupLag, time());
 
     metadata = {
       sequence: 0,

@@ -26,7 +26,7 @@ function handler(type: Mouse, evt: MouseEvent): void {
         type,
         x: "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null),
         y: "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null),
-        target: evt.target ? getId(evt.target as Node, false) : null,
+        target: evt.target ? getId(evt.target as Node) : null,
         buttons: evt.buttons
     });
     if (timeout) { clearTimeout(timeout); }
