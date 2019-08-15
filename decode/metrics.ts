@@ -1,5 +1,5 @@
 import { Token } from "../types/data";
-import { IDecodedMetric, IMetricMap, Metric, MetricType } from "../types/metrics";
+import { IDecodedMetric, IMetricMap, Metric, MetricType } from "../types/metric";
 
 let map: IMetricMap = {};
 

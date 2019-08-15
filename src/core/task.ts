@@ -1,7 +1,7 @@
 import {ITask } from "@clarity-types/core";
-import { Metric } from "@clarity-types/metrics";
+import { Metric } from "@clarity-types/metric";
 import config from "@src/core/config";
-import * as metrics from "@src/metrics";
+import * as metrics from "@src/metric";
 
 let tracker: ITask = {};
 let threshold = config.longtask;

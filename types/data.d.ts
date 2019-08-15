@@ -1,4 +1,4 @@
-import { IDecodedMetric } from "./metrics";
+import { IDecodedMetric } from "./metric";
 
 export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);

@@ -1,5 +1,5 @@
 import { IDecodedNode } from "../types/dom";
-import { IDecodedMetric, IMetricMapValue } from "../types/metrics";
+import { IDecodedMetric, IMetricMapValue } from "../types/metric";
 import { IResizeViewport, IScrollViewport } from "../types/viewport";
 
 let nodes = {};

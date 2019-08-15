@@ -1,11 +1,11 @@
 import { Event, Flush, IMetadata, Token } from "@clarity-types/data";
-import { Metric } from "@clarity-types/metrics";
+import { Metric } from "@clarity-types/metric";
 import time from "@src/core/time";
 import version from "@src/core/version";
 import encode from "@src/data/encode";
 import hash from "@src/data/hash";
 import queue from "@src/data/queue";
-import * as metrics from "@src/metrics";
+import * as metrics from "@src/metric";
 
 export let metadata: IMetadata = null;
 

@@ -1,4 +1,4 @@
-import * as clarity from "@src/clarity";
+import * as clarity from "@src/index";
 
 // When built with webpack for prod, compiled clarity-js bundle doesn't expose the module anywhere on the page.
 // Since we need clarity-js to be available globally, we can create a wrapper module that would assign clarity to window.

@@ -11,8 +11,8 @@ declare const clarity: IClarityJs;
 
 export * from "./data";
 export * from "./dom";
-export * from "./interactions";
-export * from "./metrics";
+export * from "./interaction";
+export * from "./metric";
 export * from "./viewport";
 
 export { clarity };

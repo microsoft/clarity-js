@@ -1,6 +1,6 @@
 import {Token} from "@clarity-types/data";
-import { MetricType } from "@clarity-types/metrics";
-import { metrics } from "@src/metrics";
+import { MetricType } from "@clarity-types/metric";
+import { metrics } from "@src/metric";
 
 export default function(): Token[] {
     let output = [];

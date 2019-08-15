@@ -1,4 +1,4 @@
-import { IMetric, Metric } from "@clarity-types/metrics";
+import { IMetric, Metric } from "@clarity-types/metric";
 import time from "@src/core/time";
 
 export let metrics: IMetric = null;

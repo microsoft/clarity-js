@@ -1,6 +1,6 @@
 import { Event, Token } from "@clarity-types/data";
 import { Source } from "@clarity-types/dom";
-import { Metric } from "@clarity-types/metrics";
+import { Metric } from "@clarity-types/metric";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
 import queue from "@src/data/queue";

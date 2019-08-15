@@ -1,10 +1,10 @@
 import {Token} from "@clarity-types/data";
 import {INodeData} from "@clarity-types/dom";
-import { Metric } from "@clarity-types/metrics";
+import { Metric } from "@clarity-types/metric";
 import * as task from "@src/core/task";
 import hash from "@src/data/hash";
 import {check} from "@src/data/token";
-import * as metrics from "@src/metrics";
+import * as metrics from "@src/metric";
 
 import * as nodes from "./virtualdom";
 

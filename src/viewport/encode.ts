@@ -1,6 +1,6 @@
 import {Event, Token} from "@clarity-types/data";
-import {Metric} from "@clarity-types/metrics";
-import * as metrics from "@src/metrics";
+import {Metric} from "@clarity-types/metric";
+import * as metrics from "@src/metric";
 import * as document from "./document";
 import * as resize from "./resize";
 import * as scroll from "./scroll";

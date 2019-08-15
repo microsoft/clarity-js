@@ -1,5 +1,5 @@
 import { Event } from "@clarity-types/data";
-import { IMouseInteraction, Mouse } from "@clarity-types/interactions";
+import { IMouseInteraction, Mouse } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
