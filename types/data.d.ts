@@ -1,4 +1,5 @@
 import { IDecodedMetric } from "./metric";
+import { ISummary } from "./summary";
 
 export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
@@ -36,12 +37,14 @@ export interface IEvent {
 export interface IPayload {
     e: Token[];
     m: Token[];
+    s: Token[];
     d: IEvent[];
 }
 
 export interface IDecodedPayload {
     envelope: IEnvelope;
     metrics: IDecodedMetric;
+    Summary: ISummary;
     data: IDecodedEvent[];
 }
 
