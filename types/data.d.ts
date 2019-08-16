@@ -1,5 +1,4 @@
 import { IDecodedMetric } from "./metric";
-import { ISummary } from "./summary";
 
 export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
@@ -28,6 +27,11 @@ export const enum Flush {
     None
 }
 
+export interface IEventQueue {
+    server: IEvent[];
+    client: IEvent[];
+}
+
 export interface IEvent {
     t: number;
     e: Event;
@@ -37,14 +41,13 @@ export interface IEvent {
 export interface IPayload {
     e: Token[];
     m: Token[];
-    s: Token[];
-    d: IEvent[];
+    s: IEvent[];
+    c: IEvent[];
 }
 
 export interface IDecodedPayload {
     envelope: IEnvelope;
     metrics: IDecodedMetric;
-    Summary: ISummary;
     data: IDecodedEvent[];
 }
 

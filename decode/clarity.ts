@@ -24,7 +24,7 @@ export function json(data: string): IDecodedPayload {
     }
 
     let events: IDecodedEvent[] = [];
-    let encoded: IEvent[] = payload.d;
+    let encoded: IEvent[] = merge(payload.s, payload.c);
     payloads.push(payload);
 
     for (let entry of encoded) {
@@ -78,4 +78,8 @@ export function render(data: string, iframe: HTMLIFrameElement, header?: HTMLEle
                 break;
         }
     }
+}
+
+function merge(one: IEvent[], two: IEvent[]): IEvent[] {
+    return one.concat(two).sort(function(a: IEvent, b: IEvent): number { return a.t - b.t; });
 }
