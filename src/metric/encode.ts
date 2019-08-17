@@ -1,6 +1,6 @@
 import {Token} from "@clarity-types/data";
 import { MetricType } from "@clarity-types/metric";
-import { metrics } from "@src/metric";
+import { metrics, reset, updates } from "@src/metric";
 
 export default function(): Token[] {
     let output = [];
@@ -10,8 +10,11 @@ export default function(): Token[] {
     let counters = metrics.counters;
     for (let metric in counters) {
         if (counters[metric]) {
-            output.push(parseInt(metric, 10));
-            output.push(counters[metric]);
+            let m = num(metric);
+            if (updates.indexOf(m) >= 0) {
+                output.push(m);
+                output.push(counters[metric]);
+            }
         }
     }
 
@@ -20,13 +23,16 @@ export default function(): Token[] {
     let summaries = metrics.measures;
     for (let metric in summaries) {
         if (summaries[metric]) {
-            let h = summaries[metric];
-            output.push(parseInt(metric, 10));
-            output.push(h.sum);
-            output.push(h.min);
-            output.push(h.max);
-            output.push(h.sumsquared);
-            output.push(h.count);
+            let m = num(metric);
+            if (updates.indexOf(m) >= 0) {
+                let h = summaries[metric];
+                output.push(m);
+                output.push(h.sum);
+                output.push(h.min);
+                output.push(h.max);
+                output.push(h.sumsquared);
+                output.push(h.count);
+            }
         }
     }
 
@@ -47,5 +53,11 @@ export default function(): Token[] {
         output.push(mark.time);
     }
 
+    reset();
+
     return output;
+}
+
+function num(input: string): number {
+    return parseInt(input, 10);
 }
