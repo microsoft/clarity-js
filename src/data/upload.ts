@@ -10,8 +10,8 @@ export default function(events: IEventQueue): void {
     let payload: IPayload = {
         e: envelope(),
         m: metrics(),
-        s: events.server,
-        c: events.client
+        a: events.one,
+        b: events.two
     };
     let upload = config.upload ? config.upload : send;
     let data = JSON.stringify(payload);

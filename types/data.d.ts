@@ -28,8 +28,8 @@ export const enum Flush {
 }
 
 export interface IEventQueue {
-    server: IEvent[];
-    client: IEvent[];
+    one: IEvent[];
+    two: IEvent[];
 }
 
 export interface IEvent {
@@ -41,8 +41,8 @@ export interface IEvent {
 export interface IPayload {
     e: Token[];
     m: Token[];
-    s: IEvent[];
-    c: IEvent[];
+    a: IEvent[];
+    b: IEvent[];
 }
 
 export interface IDecodedPayload {

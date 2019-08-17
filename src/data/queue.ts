@@ -3,7 +3,7 @@ import config from "@src/core/config";
 import upload from "@src/data/upload";
 import recompute from "../core/recompute";
 
-let events: IEventQueue = { server: [], client: [] };
+let events: IEventQueue = { one: [], two: [] };
 let timeout: number = null;
 
 window["PAYLOAD"] = [];
@@ -20,10 +20,10 @@ export default function(timestamp: number, event: Event, data: Token[], flush: F
         case Event.Scroll:
         case Event.Document:
         case Event.Visibility:
-            events.server.push(e);
+            events.one.push(e);
             break;
         default:
-            events.client.push(e);
+            events.two.push(e);
             break;
     }
 
@@ -46,5 +46,5 @@ function dequeue(): void {
 }
 
 function reset(): void {
-    events = { server: [], client: [] };
+    events = { one: [], two: [] };
 }
