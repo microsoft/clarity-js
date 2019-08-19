@@ -140,7 +140,7 @@ function insert(data: IDecodedNode, parent: Node, node: Node, next: Node): void 
         try {
             parent.insertBefore(node, next);
         } catch (ex) {
-            console.error("Node: " + node + " | Parent: " + parent);
+            console.error("Node: " + node + " | Parent: " + parent + " | Data: " + JSON.stringify(data));
             console.error("Exception encountered while inserting node: " + ex);
         }
     } else if (parent === null && node.parentElement !== null) {
@@ -172,8 +172,10 @@ function setAttributes(node: HTMLElement, attributes: object): void {
     }
 }
 
-export function scroll(data: IScrollViewport, placeholder: HTMLIFrameElement): void {
-    placeholder.contentWindow.scrollTo(data.x, data.y);
+export function scroll(data: IScrollViewport[], placeholder: HTMLIFrameElement): void {
+    for (let d of data) {
+        placeholder.contentWindow.scrollTo(d.x, d.y);
+    }
 }
 
 export function resize(data: IResizeViewport, placeholder: HTMLIFrameElement): void {

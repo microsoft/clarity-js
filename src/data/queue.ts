@@ -8,8 +8,8 @@ let timeout: number = null;
 
 window["PAYLOAD"] = [];
 
-export default function(timestamp: number, event: Event, data: Token[], flush: Flush = Flush.Schedule): void {
-    let e = {t: timestamp, e: event, d: data};
+export default function(data: Token[], flush: Flush = Flush.Schedule): void {
+    let event = data[1];
 
     switch (event) {
         case Event.Mouse:
@@ -20,10 +20,10 @@ export default function(timestamp: number, event: Event, data: Token[], flush: F
         case Event.Scroll:
         case Event.Document:
         case Event.Visibility:
-            events.one.push(e);
+            events.one.push(data);
             break;
         default:
-            events.two.push(e);
+            events.two.push(data);
             break;
     }
 

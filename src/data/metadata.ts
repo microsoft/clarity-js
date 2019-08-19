@@ -1,17 +1,12 @@
-import { Event, Flush, IMetadata, Token } from "@clarity-types/data";
-import { Metric } from "@clarity-types/metric";
-import time from "@src/core/time";
+import { Flush, IMetadata, Token } from "@clarity-types/data";
 import version from "@src/core/version";
 import encode from "@src/data/encode";
 import hash from "@src/data/hash";
 import queue from "@src/data/queue";
-import * as metric from "@src/metric";
 
 export let metadata: IMetadata = null;
 
 export function start(): void {
-    metric.measure(Metric.WireupLag, time());
-
     metadata = {
       sequence: 0,
       version,
@@ -19,10 +14,11 @@ export function start(): void {
       userId: guid(),
       projectId: hash(location.host),
       url: location.href,
-      title: document.title
+      title: document.title,
+      referrer: document.referrer
     };
 
-    queue(time(), Event.Metadata, encode(), Flush.None);
+    queue(encode(), Flush.None);
 }
 
 export function end(): void {

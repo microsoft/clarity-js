@@ -9,7 +9,6 @@ import encode from "./encode";
 
 let data: IMouseInteraction[] = [];
 let timeout: number = null;
-let timestamp: number = null;
 
 export function start(): void {
     bind(document, "mousedown", handler.bind(this, Mouse.Down));
@@ -22,8 +21,8 @@ export function start(): void {
 function handler(type: Mouse, evt: MouseEvent): void {
     let de = document.documentElement;
     data.push({
-        time: time(),
         type,
+        time: time(),
         x: "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null),
         y: "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null),
         target: evt.target ? getId(evt.target as Node) : null,
@@ -34,7 +33,7 @@ function handler(type: Mouse, evt: MouseEvent): void {
 }
 
 function schedule(): void {
-    queue(timestamp, Event.Mouse, encode(Event.Mouse));
+    queue(encode(Event.Mouse));
 }
 
 export function reset(): void {
@@ -50,7 +49,6 @@ export function summarize(): IMouseInteraction[] {
         if (isFirst
             || index === data.length - 1
             || checkDistance(last, entry)) {
-            timestamp = isFirst ? entry.time : timestamp;
             summary.push(entry);
         }
         index++;

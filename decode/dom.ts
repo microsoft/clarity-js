@@ -1,19 +1,21 @@
 import { resolve } from "../src/data/token";
-import { Event, Token } from "../types/data";
+import { Event, IDecodedEvent, Token } from "../types/data";
 import { IDecodedNode } from "../types/dom";
 
-export default function(tokens: Token[], event: Event): IDecodedNode[] {
+export default function(tokens: Token[]): IDecodedEvent {
     let number = 0;
     let lastType = null;
     let node = [];
-    let decoded: IDecodedNode[] = [];
+    let time = tokens[0] as number;
+    let event = tokens[1] as Event;
+    let decoded: IDecodedEvent = {time, event, data: []};
     let tagIndex = 0;
     for (let token of tokens) {
         let type = typeof(token);
         switch (type) {
             case "number":
                 if (type !== lastType && lastType !== null) {
-                    decoded.push(process(node, tagIndex));
+                    decoded.data.push(process(node, tagIndex));
                     node = [];
                     tagIndex = 0;
                 }
@@ -45,7 +47,7 @@ export default function(tokens: Token[], event: Event): IDecodedNode[] {
     }
 
     // Process last node
-    decoded.push(process(node, tagIndex));
+    decoded.data.push(process(node, tagIndex));
 
     return decoded;
 }

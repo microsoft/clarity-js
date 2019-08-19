@@ -1,5 +1,6 @@
 import {Event, Token} from "@clarity-types/data";
 import {Metric} from "@clarity-types/metric";
+import time from "@src/core/time";
 import * as metric from "@src/metric";
 import * as document from "./document";
 import * as resize from "./resize";
@@ -7,7 +8,7 @@ import * as scroll from "./scroll";
 import * as visibility from "./visibility";
 
 export default function(type: Event): Token[] {
-    let tokens = [];
+    let tokens: Token[] = [time(), type];
 
     switch (type) {
         case Event.Resize:
@@ -31,10 +32,16 @@ export default function(type: Event): Token[] {
             let timestamp: number = null;
             for (let i = 0; i < s.length; i++) {
                 let entry = s[i];
-                timestamp = (i === 0) ? entry.time : timestamp;
+
+                if (i === 0) {
+                    timestamp = entry.time;
+                    tokens[0] = timestamp;
+                }
+
                 tokens.push(entry.time - timestamp);
                 tokens.push(entry.x);
                 tokens.push(entry.y);
+                timestamp = entry.time;
             }
             scroll.reset();
             break;

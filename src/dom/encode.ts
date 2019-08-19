@@ -1,7 +1,8 @@
-import {Token} from "@clarity-types/data";
+import {Event, Token} from "@clarity-types/data";
 import {INodeData} from "@clarity-types/dom";
 import { Metric } from "@clarity-types/metric";
 import * as task from "@src/core/task";
+import time from "@src/core/time";
 import hash from "@src/data/hash";
 import {check} from "@src/data/token";
 import * as metrics from "@src/metric";
@@ -11,8 +12,9 @@ import * as nodes from "./virtualdom";
 window["HASH"] = hash;
 let reference: number = 0;
 
-export default async function(timer: Metric): Promise<Token[]> {
-    let markup = [];
+export default async function(type: Event): Promise<Token[]> {
+    let timer = type === Event.Discover ? Metric.DiscoverTime : Metric.MutationTime;
+    let tokens: Token[] = [time(), type];
     let values = nodes.summarize();
     reference = 0;
     for (let value of values) {
@@ -26,9 +28,9 @@ export default async function(timer: Metric): Promise<Token[]> {
                 switch (key) {
                     case "tag":
                         metrics.counter(Metric.NodeCount);
-                        markup.push(number(value.id));
-                        if (value.parent) { markup.push(number(value.parent)); }
-                        if (value.next) { markup.push(number(value.next)); }
+                        tokens.push(number(value.id));
+                        if (value.parent) { tokens.push(number(value.parent)); }
+                        if (value.next) { tokens.push(number(value.next)); }
                         metadata.push(data[key]);
                         break;
                     case "attributes":
@@ -61,15 +63,15 @@ export default async function(timer: Metric): Promise<Token[]> {
         // Add metadata
         metadata = meta(metadata);
         for (let token of metadata) {
-            let index: number = typeof token === "string" ? markup.indexOf(token) : -1;
-            markup.push(index >= 0 && token.length > index.toString().length ? [index] : token);
+            let index: number = typeof token === "string" ? tokens.indexOf(token) : -1;
+            tokens.push(index >= 0 && token.length > index.toString().length ? [index] : token);
         }
         // Add layout boxes
         for (let entry of layouts) {
-            markup.push(entry);
+            tokens.push(entry);
         }
     }
-    return markup;
+    return tokens;
 }
 
 function meta(metadata: string[]): string[] | string[][] {

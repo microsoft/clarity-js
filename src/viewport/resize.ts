@@ -1,7 +1,7 @@
 import { Event } from "@clarity-types/data";
 import { IResizeViewport } from "@clarity-types/viewport";
 import { bind } from "@src/core/event";
-import time from "@src/core/time";
+
 import queue from "@src/data/queue";
 import encode from "./encode";
 
@@ -17,7 +17,7 @@ function recompute(): void {
         width: "innerWidth" in window ? window.innerWidth : document.documentElement.clientWidth,
         height: "innerHeight" in window ? window.innerHeight : document.documentElement.clientHeight
     };
-    queue(time(), Event.Resize, encode(Event.Resize));
+    queue(encode(Event.Resize));
 }
 
 export function reset(): void {

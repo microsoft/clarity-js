@@ -2,7 +2,6 @@ import { Event, Token } from "@clarity-types/data";
 import { Source } from "@clarity-types/dom";
 import { Metric } from "@clarity-types/metric";
 import * as task from "@src/core/task";
-import time from "@src/core/time";
 import queue from "@src/data/queue";
 import encode from "@src/dom/encode";
 
@@ -10,7 +9,7 @@ import processNode from "./node";
 
 export function start(): void {
     discover().then((data: Token[]) => {
-        queue(time(), Event.Discover, data);
+        queue(data);
       });
 }
 
@@ -24,7 +23,7 @@ async function discover(): Promise<Token[]> {
         processNode(node, Source.Discover);
         node = walker.nextNode();
     }
-    let data = await encode(timer);
+    let data = await encode(Event.Discover);
     task.stop(timer);
     return data;
 }

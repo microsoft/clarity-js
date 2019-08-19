@@ -1,7 +1,6 @@
 import { Event } from "@clarity-types/data";
 import { IScriptError } from "@clarity-types/diagnostic";
 import { bind } from "@src/core/event";
-import time from "@src/core/time";
 import queue from "@src/data/queue";
 import encode from "./encode";
 
@@ -26,7 +25,7 @@ function handler(error: ErrorEvent): void {
         source: error["filename"]
     });
 
-    queue(time(), Event.ScriptError, encode(Event.ScriptError));
+    queue(encode(Event.ScriptError));
 }
 
 export function reset(): void {

@@ -8,7 +8,6 @@ import encode from "./encode";
 
 let data: IScrollViewport[] = [];
 let timeout: number = null;
-let timestamp: number = null;
 
 export function start(): void {
     bind(window, "scroll", recompute);
@@ -24,7 +23,7 @@ function recompute(): void {
 }
 
 function schedule(): void {
-    queue(timestamp, Event.Scroll, encode(Event.Scroll));
+    queue(encode(Event.Scroll));
 }
 
 export function reset(): void {
@@ -33,18 +32,15 @@ export function reset(): void {
 
 export function summarize(): IScrollViewport[] {
     let summary: IScrollViewport[] = [];
-    let index = 0;
     let last = null;
-    for (let entry of data) {
-        let isFirst = index === 0;
-        if (isFirst
-            || index === data.length - 1
-            || checkDistance(last, entry)) {
-            timestamp = isFirst ? entry.time : timestamp;
+    for (let i = 0; i < data.length; i++) {
+        let entry = data[i];
+        let isFirst = i === 0;
+        let isLast = i === data.length - 1;
+        if (isFirst || isLast || checkDistance(last, entry)) {
             summary.push(entry);
+            last = entry;
         }
-        index++;
-        last = entry;
     }
     return summary;
 }

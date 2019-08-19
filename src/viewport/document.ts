@@ -1,6 +1,5 @@
 import { Event, Flush } from "@clarity-types/data";
 import { IDocumentSize } from "@clarity-types/viewport";
-import time from "@src/core/time";
 import queue from "@src/data/queue";
 import encode from "./encode";
 
@@ -27,7 +26,7 @@ function recompute(): void {
         height: documentHeight
     };
 
-    queue(time(), Event.Document, encode(Event.Document), Flush.None);
+    queue(encode(Event.Document), Flush.None);
 }
 
 export function compute(): void {

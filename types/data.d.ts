@@ -28,27 +28,21 @@ export const enum Flush {
 }
 
 export interface IEventQueue {
-    one: IEvent[];
-    two: IEvent[];
-}
-
-export interface IEvent {
-    t: number;
-    e: Event;
-    d: Token[];
+    one: Token[][];
+    two: Token[][];
 }
 
 export interface IPayload {
     e: Token[];
     m: Token[];
-    a: IEvent[];
-    b: IEvent[];
+    a: Token[][];
+    b: Token[][];
 }
 
 export interface IDecodedPayload {
     envelope: IEnvelope;
     metrics: IDecodedMetric;
-    data: IDecodedEvent[];
+    events: IDecodedEvent[];
 }
 
 export interface IDecodedEvent {
@@ -68,4 +62,5 @@ export interface IEnvelope {
 export interface IMetadata extends IEnvelope {
     url: string;
     title: string;
+    referrer: string;
 }

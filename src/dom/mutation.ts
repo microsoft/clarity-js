@@ -2,16 +2,13 @@ import { Event, Token } from "@clarity-types/data";
 import { Source } from "@clarity-types/dom";
 import { Metric } from "@clarity-types/metric";
 import * as task from "@src/core/task";
-import time from "@src/core/time";
 import queue from "@src/data/queue";
 import encode from "@src/dom/encode";
 import processNode from "./node";
 
 let observer: MutationObserver;
-window["MUTATIONS"] = [];
 
 export function start(): void {
-    console.log("Listening for mutations...");
     if (observer) {
         observer.disconnect();
     }
@@ -25,10 +22,8 @@ export function end(): void {
 }
 
 function handle(mutations: MutationRecord[]): void {
-    window["MUTATIONS"].push(time());
-    window["MUTATIONS"].push(mutations);
     process(mutations).then((data: Token[]) => {
-      queue(time(), Event.Mutation, data);
+      queue(data);
     });
 }
 
@@ -72,7 +67,7 @@ async function process(mutations: MutationRecord[]): Promise<Token[]> {
           break;
       }
     }
-    let data = await encode(timer);
+    let data = await encode(Event.Mutation);
     task.stop(timer);
     return data;
 }

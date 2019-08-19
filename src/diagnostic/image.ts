@@ -1,7 +1,6 @@
 import { Event } from "@clarity-types/data";
 import { IImageError } from "@clarity-types/diagnostic";
 import { bind } from "@src/core/event";
-import time from "@src/core/time";
 import queue from "@src/data/queue";
 import { getId } from "@src/dom/virtualdom";
 import encode from "./encode";
@@ -25,7 +24,7 @@ function handler(error: ErrorEvent): void {
         });
     }
 
-    queue(time(), Event.ImageError, encode(Event.ImageError));
+    queue(encode(Event.ImageError));
 }
 
 export function reset(): void {

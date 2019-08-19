@@ -1,11 +1,12 @@
 import {Event, Token} from "@clarity-types/data";
 import {Metric} from "@clarity-types/metric";
+import time from "@src/core/time";
 import * as image from "@src/diagnostic/image";
 import * as script from "@src/diagnostic/script";
 import * as metric from "@src/metric";
 
 export default function(type: Event): Token[] {
-    let tokens = [];
+    let tokens: Token[] = [time(), type];
 
     switch (type) {
         case Event.ScriptError:
