@@ -1,55 +1,37 @@
 import { IConfig } from "@clarity-types/core";
-import config from "@src/core/config";
-import * as event from "@src/core/event";
-import * as metadata from "@src/data/metadata";
+import * as core from "@src/core";
+import * as data from "@src/data";
 import * as diagnostic from "@src/diagnostic";
-import * as discover from "@src/dom/discover";
-import * as mutation from "@src/dom/mutation";
-import * as mouse from "@src/interaction/mouse";
+import * as dom from "@src/dom";
+import * as interaction from "@src/interaction";
 import * as metric from "@src/metric";
-import * as document from "@src/viewport/document";
-import * as resize from "@src/viewport/resize";
-import * as scroll from "@src/viewport/scroll";
-import * as visibility from "@src/viewport/visibility";
+import * as viewport from "@src/viewport";
 
 let status = false;
 
 /* Initial discovery of DOM */
 export function start(configuration: IConfig = {}): void {
-
-  // Process custom configuration, if available
-  for (let key in configuration) {
-    if (key in config) { config[key] = configuration[key]; }
-  }
-
-  event.reset();
+  core.start(configuration);
   metric.start();
-  metadata.start();
+  data.start();
   diagnostic.start();
-
-  // DOM
-  mutation.start();
-  discover.start();
-
-  // Viewport
-  document.start();
-  resize.start();
-  visibility.start();
-  scroll.start();
-
-  // Pointer
-  mouse.start();
+  dom.start();
+  viewport.start();
+  interaction.start();
 
   // Mark Clarity session as active
   status = true;
 }
 
 export function end(): void {
-  event.reset();
-  metadata.end();
-  mutation.end();
-  metric.end();
+  interaction.end();
+  viewport.end();
+  dom.end();
   diagnostic.end();
+  data.end();
+  metric.end();
+  core.end();
+
   status = false;
 }
 

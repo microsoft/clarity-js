@@ -16,6 +16,15 @@ let backupValues: INodeValue[];
 // For debugging
 window["DOM"] = { getId, get, getNode, changes };
 
+export function reset(): void {
+    index = 1;
+    nodes = [];
+    values = [];
+    updates = [];
+    changes = [];
+    console.log("Window Random: " + window["RANDOM"]);
+}
+
 export function getId(node: Node, autogen: boolean = false): number {
     if (node === null) { return null; }
     let id = node[NODE_ID_PROP];
