@@ -5,6 +5,7 @@ let config: IConfig = {
     lookahead: 250,
     distance: 20,
     delay: 250,
+    showText: false,
     cssRules: false,
     tokens: [],
     upload: null

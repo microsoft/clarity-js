@@ -1,6 +1,7 @@
 import {Event, Token} from "@clarity-types/data";
 import {INodeData} from "@clarity-types/dom";
 import { Metric } from "@clarity-types/metric";
+import config from "@src/core/config";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
 import hash from "@src/data/hash";
@@ -48,11 +49,10 @@ export default async function(type: Event): Promise<Token[]> {
                         break;
                     case "value":
                         let parent = nodes.getNode(value.parent);
-                        if (parent === null) {
-                            console.warn("Unexpected | Node data: " + JSON.stringify(data));
-                        }
+                        if (parent === null) { console.warn("Unexpected | Node value: " + JSON.stringify(value)); }
                         let parentTag = nodes.get(parent) ? nodes.get(parent).data.tag : null;
-                        metadata.push(text(parentTag, data[key]));
+                        let tag = value.data.tag === "STYLE" ? value.data.tag : parentTag;
+                        metadata.push(text(tag, data[key]));
                         break;
                 }
             }
@@ -84,7 +84,7 @@ function text(tag: string, value: string): string {
         case "TITLE":
             return value;
         default:
-            return value;
+            if (config.showText) { return value; }
             let wasWhiteSpace = false;
             let textCount = 0;
             let wordCount = 0;

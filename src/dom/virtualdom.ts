@@ -2,6 +2,7 @@ import { INodeChange, INodeData, INodeValue, Source } from "@clarity-types/dom";
 import time from "@src/core/time";
 
 const NODE_ID_PROP: string = "__node_index__";
+const DEVTOOLS_HOOK: string = "__CLARITY_DEVTOOLS_HOOK__";
 let index: number = 1;
 
 let nodes: Node[] = [];
@@ -13,16 +14,13 @@ let backupIndex: number;
 let backupNodes: Node[];
 let backupValues: INodeValue[];
 
-// For debugging
-window["DOM"] = { getId, get, getNode, changes };
-
 export function reset(): void {
     index = 1;
     nodes = [];
     values = [];
     updates = [];
     changes = [];
-    console.log("Window Random: " + window["RANDOM"]);
+    if (DEVTOOLS_HOOK in window) { window[DEVTOOLS_HOOK] = { get, getNode, history }; }
 }
 
 export function getId(node: Node, autogen: boolean = false): number {
@@ -102,15 +100,6 @@ export function update(node: Node, data: INodeData, source: Source): void {
     }
 }
 
-function getNextId(node: Node): number {
-    let id = null;
-    while (id === null && node.nextSibling) {
-        id = getId(node.nextSibling);
-        node = node.nextSibling;
-    }
-    return id;
-}
-
 export function getNode(id: number): Node {
     if (id in nodes) {
         return nodes[id];
@@ -125,16 +114,6 @@ export function get(node: Node): INodeValue {
 
 export function has(node: Node): boolean {
     return getId(node) in nodes;
-}
-
-export function getNodes(): Node[] {
-    let n: Node[] = [];
-    for (let id in nodes) {
-        if (nodes[id]) {
-            n.push(nodes[id]);
-        }
-    }
-    return n;
 }
 
 export function summarize(): INodeValue[] {
@@ -160,14 +139,32 @@ export function rollback(): void {
     index = backupIndex;
 }
 
+function getNextId(node: Node): number {
+    let id = null;
+    while (id === null && node.nextSibling) {
+        id = getId(node.nextSibling);
+        node = node.nextSibling;
+    }
+    return id;
+}
+
 function copy(input: INodeValue[]): INodeValue[] {
     return JSON.parse(JSON.stringify(input));
 }
 
 function track(id: number, source: Source): void {
     if (updates.indexOf(id) === -1) { updates.push(id); }
-    let value = copy([values[id]])[0];
-    let change = { time: time(), source, value };
-    if (!(id in changes)) { changes[id] = []; }
-    changes[id].push(change);
+    if (DEVTOOLS_HOOK in window) {
+        let value = copy([values[id]])[0];
+        let change = { time: time(), source, value };
+        if (!(id in changes)) { changes[id] = []; }
+        changes[id].push(change);
+    }
+}
+
+function history(id: number): INodeChange[] {
+    if (id in changes) {
+        return changes[id];
+    }
+    return [];
 }

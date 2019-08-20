@@ -83,7 +83,7 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
                 let textCount = parseInt(parts[0], 36);
                 let wordCount = parseInt(parts[1], 36);
                 if (isFinite(textCount) && isFinite(wordCount)) {
-                    value = wordCount > 0 && textCount === 0 ? " " : Array((textCount + 1) / 2).join("* ");
+                    value = wordCount > 0 && textCount === 0 ? " " : Array(Math.floor((textCount + 1) / 2)).join("* ");
                 }
             }
         }
