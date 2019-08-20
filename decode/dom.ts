@@ -3,7 +3,6 @@ import { Event, IDecodedEvent, Token } from "../types/data";
 import { IDecodedNode } from "../types/dom";
 
 export default function(tokens: Token[]): IDecodedEvent {
-    let number = 0;
     let lastType = null;
     let node = [];
     let time = tokens[0] as number;
@@ -20,8 +19,6 @@ export default function(tokens: Token[]): IDecodedEvent {
                     node = [];
                     tagIndex = 0;
                 }
-                number += token as number;
-                token = number;
                 node.push(token);
                 tagIndex++;
                 break;
@@ -80,12 +77,15 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
                 layout.push(parseInt(part, 36));
             }
             layouts.push(layout);
-        } else if (output.tag === "*T" && parts.length === 2 && parts[0].length > 0) {
-            let textCount = parseInt(parts[0], 36);
-            let wordCount = parseInt(parts[1], 36);
-            value = wordCount > 0 && textCount === 0 ? " " : Array((textCount + 1) / 2).join("* ");
         } else if (output.tag === "*T") {
             value = token;
+            if (parts.length === 2) {
+                let textCount = parseInt(parts[0], 36);
+                let wordCount = parseInt(parts[1], 36);
+                if (isFinite(textCount) && isFinite(wordCount)) {
+                    value = wordCount > 0 && textCount === 0 ? " " : Array((textCount + 1) / 2).join("* ");
+                }
+            }
         }
     }
 

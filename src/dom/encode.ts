@@ -10,13 +10,11 @@ import * as metrics from "@src/metric";
 import * as nodes from "./virtualdom";
 
 window["HASH"] = hash;
-let reference: number = 0;
 
 export default async function(type: Event): Promise<Token[]> {
     let timer = type === Event.Discover ? Metric.DiscoverTime : Metric.MutationTime;
     let tokens: Token[] = [time(), type];
     let values = nodes.summarize();
-    reference = 0;
     for (let value of values) {
         if (task.longtask(timer)) { await task.idle(timer); }
         let metadata = [];
@@ -28,9 +26,9 @@ export default async function(type: Event): Promise<Token[]> {
                 switch (key) {
                     case "tag":
                         metrics.counter(Metric.NodeCount);
-                        tokens.push(number(value.id));
-                        if (value.parent) { tokens.push(number(value.parent)); }
-                        if (value.next) { tokens.push(number(value.next)); }
+                        tokens.push(value.id);
+                        if (value.parent) { tokens.push(value.parent); }
+                        if (value.next) { tokens.push(value.next); }
                         metadata.push(data[key]);
                         break;
                     case "attributes":
@@ -105,15 +103,6 @@ function layout(l: number[]): string[] {
     let output = [];
     for (let i = 0; i < l.length; i = i + 4) {
         output.push([l[i + 0].toString(36), l[i + 1].toString(36), l[i + 2].toString(36), l[i + 3].toString(36)].join("*"));
-    }
-    return output;
-}
-
-function number(id: number): number {
-    let output = id;
-    if (id > 0) {
-        output = id - reference;
-        reference = id;
     }
     return output;
 }
