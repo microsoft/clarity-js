@@ -140,8 +140,8 @@ function insert(data: IDecodedNode, parent: Node, node: Node, next: Node): void 
         try {
             parent.insertBefore(node, next);
         } catch (ex) {
-            console.error("Node: " + node + " | Parent: " + parent + " | Data: " + JSON.stringify(data));
-            console.error("Exception encountered while inserting node: " + ex);
+            console.warn("Node: " + node + " | Parent: " + parent + " | Data: " + JSON.stringify(data));
+            console.warn("Exception encountered while inserting node: " + ex);
         }
     } else if (parent === null && node.parentElement !== null) {
         node.parentElement.removeChild(node);
@@ -165,8 +165,8 @@ function setAttributes(node: HTMLElement, attributes: object): void {
             try {
                 node.setAttribute(attribute, attributes[attribute]);
             } catch (ex) {
-                console.error("Node: " + node + " | " + JSON.stringify(attributes));
-                console.error("Exception encountered while adding attributes: " + ex);
+                console.warn("Node: " + node + " | " + JSON.stringify(attributes));
+                console.warn("Exception encountered while adding attributes: " + ex);
             }
         }
     }

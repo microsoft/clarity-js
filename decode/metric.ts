@@ -21,9 +21,9 @@ map[Metric.DocumentHeight] = { name: "Document Height", unit: "px", value: "max"
 map[Metric.ClickEvent] = { name: "Click Event", unit: ""};
 map[Metric.InteractionEvent] = { name: "Interaction Event", unit: ""};
 
-export default function(tokens: Token[]): IDecodedMetric {
-    let metrics: IDecodedMetric = { counters: {}, measures: {}, events: [], marks: [], map };
+let metrics: IDecodedMetric = { counters: {}, measures: {}, events: [], marks: [], map };
 
+export default function(tokens: Token[]): IDecodedMetric {
     let i = 0;
     let metricType = null;
     while (i < tokens.length) {
