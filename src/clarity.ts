@@ -5,7 +5,6 @@ import * as diagnostic from "@src/diagnostic";
 import * as dom from "@src/dom";
 import * as interaction from "@src/interaction";
 import * as metric from "@src/metric";
-import * as viewport from "@src/viewport";
 
 let status = false;
 
@@ -16,7 +15,6 @@ export function start(configuration: IConfig = {}): void {
   data.start();
   diagnostic.start();
   dom.start();
-  viewport.start();
   interaction.start();
 
   // Mark Clarity session as active
@@ -25,7 +23,6 @@ export function start(configuration: IConfig = {}): void {
 
 export function end(): void {
   interaction.end();
-  viewport.end();
   dom.end();
   diagnostic.end();
   data.end();

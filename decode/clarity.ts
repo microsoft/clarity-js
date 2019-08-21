@@ -1,10 +1,10 @@
 import { Event, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types/data";
 import dom from "./dom";
 import envelope from "./envelope";
+import interaction from "./interaction";
 import metadata from "./metadata";
 import metric from "./metric";
 import * as r from "./render";
-import viewport from "./viewport";
 
 let pageId: string = null;
 let payloads: IPayload[] = [];
@@ -32,7 +32,7 @@ export function json(data: string): IDecodedPayload {
             case Event.Scroll:
             case Event.Document:
             case Event.Resize:
-                event = viewport(entry);
+                event = interaction(entry);
                 break;
             case Event.Discover:
             case Event.Mutation:

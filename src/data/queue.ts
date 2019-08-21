@@ -1,7 +1,6 @@
 import { Event, Flush, IEventQueue, Token } from "@clarity-types/data";
 import config from "@src/core/config";
 import upload from "@src/data/upload";
-import recompute from "../core/recompute";
 
 let events: IEventQueue = { one: [], two: [] };
 let timeout: number = null;
@@ -40,7 +39,6 @@ export default function(data: Token[], flush: Flush = Flush.Schedule): void {
 }
 
 function dequeue(): void {
-    recompute();
     upload(events);
     reset();
 }

@@ -15,6 +15,7 @@ export function start(): void {
     bind(document, "mouseup", handler.bind(this, Mouse.Up));
     bind(document, "mousemove", handler.bind(this, Mouse.Move));
     bind(document, "mousewheel", handler.bind(this, Mouse.Wheel));
+    bind(document, "dblclick", handler.bind(this, Mouse.DoubleClick));
     bind(document, "click", handler.bind(this, Mouse.Click));
 }
 

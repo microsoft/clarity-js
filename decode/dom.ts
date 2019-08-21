@@ -1,53 +1,59 @@
 import { resolve } from "../src/data/token";
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IDecodedNode } from "../types/dom";
+import { IDecodedNode, IDocumentSize } from "../types/dom";
 
 export default function(tokens: Token[]): IDecodedEvent {
-    let lastType = null;
-    let node = [];
     let time = tokens[0] as number;
     let event = tokens[1] as Event;
     let decoded: IDecodedEvent = {time, event, data: []};
-    let tagIndex = 0;
-    for (let i = 2; i < tokens.length; i++) {
-        let token = tokens[i];
-        let type = typeof(token);
-        switch (type) {
-            case "number":
-                if (type !== lastType && lastType !== null) {
-                    decoded.data.push(process(node, tagIndex));
-                    node = [];
-                    tagIndex = 0;
-                }
-                node.push(token);
-                tagIndex++;
-                break;
-            case "string":
-                node.push(token);
-                break;
-            case "object":
-                let subtoken = token[0];
-                let subtype = typeof(subtoken);
-                switch (subtype) {
-                    case "string":
-                        let keys = resolve(token as string);
-                        for (let key of keys) {
-                            node.push(key);
-                        }
-                        break;
+    switch (event) {
+        case Event.Document:
+            let d: IDocumentSize = { width: tokens[2] as number, height: tokens[3] as number };
+            decoded.data.push(d);
+            return decoded;
+        case Event.Discover:
+        case Event.Mutation:
+            let lastType = null;
+            let node = [];
+            let tagIndex = 0;
+            for (let i = 2; i < tokens.length; i++) {
+                let token = tokens[i];
+                let type = typeof(token);
+                switch (type) {
                     case "number":
-                        token = tokens.length > subtoken ? tokens[subtoken] : null;
+                        if (type !== lastType && lastType !== null) {
+                            decoded.data.push(process(node, tagIndex));
+                            node = [];
+                            tagIndex = 0;
+                        }
+                        node.push(token);
+                        tagIndex++;
+                        break;
+                    case "string":
                         node.push(token);
                         break;
+                    case "object":
+                        let subtoken = token[0];
+                        let subtype = typeof(subtoken);
+                        switch (subtype) {
+                            case "string":
+                                let keys = resolve(token as string);
+                                for (let key of keys) {
+                                    node.push(key);
+                                }
+                                break;
+                            case "number":
+                                token = tokens.length > subtoken ? tokens[subtoken] : null;
+                                node.push(token);
+                                break;
+                        }
                 }
-        }
-        lastType = type;
+                lastType = type;
+            }
+            // Process last node
+            decoded.data.push(process(node, tagIndex));
+            return decoded;
     }
-
-    // Process last node
-    decoded.data.push(process(node, tagIndex));
-
-    return decoded;
 }
 
 function process(node: any[] | number[], tagIndex: number): IDecodedNode {

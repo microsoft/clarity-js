@@ -40,3 +40,8 @@ export interface IDecodedNode {
     layout?: number[][];
     value?: string;
 }
+
+export interface IDocumentSize {
+    width: number;
+    height: number;
+}

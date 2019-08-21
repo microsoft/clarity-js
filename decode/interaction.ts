@@ -1,5 +1,5 @@
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IDocumentSize, IResizeViewport, IScrollViewport } from "../types/viewport";
+import { IResizeViewport, IScrollViewport } from "../types/interaction";
 
 export default function(tokens: Token[]): IDecodedEvent {
     let time = tokens[0] as number;
@@ -9,10 +9,6 @@ export default function(tokens: Token[]): IDecodedEvent {
         case Event.Resize:
             let r: IResizeViewport = { width: tokens[2] as number, height: tokens[3] as number };
             decoded.data.push(r);
-        case Event.Document:
-            let d: IDocumentSize = { width: tokens[2] as number, height: tokens[3] as number };
-            decoded.data.push(d);
-            break;
         case Event.Scroll:
             let t = time;
             for (let i = 2; i < tokens.length; i = i + 3) {

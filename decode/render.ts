@@ -1,6 +1,6 @@
 import { IDecodedNode } from "../types/dom";
+import { IResizeViewport, IScrollViewport } from "../types/interaction";
 import { IDecodedMetric, IMetricMapValue } from "../types/metric";
-import { IResizeViewport, IScrollViewport } from "../types/viewport";
 
 let nodes = {};
 let svgns: string = "http://www.w3.org/2000/svg";

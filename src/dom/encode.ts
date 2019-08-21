@@ -1,75 +1,86 @@
 import {Event, Token} from "@clarity-types/data";
 import {INodeData} from "@clarity-types/dom";
-import { Metric } from "@clarity-types/metric";
+import {Metric} from "@clarity-types/metric";
 import config from "@src/core/config";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
 import hash from "@src/data/hash";
 import {check} from "@src/data/token";
-import * as metrics from "@src/metric";
-
+import * as metric from "@src/metric";
+import {doc} from "./document";
 import * as nodes from "./virtualdom";
 
 window["HASH"] = hash;
 
 export default async function(type: Event): Promise<Token[]> {
-    let timer = type === Event.Discover ? Metric.DiscoverTime : Metric.MutationTime;
     let tokens: Token[] = [time(), type];
-    let values = nodes.summarize();
-    for (let value of values) {
-        if (task.longtask(timer)) { await task.idle(timer); }
-        let metadata = [];
-        let layouts = [];
-        let data: INodeData = value.data;
-        let keys = ["tag", "layout", "attributes", "value"];
-        for (let key of keys) {
-            if (data[key]) {
-                switch (key) {
-                    case "tag":
-                        metrics.counter(Metric.NodeCount);
-                        tokens.push(value.id);
-                        if (value.parent) { tokens.push(value.parent); }
-                        if (value.next) { tokens.push(value.next); }
-                        metadata.push(data[key]);
-                        break;
-                    case "attributes":
-                        for (let attr in data[key]) {
-                            if (data[key][attr] !== undefined) {
-                                metadata.push(`${attr}=${data[key][attr]}`);
-                            }
+    let timer = type === Event.Discover ? Metric.DiscoverTime : Metric.MutationTime;
+    switch (type) {
+        case Event.Document:
+            let d = doc;
+            tokens.push(d.width);
+            tokens.push(d.height);
+            metric.measure(Metric.DocumentWidth, d.width);
+            metric.measure(Metric.DocumentHeight, d.height);
+            return tokens;
+        case Event.Discover:
+        case Event.Mutation:
+            let values = nodes.summarize();
+            for (let value of values) {
+                if (task.longtask(timer)) { await task.idle(timer); }
+                let metadata = [];
+                let layouts = [];
+                let data: INodeData = value.data;
+                let keys = ["tag", "layout", "attributes", "value"];
+                for (let key of keys) {
+                    if (data[key]) {
+                        switch (key) {
+                            case "tag":
+                                metric.counter(Metric.NodeCount);
+                                tokens.push(value.id);
+                                if (value.parent) { tokens.push(value.parent); }
+                                if (value.next) { tokens.push(value.next); }
+                                metadata.push(data[key]);
+                                break;
+                            case "attributes":
+                                for (let attr in data[key]) {
+                                    if (data[key][attr] !== undefined) {
+                                        metadata.push(`${attr}=${data[key][attr]}`);
+                                    }
+                                }
+                                break;
+                            case "layout":
+                                if (data[key].length > 0) {
+                                    let boxes = layout(data[key]);
+                                    for (let box of boxes) {
+                                        layouts.push(box);
+                                    }
+                                }
+                                break;
+                            case "value":
+                                let parent = nodes.getNode(value.parent);
+                                if (parent === null) { console.warn("Unexpected | Node value: " + JSON.stringify(value)); }
+                                let parentTag = nodes.get(parent) ? nodes.get(parent).data.tag : null;
+                                let tag = value.data.tag === "STYLE" ? value.data.tag : parentTag;
+                                metadata.push(text(tag, data[key]));
+                                break;
                         }
-                        break;
-                    case "layout":
-                        if (data[key].length > 0) {
-                            let boxes = layout(data[key]);
-                            for (let box of boxes) {
-                                layouts.push(box);
-                            }
-                        }
-                        break;
-                    case "value":
-                        let parent = nodes.getNode(value.parent);
-                        if (parent === null) { console.warn("Unexpected | Node value: " + JSON.stringify(value)); }
-                        let parentTag = nodes.get(parent) ? nodes.get(parent).data.tag : null;
-                        let tag = value.data.tag === "STYLE" ? value.data.tag : parentTag;
-                        metadata.push(text(tag, data[key]));
-                        break;
+                    }
+                }
+
+                // Add metadata
+                metadata = meta(metadata);
+                for (let token of metadata) {
+                    let index: number = typeof token === "string" ? tokens.indexOf(token) : -1;
+                    tokens.push(index >= 0 && token.length > index.toString().length ? [index] : token);
+                }
+                // Add layout boxes
+                for (let entry of layouts) {
+                    tokens.push(entry);
                 }
             }
+            return tokens;
         }
-
-        // Add metadata
-        metadata = meta(metadata);
-        for (let token of metadata) {
-            let index: number = typeof token === "string" ? tokens.indexOf(token) : -1;
-            tokens.push(index >= 0 && token.length > index.toString().length ? [index] : token);
-        }
-        // Add layout boxes
-        for (let entry of layouts) {
-            tokens.push(entry);
-        }
-    }
-    return tokens;
 }
 
 function meta(metadata: string[]): string[] | string[][] {

@@ -1,5 +1,5 @@
 import { Event } from "@clarity-types/data";
-import { IPageVisibility } from "@clarity-types/viewport";
+import { IPageVisibility } from "@clarity-types/interaction";
 import { bind } from "@src/core/event";
 import queue from "@src/data/queue";
 import encode from "./encode";
