@@ -1,5 +1,5 @@
 import { IDecodedNode } from "../types/dom";
-import { IResizeViewport, IScrollViewport } from "../types/interaction";
+import { IResize, IScroll, Scroll } from "../types/interaction";
 import { IDecodedMetric, IMetricMapValue } from "../types/metric";
 
 let nodes = {};
@@ -172,13 +172,15 @@ function setAttributes(node: HTMLElement, attributes: object): void {
     }
 }
 
-export function scroll(data: IScrollViewport[], placeholder: HTMLIFrameElement): void {
+export function scroll(data: IScroll[], iframe: HTMLIFrameElement): void {
     for (let d of data) {
-        placeholder.contentWindow.scrollTo(d.x, d.y);
+        let target = getNode(d.target);
+        if (target && d.type === Scroll.X) { target.scrollTo(d.value, target.scrollTop); }
+        if (target && d.type === Scroll.Y) { target.scrollTo(target.scrollLeft, d.value); }
     }
 }
 
-export function resize(data: IResizeViewport, placeholder: HTMLIFrameElement): void {
+export function resize(data: IResize, placeholder: HTMLIFrameElement): void {
     placeholder.removeAttribute("style");
     let margin = 10;
     let px = "px";
@@ -197,4 +199,8 @@ export function resize(data: IResizeViewport, placeholder: HTMLIFrameElement): v
     placeholder.style.border = "1px solid #cccccc";
     placeholder.style.margin = margin + px;
     placeholder.style.overflow = "hidden";
+}
+
+function getNode(id: number): HTMLElement {
+    return id in nodes ? nodes[id] : null;
 }

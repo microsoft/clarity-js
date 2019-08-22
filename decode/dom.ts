@@ -89,7 +89,20 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
                 let textCount = parseInt(parts[0], 36);
                 let wordCount = parseInt(parts[1], 36);
                 if (isFinite(textCount) && isFinite(wordCount)) {
-                    value = wordCount > 0 && textCount === 0 ? " " : Array(Math.floor((textCount + 1) / 2)).join("* ");
+                    if (wordCount > 0 && textCount === 0) {
+                        value = " ";
+                    } else if (wordCount === 0 && textCount > 0) {
+                        value = Array(textCount).join("*");
+                    } else if (wordCount > 0 && textCount > 0) {
+                        value = "";
+                        let avg = Math.floor(textCount / wordCount);
+                        while (value.length < textCount + wordCount) {
+                            let gap = Math.min(avg, textCount + wordCount - value.length);
+                            value += Array(gap).join("*") + " ";
+                        }
+                    } else {
+                        value = Array(Math.floor((textCount + 1) / 2)).join("* ");
+                    }
                 }
             }
         }

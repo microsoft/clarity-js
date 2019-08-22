@@ -1,5 +1,5 @@
 import {Event, Token} from "@clarity-types/data";
-import { Mouse } from "@clarity-types/interaction";
+import {Mouse, Scroll} from "@clarity-types/interaction";
 import {Metric} from "@clarity-types/metric";
 import time from "@src/core/time";
 import * as metric from "@src/metric";
@@ -16,6 +16,7 @@ export default function(type: Event): Token[] {
             let m = mouse.summarize();
             timestamp = null;
             let mouseType: Mouse = null;
+            let mouseTarget: number = null;
             for (let i = 0; i < m.length; i++) {
                 let entry = m[i];
 
@@ -24,15 +25,19 @@ export default function(type: Event): Token[] {
                     tokens[0] = timestamp;
                 }
 
-                if (mouseType !== entry.type) { tokens.push(entry.type); }
+                if (mouseType !== entry.type || mouseTarget !== entry.target) {
+                    tokens.push(entry.type);
+                    tokens.push(entry.target);
+                    mouseType = entry.type;
+                    mouseTarget = entry.target;
+                }
+
                 tokens.push(entry.time - timestamp);
                 tokens.push(entry.x);
                 tokens.push(entry.y);
-                tokens.push(entry.target);
                 tokens.push(entry.buttons);
 
                 timestamp = entry.time;
-                mouseType = entry.type;
             }
             mouse.reset();
             break;
@@ -46,6 +51,8 @@ export default function(type: Event): Token[] {
             break;
         case Event.Scroll:
             let s = scroll.summarize();
+            let scrollType: Scroll = null;
+            let scrollTarget: number = null;
             timestamp = null;
             for (let i = 0; i < s.length; i++) {
                 let entry = s[i];
@@ -55,9 +62,16 @@ export default function(type: Event): Token[] {
                     tokens[0] = timestamp;
                 }
 
+                if (scrollType !== entry.type || scrollTarget !== entry.target) {
+                    tokens.push(entry.type);
+                    tokens.push(entry.target);
+                    scrollType = entry.type;
+                    scrollTarget = entry.target;
+                }
+
                 tokens.push(entry.time - timestamp);
-                tokens.push(entry.x);
-                tokens.push(entry.y);
+                tokens.push(entry.value);
+
                 timestamp = entry.time;
             }
             scroll.reset();

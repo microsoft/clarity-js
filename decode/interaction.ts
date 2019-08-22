@@ -1,5 +1,5 @@
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IResizeViewport, IScrollViewport } from "../types/interaction";
+import { IResize, IScroll, Scroll } from "../types/interaction";
 
 export default function(tokens: Token[]): IDecodedEvent {
     let time = tokens[0] as number;
@@ -7,16 +7,25 @@ export default function(tokens: Token[]): IDecodedEvent {
     let decoded: IDecodedEvent = {time, event, data: []};
     switch (event) {
         case Event.Resize:
-            let r: IResizeViewport = { width: tokens[2] as number, height: tokens[3] as number };
+            let r: IResize = { width: tokens[2] as number, height: tokens[3] as number };
             decoded.data.push(r);
         case Event.Scroll:
-            let t = time;
-            for (let i = 2; i < tokens.length; i = i + 3) {
-                t += tokens[i] as number;
-                let s: IScrollViewport = { time: t, x: tokens[i + 1] as number, y: tokens[i + 2] as number };
-                decoded.data.push(s);
-            }
-            break;
+                let i = 2;
+                let scrollType = null;
+                let target = null;
+                let t = 0;
+                while (i < tokens.length) {
+                    if (typeof(tokens[i]) === "string") {
+                        scrollType = tokens[i++] as Scroll;
+                        target = tokens[i++] as number;
+                        continue;
+                    }
+                    t += tokens[i++] as number;
+                    let v = tokens[i++] as number;
+                    let s: IScroll = { type: scrollType, target, time: t, value: v };
+                    decoded.data.push(s);
+                }
+                break;
     }
     return decoded;
 }

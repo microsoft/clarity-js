@@ -1,5 +1,5 @@
 import { Event } from "@clarity-types/data";
-import { IMouseInteraction, Mouse } from "@clarity-types/interaction";
+import { IMouse, Mouse } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
@@ -7,7 +7,7 @@ import queue from "@src/data/queue";
 import { getId } from "@src/dom/virtualdom";
 import encode from "./encode";
 
-let data: IMouseInteraction[] = [];
+let data: IMouse[] = [];
 let timeout: number = null;
 
 export function start(): void {
@@ -23,10 +23,10 @@ function handler(type: Mouse, evt: MouseEvent): void {
     let de = document.documentElement;
     data.push({
         type,
+        target: evt.target ? getId(evt.target as Node) : null,
         time: time(),
         x: "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null),
         y: "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null),
-        target: evt.target ? getId(evt.target as Node) : null,
         buttons: evt.buttons
     });
     if (timeout) { clearTimeout(timeout); }
@@ -41,8 +41,8 @@ export function reset(): void {
     data = [];
 }
 
-export function summarize(): IMouseInteraction[] {
-    let summary: IMouseInteraction[] = [];
+export function summarize(): IMouse[] {
+    let summary: IMouse[] = [];
     let index = 0;
     let last = null;
     for (let entry of data) {
@@ -58,7 +58,7 @@ export function summarize(): IMouseInteraction[] {
     return summary;
 }
 
-function checkDistance(last: IMouseInteraction, current: IMouseInteraction): boolean {
+function checkDistance(last: IMouse, current: IMouse): boolean {
     let dx = last.x - current.x;
     let dy = last.y - current.y;
     return (dx * dx + dy * dy > config.distance * config.distance);

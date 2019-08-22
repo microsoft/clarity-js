@@ -1,10 +1,10 @@
 import { Event } from "@clarity-types/data";
-import { IResizeViewport } from "@clarity-types/interaction";
+import { IResize } from "@clarity-types/interaction";
 import { bind } from "@src/core/event";
 import queue from "@src/data/queue";
 import encode from "./encode";
 
-export let data: IResizeViewport;
+export let data: IResize;
 
 export function start(): void {
     bind(window, "resize", recompute);
