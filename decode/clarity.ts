@@ -58,7 +58,6 @@ export function html(data: string): string {
 
 export function render(data: string, iframe: HTMLIFrameElement, header?: HTMLElement): void {
     let decoded = json(data);
-    console.log("Decoded: " + JSON.stringify(decoded));
 
     // Render metrics
     r.metrics(decoded.metrics, header);

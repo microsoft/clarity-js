@@ -67,7 +67,6 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
     let layouts = [];
     let attributes = {};
     let value = null;
-    console.log("Node: " + JSON.stringify(node) + " | Tag: " + tagIndex);
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
         let keyIndex = token.indexOf("=");

@@ -83,7 +83,7 @@ export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {
                     if (doc.head) { doc.head.parentNode.removeChild(doc.head); }
                     if (doc.body) { doc.body.parentNode.removeChild(doc.body); }
                 }
-                setAttributes(docElement as HTMLElement, node.attributes);
+                setAttributes(doc.documentElement as HTMLElement, node.attributes);
                 nodes[node.id] = doc.documentElement;
                 break;
             case "HEAD":
