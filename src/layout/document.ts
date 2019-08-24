@@ -1,5 +1,5 @@
 import { Event, Token } from "@clarity-types/data";
-import { IDocumentSize } from "@clarity-types/dom";
+import { IDocumentSize } from "@clarity-types/layout";
 import queue from "@src/data/queue";
 import encode from "./encode";
 

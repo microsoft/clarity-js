@@ -1,7 +1,7 @@
 import { Event, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types/data";
-import dom from "./dom";
 import envelope from "./envelope";
 import interaction from "./interaction";
+import layout from "./layout";
 import metadata from "./metadata";
 import metric from "./metric";
 import * as r from "./render";
@@ -36,7 +36,7 @@ export function json(data: string): IDecodedPayload {
                 break;
             case Event.Discover:
             case Event.Mutation:
-                event = dom(entry);
+                event = layout(entry);
                 break;
             case Event.Metadata:
                 event = metadata(entry);

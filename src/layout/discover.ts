@@ -1,10 +1,10 @@
 import { Event, Token } from "@clarity-types/data";
-import { Source } from "@clarity-types/dom";
+import { Source } from "@clarity-types/layout";
 import { Metric } from "@clarity-types/metric";
 import * as task from "@src/core/task";
 import queue from "@src/data/queue";
-import * as doc from "@src/dom/document";
-import encode from "@src/dom/encode";
+import * as doc from "@src/layout/document";
+import encode from "@src/layout/encode";
 
 import processNode from "./node";
 

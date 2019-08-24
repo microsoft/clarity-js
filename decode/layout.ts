@@ -1,6 +1,6 @@
 import { resolve } from "../src/data/token";
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IDecodedNode, IDocumentSize } from "../types/dom";
+import { IDecodedNode, IDocumentSize } from "../types/layout";
 
 export default function(tokens: Token[]): IDecodedEvent {
     let time = tokens[0] as number;
@@ -97,10 +97,10 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
                         let avg = Math.floor(textCount / wordCount);
                         while (value.length < textCount + wordCount) {
                             let gap = Math.min(avg, textCount + wordCount - value.length);
-                            value += Array(gap).join("*") + " ";
+                            value += Array(gap).join("x") + " ";
                         }
                     } else {
-                        value = Array(Math.floor((textCount + 1) / 2)).join("* ");
+                        value = Array(Math.floor((textCount + 1) / 2)).join("x ");
                     }
                 }
             }

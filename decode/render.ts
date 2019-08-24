@@ -1,5 +1,5 @@
-import { IDecodedNode } from "../types/dom";
 import { IResize, IScroll, Scroll } from "../types/interaction";
+import { IDecodedNode } from "../types/layout";
 import { IDecodedMetric, IMetricMapValue } from "../types/metric";
 
 let nodes = {};

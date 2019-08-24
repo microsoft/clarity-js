@@ -4,7 +4,7 @@ import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
 import queue from "@src/data/queue";
-import { getId } from "@src/dom/virtualdom";
+import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
 let lastX = {};

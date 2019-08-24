@@ -1,4 +1,4 @@
-import { INodeChange, INodeData, INodeValue, Source } from "@clarity-types/dom";
+import { INodeChange, INodeData, INodeValue, Source } from "@clarity-types/layout";
 import time from "@src/core/time";
 
 const NODE_ID_PROP: string = "__node_index__";

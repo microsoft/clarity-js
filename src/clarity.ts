@@ -2,8 +2,8 @@ import { IConfig } from "@clarity-types/core";
 import * as core from "@src/core";
 import * as data from "@src/data";
 import * as diagnostic from "@src/diagnostic";
-import * as dom from "@src/dom";
 import * as interaction from "@src/interaction";
+import * as dom from "@src/layout";
 import * as metric from "@src/metric";
 
 let status = false;

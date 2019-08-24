@@ -1,5 +1,5 @@
 import {Event, Token} from "@clarity-types/data";
-import {INodeData} from "@clarity-types/dom";
+import {INodeData} from "@clarity-types/layout";
 import {Metric} from "@clarity-types/metric";
 import config from "@src/core/config";
 import * as task from "@src/core/task";
@@ -8,7 +8,7 @@ import hash from "@src/data/hash";
 import {check} from "@src/data/token";
 import * as metric from "@src/metric";
 import {doc} from "./document";
-import * as nodes from "./virtualdom";
+import * as nodes from "./dom";
 
 window["HASH"] = hash;
 
