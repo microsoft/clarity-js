@@ -50,15 +50,13 @@ export function json(data: string): IDecodedPayload {
     return decoded;
 }
 
-export function html(data: string): string {
+export function html(decoded: IDecodedPayload): string {
     let iframe = document.createElement("iframe");
-    render(data, iframe);
+    render(decoded, iframe);
     return iframe.contentDocument.documentElement.outerHTML;
 }
 
-export function render(data: string, iframe: HTMLIFrameElement, header?: HTMLElement): void {
-    let decoded = json(data);
-
+export function render(decoded: IDecodedPayload, iframe: HTMLIFrameElement, header?: HTMLElement): void {
     // Render metrics
     r.metrics(decoded.metrics, header);
 
