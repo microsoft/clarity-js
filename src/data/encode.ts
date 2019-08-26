@@ -8,7 +8,7 @@ export default function(envelope: boolean = false): Token[] {
     let t = time();
     let tokens: Token[] = envelope ? [] : [t, Event.Metadata];
 
-    metric.measure(Metric.WireupLag, t);
+    if (!envelope) { metric.counter(Metric.WireupTime, t); }
 
     tokens.push(metadata.sequence);
     tokens.push(metadata.version);

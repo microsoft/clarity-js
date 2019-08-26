@@ -6,6 +6,13 @@ import * as metrics from "@src/metric";
 let tracker: ITask = {};
 let threshold = config.longtask;
 
+// Debug: Start
+let debug = {};
+debug[Metric.DiscoverTime] = "Discover";
+debug[Metric.MutationTime] = "Mutation";
+debug[Metric.BoxModelTime] = "BoxModel";
+// Debug: End
+
 export function longtask(method: Metric): boolean {
     let elapsed = Date.now() - tracker[method];
     return (elapsed > threshold);
@@ -21,7 +28,7 @@ export function start(method: Metric): void {
 export function stop(method: Metric): void {
     let end = Date.now();
     let duration = end - tracker[method];
-    metrics.measure(method, duration);
+    metrics.counter(method, duration);
 }
 
 export async function idle(method: Metric): Promise<void> {

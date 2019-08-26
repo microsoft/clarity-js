@@ -1,5 +1,5 @@
 import { IResize, IScroll, Scroll } from "../types/interaction";
-import { IDecodedNode } from "../types/layout";
+import { IBoxModel, IDecodedNode } from "../types/layout";
 import { IDecodedMetric, IMetricMapValue } from "../types/metric";
 
 let nodes = {};
@@ -39,6 +39,7 @@ export function metrics(data: IDecodedMetric, header: HTMLElement): void {
 function value(input: number, unit: string): number {
     switch (unit) {
         case "KB": return Math.round(input / 1024);
+        case "s": return Math.round(input / 1000);
         default: return input;
     }
 }
@@ -46,6 +47,16 @@ function value(input: number, unit: string): number {
 function metricBox(metric: number, map: IMetricMapValue, metadata: string = null): string {
     metadata = metadata || "";
     return `<li><h2>${metric}<span>${map.unit}</span><div>${metadata}</div></h2>${map.name}</li>`;
+}
+
+export function boxmodel(data: IBoxModel[], iframe: HTMLIFrameElement): void {
+    for (let bm of data) {
+        let el = element(bm.id) as HTMLElement;
+        if (el && false) {
+            el.style.width = bm.box[2] + "px";
+            el.style.height = bm.box[3] + "px";
+        }
+    }
 }
 
 export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {

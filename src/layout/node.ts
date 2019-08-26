@@ -25,7 +25,6 @@ export default function(node: Node, source: Source): void {
             let parent = node.parentElement;
             if (call === "update" || (parent && dom.has(parent) && parent.tagName !== "STYLE")) {
                 let textData = { tag: "*T", value: node.nodeValue };
-                textData["layout"] = getTextLayout(node);
                 dom[call](node, textData, source);
             }
             break;
@@ -50,7 +49,6 @@ export default function(node: Node, source: Source): void {
                     break;
                 default:
                     let data = { tag, attributes: getAttributes(element.attributes) };
-                    data["layout"] = getLayout(element);
                     dom[call](node, data, source);
                     break;
             }
@@ -95,49 +93,4 @@ function getAttributes(attributes: NamedNodeMap): {[key: string]: string} {
         }
     }
     return output;
-}
-
-function getTextLayout(textNode: Node): number[] {
-    let layout: number[] = [];
-    let range = document.createRange();
-    range.selectNodeContents(textNode);
-    let rects = range.getClientRects();
-    let doc = document.documentElement;
-    for (let i = 0; i < rects.length; i++) {
-        let rect = rects[i];
-        layout.push(Math.floor(rect.left) + ("pageXOffset" in window ? window.pageXOffset : doc.scrollLeft));
-        layout.push(Math.floor(rect.top) + ("pageYOffset" in window ? window.pageYOffset : doc.scrollTop));
-        layout.push(Math.round(rect.width));
-        layout.push(Math.round(rect.height));
-    }
-    return layout;
-}
-
-function getLayout(element: Element): number[] {
-    // In IE, calling getBoundingClientRect on a node that is disconnected
-    // from a DOM tree, sometimes results in a 'Unspecified Error'
-    // Wrapping this in try/catch is faster than checking whether element is connected to DOM
-    let layout: number[] = [];
-    let rect = null;
-    let doc = document.documentElement;
-    try {
-        rect = element.getBoundingClientRect();
-    } catch (e) {
-        // Ignore
-    }
-
-    if (rect && rect.width > 0 && rect.height > 0) {
-        // getBoundingClientRect returns relative positioning to viewport and therefore needs
-        // addition of window scroll position to get position relative to document
-        // Also: using Math.floor() instead of Math.round() below because in Edge,
-        // getBoundingClientRect returns partial pixel values (e.g. 162.5px) and Chrome already
-        // floors the value (e.g. 162px). Keeping behavior consistent across
-        layout = [
-            Math.floor(rect.left) + ("pageXOffset" in window ? window.pageXOffset : doc.scrollLeft),
-            Math.floor(rect.top) + ("pageYOffset" in window ? window.pageYOffset : doc.scrollTop),
-            Math.round(rect.width),
-            Math.round(rect.height)
-        ];
-    }
-    return layout;
 }

@@ -17,7 +17,7 @@ export default function(type: Event): Token[] {
                 tokens.push(e.line);
                 tokens.push(e.column);
                 tokens.push(e.stack);
-                metric.counter(Metric.ScriptErrorCount);
+                metric.counter(Metric.ScriptErrors);
             }
             script.reset();
             break;
@@ -26,7 +26,7 @@ export default function(type: Event): Token[] {
             for (let e of images) {
                 tokens.push(e.source);
                 tokens.push(e.target);
-                metric.counter(Metric.ImageErrorCount);
+                metric.counter(Metric.ImageErrors);
             }
             image.reset();
             break;

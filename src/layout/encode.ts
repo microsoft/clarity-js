@@ -7,8 +7,9 @@ import time from "@src/core/time";
 import hash from "@src/data/hash";
 import {check} from "@src/data/token";
 import * as metric from "@src/metric";
+import * as boxmodel from "./boxmodel";
 import {doc} from "./document";
-import * as nodes from "./dom";
+import * as dom from "./dom";
 
 window["HASH"] = hash;
 
@@ -23,9 +24,16 @@ export default async function(type: Event): Promise<Token[]> {
             metric.measure(Metric.DocumentWidth, d.width);
             metric.measure(Metric.DocumentHeight, d.height);
             return tokens;
+        case Event.BoxModel:
+            let bm = boxmodel.summarize();
+            for (let value of bm) {
+                tokens.push(value.id);
+                tokens.push(value.box);
+            }
+            return tokens;
         case Event.Discover:
         case Event.Mutation:
-            let values = nodes.summarize();
+            let values = dom.summarize();
             for (let value of values) {
                 if (task.longtask(timer)) { await task.idle(timer); }
                 let metadata = [];
@@ -36,7 +44,7 @@ export default async function(type: Event): Promise<Token[]> {
                     if (data[key]) {
                         switch (key) {
                             case "tag":
-                                metric.counter(Metric.NodeCount);
+                                metric.counter(Metric.Nodes);
                                 tokens.push(value.id);
                                 if (value.parent) { tokens.push(value.parent); }
                                 if (value.next) { tokens.push(value.next); }
@@ -58,9 +66,9 @@ export default async function(type: Event): Promise<Token[]> {
                                 }
                                 break;
                             case "value":
-                                let parent = nodes.getNode(value.parent);
+                                let parent = dom.getNode(value.parent);
                                 if (parent === null) { console.warn("Unexpected | Node value: " + JSON.stringify(value)); }
-                                let parentTag = nodes.get(parent) ? nodes.get(parent).data.tag : null;
+                                let parentTag = dom.get(parent) ? dom.get(parent).data.tag : null;
                                 let tag = value.data.tag === "STYLE" ? value.data.tag : parentTag;
                                 metadata.push(text(tag, data[key]));
                                 break;

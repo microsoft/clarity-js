@@ -8,18 +8,21 @@ export const enum MetricType {
 
 export const enum Metric {
     /* Counter */
-    NodeCount,
-    ByteCount,
-    MutationCount,
-    InteractionCount,
-    ClickCount,
-    ScriptErrorCount,
-    ImageErrorCount,
-    /* Summary */
+    Nodes,
+    Bytes,
+    StreamOneBytes,
+    StreamTwoBytes,
+    Mutations,
+    Interactions,
+    Clicks,
+    ScriptErrors,
+    ImageErrors,
     DiscoverTime,
     MutationTime,
-    WireupLag,
+    BoxModelTime,
+    WireupTime,
     ActiveTime,
+    /* Summary */
     ViewportWidth,
     ViewportHeight,
     DocumentWidth,

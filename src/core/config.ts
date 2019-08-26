@@ -1,10 +1,10 @@
 import { IConfig } from "@clarity-types/core";
 
 let config: IConfig = {
-    longtask: 50,
-    lookahead: 250,
+    longtask: 30,
+    lookahead: 500,
     distance: 20,
-    delay: 250,
+    delay: 1000,
     showText: false,
     cssRules: false,
     tokens: [],

@@ -10,10 +10,6 @@ let values: INodeValue[] = [];
 let updates: number[] = [];
 let changes: INodeChange[][] = [];
 
-let backupIndex: number;
-let backupNodes: Node[];
-let backupValues: INodeValue[];
-
 export function reset(): void {
     index = 1;
     nodes = [];
@@ -47,8 +43,11 @@ export function add(node: Node, data: INodeData, source: Source): void {
         parent: parentId,
         next: nextId,
         children: [],
-        data
+        data,
+        active: true,
+        leaf: false
     };
+    leaf(data.tag, id, parentId);
     track(id, source);
 }
 
@@ -78,7 +77,7 @@ export function update(node: Node, data: INodeData, source: Source): void {
                 }
             } else {
                 // Mark this element as deleted if the parent has been updated to null
-                value["active"] = false;
+                value.active = false;
             }
 
             // Remove reference to this node from the old parent
@@ -96,6 +95,7 @@ export function update(node: Node, data: INodeData, source: Source): void {
                 value["data"][key] = data[key];
             }
         }
+        leaf(data.tag, id, parentId);
         track(id, source);
     }
 }
@@ -116,6 +116,16 @@ export function has(node: Node): boolean {
     return getId(node) in nodes;
 }
 
+export function getLeafNodes(): INodeValue[] {
+    let v = [];
+    for (let id in values) {
+        if (values[id].active && values[id].leaf) {
+            v.push(values[id]);
+        }
+    }
+    return v;
+}
+
 export function summarize(): INodeValue[] {
     let v = [];
     for (let id of updates) {
@@ -127,16 +137,17 @@ export function summarize(): INodeValue[] {
     return v;
 }
 
-export function backup(): void {
-    backupNodes = Array.from(nodes);
-    backupValues = copy(values);
-    backupIndex = index;
-}
-
-export function rollback(): void {
-    nodes = Array.from(backupNodes);
-    values = copy(backupValues);
-    index = backupIndex;
+function leaf(tag: string, id: number, parentId: number): void {
+    if (id !== null && parentId !== null) {
+        switch (tag) {
+            case "*T":
+                values[parentId].leaf = true;
+                break;
+            case "SVG":
+                values[id].leaf = true;
+                break;
+        }
+    }
 }
 
 function getNextId(node: Node): number {

@@ -13,7 +13,6 @@ export interface IAttributes {
 export interface INodeData {
     tag: string;
     attributes?: IAttributes;
-    layout?: number[];
     value?: string;
 }
 
@@ -23,6 +22,9 @@ export interface INodeValue {
     next: number;
     children: number[];
     data: INodeData;
+    /* Metadata */
+    active: boolean;
+    leaf: boolean;
 }
 
 export interface INodeChange {
@@ -37,11 +39,15 @@ export interface IDecodedNode {
     next: number;
     tag: string;
     attributes?: IAttributes;
-    layout?: number[][];
     value?: string;
 }
 
 export interface IDocumentSize {
     width: number;
     height: number;
+}
+
+export interface IBoxModel {
+    id: number;
+    box: number[];
 }

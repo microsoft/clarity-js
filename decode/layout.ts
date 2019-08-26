@@ -1,6 +1,6 @@
 import { resolve } from "../src/data/token";
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IDecodedNode, IDocumentSize } from "../types/layout";
+import { IBoxModel, IDecodedNode, IDocumentSize } from "../types/layout";
 
 export default function(tokens: Token[]): IDecodedEvent {
     let time = tokens[0] as number;
@@ -10,6 +10,12 @@ export default function(tokens: Token[]): IDecodedEvent {
         case Event.Document:
             let d: IDocumentSize = { width: tokens[2] as number, height: tokens[3] as number };
             decoded.data.push(d);
+            return decoded;
+        case Event.BoxModel:
+            for (let i = 2; i < tokens.length; i += 2) {
+                let boxmodel: IBoxModel = { id: tokens[i] as number, box: tokens[i + 1] as number[] };
+                decoded.data.push(boxmodel);
+            }
             return decoded;
         case Event.Discover:
         case Event.Mutation:
@@ -64,7 +70,6 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
         tag: node[tagIndex]
     };
     let hasAttribute = false;
-    let layouts = [];
     let attributes = {};
     let value = null;
     for (let i = tagIndex + 1; i < node.length; i++) {
@@ -76,12 +81,6 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
         } else if (output.tag !== "*T" && keyIndex > 0) {
             hasAttribute = true;
             attributes[token.substr(0, keyIndex)] = token.substr(keyIndex + 1);
-        } else if (parts.length === 4) {
-            let layout = [];
-            for (let part of parts) {
-                layout.push(parseInt(part, 36));
-            }
-            layouts.push(layout);
         } else if (output.tag === "*T") {
             value = token;
             if (parts.length === 2) {
@@ -91,23 +90,22 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
                     if (wordCount > 0 && textCount === 0) {
                         value = " ";
                     } else if (wordCount === 0 && textCount > 0) {
-                        value = Array(textCount).join("*");
+                        value = Array(textCount + 1).join("x");
                     } else if (wordCount > 0 && textCount > 0) {
                         value = "";
                         let avg = Math.floor(textCount / wordCount);
                         while (value.length < textCount + wordCount) {
                             let gap = Math.min(avg, textCount + wordCount - value.length);
-                            value += Array(gap).join("x") + " ";
+                            value += Array(gap + 1).join("x") + " ";
                         }
                     } else {
-                        value = Array(Math.floor((textCount + 1) / 2)).join("x ");
+                        value = Array(Math.floor((textCount + 1) / 2) + 1).join("x ");
                     }
                 }
             }
         }
     }
 
-    if (layouts.length > 0) { output.layout = layouts; }
     if (hasAttribute) { output.attributes = attributes; }
     if (value) { output.value = value; }
 

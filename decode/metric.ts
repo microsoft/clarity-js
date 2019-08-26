@@ -3,16 +3,19 @@ import { IDecodedMetric, IMetricMap, Metric, MetricType } from "../types/metric"
 
 let map: IMetricMap = {};
 
-map[Metric.NodeCount] = { name: "Node Count", unit: ""};
-map[Metric.ByteCount] = { name: "Byte Count", unit: "KB"};
-map[Metric.MutationCount] = { name: "Mutation Count", unit: ""};
-map[Metric.InteractionCount] = { name: "Interaction Count", unit: ""};
-map[Metric.ClickCount] = { name: "Click Count", unit: ""};
-map[Metric.ScriptErrorCount] = { name: "Script Errors", unit: ""};
-map[Metric.ImageErrorCount] = { name: "Image Errors", unit: ""};
+map[Metric.Nodes] = { name: "Node Count", unit: ""};
+map[Metric.Bytes] = { name: "Byte Count", unit: "KB"};
+map[Metric.StreamOneBytes] = { name: "Stream One Bytes", unit: "KB"};
+map[Metric.StreamTwoBytes] = { name: "Stream Two Bytes", unit: "KB"};
+map[Metric.Mutations] = { name: "Mutation Count", unit: ""};
+map[Metric.Interactions] = { name: "Interaction Count", unit: ""};
+map[Metric.Clicks] = { name: "Click Count", unit: ""};
+map[Metric.ScriptErrors] = { name: "Script Errors", unit: ""};
+map[Metric.ImageErrors] = { name: "Image Errors", unit: ""};
 map[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};
 map[Metric.MutationTime] = { name: "Mutation Time", unit: "ms"};
-map[Metric.WireupLag] = { name: "Wireup Delay", unit: "ms"};
+map[Metric.BoxModelTime] = { name: "Box Model Time", unit: "ms"};
+map[Metric.WireupTime] = { name: "Wireup Delay", unit: "s"};
 map[Metric.ActiveTime] = { name: "Active Time", unit: "ms"};
 map[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px", value: "max"};
 map[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px", value: "max"};

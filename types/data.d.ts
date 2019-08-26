@@ -7,6 +7,7 @@ export const enum Event {
     Metadata,
     Discover,
     Mutation,
+    BoxModel,
     Mouse,
     Touch,
     Keyboard,

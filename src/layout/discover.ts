@@ -3,6 +3,7 @@ import { Source } from "@clarity-types/layout";
 import { Metric } from "@clarity-types/metric";
 import * as task from "@src/core/task";
 import queue from "@src/data/queue";
+import * as boxmodel from "@src/layout/boxmodel";
 import * as doc from "@src/layout/document";
 import encode from "@src/layout/encode";
 
@@ -11,8 +12,9 @@ import processNode from "./node";
 export function start(): void {
     discover().then((data: Token[]) => {
         doc.compute();
+        boxmodel.compute();
         queue(data);
-      });
+    });
 }
 
 async function discover(): Promise<Token[]> {
