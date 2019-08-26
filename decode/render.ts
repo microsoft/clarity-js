@@ -128,15 +128,8 @@ export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {
 }
 
 function createElement(doc: Document, tag: string, parent: HTMLElement): HTMLElement {
-    if (tag === "svg") {
+    if (tag && tag.indexOf("s:") === 0) {
         return doc.createElementNS(svgns, tag) as HTMLElement;
-    } else {
-        while (parent && parent.tagName !== "BODY") {
-            if (parent.tagName === "svg") {
-                return doc.createElementNS(svgns, tag) as HTMLElement;
-            }
-            parent = parent.parentElement;
-        }
     }
     return doc.createElement(tag);
 }
@@ -174,7 +167,11 @@ function setAttributes(node: HTMLElement, attributes: object): void {
     for (let attribute in attributes) {
         if (attributes[attribute] !== undefined) {
             try {
-                node.setAttribute(attribute, attributes[attribute]);
+                if (attribute.indexOf("xlink:") === 0) {
+                    node.setAttributeNS("http://www.w3.org/1999/xlink", attribute, attributes[attribute]);
+                } else {
+                    node.setAttribute(attribute, attributes[attribute]);
+                }
             } catch (ex) {
                 console.warn("Node: " + node + " | " + JSON.stringify(attributes));
                 console.warn("Exception encountered while adding attributes: " + ex);

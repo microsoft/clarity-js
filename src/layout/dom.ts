@@ -143,7 +143,7 @@ function leaf(tag: string, id: number, parentId: number): void {
             case "*T":
                 values[parentId].leaf = true;
                 break;
-            case "SVG":
+            case "s:svg":
                 values[id].leaf = true;
                 break;
         }

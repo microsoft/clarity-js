@@ -31,6 +31,7 @@ export default function(node: Node, source: Source): void {
         case Node.ELEMENT_NODE:
             let element = (node as HTMLElement);
             let tag = element.tagName;
+            tag = (element.namespaceURI === "http://www.w3.org/2000/svg") ? "s:" + tag : tag;
             switch (tag) {
                 case "SCRIPT":
                 case "NOSCRIPT":
