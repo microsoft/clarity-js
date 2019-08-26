@@ -128,7 +128,7 @@ export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {
 }
 
 function createElement(doc: Document, tag: string, parent: HTMLElement): HTMLElement {
-    if (tag && tag.indexOf("s:") === 0) {
+    if (tag && tag.indexOf("svg:") === 0) {
         return doc.createElementNS(svgns, tag) as HTMLElement;
     }
     return doc.createElement(tag);

@@ -8,6 +8,14 @@ export default function(node: Node, source: Source): void {
     // Do not track this change if we are attempting to remove a node before discovering it
     if (source === Source.ChildListRemove && dom.has(node) === false) { return; }
 
+    // Special handling for text nodes that belong to style nodes
+    if (source !== Source.Discover &&
+        node.nodeType === Node.TEXT_NODE &&
+        node.parentElement &&
+        node.parentElement.tagName === "STYLE") {
+        node = node.parentNode;
+    }
+
     let call = dom.has(node) ? "update" : "add";
     switch (node.nodeType) {
         case Node.DOCUMENT_TYPE_NODE:
@@ -31,7 +39,7 @@ export default function(node: Node, source: Source): void {
         case Node.ELEMENT_NODE:
             let element = (node as HTMLElement);
             let tag = element.tagName;
-            tag = (element.namespaceURI === "http://www.w3.org/2000/svg") ? "s:" + tag : tag;
+            tag = (element.namespaceURI === "http://www.w3.org/2000/svg") ? "svg:" + tag : tag;
             switch (tag) {
                 case "SCRIPT":
                 case "NOSCRIPT":
