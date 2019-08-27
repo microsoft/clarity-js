@@ -20,6 +20,7 @@ export interface IConfig {
     showText?: boolean;
     cssRules?: boolean;
     tokens?: string[];
+    url?: string;
     upload?: (data: string) => void;
 }
 

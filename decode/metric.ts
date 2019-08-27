@@ -5,8 +5,6 @@ let map: IMetricMap = {};
 
 map[Metric.Nodes] = { name: "Node Count", unit: ""};
 map[Metric.Bytes] = { name: "Byte Count", unit: "KB"};
-map[Metric.StreamOneBytes] = { name: "Stream One Bytes", unit: "KB"};
-map[Metric.StreamTwoBytes] = { name: "Stream Two Bytes", unit: "KB"};
 map[Metric.Mutations] = { name: "Mutation Count", unit: ""};
 map[Metric.Interactions] = { name: "Interaction Count", unit: ""};
 map[Metric.Clicks] = { name: "Click Count", unit: ""};

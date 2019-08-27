@@ -23,7 +23,7 @@ export function json(data: string): IDecodedPayload {
         r.reset();
     }
 
-    let encoded: Token[][] = merge(payload.a, payload.b);
+    let encoded: Token[][] = payload.d;
     payloads.push(payload);
 
     for (let entry of encoded) {
@@ -80,12 +80,4 @@ export function render(decoded: IDecodedPayload, iframe: HTMLIFrameElement, head
                 break;
         }
     }
-}
-
-function merge(one: Token[][], two: Token[][]): Token[][] {
-    return one.concat(two).sort(function(a: Token[], b: Token[]): number {
-        let x = a[0] as number;
-        let y = b[0] as number;
-        return x - y;
-    });
 }

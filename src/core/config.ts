@@ -8,6 +8,7 @@ let config: IConfig = {
     showText: false,
     cssRules: false,
     tokens: [],
+    url: "",
     upload: null
 };
 

@@ -10,8 +10,6 @@ export const enum Metric {
     /* Counter */
     Nodes,
     Bytes,
-    StreamOneBytes,
-    StreamTwoBytes,
     Mutations,
     Interactions,
     Clicks,

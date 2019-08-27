@@ -28,16 +28,10 @@ export const enum Flush {
     None
 }
 
-export interface IEventQueue {
-    one: Token[][];
-    two: Token[][];
-}
-
 export interface IPayload {
     e: Token[];
     m: Token[];
-    a: Token[][];
-    b: Token[][];
+    d: Token[][];
 }
 
 export interface IDecodedPayload {
