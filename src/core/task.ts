@@ -1,17 +1,38 @@
-import {ITask } from "@clarity-types/core";
+import { IAsyncTask, ITaskTiming, TaskCallback, TaskFunction } from "@clarity-types/core";
+import {Token } from "@clarity-types/data";
 import { Metric } from "@clarity-types/metric";
 import config from "@src/core/config";
 import * as metrics from "@src/metric";
 
-let tracker: ITask = {};
+let tracker: ITaskTiming = {};
 let threshold = config.longtask;
+let queue: IAsyncTask[] = [];
+let active: IAsyncTask = null;
 
-// Debug: Start
-let debug = {};
-debug[Metric.DiscoverTime] = "Discover";
-debug[Metric.MutationTime] = "Mutation";
-debug[Metric.BoxModelTime] = "BoxModel";
-// Debug: End
+export async function schedule(task: TaskFunction, callback: TaskCallback): Promise<void> {
+    // If this task is already scheduled, skip it
+    for (let q of queue) {
+        if (q.task === task) {
+            return;
+        }
+    }
+
+    // Otherwise, add thit to the queue
+    queue.push({task, callback});
+    if (active === null) { run(); }
+}
+
+function run(): void {
+    let entry = queue.shift();
+    if (entry) {
+        active = entry;
+        entry.task().then((data: Token[]) => {
+            entry.callback(data);
+            active = null;
+            run();
+        });
+    }
+}
 
 export function longtask(method: Metric): boolean {
     let elapsed = Date.now() - tracker[method];

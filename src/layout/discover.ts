@@ -10,11 +10,13 @@ import encode from "@src/layout/encode";
 import processNode from "./node";
 
 export function start(): void {
-    discover().then((data: Token[]) => {
-        doc.compute();
-        boxmodel.compute();
-        queue(data);
-    });
+    task.schedule(discover, done);
+}
+
+function done(data: Token[]): void {
+    doc.compute();
+    boxmodel.compute();
+    queue(data);
 }
 
 async function discover(): Promise<Token[]> {

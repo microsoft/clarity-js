@@ -17,9 +17,11 @@ export function compute(): void {
 }
 
 function schedule(): void {
-    boxmodel().then((data: Token[]) => {
-        queue(data);
-    });
+    task.schedule(boxmodel, done);
+}
+
+function done(data: Token[]): void {
+    queue(data);
 }
 
 async function boxmodel(): Promise<Token[]> {

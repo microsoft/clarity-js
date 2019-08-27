@@ -9,6 +9,7 @@ import encode from "@src/layout/encode";
 import processNode from "./node";
 
 let observer: MutationObserver;
+let mutations: MutationRecord[] = [];
 
 export function start(): void {
     if (observer) {
@@ -23,20 +24,23 @@ export function end(): void {
   observer = null;
 }
 
-function handle(mutations: MutationRecord[]): void {
-    process(mutations).then((data: Token[]) => {
-      doc.compute();
-      boxmodel.compute();
-      queue(data);
-    });
+function handle(m: MutationRecord[]): void {
+  // Queue up mutation records for asynchronous processing
+  for (let i = 0; i < m.length; i++) { mutations.push(m[i]); }
+  task.schedule(process, done);
 }
 
-async function process(mutations: MutationRecord[]): Promise<Token[]> {
+function done(data: Token[]): void {
+  doc.compute();
+  boxmodel.compute();
+  queue(data);
+}
+
+async function process(): Promise<Token[]> {
     let timer = Metric.MutationTime;
     task.start(timer);
-    let length = mutations.length;
-    for (let i = 0; i < length; i++) {
-      let mutation = mutations[i];
+    while (mutations.length > 0) {
+      let mutation = mutations.shift();
       let target = mutation.target;
 
       switch (mutation.type) {

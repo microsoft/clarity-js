@@ -1,4 +1,7 @@
-import { IPayload } from "./data";
+import { IPayload, Token } from "./data";
+
+type TaskFunction = () => Promise<Token[]>;
+type TaskCallback = (data: Token[]) => void;
 
 export interface IEventBindingPair {
     target: EventTarget;
@@ -28,6 +31,11 @@ export const enum Task {
     Active
 }
 
-export interface ITask {
+export interface ITaskTiming {
     [key: number]: number;
+}
+
+export interface IAsyncTask {
+    task: TaskFunction;
+    callback: TaskCallback;
 }
