@@ -1,4 +1,5 @@
 import { Flush, IMetadata, Token } from "@clarity-types/data";
+import config from "@src/core/config";
 import version from "@src/core/version";
 import encode from "@src/data/encode";
 import hash from "@src/data/hash";
@@ -10,9 +11,9 @@ export function start(): void {
     metadata = {
       sequence: 0,
       version,
-      pageId: guid(),
-      userId: guid(),
-      projectId: hash(location.host),
+      pageId: config.pageId || guid(),
+      userId: config.userId || guid(),
+      projectId: config.projectId || hash(location.host),
       url: location.href,
       title: document.title,
       referrer: document.referrer

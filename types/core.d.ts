@@ -13,6 +13,9 @@ export interface IBindingContainer {
 }
 
 export interface IConfig {
+    pageId?: string;
+    userId?: string;
+    projectId?: string;
     longtask?: number;
     lookahead?: number;
     distance?: number;
