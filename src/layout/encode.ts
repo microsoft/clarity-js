@@ -52,7 +52,7 @@ export default async function(type: Event): Promise<Token[]> {
                             case "attributes":
                                 for (let attr in data[key]) {
                                     if (data[key][attr] !== undefined) {
-                                        metadata.push(attribute(attr, data[key][attr]));
+                                        metadata.push(attribute(value.masked, attr, data[key][attr]));
                                     }
                                 }
                                 break;
@@ -68,7 +68,7 @@ export default async function(type: Event): Promise<Token[]> {
                                 let parent = dom.getNode(value.parent);
                                 let parentTag = dom.get(parent) ? dom.get(parent).data.tag : null;
                                 let tag = value.data.tag === "STYLE" ? value.data.tag : parentTag;
-                                metadata.push(text(tag, data[key]));
+                                metadata.push(text(value.masked, tag, data[key]));
                                 break;
                         }
                     }
@@ -95,27 +95,27 @@ function meta(metadata: string[]): string[] | string[][] {
     return check(hashed) && hashed.length < value.length ? [[hashed]] : metadata;
 }
 
-function attribute(key: string, value: string): string {
+function attribute(masked: boolean, key: string, value: string): string {
     switch (key) {
         case "src":
         case "title":
         case "alt":
-            return `${key}=`;
+            return `${key}=${masked ? "" : value}`;
         case "value":
         case "placeholder":
-            return `${key}=${mask(value)}`;
+            return `${key}=${masked ? mask(value) : value}`;
         default:
             return `${key}=${value}`;
     }
 }
 
-function text(tag: string, value: string): string {
+function text(masked: boolean, tag: string, value: string): string {
     switch (tag) {
         case "STYLE":
         case "TITLE":
             return value;
         default:
-            return mask(value);
+            return masked ? mask(value) : value;
     }
 }
 

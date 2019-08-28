@@ -34,15 +34,15 @@ export function add(node: Node, data: INodeData, source: Source): void {
     let id = getId(node, true);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = getNextId(node);
-    let mask = true;
+    let masked = true;
 
     if (parentId >= 0 && values[parentId]) {
         values[parentId].children.push(id);
-        mask = values[parentId].mask;
+        masked = values[parentId].masked;
     }
 
-    if (data.attributes && MASK_ATTRIBUTE in data.attributes) { mask = true; }
-    if (data.attributes && UNMASK_ATTRIBUTE in data.attributes) { mask = false; }
+    if (data.attributes && MASK_ATTRIBUTE in data.attributes) { masked = true; }
+    if (data.attributes && UNMASK_ATTRIBUTE in data.attributes) { masked = false; }
 
     nodes[id] = node;
     values[id] = {
@@ -53,7 +53,7 @@ export function add(node: Node, data: INodeData, source: Source): void {
         data,
         active: true,
         leaf: false,
-        mask
+        masked
     };
     leaf(data.tag, id, parentId);
     track(id, source);
