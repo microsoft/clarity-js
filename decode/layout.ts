@@ -2,6 +2,8 @@ import { resolve } from "../src/data/token";
 import { Event, IDecodedEvent, Token } from "../types/data";
 import { IBoxModel, IDecodedNode, IDocumentSize } from "../types/layout";
 
+let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
+
 export default function(tokens: Token[]): IDecodedEvent {
     let time = tokens[0] as number;
     let event = tokens[1] as Event;
@@ -75,34 +77,22 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
         let keyIndex = token.indexOf("=");
-        let parts = token.split("*");
         if (i === (node.length - 1) && output.tag === "STYLE") {
             value = token;
         } else if (output.tag !== "*T" && keyIndex > 0) {
             hasAttribute = true;
-            attributes[token.substr(0, keyIndex)] = token.substr(keyIndex + 1);
-        } else if (output.tag === "*T") {
-            value = token;
-            if (parts.length === 2) {
-                let textCount = parseInt(parts[0], 36);
-                let wordCount = parseInt(parts[1], 36);
-                if (isFinite(textCount) && isFinite(wordCount)) {
-                    if (wordCount > 0 && textCount === 0) {
-                        value = " ";
-                    } else if (wordCount === 0 && textCount > 0) {
-                        value = Array(textCount + 1).join("x");
-                    } else if (wordCount > 0 && textCount > 0) {
-                        value = "";
-                        let avg = Math.floor(textCount / wordCount);
-                        while (value.length < textCount + wordCount) {
-                            let gap = Math.min(avg, textCount + wordCount - value.length);
-                            value += Array(gap + 1).join("x") + " ";
-                        }
-                    } else {
-                        value = Array(Math.floor((textCount + 1) / 2) + 1).join("x ");
-                    }
-                }
+            let k = token.substr(0, keyIndex);
+            let v = unmask(token.substr(keyIndex + 1));
+            switch (k) {
+                case "src":
+                    v = placeholderImage;
+                    break;
+                default:
+                    break;
             }
+            attributes[k] = v;
+        } else if (output.tag === "*T") {
+            value = unmask(token);
         }
     }
 
@@ -110,4 +100,29 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
     if (value) { output.value = value; }
 
     return output;
+}
+
+function unmask(value: string): string {
+    let parts = value.split("*");
+    if (parts.length === 2) {
+        let textCount = parseInt(parts[0], 36);
+        let wordCount = parseInt(parts[1], 36);
+        if (isFinite(textCount) && isFinite(wordCount)) {
+            if (wordCount > 0 && textCount === 0) {
+                value = " ";
+            } else if (wordCount === 0 && textCount > 0) {
+                value = Array(textCount + 1).join("x");
+            } else if (wordCount > 0 && textCount > 0) {
+                value = "";
+                let avg = Math.floor(textCount / wordCount);
+                while (value.length < textCount + wordCount) {
+                    let gap = Math.min(avg, textCount + wordCount - value.length);
+                    value += Array(gap + 1).join("x") + " ";
+                }
+            } else {
+                value = Array(Math.floor((textCount + 1) / 2) + 1).join("x ");
+            }
+        }
+    }
+    return value;
 }
