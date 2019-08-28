@@ -52,7 +52,7 @@ function metricBox(metric: number, map: IMetricMapValue, metadata: string = null
 export function boxmodel(data: IBoxModel[], iframe: HTMLIFrameElement): void {
     for (let bm of data) {
         let el = element(bm.id) as HTMLElement;
-        if (el && false) {
+        if (el) {
             el.style.width = bm.box[2] + "px";
             el.style.height = bm.box[3] + "px";
         }

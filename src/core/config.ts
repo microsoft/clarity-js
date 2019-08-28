@@ -8,7 +8,6 @@ let config: IConfig = {
     lookahead: 500,
     distance: 20,
     delay: 1000,
-    showText: false,
     cssRules: false,
     tokens: [],
     url: "",
