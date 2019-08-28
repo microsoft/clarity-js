@@ -3,6 +3,8 @@ import time from "@src/core/time";
 
 const NODE_ID_PROP: string = "__node_index__";
 const DEVTOOLS_HOOK: string = "__CLARITY_DEVTOOLS_HOOK__";
+const MASK_ATTRIBUTE = "data-clarity-mask";
+const UNMASK_ATTRIBUTE = "data-clarity-umask";
 let index: number = 1;
 
 let nodes: Node[] = [];
@@ -32,10 +34,15 @@ export function add(node: Node, data: INodeData, source: Source): void {
     let id = getId(node, true);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = getNextId(node);
+    let mask = true;
 
     if (parentId >= 0 && values[parentId]) {
         values[parentId].children.push(id);
+        mask = values[parentId].mask;
     }
+
+    if (data.attributes && MASK_ATTRIBUTE in data.attributes) { mask = true; }
+    if (data.attributes && UNMASK_ATTRIBUTE in data.attributes) { mask = false; }
 
     nodes[id] = node;
     values[id] = {
@@ -45,7 +52,8 @@ export function add(node: Node, data: INodeData, source: Source): void {
         children: [],
         data,
         active: true,
-        leaf: false
+        leaf: false,
+        mask
     };
     leaf(data.tag, id, parentId);
     track(id, source);

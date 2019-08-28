@@ -25,6 +25,7 @@ export interface INodeValue {
     /* Metadata */
     active: boolean;
     leaf: boolean;
+    mask: boolean;
 }
 
 export interface INodeChange {
