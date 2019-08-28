@@ -164,7 +164,15 @@ function copy(input: INodeValue[]): INodeValue[] {
 }
 
 function track(id: number, source: Source): void {
-    if (updates.indexOf(id) === -1) { updates.push(id); }
+    // Keep track of the order in which mutations happened, they may not be sequential
+    // Edge case: If an element is added later on, and pre-discovered element is moved as a child.
+    // In that case, we need to reorder the prediscovered element in the update list to keep visualization consistent.
+    let uIndex = updates.indexOf(id);
+    if (uIndex >= 0 && source === Source.ChildListAdd) {
+        updates.splice(uIndex, 1);
+        updates.push(id);
+    } else if (uIndex === -1) { updates.push(id); }
+
     if (DEVTOOLS_HOOK in window) {
         let value = copy([values[id]])[0];
         let change = { time: time(), source, value };

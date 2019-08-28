@@ -10,6 +10,8 @@ import processNode from "./node";
 
 let observer: MutationObserver;
 let mutations: MutationRecord[] = [];
+let insertRule: (rule: string, index?: number) => number;
+let deleteRule: (index?: number) => void;
 
 export function start(): void {
     if (observer) {
@@ -17,11 +19,30 @@ export function start(): void {
     }
     observer = window["MutationObserver"] ? new MutationObserver(handle) : null;
     observer.observe(document, { attributes: true, childList: true, characterData: true, subtree: true });
+    insertRule = CSSStyleSheet.prototype.insertRule;
+    deleteRule = CSSStyleSheet.prototype.deleteRule;
+
+    // Some popular open source libraries, like styled-components, optimize performance
+    // by injecting CSS using insertRule API vs. appending text node. A side effect of
+    // using javascript API is that it doesn't trigger DOM mutation and therefore we
+    // need to override the insertRule API and listen for changes manually.
+    CSSStyleSheet.prototype.insertRule = function(rule: string, index?: number): number {
+      let value = insertRule.call(this, rule, index);
+      generate(this.ownerNode, "characterData");
+      return value;
+    };
+
+    CSSStyleSheet.prototype.deleteRule = function(index?: number): void {
+      deleteRule.call(this, index);
+      generate(this.ownerNode, "characterData");
+    };
 }
 
 export function end(): void {
   observer.disconnect();
   observer = null;
+  CSSStyleSheet.prototype.insertRule = insertRule;
+  CSSStyleSheet.prototype.deleteRule = deleteRule;
 }
 
 function handle(m: MutationRecord[]): void {
@@ -78,4 +99,18 @@ async function process(): Promise<Token[]> {
     let data = await encode(Event.Mutation);
     task.stop(timer);
     return data;
+}
+
+function generate(target: Node, type: MutationRecordType): void {
+  handle([{
+    addedNodes: null,
+    attributeName: null,
+    attributeNamespace: null,
+    nextSibling: null,
+    oldValue: null,
+    previousSibling: null,
+    removedNodes: null,
+    target,
+    type
+  }]);
 }

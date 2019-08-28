@@ -66,7 +66,6 @@ export default async function(type: Event): Promise<Token[]> {
                                 break;
                             case "value":
                                 let parent = dom.getNode(value.parent);
-                                if (parent === null) { console.warn("Unexpected | Node value: " + JSON.stringify(value)); }
                                 let parentTag = dom.get(parent) ? dom.get(parent).data.tag : null;
                                 let tag = value.data.tag === "STYLE" ? value.data.tag : parentTag;
                                 metadata.push(text(tag, data[key]));
