@@ -53,8 +53,10 @@ export function boxmodel(data: IBoxModel[], iframe: HTMLIFrameElement): void {
     for (let bm of data) {
         let el = element(bm.id) as HTMLElement;
         if (el) {
-            el.style.width = bm.box[2] + "px";
-            el.style.height = bm.box[3] + "px";
+            el.style.maxWidth = bm.box[2] + "px";
+            el.style.minWidth = Math.max(bm.box[2] - 5, 0) + "px";
+            el.style.maxHeight = bm.box[3] + "px";
+            el.style.overflow = "hidden";
         }
     }
 }
