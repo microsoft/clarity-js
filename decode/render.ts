@@ -1,6 +1,6 @@
 import { IResize, IScroll, Scroll } from "../types/interaction";
 import { IBoxModel, IDecodedNode } from "../types/layout";
-import { IDecodedMetric, IMetricMapValue } from "../types/metric";
+import { IDecodedMetric } from "../types/metric";
 
 let nodes = {};
 let svgns: string = "http://www.w3.org/2000/svg";
@@ -12,24 +12,11 @@ export function reset(): void {
 export function metrics(data: IDecodedMetric, header: HTMLElement): void {
     let html = [];
 
-    // Counters
-    for (let metric in data.counters) {
-        if (data.counters[metric]) {
-            let map = data.map[metric];
-            let v = value(data.counters[metric], map.unit);
-            html.push(metricBox(v, data.map[metric]));
-        }
-    }
-
-    // Summary
-    for (let metric in data.measures) {
-        if (data.measures[metric]) {
-            let m = data.measures[metric];
-            let map = data.map[metric];
-            let unit = map.unit;
-            let v = value(map.value ? m[map.value] : m.sum, unit);
-            let metadata = map.value === "max" ? `#${m.count} Min: ${value(m.min, unit)}` : `#${m.count} Max: ${value(m.max, unit)}`;
-            html.push(metricBox(v, data.map[metric], metadata));
+    let entries = {...data.counters, ...data.measures};
+    for (let metric in entries) {
+        if (entries[metric]) {
+            let m = entries[metric];
+            html.push(`<li><h2>${value(m.value, m.unit)}<span>${m.unit}</span></h2>${metric}</li>`);
         }
     }
 
@@ -44,18 +31,13 @@ function value(input: number, unit: string): number {
     }
 }
 
-function metricBox(metric: number, map: IMetricMapValue, metadata: string = null): string {
-    metadata = metadata || "";
-    return `<li><h2>${metric}<span>${map.unit}</span><div>${metadata}</div></h2>${map.name}</li>`;
-}
-
 export function boxmodel(data: IBoxModel[], iframe: HTMLIFrameElement): void {
     for (let bm of data) {
         let el = element(bm.id) as HTMLElement;
         if (el) {
             el.style.maxWidth = bm.box[2] + "px";
             el.style.minWidth = Math.max(bm.box[2] - 5, 0) + "px";
-            el.style.maxHeight = bm.box[3] + "px";
+            el.style.height = bm.box[3] + "px";
             el.style.overflow = "hidden";
             el.style.wordBreak = "break-all";
         }

@@ -1,9 +1,10 @@
+import { Event } from "./data";
+
 export const enum MetricType {
     Counter = "C",
-    Timing = "T",
-    Summary = "S",
-    Events = "E",
-    Marks = "M"
+    Measure = "M",
+    Event = "E",
+    Marks = "K"
 }
 
 export const enum Metric {
@@ -20,14 +21,34 @@ export const enum Metric {
     BoxModelTime,
     WireupTime,
     ActiveTime,
-    /* Summary */
+    /* Measures */
     ViewportWidth,
     ViewportHeight,
     DocumentWidth,
-    DocumentHeight,
-    /* Semantic Events */
-    ClickEvent,
-    InteractionEvent
+    DocumentHeight
+}
+
+export interface IMetric {
+    counters: IMetricValue;
+    measures: IMetricValue;
+    events: IEventMetric[];
+    marks: IMarkMetric[];
+}
+
+export interface IMetricValue {
+    [key: number]: number;
+}
+
+export interface IEventMetric {
+    event: Event;
+    time: number;
+    duration: number;
+}
+
+export interface IMarkMetric {
+    key: string;
+    value: string;
+    time: number;
 }
 
 export interface IMetricMap {
@@ -37,41 +58,18 @@ export interface IMetricMap {
 export interface IMetricMapValue {
     name: string;
     unit: string;
-    value?: string;
 }
 
-export interface IMetric {
-    counters: ICounter;
-    measures: IMeasure;
-    events: ISemanticEvent[];
-    marks: IMark[];
+export interface IDecodedMetric {
+    counters: IDecodedMetricValue;
+    measures: IDecodedMetricValue;
+    events: IEventMetric[];
+    marks: IMarkMetric[];
 }
 
-export interface IDecodedMetric extends IMetric {
-    map: IMetricMap;
-}
-
-export interface ICounter {
-    [key: number]: number;
-}
-
-export interface IMeasure {
-    [key: number]: {
-        sum: number;
-        min: number;
-        max: number;
-        count: number;
-        sumsquared: number;
+export interface IDecodedMetricValue {
+    [key: string]: {
+        value: number;
+        unit: string;
     };
-}
-
-export interface ISemanticEvent {
-    metric: number;
-    time: number;
-    duration: number;
-}
-
-export interface IMark {
-    name: string;
-    time: number;
 }

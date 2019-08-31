@@ -19,28 +19,23 @@ export default function(): Token[] {
     }
 
     // Encode summary metrics
-    output.push(MetricType.Summary);
-    let summaries = metrics.measures;
-    for (let metric in summaries) {
-        if (summaries[metric]) {
+    output.push(MetricType.Measure);
+    let measures = metrics.measures;
+    for (let metric in measures) {
+        if (measures[metric]) {
             let m = num(metric);
             if (updates.indexOf(m) >= 0) {
-                let h = summaries[metric];
                 output.push(m);
-                output.push(h.sum);
-                output.push(h.min);
-                output.push(h.max);
-                output.push(h.sumsquared);
-                output.push(h.count);
+                output.push(measures[metric]);
             }
         }
     }
 
-    // Encode semantic events
-    if (metrics.events.length > 0) { output.push(MetricType.Events); }
+    // Encode events summary
+    if (metrics.events.length > 0) { output.push(MetricType.Event); }
     let events = metrics.events;
     for (let event of events) {
-        output.push(event.metric);
+        output.push(event.event);
         output.push(event.time);
         output.push(event.duration);
     }
@@ -49,7 +44,8 @@ export default function(): Token[] {
     if (metrics.marks.length > 0) { output.push(MetricType.Marks); }
     let marks = metrics.marks;
     for (let mark of marks) {
-        output.push(mark.name);
+        output.push(mark.key);
+        output.push(mark.value);
         output.push(mark.time);
     }
 

@@ -1,28 +1,26 @@
-import { Token } from "../types/data";
+import { Event, Token } from "../types/data";
 import { IDecodedMetric, IMetricMap, Metric, MetricType } from "../types/metric";
 
-let map: IMetricMap = {};
+let metricMap: IMetricMap = {};
 
-map[Metric.Nodes] = { name: "Node Count", unit: ""};
-map[Metric.Bytes] = { name: "Byte Count", unit: "KB"};
-map[Metric.Mutations] = { name: "Mutation Count", unit: ""};
-map[Metric.Interactions] = { name: "Interaction Count", unit: ""};
-map[Metric.Clicks] = { name: "Click Count", unit: ""};
-map[Metric.ScriptErrors] = { name: "Script Errors", unit: ""};
-map[Metric.ImageErrors] = { name: "Image Errors", unit: ""};
-map[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};
-map[Metric.MutationTime] = { name: "Mutation Time", unit: "ms"};
-map[Metric.BoxModelTime] = { name: "Box Model Time", unit: "ms"};
-map[Metric.WireupTime] = { name: "Wireup Delay", unit: "s"};
-map[Metric.ActiveTime] = { name: "Active Time", unit: "ms"};
-map[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px", value: "max"};
-map[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px", value: "max"};
-map[Metric.DocumentWidth] = { name: "Document Width", unit: "px", value: "max"};
-map[Metric.DocumentHeight] = { name: "Document Height", unit: "px", value: "max"};
-map[Metric.ClickEvent] = { name: "Click Event", unit: ""};
-map[Metric.InteractionEvent] = { name: "Interaction Event", unit: ""};
+metricMap[Metric.Nodes] = { name: "Node Count", unit: ""};
+metricMap[Metric.Bytes] = { name: "Byte Count", unit: "KB"};
+metricMap[Metric.Mutations] = { name: "Mutation Count", unit: ""};
+metricMap[Metric.Interactions] = { name: "Interaction Count", unit: ""};
+metricMap[Metric.Clicks] = { name: "Click Count", unit: ""};
+metricMap[Metric.ScriptErrors] = { name: "Script Errors", unit: ""};
+metricMap[Metric.ImageErrors] = { name: "Image Errors", unit: ""};
+metricMap[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};
+metricMap[Metric.MutationTime] = { name: "Mutation Time", unit: "ms"};
+metricMap[Metric.BoxModelTime] = { name: "Box Model Time", unit: "ms"};
+metricMap[Metric.WireupTime] = { name: "Wireup Delay", unit: "s"};
+metricMap[Metric.ActiveTime] = { name: "Active Time", unit: "ms"};
+metricMap[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px"};
+metricMap[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px"};
+metricMap[Metric.DocumentWidth] = { name: "Document Width", unit: "px"};
+metricMap[Metric.DocumentHeight] = { name: "Document Height", unit: "px"};
 
-let metrics: IDecodedMetric = { counters: {}, measures: {}, events: [], marks: [], map };
+let metrics: IDecodedMetric = { counters: {}, measures: {}, events: [], marks: [] };
 
 export default function(tokens: Token[]): IDecodedMetric {
     let i = 0;
@@ -37,22 +35,18 @@ export default function(tokens: Token[]): IDecodedMetric {
         // Parse metrics
         switch (metricType) {
             case MetricType.Counter:
-                metrics.counters[tokens[i++] as Metric] = tokens[i++] as number;
+                let counter = metricMap[tokens[i++] as Metric];
+                metrics.counters[counter.name] = { value: tokens[i++] as number, unit: counter.unit };
                 break;
-            case MetricType.Summary:
-                metrics.measures[tokens[i++] as Metric] = {
-                    sum: tokens[i++] as number,
-                    min: tokens[i++] as number,
-                    max: tokens[i++] as number,
-                    sumsquared: tokens[i++] as number,
-                    count: tokens[i++] as number,
-                };
+            case MetricType.Measure:
+                let measure = metricMap[tokens[i++] as Metric];
+                metrics.measures[measure.name] = { value: tokens[i++] as number, unit: measure.unit };
                 break;
-            case MetricType.Events:
-                metrics.events.push({ metric: tokens[i++] as Metric, time: tokens[i++] as number, duration: tokens[i++] as number });
+            case MetricType.Event:
+                metrics.events.push({ event: tokens[i++] as Event, time: tokens[i++] as number, duration: tokens[i++] as number });
                 break;
             case MetricType.Marks:
-                metrics.marks.push({ name: tokens[i++] as string, time: tokens[i++] as number });
+                metrics.marks.push({ key: tokens[i++] as string, value: tokens[i++] as string, time: tokens[i++] as number });
                 break;
         }
     }
