@@ -104,6 +104,7 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
 
 function unmask(value: string): string {
     let parts = value.split("*");
+    let placeholder = "x";
     if (parts.length === 2) {
         let textCount = parseInt(parts[0], 36);
         let wordCount = parseInt(parts[1], 36);
@@ -111,16 +112,16 @@ function unmask(value: string): string {
             if (wordCount > 0 && textCount === 0) {
                 value = " ";
             } else if (wordCount === 0 && textCount > 0) {
-                value = Array(textCount + 1).join("x");
+                value = Array(textCount + 1).join(placeholder);
             } else if (wordCount > 0 && textCount > 0) {
                 value = "";
                 let avg = Math.floor(textCount / wordCount);
                 while (value.length < textCount + wordCount) {
                     let gap = Math.min(avg, textCount + wordCount - value.length);
-                    value += Array(gap + 1).join("x") + " ";
+                    value += Array(gap + 1).join(placeholder) + " ";
                 }
             } else {
-                value = Array(Math.floor((textCount + 1) / 2) + 1).join("x ");
+                value = Array(textCount + wordCount + 1).join(placeholder);
             }
         }
     }

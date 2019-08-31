@@ -20,6 +20,7 @@ function send(data: string): void {
     if (config.url.length > 0) {
         let xhr = new XMLHttpRequest();
         xhr.open("POST", config.url);
+        xhr.setRequestHeader("Content-Type", "application/json");
         xhr.send(data);
     }
 }

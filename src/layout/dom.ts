@@ -149,7 +149,16 @@ function leaf(tag: string, id: number, parentId: number): void {
     if (id !== null && parentId !== null) {
         switch (tag) {
             case "*T":
-                values[parentId].leaf = true;
+                // Mark parent as a leaf node only if the text node has valid text
+                // For nodes with whitespaces and not real text, skip them
+                let value = values[id].data.value;
+                for (let i = 0; i < value.length; i++) {
+                    let code = value.charCodeAt(i);
+                    if (!(code === 32 || code === 10 || code === 9 || code === 13)) {
+                        values[parentId].leaf = true;
+                        break;
+                    }
+                }
                 break;
             case "IMG":
             case "svg:svg":
