@@ -26,15 +26,7 @@ export interface IConfig {
     upload?: (data: string) => void;
 }
 
-// Task
-export const enum Task {
-    Discover,
-    Mutation,
-    Wireup,
-    Active
-}
-
-export interface ITaskTiming {
+export interface ITaskTracker {
     [key: number]: number;
 }
 

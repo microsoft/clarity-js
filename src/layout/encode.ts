@@ -10,8 +10,6 @@ import * as boxmodel from "./boxmodel";
 import {doc} from "./document";
 import * as dom from "./dom";
 
-window["HASH"] = hash;
-
 export default async function(type: Event): Promise<Token[]> {
     let tokens: Token[] = [time(), type];
     let timer = type === Event.Discover ? Metric.DiscoverTime : Metric.MutationTime;
@@ -36,9 +34,8 @@ export default async function(type: Event): Promise<Token[]> {
             for (let value of values) {
                 if (task.longtask(timer)) { await task.idle(timer); }
                 let metadata = [];
-                let layouts = [];
                 let data: INodeData = value.data;
-                let keys = ["tag", "layout", "attributes", "value"];
+                let keys = ["tag", "attributes", "value"];
                 for (let key of keys) {
                     if (data[key]) {
                         switch (key) {
@@ -53,14 +50,6 @@ export default async function(type: Event): Promise<Token[]> {
                                 for (let attr in data[key]) {
                                     if (data[key][attr] !== undefined) {
                                         metadata.push(attribute(value.masked, attr, data[key][attr]));
-                                    }
-                                }
-                                break;
-                            case "layout":
-                                if (data[key].length > 0) {
-                                    let boxes = layout(data[key]);
-                                    for (let box of boxes) {
-                                        layouts.push(box);
                                     }
                                 }
                                 break;
@@ -79,10 +68,6 @@ export default async function(type: Event): Promise<Token[]> {
                 for (let token of metadata) {
                     let index: number = typeof token === "string" ? tokens.indexOf(token) : -1;
                     tokens.push(index >= 0 && token.length > index.toString().length ? [index] : token);
-                }
-                // Add layout boxes
-                for (let entry of layouts) {
-                    tokens.push(entry);
                 }
             }
             return tokens;
@@ -131,12 +116,4 @@ function mask(value: string): string {
         wasWhiteSpace = isWhiteSpace;
     }
     return `${textCount.toString(36)}*${wordCount.toString(36)}`;
-}
-
-function layout(l: number[]): string[] {
-    let output = [];
-    for (let i = 0; i < l.length; i = i + 4) {
-        output.push([l[i + 0].toString(36), l[i + 1].toString(36), l[i + 2].toString(36), l[i + 3].toString(36)].join("*"));
-    }
-    return output;
 }

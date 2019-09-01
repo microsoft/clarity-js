@@ -1,10 +1,10 @@
-import { IAsyncTask, ITaskTiming, TaskCallback, TaskFunction } from "@clarity-types/core";
+import { IAsyncTask, ITaskTracker, TaskCallback, TaskFunction } from "@clarity-types/core";
 import {Token } from "@clarity-types/data";
 import { Metric } from "@clarity-types/metric";
 import config from "@src/core/config";
 import * as metrics from "@src/metric";
 
-let tracker: ITaskTiming = {};
+let tracker: ITaskTracker = {};
 let threshold = config.longtask;
 let queue: IAsyncTask[] = [];
 let active: IAsyncTask = null;
