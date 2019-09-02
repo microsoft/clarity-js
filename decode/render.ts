@@ -1,9 +1,10 @@
 import { IResize, IScroll, Scroll } from "../types/interaction";
-import { IBoxModel, IDecodedNode } from "../types/layout";
+import { IBoxModel, IChecksum, IDecodedNode } from "../types/layout";
 import { IDecodedMetric } from "../types/metric";
 
 let nodes = {};
 let svgns: string = "http://www.w3.org/2000/svg";
+let diet = false;
 
 export function reset(): void {
     nodes = {};
@@ -31,15 +32,35 @@ function value(input: number, unit: string): number {
     }
 }
 
+export function checksum(data: IChecksum[], iframe: HTMLIFrameElement): void {
+    diet = true;
+}
+
 export function boxmodel(data: IBoxModel[], iframe: HTMLIFrameElement): void {
+    let doc = iframe.contentDocument;
     for (let bm of data) {
         let el = element(bm.id) as HTMLElement;
-        if (el) {
-            el.style.maxWidth = bm.box[2] + "px";
-            el.style.minWidth = Math.max(bm.box[2] - 5, 0) + "px";
-            el.style.height = bm.box[3] + "px";
-            el.style.overflow = "hidden";
-            el.style.wordBreak = "break-all";
+        switch (diet) {
+            case true:
+                let box = el ? el : doc.createElement("DIV");
+                box.style.left = bm.box[0] + "px";
+                box.style.top = bm.box[1] + "px";
+                box.style.width = bm.box[2] + "px";
+                box.style.height = bm.box[3] + "px";
+                box.style.position = "absolute";
+                box.style.border = "1px solid red";
+                doc.body.appendChild(box);
+                nodes[bm.id] = box;
+                break;
+            case false:
+                if (el) {
+                    el.style.maxWidth = bm.box[2] + "px";
+                    el.style.minWidth = Math.max(bm.box[2] - 5, 0) + "px";
+                    el.style.height = bm.box[3] + "px";
+                    el.style.overflow = "hidden";
+                    el.style.wordBreak = "break-all";
+                }
+                break;
         }
     }
 }

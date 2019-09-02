@@ -37,6 +37,7 @@ export function json(data: string): IDecodedPayload {
             case Event.Discover:
             case Event.Mutation:
             case Event.BoxModel:
+            case Event.Checksum:
                 event = layout(entry);
                 break;
             case Event.Metadata:
@@ -68,6 +69,9 @@ export function render(decoded: IDecodedPayload, iframe: HTMLIFrameElement, head
             case Event.Discover:
             case Event.Mutation:
                 r.markup(entry.data, iframe);
+                break;
+            case Event.Checksum:
+                r.checksum(entry.data, iframe);
                 break;
             case Event.BoxModel:
                 r.boxmodel(entry.data, iframe);
