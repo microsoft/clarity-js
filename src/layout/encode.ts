@@ -22,20 +22,32 @@ export default async function(type: Event): Promise<Token[]> {
             metric.measure(Metric.DocumentHeight, d.height);
             return tokens;
         case Event.BoxModel:
-            let bm = boxmodel.summarize();
+            let bm = boxmodel.updates();
             for (let value of bm) {
                 tokens.push(value.id);
                 tokens.push(value.box);
             }
             return tokens;
+        case Event.Checksum:
+            let selectors = dom.selectors();
+            let reference = 0;
+            for (let value of selectors) {
+                if (task.longtask(timer)) { await task.idle(timer); }
+                let checksum = hash(value.selector);
+                let pointer = tokens.indexOf(checksum);
+                tokens.push(value.id - reference);
+                tokens.push(pointer >= 0 ? [pointer] : checksum);
+                reference = value.id;
+            }
+            return tokens;
         case Event.Discover:
         case Event.Mutation:
-            let values = dom.summarize();
+            let values = dom.updates();
             for (let value of values) {
                 if (task.longtask(timer)) { await task.idle(timer); }
                 let metadata = [];
                 let data: INodeData = value.data;
-                let keys = ["tag", "attributes", "value"];
+                let keys = ["tag", "path", "attributes", "value"];
                 for (let key of keys) {
                     if (data[key]) {
                         switch (key) {
@@ -46,10 +58,13 @@ export default async function(type: Event): Promise<Token[]> {
                                 if (value.next) { tokens.push(value.next); }
                                 metadata.push(data[key]);
                                 break;
+                            case "path":
+                                metadata.push(`${value.data.path}>`);
+                                break;
                             case "attributes":
                                 for (let attr in data[key]) {
                                     if (data[key][attr] !== undefined) {
-                                        metadata.push(attribute(value.masked, attr, data[key][attr]));
+                                        metadata.push(attribute(value.metadata.masked, attr, data[key][attr]));
                                     }
                                 }
                                 break;
@@ -57,7 +72,7 @@ export default async function(type: Event): Promise<Token[]> {
                                 let parent = dom.getNode(value.parent);
                                 let parentTag = dom.get(parent) ? dom.get(parent).data.tag : null;
                                 let tag = value.data.tag === "STYLE" ? value.data.tag : parentTag;
-                                metadata.push(text(value.masked, tag, data[key]));
+                                metadata.push(text(value.metadata.masked, tag, data[key]));
                                 break;
                         }
                     }

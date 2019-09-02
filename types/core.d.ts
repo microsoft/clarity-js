@@ -16,11 +16,12 @@ export interface IConfig {
     pageId?: string;
     userId?: string;
     projectId?: string;
-    longtask?: number;
+    longTask?: number;
     lookahead?: number;
     distance?: number;
     delay?: number;
     cssRules?: boolean;
+    diet?: boolean;
     tokens?: string[];
     url?: string;
     upload?: (data: string) => void;

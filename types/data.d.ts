@@ -8,6 +8,7 @@ export const enum Event {
     Discover,
     Mutation,
     BoxModel,
+    Checksum,
     Mouse,
     Touch,
     Keyboard,

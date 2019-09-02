@@ -4,11 +4,12 @@ let config: IConfig = {
     pageId: null,
     userId: null,
     projectId: null,
-    longtask: 30,
+    longTask: 30,
     lookahead: 500,
     distance: 20,
     delay: 1000,
     cssRules: false,
+    diet: false,
     tokens: [],
     url: "",
     upload: null

@@ -1,13 +1,16 @@
 import { resolve } from "../src/data/token";
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IBoxModel, IDecodedNode, IDocumentSize } from "../types/layout";
+import { IAttributes, IBoxModel, IChecksum, IDecodedNode, IDocumentSize,  } from "../types/layout";
 
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
+let selectorMap = {};
 
 export default function(tokens: Token[]): IDecodedEvent {
     let time = tokens[0] as number;
     let event = tokens[1] as Event;
     let decoded: IDecodedEvent = {time, event, data: []};
+    selectorMap = {};
+
     switch (event) {
         case Event.Document:
             let d: IDocumentSize = { width: tokens[2] as number, height: tokens[3] as number };
@@ -17,6 +20,16 @@ export default function(tokens: Token[]): IDecodedEvent {
             for (let i = 2; i < tokens.length; i += 2) {
                 let boxmodel: IBoxModel = { id: tokens[i] as number, box: tokens[i + 1] as number[] };
                 decoded.data.push(boxmodel);
+            }
+            return decoded;
+        case Event.Checksum:
+            let reference = 0;
+            for (let i = 2; i < tokens.length; i += 2) {
+                let id = (tokens[i] as number) + reference;
+                let token = tokens[i + 1];
+                let checksum: IChecksum = { id, checksum: typeof(token) === "object" ? tokens[token[0]] : token };
+                decoded.data.push(checksum);
+                reference = id;
             }
             return decoded;
         case Event.Discover:
@@ -69,16 +82,22 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
         id: node[0],
         parent: tagIndex > 1 ? node[1] : null,
         next: tagIndex > 2 ? node[2] : null,
-        tag: node[tagIndex]
+        tag: node[tagIndex],
+        selector: "",
     };
     let hasAttribute = false;
     let attributes = {};
     let value = null;
+    let path = output.parent in selectorMap ? `${selectorMap[output.parent]}>` : null;
+
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
         let keyIndex = token.indexOf("=");
+        let lastChar = token[token.length - 1];
         if (i === (node.length - 1) && output.tag === "STYLE") {
             value = token;
+        } else if (lastChar === ">" && keyIndex === -1) {
+            path = token;
         } else if (output.tag !== "*T" && keyIndex > 0) {
             hasAttribute = true;
             let k = token.substr(0, keyIndex);
@@ -96,10 +115,28 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
         }
     }
 
+    output.selector = selector(output.id, path, output.tag, attributes);
     if (hasAttribute) { output.attributes = attributes; }
     if (value) { output.value = value; }
 
     return output;
+}
+
+function selector(id: number, path: string, tag: string, attributes: IAttributes): string {
+    switch (tag) {
+        case "STYLE":
+        case "TITLE":
+        case "LINK":
+        case "META":
+        case "*T":
+            return "";
+        default:
+            let s = path && path.length > 0 ? path + tag : tag;
+            if ("id" in attributes) { s = `${tag}#${attributes["id"]}`; }
+            if ("class" in attributes) { s += `.${attributes["class"].trim().split(" ").join(".")}`; }
+            selectorMap[id] = s;
+            return s;
+    }
 }
 
 function unmask(value: string): string {

@@ -12,6 +12,7 @@ export interface IAttributes {
 
 export interface INodeData {
     tag: string;
+    path?: string;
     attributes?: IAttributes;
     value?: string;
 }
@@ -22,7 +23,11 @@ export interface INodeValue {
     next: number;
     children: number[];
     data: INodeData;
-    /* Metadata */
+    selector: string;
+    metadata: INodeMetadata;
+}
+
+export interface INodeMetadata {
     active: boolean;
     leaf: boolean;
     masked: boolean;
@@ -39,6 +44,7 @@ export interface IDecodedNode {
     parent: number;
     next: number;
     tag: string;
+    selector: string;
     attributes?: IAttributes;
     value?: string;
 }
@@ -51,4 +57,9 @@ export interface IDocumentSize {
 export interface IBoxModel {
     id: number;
     box: number[];
+}
+
+export interface IChecksum {
+    id: number;
+    checksum: string;
 }

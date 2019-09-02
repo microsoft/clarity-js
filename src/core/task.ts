@@ -5,7 +5,7 @@ import config from "@src/core/config";
 import * as metrics from "@src/metric";
 
 let tracker: ITaskTracker = {};
-let threshold = config.longtask;
+let threshold = config.longTask;
 let queue: IAsyncTask[] = [];
 let active: IAsyncTask = null;
 

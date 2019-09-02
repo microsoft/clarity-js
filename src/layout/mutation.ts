@@ -1,6 +1,7 @@
 import { Event, Token } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
 import { Metric } from "@clarity-types/metric";
+import config from "@src/core/config";
 import * as task from "@src/core/task";
 import queue from "@src/data/queue";
 import * as boxmodel from "@src/layout/boxmodel";
@@ -96,7 +97,7 @@ async function process(): Promise<Token[]> {
           break;
       }
     }
-    let data = await encode(Event.Mutation);
+    let data = await encode(config.diet ? Event.Checksum : Event.Mutation);
     task.stop(timer);
     return data;
 }

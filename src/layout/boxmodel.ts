@@ -8,7 +8,7 @@ import encode from "@src/layout/encode";
 import * as dom from "./dom";
 
 let bm: {[key: number]: IBoxModel} = {};
-let updates: number[] = [];
+let updateMap: number[] = [];
 let timeout: number = null;
 
 export function compute(): void {
@@ -46,12 +46,12 @@ async function boxmodel(): Promise<Token[]> {
     return data;
 }
 
-export function summarize(): IBoxModel[] {
+export function updates(): IBoxModel[] {
     let summary = [];
-    for (let id of updates) {
+    for (let id of updateMap) {
         summary.push(bm[id]);
     }
-    updates = [];
+    updateMap = [];
     return summary;
 }
 function update(id: number, box: number[]): void {
@@ -69,7 +69,7 @@ function update(id: number, box: number[]): void {
     }
 
     if (changed) {
-        if (updates.indexOf(id) === -1) { updates.push(id); }
+        if (updateMap.indexOf(id) === -1) { updateMap.push(id); }
         bm[id] = {id, box};
     }
 }
