@@ -6,6 +6,7 @@ import * as metric from "@src/metric";
 import * as mouse from "./mouse";
 import * as resize from "./resize";
 import * as scroll from "./scroll";
+import * as selection from "./selection";
 import * as visibility from "./visibility";
 
 export default function(type: Event): Token[] {
@@ -48,6 +49,15 @@ export default function(type: Event): Token[] {
             metric.measure(Metric.ViewportWidth, r.width);
             metric.measure(Metric.ViewportHeight, r.height);
             resize.reset();
+            break;
+        case Event.Selection:
+            let sl = selection.data;
+            tokens.push(sl.start);
+            tokens.push(sl.startOffset);
+            tokens.push(sl.end);
+            tokens.push(sl.endOffset);
+            metric.counter(Metric.Selections);
+            selection.reset();
             break;
         case Event.Scroll:
             let s = scroll.summarize();

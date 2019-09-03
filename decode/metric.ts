@@ -8,6 +8,7 @@ metricMap[Metric.Bytes] = { name: "Byte Count", unit: "KB"};
 metricMap[Metric.Mutations] = { name: "Mutation Count", unit: ""};
 metricMap[Metric.Interactions] = { name: "Interaction Count", unit: ""};
 metricMap[Metric.Clicks] = { name: "Click Count", unit: ""};
+metricMap[Metric.Selections] = { name: "Selection Count", unit: ""};
 metricMap[Metric.ScriptErrors] = { name: "Script Errors", unit: ""};
 metricMap[Metric.ImageErrors] = { name: "Image Errors", unit: ""};
 metricMap[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};

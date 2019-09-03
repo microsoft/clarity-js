@@ -36,3 +36,10 @@ export interface IScroll {
 export interface IPageVisibility {
     visible: string;
 }
+
+export interface ISelection {
+    start: number;
+    startOffset: number;
+    end: number;
+    endOffset: number;
+}

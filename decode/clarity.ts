@@ -32,6 +32,7 @@ export function json(data: string): IDecodedPayload {
             case Event.Scroll:
             case Event.Document:
             case Event.Resize:
+            case Event.Selection:
                 event = interaction(entry);
                 break;
             case Event.Discover:
@@ -75,6 +76,9 @@ export function render(decoded: IDecodedPayload, iframe: HTMLIFrameElement, head
                 break;
             case Event.BoxModel:
                 r.boxmodel(entry.data, iframe);
+                break;
+            case Event.Selection:
+                r.selection(entry.data[0], iframe);
                 break;
             case Event.Resize:
                 r.resize(entry.data[0], iframe);

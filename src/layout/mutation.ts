@@ -97,7 +97,7 @@ async function process(): Promise<Token[]> {
           break;
       }
     }
-    let data = await encode(config.diet ? Event.Checksum : Event.Mutation);
+    let data = await encode(config.thrift ? Event.Checksum : Event.Mutation);
     task.stop(timer);
     return data;
 }

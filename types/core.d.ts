@@ -21,7 +21,7 @@ export interface IConfig {
     distance?: number;
     delay?: number;
     cssRules?: boolean;
-    diet?: boolean;
+    thrift?: boolean;
     tokens?: string[];
     url?: string;
     upload?: (data: string) => void;

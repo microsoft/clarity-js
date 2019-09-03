@@ -9,7 +9,7 @@ let config: IConfig = {
     distance: 20,
     delay: 1000,
     cssRules: false,
-    diet: false,
+    thrift: false,
     tokens: [],
     url: "",
     upload: null

@@ -14,6 +14,7 @@ export const enum Metric {
     Mutations,
     Interactions,
     Clicks,
+    Selections,
     ScriptErrors,
     ImageErrors,
     DiscoverTime,

@@ -1,5 +1,5 @@
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IResize, IScroll, Scroll } from "../types/interaction";
+import { IResize, IScroll, ISelection, Scroll } from "../types/interaction";
 
 export default function(tokens: Token[]): IDecodedEvent {
     let time = tokens[0] as number;
@@ -7,8 +7,16 @@ export default function(tokens: Token[]): IDecodedEvent {
     let decoded: IDecodedEvent = {time, event, data: []};
     switch (event) {
         case Event.Resize:
-            let r: IResize = { width: tokens[2] as number, height: tokens[3] as number };
-            decoded.data.push(r);
+            decoded.data.push({ width: tokens[2] as number, height: tokens[3] as number } as IResize);
+            break;
+        case Event.Selection:
+            decoded.data.push({
+                start: tokens[2] as number,
+                startOffset: tokens[3] as number,
+                end: tokens[4] as number,
+                endOffset: tokens[5] as number
+            } as ISelection);
+            break;
         case Event.Scroll:
                 let i = 2;
                 let scrollType = null;

@@ -1,4 +1,4 @@
-import { IResize, IScroll, Scroll } from "../types/interaction";
+import { IResize, IScroll, ISelection, Scroll } from "../types/interaction";
 import { IBoxModel, IChecksum, IDecodedNode } from "../types/layout";
 import { IDecodedMetric } from "../types/metric";
 
@@ -194,25 +194,31 @@ export function scroll(data: IScroll[], iframe: HTMLIFrameElement): void {
     }
 }
 
-export function resize(data: IResize, placeholder: HTMLIFrameElement): void {
-    placeholder.removeAttribute("style");
+export function resize(data: IResize, iframe: HTMLIFrameElement): void {
+    iframe.removeAttribute("style");
     let margin = 10;
     let px = "px";
     let width = data.width;
     let height = data.height;
-    let availableWidth = (placeholder.contentWindow.innerWidth - (2 * margin));
+    let availableWidth = (iframe.contentWindow.innerWidth - (2 * margin));
     let scaleWidth = Math.min(availableWidth / width, 1);
-    let scaleHeight = Math.min((placeholder.contentWindow.innerHeight - (16 * margin)) / height, 1);
+    let scaleHeight = Math.min((iframe.contentWindow.innerHeight - (16 * margin)) / height, 1);
     let scale = Math.min(scaleWidth, scaleHeight);
-    placeholder.style.position = "relative";
-    placeholder.style.width = width + px;
-    placeholder.style.height = height + px;
-    placeholder.style.left = ((availableWidth - (width * scale)) / 2) + px;
-    placeholder.style.transformOrigin = "0 0 0";
-    placeholder.style.transform = "scale(" + scale + ")";
-    placeholder.style.border = "1px solid #cccccc";
-    placeholder.style.margin = margin + px;
-    placeholder.style.overflow = "hidden";
+    iframe.style.position = "relative";
+    iframe.style.width = width + px;
+    iframe.style.height = height + px;
+    iframe.style.left = ((availableWidth - (width * scale)) / 2) + px;
+    iframe.style.transformOrigin = "0 0 0";
+    iframe.style.transform = "scale(" + scale + ")";
+    iframe.style.border = "1px solid #cccccc";
+    iframe.style.margin = margin + px;
+    iframe.style.overflow = "hidden";
+}
+
+export function selection(data: ISelection, iframe: HTMLIFrameElement): void {
+    let doc = iframe.contentDocument;
+    let s = doc.getSelection();
+    s.setBaseAndExtent(element(data.start), data.startOffset, element(data.end), data.endOffset);
 }
 
 function getNode(id: number): HTMLElement {

@@ -30,7 +30,7 @@ async function discover(): Promise<Token[]> {
         processNode(node, Source.Discover);
         node = walker.nextNode();
     }
-    let data = await encode(config.diet ? Event.Checksum : Event.Discover);
+    let data = await encode(config.thrift ? Event.Checksum : Event.Discover);
     task.stop(timer);
     return data;
 }
