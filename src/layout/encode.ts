@@ -1,6 +1,7 @@
 import {Event, Token} from "@clarity-types/data";
 import {INodeData} from "@clarity-types/layout";
 import {Metric} from "@clarity-types/metric";
+import mask from "@src/core/mask";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
 import hash from "@src/data/hash";
@@ -117,18 +118,4 @@ function text(masked: boolean, tag: string, value: string): string {
         default:
             return masked ? mask(value) : value;
     }
-}
-
-function mask(value: string): string {
-    let wasWhiteSpace = false;
-    let textCount = 0;
-    let wordCount = 0;
-    for (let i = 0; i < value.length; i++) {
-        let code = value.charCodeAt(i);
-        let isWhiteSpace = (code === 32 || code === 10 || code === 9 || code === 13);
-        textCount += isWhiteSpace ? 0 : 1;
-        wordCount += isWhiteSpace && !wasWhiteSpace ? 1 : 0;
-        wasWhiteSpace = isWhiteSpace;
-    }
-    return `${textCount.toString(36)}*${wordCount.toString(36)}`;
 }
