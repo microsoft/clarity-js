@@ -1,7 +1,7 @@
 import { Event, IDecodedEvent, Token } from "../types/data";
 
-export default function(tokens: Token[]): IDecodedEvent[] {
-    return [{
+export default function(tokens: Token[]): IDecodedEvent {
+    return {
         time: tokens[0] as number,
         event: tokens[1] as Event,
         data: {
@@ -14,5 +14,5 @@ export default function(tokens: Token[]): IDecodedEvent[] {
             title: tokens[8] as string,
             referrer: tokens[9] as string
         }
-    }];
+    };
 }

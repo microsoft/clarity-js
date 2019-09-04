@@ -1,7 +1,7 @@
 import {Event, Token} from "@clarity-types/data";
-import {Mouse, Scroll} from "@clarity-types/interaction";
 import {Metric} from "@clarity-types/metric";
 import time from "@src/core/time";
+import queue from "@src/data/queue";
 import * as metric from "@src/metric";
 import * as mouse from "./mouse";
 import * as resize from "./resize";
@@ -9,36 +9,24 @@ import * as scroll from "./scroll";
 import * as selection from "./selection";
 import * as visibility from "./visibility";
 
-export default function(type: Event): Token[] {
+export default function(type: Event): void {
     let tokens: Token[] = [time(), type];
-    let timestamp: number = null;
     switch (type) {
-        case Event.Mouse:
-            let m = mouse.summarize();
-            timestamp = null;
-            let mouseType: Mouse = null;
-            let mouseTarget: number = null;
+        case Event.MouseDown:
+        case Event.MouseUp:
+        case Event.MouseMove:
+        case Event.MouseWheel:
+        case Event.Click:
+        case Event.DoubleClick:
+        case Event.RightClick:
+            let m = mouse.data[type];
             for (let i = 0; i < m.length; i++) {
                 let entry = m[i];
-
-                if (i === 0) {
-                    timestamp = entry.time;
-                    tokens[0] = timestamp;
-                }
-
-                if (mouseType !== entry.type || mouseTarget !== entry.target) {
-                    tokens.push(entry.type);
-                    tokens.push(entry.target);
-                    mouseType = entry.type;
-                    mouseTarget = entry.target;
-                }
-
-                tokens.push(entry.time - timestamp);
+                tokens = [entry.time, type];
+                tokens.push(entry.target);
                 tokens.push(entry.x);
                 tokens.push(entry.y);
-                if (mouseType === Mouse.Click) { tokens.push(entry.buttons); }
-
-                timestamp = entry.time;
+                queue(tokens);
             }
             mouse.reset();
             break;
@@ -46,6 +34,7 @@ export default function(type: Event): Token[] {
             let r = resize.data;
             tokens.push(r.width);
             tokens.push(r.height);
+            queue(tokens);
             metric.measure(Metric.ViewportWidth, r.width);
             metric.measure(Metric.ViewportHeight, r.height);
             resize.reset();
@@ -56,42 +45,27 @@ export default function(type: Event): Token[] {
             tokens.push(sl.startOffset);
             tokens.push(sl.end);
             tokens.push(sl.endOffset);
+            queue(tokens);
             metric.counter(Metric.Selections);
             selection.reset();
             break;
         case Event.Scroll:
-            let s = scroll.summarize();
-            let scrollType: Scroll = null;
-            let scrollTarget: number = null;
-            timestamp = null;
+            let s = scroll.data;
             for (let i = 0; i < s.length; i++) {
                 let entry = s[i];
-
-                if (i === 0) {
-                    timestamp = entry.time;
-                    tokens[0] = timestamp;
-                }
-
-                if (scrollType !== entry.type || scrollTarget !== entry.target) {
-                    tokens.push(entry.type);
-                    tokens.push(entry.target);
-                    scrollType = entry.type;
-                    scrollTarget = entry.target;
-                }
-
-                tokens.push(entry.time - timestamp);
-                tokens.push(entry.value);
-
-                timestamp = entry.time;
+                tokens = [entry.time, type];
+                tokens.push(entry.target);
+                tokens.push(entry.x);
+                tokens.push(entry.y);
+                queue(tokens);
             }
             scroll.reset();
             break;
         case Event.Visibility:
             let v = visibility.data;
             tokens.push(v.visible);
+            queue(tokens);
             visibility.reset();
             break;
     }
-
-    return tokens;
 }

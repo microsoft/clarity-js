@@ -19,6 +19,7 @@ export interface IConfig {
     longTask?: number;
     lookahead?: number;
     distance?: number;
+    interval?: number;
     delay?: number;
     cssRules?: boolean;
     thrift?: boolean;

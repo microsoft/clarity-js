@@ -1,19 +1,8 @@
-export const enum Mouse {
-    Down = "D",
-    Up = "U",
-    Move = "M",
-    Wheel = "W",
-    DoubleClick = "B",
-    Click = "C"
-}
-
 export interface IMouse {
-    type: Mouse;
     target: number;
-    time: number;
     x: number;
     y: number;
-    buttons: number;
+    time?: number;
 }
 
 export interface IResize {
@@ -21,16 +10,11 @@ export interface IResize {
     height: number;
 }
 
-export const enum Scroll {
-    X = "X",
-    Y = "Y"
-}
-
 export interface IScroll {
-    type: Scroll;
     target: number;
-    time: number;
-    value: number;
+    x: number;
+    y: number;
+    time?: number;
 }
 
 export interface IPageVisibility {

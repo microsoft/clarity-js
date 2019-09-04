@@ -27,29 +27,35 @@ export function json(data: string): IDecodedPayload {
     payloads.push(payload);
 
     for (let entry of encoded) {
-        let events: IDecodedEvent[];
+        let event: IDecodedEvent;
         switch (entry[1]) {
             case Event.Scroll:
             case Event.Document:
             case Event.Resize:
             case Event.Selection:
-            case Event.Mouse:
-                events = interaction(entry);
+            case Event.MouseDown:
+            case Event.MouseUp:
+            case Event.MouseMove:
+            case Event.MouseWheel:
+            case Event.Click:
+            case Event.DoubleClick:
+            case Event.RightClick:
+                event = interaction(entry);
                 break;
             case Event.Discover:
             case Event.Mutation:
             case Event.BoxModel:
             case Event.Checksum:
-                events = layout(entry);
+                event = layout(entry);
                 break;
             case Event.Metadata:
-                events = metadata(entry);
+                event = metadata(entry);
                 break;
             default:
-                events = [{time: entry[0] as number, event: entry[1] as number, data: entry.slice(2)}];
+                event = {time: entry[0] as number, event: entry[1] as number, data: entry.slice(2)};
                 break;
         }
-        decoded.events.push(...events);
+        decoded.events.push(event);
     }
     decoded.events.sort(sort);
     return decoded;
@@ -85,8 +91,14 @@ export async function replay(events: IDecodedEvent[], iframe: HTMLIFrameElement)
             case Event.BoxModel:
                 r.boxmodel(entry.data, iframe);
                 break;
-            case Event.Mouse:
-                r.mouse(entry.data, iframe);
+            case Event.MouseDown:
+            case Event.MouseUp:
+            case Event.MouseMove:
+            case Event.MouseWheel:
+            case Event.Click:
+            case Event.DoubleClick:
+            case Event.RightClick:
+                r.mouse(entry.event, entry.data, iframe);
                 break;
             case Event.Selection:
                 r.selection(entry.data, iframe);

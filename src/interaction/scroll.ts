@@ -1,16 +1,12 @@
 import { Event } from "@clarity-types/data";
-import { IScroll, Scroll } from "@clarity-types/interaction";
+import { IScroll } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
-import queue from "@src/data/queue";
 import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
-let lastX = {};
-let lastY = {};
-let dataX: IScroll[] = [];
-let dataY: IScroll[] = [];
+export let data: IScroll[] = [];
 let timeout: number = null;
 
 export function start(): void {
@@ -19,54 +15,26 @@ export function start(): void {
 }
 
 function recompute(event: UIEvent = null): void {
-    let t = time();
     let eventTarget = event ? (event.target === document ? document.documentElement : event.target) : document.documentElement;
-    let target = getId(eventTarget as Node);
     let x = (eventTarget as HTMLElement).scrollLeft;
     let y = (eventTarget as HTMLElement).scrollTop;
+    let current: IScroll = {target: getId(eventTarget as Node), x, y, time: time()};
 
-    if (x !== lastX[target]) {
-        dataX.push({ target, type: Scroll.X, time: t, value: x });
-        lastX[target] = x;
-    }
-
-    if (y !== lastY[target]) {
-        dataY.push({ target, type: Scroll.Y, time: t, value: y });
-        lastY[target] = y;
-    }
+    let length = data.length;
+    let last = length > 1 ? data[length - 2] : null;
+    if (last && similar(last, current)) { data.pop(); }
+    data.push(current);
 
     if (timeout) { clearTimeout(timeout); }
-    timeout = window.setTimeout(schedule, config.lookahead);
-}
-
-function schedule(): void {
-    queue(encode(Event.Scroll));
+    timeout = window.setTimeout(encode, config.lookahead, Event.Scroll);
 }
 
 export function reset(): void {
-    dataX = [];
-    dataY = [];
-    lastX = {};
-    lastY = {};
+    data = [];
 }
 
-export function summarize(): IScroll[] {
-    let summary: IScroll[] = [];
-    let last = null;
-    let data = dataX.concat(dataY);
-    for (let i = 0; i < data.length; i++) {
-        let entry = data[i];
-        let isFirst = i === 0;
-        let isLast = i === data.length - 1;
-        if (isFirst || isLast || checkDistance(last, entry)) {
-            summary.push(entry);
-            last = entry;
-        }
-    }
-    return summary;
-}
-
-function checkDistance(last: IScroll, current: IScroll): boolean {
-    let d = last.value - current.value;
-    return (d  > config.distance);
+function similar(last: IScroll, current: IScroll): boolean {
+    let dx = last.x - current.x;
+    let dy = last.y - current.y;
+    return (dx * dx + dy * dy < config.distance * config.distance) && (current.time - last.time < config.interval);
 }

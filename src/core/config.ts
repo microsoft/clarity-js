@@ -7,6 +7,7 @@ let config: IConfig = {
     longTask: 30,
     lookahead: 500,
     distance: 20,
+    interval: 25,
     delay: 1000,
     cssRules: false,
     thrift: false,

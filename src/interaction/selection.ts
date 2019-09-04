@@ -2,7 +2,6 @@ import { Event } from "@clarity-types/data";
 import { ISelection } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
-import queue from "@src/data/queue";
 import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
@@ -21,7 +20,7 @@ function recompute(): void {
 
     if (selection !== null && data.start !== null && data.start !== getId(s.anchorNode)) {
         if (timeout) { clearTimeout(timeout); }
-        schedule();
+        encode(Event.Selection);
     }
 
     data = {
@@ -33,11 +32,7 @@ function recompute(): void {
     selection = s;
 
     if (timeout) { clearTimeout(timeout); }
-    timeout = window.setTimeout(schedule, config.lookahead);
-}
-
-function schedule(): void {
-    queue(encode(Event.Selection));
+    timeout = window.setTimeout(encode, config.lookahead, Event.Selection);
 }
 
 export function reset(): void {

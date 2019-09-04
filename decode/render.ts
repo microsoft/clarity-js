@@ -1,4 +1,5 @@
-import { IMouse, IResize, IScroll, ISelection, Mouse, Scroll } from "../types/interaction";
+import { Event } from "../types/data";
+import { IMouse, IResize, IScroll, ISelection } from "../types/interaction";
 import { IBoxModel, IChecksum, IDecodedNode } from "../types/layout";
 import { IDecodedMetric } from "../types/metric";
 
@@ -193,8 +194,7 @@ function setAttributes(node: HTMLElement, attributes: object): void {
 
 export function scroll(data: IScroll, iframe: HTMLIFrameElement): void {
     let target = getNode(data.target);
-    if (target && data.type === Scroll.X) { target.scrollTo(data.value, target.scrollTop); }
-    if (target && data.type === Scroll.Y) { target.scrollTo(target.scrollLeft, data.value); }
+    target.scrollTo(data.x, data.y);
 }
 
 export function resize(data: IResize, iframe: HTMLIFrameElement): void {
@@ -224,7 +224,7 @@ export function selection(data: ISelection, iframe: HTMLIFrameElement): void {
     s.setBaseAndExtent(element(data.start), data.startOffset, element(data.end), data.endOffset);
 }
 
-export function mouse(data: IMouse, iframe: HTMLIFrameElement): void {
+export function mouse(event: Event, data: IMouse, iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     let pointer = doc.getElementById("clarity-pointer");
     let pointerWidth = 20;
@@ -242,8 +242,8 @@ export function mouse(data: IMouse, iframe: HTMLIFrameElement): void {
 
     pointer.style.left = (data.x - 8) + "px";
     pointer.style.top = (data.y - 8) + "px";
-    switch (data.type) {
-        case Mouse.Click:
+    switch (event) {
+        case Event.Click:
             pointer.style.background = `url(${clickIcon}) no-repeat left center`;
             break;
         default:

@@ -1,7 +1,6 @@
 import { Event } from "@clarity-types/data";
 import { IPageVisibility } from "@clarity-types/interaction";
 import { bind } from "@src/core/event";
-import queue from "@src/data/queue";
 import encode from "./encode";
 
 export let data: IPageVisibility;
@@ -15,7 +14,7 @@ export function start(): void {
 
 function recompute(): void {
     data = { visible: "visibilityState" in document ? document.visibilityState : "default" };
-    queue(encode(Event.Visibility));
+    encode(Event.Visibility);
 }
 
 export function reset(): void {
