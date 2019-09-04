@@ -5,7 +5,7 @@ import { IAttributes, IBoxModel, IChecksum, IDecodedNode, IDocumentSize,  } from
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
 let selectorMap = {};
 
-export default function(tokens: Token[]): IDecodedEvent {
+export default function(tokens: Token[]): IDecodedEvent[] {
     let time = tokens[0] as number;
     let event = tokens[1] as Event;
     let decoded: IDecodedEvent = {time, event, data: []};
@@ -15,13 +15,13 @@ export default function(tokens: Token[]): IDecodedEvent {
         case Event.Document:
             let d: IDocumentSize = { width: tokens[2] as number, height: tokens[3] as number };
             decoded.data.push(d);
-            return decoded;
+            return [decoded];
         case Event.BoxModel:
             for (let i = 2; i < tokens.length; i += 2) {
                 let boxmodel: IBoxModel = { id: tokens[i] as number, box: tokens[i + 1] as number[] };
                 decoded.data.push(boxmodel);
             }
-            return decoded;
+            return [decoded];
         case Event.Checksum:
             let reference = 0;
             for (let i = 2; i < tokens.length; i += 2) {
@@ -31,7 +31,7 @@ export default function(tokens: Token[]): IDecodedEvent {
                 decoded.data.push(checksum);
                 reference = id;
             }
-            return decoded;
+            return [decoded];
         case Event.Discover:
         case Event.Mutation:
             let lastType = null;
@@ -73,7 +73,7 @@ export default function(tokens: Token[]): IDecodedEvent {
             }
             // Process last node
             decoded.data.push(process(node, tagIndex));
-            return decoded;
+            return [decoded];
     }
 }
 

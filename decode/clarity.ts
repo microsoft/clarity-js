@@ -27,29 +27,31 @@ export function json(data: string): IDecodedPayload {
     payloads.push(payload);
 
     for (let entry of encoded) {
-        let event: IDecodedEvent;
+        let events: IDecodedEvent[];
         switch (entry[1]) {
             case Event.Scroll:
             case Event.Document:
             case Event.Resize:
             case Event.Selection:
-                event = interaction(entry);
+            case Event.Mouse:
+                events = interaction(entry);
                 break;
             case Event.Discover:
             case Event.Mutation:
             case Event.BoxModel:
             case Event.Checksum:
-                event = layout(entry);
+                events = layout(entry);
                 break;
             case Event.Metadata:
-                event = metadata(entry);
+                events = metadata(entry);
                 break;
             default:
-                event = {time: entry[0] as number, event: entry[1] as number, data: entry.slice(2)};
+                events = [{time: entry[0] as number, event: entry[1] as number, data: entry.slice(2)}];
                 break;
         }
-        decoded.events.push(event);
+        decoded.events.push(...events);
     }
+    decoded.events.sort(sort);
     return decoded;
 }
 
@@ -63,9 +65,15 @@ export function render(decoded: IDecodedPayload, iframe: HTMLIFrameElement, head
     // Render metrics
     r.metrics(decoded.metrics, header);
 
-    // Render events
-    let events = decoded.events;
+    // Replay events
+    replay(decoded.events, iframe);
+}
+
+export async function replay(events: IDecodedEvent[], iframe: HTMLIFrameElement): Promise<void> {
+    let start = events[0].time;
     for (let entry of events) {
+        if (entry.time - start > 16) { start = await wait(entry.time); }
+
         switch (entry.event) {
             case Event.Discover:
             case Event.Mutation:
@@ -77,15 +85,28 @@ export function render(decoded: IDecodedPayload, iframe: HTMLIFrameElement, head
             case Event.BoxModel:
                 r.boxmodel(entry.data, iframe);
                 break;
+            case Event.Mouse:
+                r.mouse(entry.data, iframe);
+                break;
             case Event.Selection:
-                r.selection(entry.data[0], iframe);
+                r.selection(entry.data, iframe);
                 break;
             case Event.Resize:
-                r.resize(entry.data[0], iframe);
+                r.resize(entry.data, iframe);
                 break;
             case Event.Scroll:
                 r.scroll(entry.data, iframe);
                 break;
         }
     }
+}
+
+async function wait(timestamp: number): Promise<number> {
+    return new Promise<number>((resolve: FrameRequestCallback): void => {
+        setTimeout(resolve, 100, timestamp);
+    });
+}
+
+function sort(a: IDecodedEvent, b: IDecodedEvent): number {
+    return a.time - b.time;
 }

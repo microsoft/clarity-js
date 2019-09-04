@@ -36,7 +36,7 @@ export default function(type: Event): Token[] {
                 tokens.push(entry.time - timestamp);
                 tokens.push(entry.x);
                 tokens.push(entry.y);
-                tokens.push(entry.buttons);
+                if (mouseType === Mouse.Click) { tokens.push(entry.buttons); }
 
                 timestamp = entry.time;
             }
