@@ -60,9 +60,15 @@ export function boxmodel(data: IBoxModel[], iframe: HTMLIFrameElement): void {
                 break;
             case false:
                 if (el) {
-                    el.style.maxWidth = bm.box[2] + "px";
-                    el.style.minWidth = Math.max(bm.box[2] - 5, 0) + "px";
-                    el.style.height = bm.box[3] + "px";
+                    let style = getComputedStyle(el, null);
+                    let xPadding = parseInt(style["padding-left"], 10) + parseInt(style["padding-right"], 10);
+                    let xBorder = parseInt(style["border-left"], 10) + parseInt(style["border-right"], 10);
+                    let yPadding = parseInt(style["padding-top"], 10) + parseInt(style["padding-bottom"], 10);
+                    let yBorder = parseInt(style["border-top"], 10) + parseInt(style["border-bottom"], 10);
+                    let width = bm.box[2] - xPadding - xBorder;
+                    el.style.maxWidth = width + "px";
+                    el.style.minWidth = Math.max(width - 5, 0) + "px";
+                    el.style.height = (bm.box[3] - yPadding - yBorder) + "px";
                     el.style.overflow = "hidden";
                     el.style.wordBreak = "break-all";
                 }
