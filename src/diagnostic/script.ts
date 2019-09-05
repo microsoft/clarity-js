@@ -1,7 +1,6 @@
 import { Event } from "@clarity-types/data";
 import { IScriptError } from "@clarity-types/diagnostic";
 import { bind } from "@src/core/event";
-import queue from "@src/data/queue";
 import encode from "./encode";
 
 export let data: IScriptError[] = [];
@@ -25,7 +24,7 @@ function handler(error: ErrorEvent): void {
         source: error["filename"]
     });
 
-    queue(encode(Event.ScriptError));
+    encode(Event.ScriptError);
 }
 
 export function reset(): void {

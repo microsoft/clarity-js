@@ -1,9 +1,8 @@
-import { Flush, IMetadata, Token } from "@clarity-types/data";
+import { IMetadata, Token } from "@clarity-types/data";
 import config from "@src/core/config";
 import version from "@src/core/version";
 import encode from "@src/data/encode";
 import hash from "@src/data/hash";
-import queue from "@src/data/queue";
 
 export let metadata: IMetadata = null;
 
@@ -19,7 +18,7 @@ export function start(): void {
       referrer: document.referrer
     };
 
-    queue(encode(), Flush.None);
+    encode();
 }
 
 export function end(): void {
@@ -28,7 +27,7 @@ export function end(): void {
 
 export function envelope(): Token[] {
     metadata.sequence++;
-    return encode(true);
+    return [metadata.sequence, metadata.version, metadata.pageId, metadata.userId, metadata.projectId];
 }
 
 // Credit: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript

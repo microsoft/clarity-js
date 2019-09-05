@@ -115,7 +115,7 @@ export async function replay(events: IDecodedEvent[], iframe: HTMLIFrameElement)
 
 async function wait(timestamp: number): Promise<number> {
     return new Promise<number>((resolve: FrameRequestCallback): void => {
-        setTimeout(resolve, 100, timestamp);
+        setTimeout(resolve, 10, timestamp);
     });
 }
 
