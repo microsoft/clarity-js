@@ -194,7 +194,7 @@ function setAttributes(node: HTMLElement, attributes: object): void {
 
 export function scroll(data: IScroll, iframe: HTMLIFrameElement): void {
     let target = getNode(data.target);
-    target.scrollTo(data.x, data.y);
+    if (target) { target.scrollTo(data.x, data.y); }
 }
 
 export function resize(data: IResize, iframe: HTMLIFrameElement): void {

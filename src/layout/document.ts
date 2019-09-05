@@ -1,6 +1,5 @@
-import { Event, Token } from "@clarity-types/data";
+import { Event } from "@clarity-types/data";
 import { IDocumentSize } from "@clarity-types/layout";
-import queue from "@src/data/queue";
 import encode from "./encode";
 
 export let doc: IDocumentSize;
@@ -22,7 +21,5 @@ export function compute(): void {
         height: documentHeight
     };
 
-    encode(Event.Document).then((data: Token[]) => {
-        queue(data);
-    });
+    encode(Event.Document);
 }

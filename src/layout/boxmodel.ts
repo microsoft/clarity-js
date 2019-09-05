@@ -1,9 +1,8 @@
-import { Event, Token } from "@clarity-types/data";
+import { Event } from "@clarity-types/data";
 import { IBoxModel } from "@clarity-types/layout";
 import { Metric } from "@clarity-types/metric";
 import config from "@src/core/config";
 import * as task from "@src/core/task";
-import queue from "@src/data/queue";
 import encode from "@src/layout/encode";
 import * as dom from "./dom";
 
@@ -17,14 +16,10 @@ export function compute(): void {
 }
 
 function schedule(): void {
-    task.schedule(boxmodel, done);
+    task.schedule(boxmodel);
 }
 
-function done(data: Token[]): void {
-    queue(data);
-}
-
-async function boxmodel(): Promise<Token[]> {
+async function boxmodel(): Promise<void> {
     let timer = Metric.BoxModelTime;
     task.start(timer);
     let values = dom.getLeafNodes();
@@ -41,9 +36,8 @@ async function boxmodel(): Promise<Token[]> {
         update(value.id, getLayout(x, y, dom.getNode(value.id) as Element));
     }
 
-    let data = await encode(Event.BoxModel);
+    await encode(Event.BoxModel);
     task.stop(timer);
-    return data;
 }
 
 export function updates(): IBoxModel[] {

@@ -1,9 +1,8 @@
-import { Event, Token } from "@clarity-types/data";
+import { Event } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
 import { Metric } from "@clarity-types/metric";
 import config from "@src/core/config";
 import * as task from "@src/core/task";
-import queue from "@src/data/queue";
 import * as boxmodel from "@src/layout/boxmodel";
 import * as doc from "@src/layout/document";
 import encode from "@src/layout/encode";
@@ -49,16 +48,13 @@ export function end(): void {
 function handle(m: MutationRecord[]): void {
   // Queue up mutation records for asynchronous processing
   for (let i = 0; i < m.length; i++) { mutations.push(m[i]); }
-  task.schedule(process, done);
+  task.schedule(process).then(() => {
+      doc.compute();
+      boxmodel.compute();
+  });
 }
 
-function done(data: Token[]): void {
-  doc.compute();
-  boxmodel.compute();
-  queue(data);
-}
-
-async function process(): Promise<Token[]> {
+async function process(): Promise<void> {
     let timer = Metric.MutationTime;
     task.start(timer);
     while (mutations.length > 0) {
@@ -97,9 +93,8 @@ async function process(): Promise<Token[]> {
           break;
       }
     }
-    let data = await encode(config.thrift ? Event.Checksum : Event.Mutation);
+    await encode(config.thrift ? Event.Checksum : Event.Mutation);
     task.stop(timer);
-    return data;
 }
 
 function generate(target: Node, type: MutationRecordType): void {

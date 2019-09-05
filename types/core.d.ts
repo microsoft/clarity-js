@@ -1,7 +1,7 @@
 import { IPayload, Token } from "./data";
 
-type TaskFunction = () => Promise<Token[]>;
-type TaskCallback = (data: Token[]) => void;
+type TaskFunction = () => Promise<void>;
+type TaskResolve = () => void;
 
 export interface IEventBindingPair {
     target: EventTarget;
@@ -34,5 +34,5 @@ export interface ITaskTracker {
 
 export interface IAsyncTask {
     task: TaskFunction;
-    callback: TaskCallback;
+    resolve: TaskResolve;
 }

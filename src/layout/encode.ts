@@ -5,13 +5,14 @@ import mask from "@src/core/mask";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
 import hash from "@src/data/hash";
+import queue from "@src/data/queue";
 import {check} from "@src/data/token";
 import * as metric from "@src/metric";
 import * as boxmodel from "./boxmodel";
 import {doc} from "./document";
 import * as dom from "./dom";
 
-export default async function(type: Event): Promise<Token[]> {
+export default async function(type: Event): Promise<void> {
     let tokens: Token[] = [time(), type];
     let timer = type === Event.Discover ? Metric.DiscoverTime : Metric.MutationTime;
     switch (type) {
@@ -21,14 +22,16 @@ export default async function(type: Event): Promise<Token[]> {
             tokens.push(d.height);
             metric.measure(Metric.DocumentWidth, d.width);
             metric.measure(Metric.DocumentHeight, d.height);
-            return tokens;
+            queue(tokens);
+            break;
         case Event.BoxModel:
             let bm = boxmodel.updates();
             for (let value of bm) {
                 tokens.push(value.id);
                 tokens.push(value.box);
             }
-            return tokens;
+            queue(tokens);
+            break;
         case Event.Checksum:
             let selectors = dom.selectors();
             let reference = 0;
@@ -40,7 +43,8 @@ export default async function(type: Event): Promise<Token[]> {
                 tokens.push(pointer >= 0 ? [pointer] : checksum);
                 reference = value.id;
             }
-            return tokens;
+            queue(tokens);
+            break;
         case Event.Discover:
         case Event.Mutation:
             let values = dom.updates();
@@ -86,7 +90,8 @@ export default async function(type: Event): Promise<Token[]> {
                     tokens.push(index >= 0 && token.length > index.toString().length ? [index] : token);
                 }
             }
-            return tokens;
+            queue(tokens);
+            break;
         }
 }
 

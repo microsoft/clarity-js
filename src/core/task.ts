@@ -1,5 +1,4 @@
-import { IAsyncTask, ITaskTracker, TaskCallback, TaskFunction } from "@clarity-types/core";
-import {Token } from "@clarity-types/data";
+import { IAsyncTask, ITaskTracker, TaskFunction, TaskResolve } from "@clarity-types/core";
 import { Metric } from "@clarity-types/metric";
 import config from "@src/core/config";
 import * as metrics from "@src/metric";
@@ -9,7 +8,7 @@ let threshold = config.longTask;
 let queue: IAsyncTask[] = [];
 let active: IAsyncTask = null;
 
-export async function schedule(task: TaskFunction, callback: TaskCallback): Promise<void> {
+export async function schedule(task: TaskFunction): Promise<void> {
     // If this task is already scheduled, skip it
     for (let q of queue) {
         if (q.task === task) {
@@ -17,17 +16,21 @@ export async function schedule(task: TaskFunction, callback: TaskCallback): Prom
         }
     }
 
-    // Otherwise, add thit to the queue
-    queue.push({task, callback});
+    let promise = new Promise<void>((resolve: TaskResolve): void => {
+        queue.push({task, resolve});
+    });
+
     if (active === null) { run(); }
+
+    return promise;
 }
 
 function run(): void {
     let entry = queue.shift();
     if (entry) {
         active = entry;
-        entry.task().then((data: Token[]) => {
-            entry.callback(data);
+        entry.task().then(() => {
+            entry.resolve();
             active = null;
             run();
         });
