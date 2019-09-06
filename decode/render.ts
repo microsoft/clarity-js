@@ -1,5 +1,5 @@
 import { Event } from "../types/data";
-import { IMouse, IResize, IScroll, ISelection } from "../types/interaction";
+import { IChange, IMouse, IResize, IScroll, ISelection } from "../types/interaction";
 import { IBoxModel, IChecksum, IDecodedNode } from "../types/layout";
 import { IDecodedMetric } from "../types/metric";
 
@@ -222,6 +222,11 @@ export function resize(data: IResize, iframe: HTMLIFrameElement): void {
     iframe.style.border = "1px solid #cccccc";
     iframe.style.margin = margin + px;
     iframe.style.overflow = "hidden";
+}
+
+export function change(data: IChange, iframe: HTMLIFrameElement): void {
+    let el = element(data.target) as HTMLInputElement;
+    if (el) { el.value = data.value; }
 }
 
 export function selection(data: ISelection, iframe: HTMLIFrameElement): void {

@@ -22,7 +22,7 @@ export interface IConfig {
     interval?: number;
     delay?: number;
     cssRules?: boolean;
-    thrift?: boolean;
+    lean?: boolean;
     tokens?: string[];
     url?: string;
     upload?: (data: string) => void;

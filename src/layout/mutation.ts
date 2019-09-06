@@ -93,7 +93,7 @@ async function process(): Promise<void> {
           break;
       }
     }
-    await encode(config.thrift ? Event.Checksum : Event.Mutation);
+    await encode(config.lean ? Event.Checksum : Event.Mutation);
     task.stop(timer);
 }
 

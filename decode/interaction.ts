@@ -1,5 +1,5 @@
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IMouse, IResize, IScroll, ISelection } from "../types/interaction";
+import { IChange, IMouse, IResize, IScroll, ISelection } from "../types/interaction";
 
 export default function(tokens: Token[]): IDecodedEvent {
     let time = tokens[0] as number;
@@ -17,6 +17,12 @@ export default function(tokens: Token[]): IDecodedEvent {
         case Event.Resize:
             let resizeData: IResize = { width: tokens[2] as number, height: tokens[3] as number };
             return { time, event, data: resizeData };
+        case Event.Change:
+            let changeData: IChange = {
+                target: tokens[2] as number,
+                value: tokens[3] as string
+            };
+            return { time, event, data: changeData };
         case Event.Selection:
             let selectionData: ISelection = {
                 start: tokens[2] as number,

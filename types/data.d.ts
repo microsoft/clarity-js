@@ -21,6 +21,7 @@ export const enum Event {
     Selection,
     Resize,
     Scroll,
+    Change,
     Document,
     Visibility,
     Network,

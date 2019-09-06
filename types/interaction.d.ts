@@ -27,3 +27,8 @@ export interface ISelection {
     end: number;
     endOffset: number;
 }
+
+export interface IChange {
+    target: number;
+    value: string;
+}

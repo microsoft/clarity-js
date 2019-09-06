@@ -10,7 +10,7 @@ let config: IConfig = {
     interval: 25,
     delay: 1000,
     cssRules: false,
-    thrift: false,
+    lean: false,
     tokens: [],
     url: "",
     upload: null

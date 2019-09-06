@@ -3,6 +3,7 @@ import {Metric} from "@clarity-types/metric";
 import time from "@src/core/time";
 import queue from "@src/data/queue";
 import * as metric from "@src/metric";
+import * as change from "./change";
 import * as mouse from "./mouse";
 import * as resize from "./resize";
 import * as scroll from "./scroll";
@@ -38,6 +39,14 @@ export default function(type: Event): void {
             metric.measure(Metric.ViewportWidth, r.width);
             metric.measure(Metric.ViewportHeight, r.height);
             resize.reset();
+            break;
+        case Event.Change:
+            let ch = change.data;
+            tokens.push(ch.target);
+            tokens.push(ch.value);
+            queue(tokens);
+            metric.counter(Metric.Changes);
+            change.reset();
             break;
         case Event.Selection:
             let sl = selection.data;

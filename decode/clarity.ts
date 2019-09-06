@@ -33,6 +33,7 @@ export function json(data: string): IDecodedPayload {
             case Event.Document:
             case Event.Resize:
             case Event.Selection:
+            case Event.Change:
             case Event.MouseDown:
             case Event.MouseUp:
             case Event.MouseMove:
@@ -99,6 +100,9 @@ export async function replay(events: IDecodedEvent[], iframe: HTMLIFrameElement)
             case Event.DoubleClick:
             case Event.RightClick:
                 r.mouse(entry.event, entry.data, iframe);
+                break;
+            case Event.Change:
+                r.change(entry.data, iframe);
                 break;
             case Event.Selection:
                 r.selection(entry.data, iframe);
