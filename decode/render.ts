@@ -4,8 +4,9 @@ import { IBoxModel, IChecksum, IDecodedNode } from "../types/layout";
 import { IDecodedMetric } from "../types/metric";
 
 let nodes = {};
+let boxmodels = {};
 let svgns: string = "http://www.w3.org/2000/svg";
-let thrift = false;
+let lean = false;
 
 // tslint:disable-next-line: max-line-length
 let pointerIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S912AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6AAAdTAAAOpgAAA6lwAAF2+XqZnUAAACaUlEQVR4nGL8f58BHYgAsT8Q2wGxBBAzQcX/AfFrID4CxOuA+BWKLoX/YAoggBjRDHQD4ngglgRiPgyrIOAzEL8E4lVQg1EMBAggFiSFYUAcA8RSOAyCAV4oTgViTiBeiiwJEEAw71gRaRgyEAXiKCB2RBYECCCQgcIMEG+SYhgMiANxEhDzwwQAAghkoAMQK5NhGAwoALE1jAMQQCADQU7mpMBAZqijwAAggEAGqgAxOwUGskHNAAOAAAIZyEtIh4INg3bfHHD6xAUEYAyAAAIZ+IuQgU9fMLCXdzDIzV3JIIhDyQ8YAyCAQAaCUv8/fAZysDP8+/OXgTG7jkFhwRoMQ0F6n8M4AAEEMvAKsg34wM9fDEwgQ1dtRSQTIPgNxFdhHIAAAhm4AYg/EmMgCHz7zsCUVMaguHob3FCQYzbD5AECCGTgJSDeCbWJKPD1GwNzSjmD4tZ9DFxgvQr/b8PkAAIIlvVWA/FuUgz99IWBOTyXQcE+nOEOsjhAACGXNnJAHAnE9kAshqyIV5vB4Ms3cALGBkAlj9////9PgTgAAcSEJPEIiDuBeBYQP2CAhOt3BsLJCpSfNzAyMpqDOAABhF4ewh3FAMmf2kAsyqnBUPDjJ8HcdBvoSjWAAGIEEgTUMTAAbf/AwICSVGCgD4hPgJQA8WegWdsBAogFiyJC4C0QgxI3KLj4gIasRpYECCAGkAsJYSAAuRDEAKUEQwZIzgDxvwCxCrJagAAi1kAQAYpFESh/BlQMhJuR1QIEELEGlgOxHBLflAGSh0Gc60DMBpMDCCCiDMRhyXoGSJUaDgpPmDhAgAEAN5Ugk0bMYNIAAAAASUVORK5CYII=";
@@ -14,6 +15,7 @@ let clickIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S
 
 export function reset(): void {
     nodes = {};
+    boxmodels = {};
 }
 
 export function metrics(data: IDecodedMetric, header: HTMLElement): void {
@@ -39,14 +41,14 @@ function value(input: number, unit: string): number {
 }
 
 export function checksum(data: IChecksum[], iframe: HTMLIFrameElement): void {
-    thrift = true;
+    lean = true;
 }
 
 export function boxmodel(data: IBoxModel[], iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     for (let bm of data) {
         let el = element(bm.id) as HTMLElement;
-        switch (thrift) {
+        switch (lean) {
             case true:
                 let box = el ? el : doc.createElement("DIV");
                 box.style.left = bm.box[0] + "px";
@@ -70,7 +72,7 @@ export function boxmodel(data: IBoxModel[], iframe: HTMLIFrameElement): void {
                     el.style.minWidth = Math.max(width - 5, 0) + "px";
                     el.style.height = (bm.box[3] - yPadding - yBorder) + "px";
                     el.style.overflow = "hidden";
-                    el.style.wordBreak = "break-all";
+                    boxmodels[bm.id] = bm;
                 }
                 break;
         }
@@ -139,6 +141,7 @@ export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {
                 if (!node.attributes) { node.attributes = {}; }
                 node.attributes["data-id"] = `${node.id}`;
                 setAttributes(domElement as HTMLElement, node.attributes);
+                if (node.id in boxmodels) { boxmodel([boxmodels[node.id]], iframe); }
                 insert(node, parent, domElement, next);
                 break;
         }
