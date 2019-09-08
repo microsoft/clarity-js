@@ -4,7 +4,8 @@ export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
 
 export const enum Event {
-    Metadata,
+    Page,
+    Unload,
     Discover,
     Mutation,
     BoxModel,
@@ -30,16 +31,16 @@ export const enum Event {
     ImageError
 }
 
-export const enum Flush {
-    Schedule,
-    Force,
-    None
+export const enum Upload {
+    Async,
+    Beacon,
+    Backup
 }
 
 export interface IPayload {
-    e: Token[];
-    m: Token[];
-    d: Token[][];
+    e: string;
+    m: string;
+    d: string;
 }
 
 export interface IDecodedPayload {
@@ -54,16 +55,22 @@ export interface IDecodedEvent {
     data: any;
 }
 
+export interface IMetadata {
+    page: IPage;
+    envelope: IEnvelope;
+}
+
+export interface IPage {
+    url: string;
+    title: string;
+    referrer: string;
+}
+
 export interface IEnvelope {
     sequence: number;
     version: string;
     pageId: string;
     userId: string;
     projectId: string;
-}
-
-export interface IMetadata extends IEnvelope {
-    url: string;
-    title: string;
-    referrer: string;
+    upload: Upload;
 }

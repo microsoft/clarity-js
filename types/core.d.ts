@@ -25,7 +25,7 @@ export interface IConfig {
     lean?: boolean;
     tokens?: string[];
     url?: string;
-    upload?: (data: string) => void;
+    upload?: (data: string, last: boolean) => void;
 }
 
 export interface ITaskTracker {

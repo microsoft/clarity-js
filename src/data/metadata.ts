@@ -1,4 +1,4 @@
-import { IMetadata, Token } from "@clarity-types/data";
+import { IEnvelope, IMetadata, IPage, Token, Upload } from "@clarity-types/data";
 import config from "@src/core/config";
 import version from "@src/core/version";
 import encode from "@src/data/encode";
@@ -7,17 +7,12 @@ import hash from "@src/data/hash";
 export let metadata: IMetadata = null;
 
 export function start(): void {
-    metadata = {
-      sequence: 0,
-      version,
-      pageId: config.pageId || guid(),
-      userId: config.userId || guid(),
-      projectId: config.projectId || hash(location.host),
-      url: location.href,
-      title: document.title,
-      referrer: document.referrer
-    };
-
+    let pageId = config.pageId || guid();
+    let userId = config.userId || guid();
+    let projectId = config.projectId || hash(location.host);
+    let e: IEnvelope = { sequence: 0, version, pageId, userId, projectId, upload: Upload.Async };
+    let p: IPage = { url: location.href, title: document.title, referrer: document.referrer };
+    metadata = { page: p, envelope: e };
     encode();
 }
 
@@ -25,9 +20,10 @@ export function end(): void {
     metadata = null;
 }
 
-export function envelope(): Token[] {
-    metadata.sequence++;
-    return [metadata.sequence, metadata.version, metadata.pageId, metadata.userId, metadata.projectId];
+export function envelope(upload: Upload): Token[] {
+    let e = metadata.envelope;
+    if (upload !== Upload.Backup) { e.sequence++; }
+    return [e.sequence, e.version, e.pageId, e.userId, e.projectId, upload];
 }
 
 // Credit: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript

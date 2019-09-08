@@ -2,8 +2,8 @@ import { Event, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types
 import envelope from "./envelope";
 import interaction from "./interaction";
 import layout from "./layout";
-import metadata from "./metadata";
 import metric from "./metric";
+import page from "./page";
 import * as r from "./render";
 
 let pageId: string = null;
@@ -49,8 +49,8 @@ export function json(data: string): IDecodedPayload {
             case Event.Checksum:
                 event = layout(entry);
                 break;
-            case Event.Metadata:
-                event = metadata(entry);
+            case Event.Page:
+                event = page(entry);
                 break;
             default:
                 event = {time: entry[0] as number, event: entry[1] as number, data: entry.slice(2)};

@@ -4,7 +4,10 @@ import { IDecodedMetric, IMetricMap, Metric, MetricType } from "../types/metric"
 let metricMap: IMetricMap = {};
 
 metricMap[Metric.Nodes] = { name: "Node Count", unit: ""};
-metricMap[Metric.Bytes] = { name: "Byte Count", unit: "KB"};
+metricMap[Metric.LayoutBytes] = { name: "Layout Bytes", unit: "KB"};
+metricMap[Metric.InteractionBytes] = { name: "Interaction Bytes", unit: "KB"};
+metricMap[Metric.NetworkBytes] = { name: "Network Bytes", unit: "KB"};
+metricMap[Metric.DiagnosticBytes] = { name: "Diagnostic Bytes", unit: "KB"};
 metricMap[Metric.Mutations] = { name: "Mutation Count", unit: ""};
 metricMap[Metric.Interactions] = { name: "Interaction Count", unit: ""};
 metricMap[Metric.Clicks] = { name: "Click Count", unit: ""};
@@ -14,8 +17,9 @@ metricMap[Metric.ImageErrors] = { name: "Image Errors", unit: ""};
 metricMap[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};
 metricMap[Metric.MutationTime] = { name: "Mutation Time", unit: "ms"};
 metricMap[Metric.BoxModelTime] = { name: "Box Model Time", unit: "ms"};
-metricMap[Metric.WireupTime] = { name: "Wireup Delay", unit: "s"};
+metricMap[Metric.LoadTime] = { name: "Load Time", unit: "s"};
 metricMap[Metric.ActiveTime] = { name: "Active Time", unit: "ms"};
+metricMap[Metric.UnloadTime] = { name: "Unload Time", unit: "s"};
 metricMap[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px"};
 metricMap[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px"};
 metricMap[Metric.DocumentWidth] = { name: "Document Width", unit: "px"};

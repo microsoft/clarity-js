@@ -17,7 +17,7 @@ export interface IScroll {
     time?: number;
 }
 
-export interface IPageVisibility {
+export interface IVisibility {
     visible: string;
 }
 
@@ -31,4 +31,8 @@ export interface ISelection {
 export interface IChange {
     target: number;
     value: string;
+}
+
+export interface IUnload {
+    name: string;
 }

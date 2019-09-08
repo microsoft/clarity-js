@@ -1,9 +1,9 @@
 import { Event } from "@clarity-types/data";
-import { IPageVisibility } from "@clarity-types/interaction";
+import { IVisibility } from "@clarity-types/interaction";
 import { bind } from "@src/core/event";
 import encode from "./encode";
 
-export let data: IPageVisibility;
+export let data: IVisibility;
 
 export function start(): void {
     bind(window, "pagehide", recompute);

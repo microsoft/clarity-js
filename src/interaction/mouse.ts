@@ -6,7 +6,7 @@ import time from "@src/core/time";
 import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
-export let data: { [key: number]: IMouse[] } = [];
+export let data: { [key: number]: IMouse[] } = {};
 let timeout: number = null;
 
 export function start(): void {

@@ -10,7 +10,10 @@ export const enum MetricType {
 export const enum Metric {
     /* Counter */
     Nodes,
-    Bytes,
+    LayoutBytes,
+    InteractionBytes,
+    NetworkBytes,
+    DiagnosticBytes,
     Mutations,
     Interactions,
     Clicks,
@@ -21,8 +24,9 @@ export const enum Metric {
     DiscoverTime,
     MutationTime,
     BoxModelTime,
-    WireupTime,
+    LoadTime,
     ActiveTime,
+    UnloadTime,
     /* Measures */
     ViewportWidth,
     ViewportHeight,

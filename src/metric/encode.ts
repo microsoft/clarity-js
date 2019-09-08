@@ -2,7 +2,7 @@ import {Token} from "@clarity-types/data";
 import { MetricType } from "@clarity-types/metric";
 import { metrics, reset, updates } from "@src/metric";
 
-export default function(): Token[] {
+export default function(last: boolean = false): Token[] {
     let output = [];
 
     // Encode counter metrics
@@ -11,7 +11,7 @@ export default function(): Token[] {
     for (let metric in counters) {
         if (counters[metric]) {
             let m = num(metric);
-            if (updates.indexOf(m) >= 0) {
+            if (updates.indexOf(m) >= 0 || last) {
                 output.push(m);
                 output.push(counters[metric]);
             }
@@ -24,7 +24,7 @@ export default function(): Token[] {
     for (let metric in measures) {
         if (measures[metric]) {
             let m = num(metric);
-            if (updates.indexOf(m) >= 0) {
+            if (updates.indexOf(m) >= 0 || last) {
                 output.push(m);
                 output.push(measures[metric]);
             }
