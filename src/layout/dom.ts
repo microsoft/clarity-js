@@ -204,6 +204,7 @@ function leaf(tag: string, id: number, parentId: number): void {
                 }
                 break;
             case "IMG":
+            case "IFRAME":
             case "svg:svg":
                 values[id].metadata.leaf = true;
                 break;

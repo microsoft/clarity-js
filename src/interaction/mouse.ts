@@ -46,7 +46,7 @@ function handler(event: Event, evt: MouseEvent): void {
 
 export function reset(): void {
     data = {};
-    for (let event of [Event.MouseDown, Event.MouseUp, Event.MouseMove, Event.DoubleClick, Event.Click]) {
+    for (let event of [Event.MouseDown, Event.MouseUp, Event.MouseWheel, Event.MouseMove, Event.DoubleClick, Event.Click]) {
         data[event] = [];
     }
 }

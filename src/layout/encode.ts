@@ -104,6 +104,7 @@ function meta(metadata: string[]): string[] | string[][] {
 function attribute(masked: boolean, key: string, value: string): string {
     switch (key) {
         case "src":
+        case "srcset":
         case "title":
         case "alt":
             return `${key}=${masked ? "" : value}`;

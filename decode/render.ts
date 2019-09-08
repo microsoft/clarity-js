@@ -48,35 +48,34 @@ export function boxmodel(data: IBoxModel[], iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     for (let bm of data) {
         let el = element(bm.id) as HTMLElement;
-        switch (lean) {
-            case true:
-                let box = el ? el : doc.createElement("DIV");
-                box.style.left = bm.box[0] + "px";
-                box.style.top = bm.box[1] + "px";
-                box.style.width = bm.box[2] + "px";
-                box.style.height = bm.box[3] + "px";
-                box.style.position = "absolute";
-                box.style.border = "1px solid red";
-                doc.body.appendChild(box);
-                nodes[bm.id] = box;
-                break;
-            case false:
-                if (el) {
-                    let style = getComputedStyle(el, null);
-                    let xPadding = parseInt(style["padding-left"], 10) + parseInt(style["padding-right"], 10);
-                    let xBorder = parseInt(style["border-left"], 10) + parseInt(style["border-right"], 10);
-                    let yPadding = parseInt(style["padding-top"], 10) + parseInt(style["padding-bottom"], 10);
-                    let yBorder = parseInt(style["border-top"], 10) + parseInt(style["border-bottom"], 10);
-                    let width = bm.box[2] - xPadding - xBorder;
-                    el.style.maxWidth = width + "px";
-                    el.style.minWidth = Math.max(width - 5, 0) + "px";
-                    el.style.height = (bm.box[3] - yPadding - yBorder) + "px";
-                    el.style.overflow = "hidden";
-                    boxmodels[bm.id] = bm;
-                }
-                break;
+        if (lean) {
+            let box = el ? el : doc.createElement("DIV");
+            box.style.left = bm.box[0] + "px";
+            box.style.top = bm.box[1] + "px";
+            box.style.width = bm.box[2] + "px";
+            box.style.height = bm.box[3] + "px";
+            box.style.position = "absolute";
+            box.style.border = "1px solid red";
+            doc.body.appendChild(box);
+            nodes[bm.id] = box;
+        } else {
+            let s = getComputedStyle(el, null);
+            let width = bm.box[2];
+            let height = bm.box[3];
+            if (s["boxSizing"] !== "border-box") {
+                width -= (css(s, "paddingLeft") + css(s, "paddingRight") + css(s, "borderLeftWidth") + css(s, "borderRightWidth"));
+                height -= (css(s, "paddingTop") + css(s, "paddingBottom") + css(s, "borderTopWidth") + css(s, "borderBottomWidth"));
+            }
+            el.style.width = width + "px";
+            el.style.height = height + "px";
+            if (el.tagName === "IFRAME") { el.style.backgroundColor = "maroon"; }
+            boxmodels[bm.id] = bm;
         }
     }
+}
+
+function css(style: CSSStyleDeclaration, field: string): number {
+    return parseInt(style[field], 10);
 }
 
 export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {
@@ -135,6 +134,7 @@ export function markup(data: IDecodedNode[], iframe: HTMLIFrameElement): void {
                 setAttributes(styleElement as HTMLElement, node.attributes);
                 styleElement.textContent = node.value;
                 insert(node, parent, styleElement, next);
+                break;
             default:
                 let domElement = element(node.id);
                 domElement = domElement ? domElement : createElement(doc, node.tag, parent as HTMLElement);

@@ -5,7 +5,8 @@ export default function(value: string): string {
     for (let i = 0; i < value.length; i++) {
         let code = value.charCodeAt(i);
         let isWhiteSpace = (code === 32 || code === 10 || code === 9 || code === 13);
-        textCount += isWhiteSpace ? 0 : 1;
+        let isNotCharacter = ((code >= 33 && code <= 47) || (code >= 91 && code <= 96) || (code >= 123 && code <= 126));
+        textCount += isWhiteSpace || isNotCharacter ? 0 : 1;
         wordCount += isWhiteSpace && !wasWhiteSpace ? 1 : 0;
         wasWhiteSpace = isWhiteSpace;
     }
