@@ -58,7 +58,7 @@ export function boxmodel(data: IBoxModel[], iframe: HTMLIFrameElement): void {
             box.style.border = "1px solid red";
             doc.body.appendChild(box);
             nodes[bm.id] = box;
-        } else {
+        } else if (el && el.tagName === "IFRAME") {
             let s = getComputedStyle(el, null);
             let width = bm.box[2];
             let height = bm.box[3];

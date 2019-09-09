@@ -4,7 +4,7 @@ import time from "@src/core/time";
 const NODE_ID_PROP: string = "__node_index__";
 const DEVTOOLS_HOOK: string = "__CLARITY_DEVTOOLS_HOOK__";
 const MASK_ATTRIBUTE = "data-clarity-mask";
-const UNMASK_ATTRIBUTE = "data-clarity-umask";
+const UNMASK_ATTRIBUTE = "data-clarity-unmask";
 let index: number = 1;
 
 let nodes: Node[] = [];

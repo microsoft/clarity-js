@@ -104,7 +104,7 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
             let v = unmask(token.substr(keyIndex + 1));
             switch (k) {
                 case "src":
-                    v = placeholderImage;
+                    v = v.length === 0 ? placeholderImage : v;
                     break;
                 default:
                     break;
