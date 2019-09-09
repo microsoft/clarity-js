@@ -24,9 +24,9 @@ export const enum Metric {
     DiscoverTime,
     MutationTime,
     BoxModelTime,
-    LoadTime,
+    StartTime,
     ActiveTime,
-    UnloadTime,
+    EndTime,
     /* Measures */
     ViewportWidth,
     ViewportHeight,

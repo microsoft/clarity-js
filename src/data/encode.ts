@@ -8,7 +8,7 @@ import { queue } from "./upload";
 export default function(): void {
     let t = time();
     let tokens: Token[] = [t, Event.Page];
-    metric.counter(Metric.LoadTime, t);
+    metric.counter(Metric.StartTime, t);
     tokens.push(metadata.page.url);
     tokens.push(metadata.page.title);
     tokens.push(metadata.page.referrer);

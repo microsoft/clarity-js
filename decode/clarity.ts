@@ -2,7 +2,7 @@ import { Event, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types
 import envelope from "./envelope";
 import interaction from "./interaction";
 import layout from "./layout";
-import metric from "./metric";
+import * as m from "./metric";
 import page from "./page";
 import * as r from "./render";
 
@@ -13,7 +13,7 @@ export function json(data: string): IDecodedPayload {
     let payload = JSON.parse(data);
     let decoded: IDecodedPayload = {
         envelope: envelope(payload.e),
-        metrics: metric(payload.m),
+        metrics: m.metric(payload.m),
         events: []
     };
 
@@ -21,6 +21,7 @@ export function json(data: string): IDecodedPayload {
         payloads = [];
         pageId = decoded.envelope.pageId;
         r.reset();
+        m.reset();
     }
 
     let encoded: Token[][] = payload.d;

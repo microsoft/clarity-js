@@ -10,7 +10,7 @@ export function start(): void {
     let pageId = config.pageId || guid();
     let userId = config.userId || guid();
     let projectId = config.projectId || hash(location.host);
-    let e: IEnvelope = { sequence: 0, version, pageId, userId, projectId, upload: Upload.Async };
+    let e: IEnvelope = { sequence: 0, version, pageId, userId, projectId, upload: Upload.Async, end: 0 };
     let p: IPage = { url: location.href, title: document.title, referrer: document.referrer };
     metadata = { page: p, envelope: e };
     encode();
@@ -20,10 +20,11 @@ export function end(): void {
     metadata = null;
 }
 
-export function envelope(upload: Upload): Token[] {
+export function envelope(last: boolean, backup: boolean = false): Token[] {
+    let upload = backup ? Upload.Backup : (last && "sendBeacon" in navigator ? Upload.Beacon : Upload.Async);
     let e = metadata.envelope;
     if (upload !== Upload.Backup) { e.sequence++; }
-    return [e.sequence, e.version, e.pageId, e.userId, e.projectId, upload];
+    return [e.sequence, e.version, e.pageId, e.userId, e.projectId, upload, last ? 1 : 0];
 }
 
 // Credit: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript

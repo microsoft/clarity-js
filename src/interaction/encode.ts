@@ -46,7 +46,7 @@ export default function(type: Event): void {
             let u = unload.data;
             tokens.push(u.name);
             queue(tokens);
-            metric.counter(Metric.UnloadTime, t);
+            metric.counter(Metric.EndTime, t);
             unload.reset();
             break;
         case Event.Change:

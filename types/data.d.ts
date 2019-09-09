@@ -73,4 +73,5 @@ export interface IEnvelope {
     userId: string;
     projectId: string;
     upload: Upload;
+    end: number;
 }

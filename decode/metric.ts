@@ -17,9 +17,9 @@ metricMap[Metric.ImageErrors] = { name: "Image Errors", unit: ""};
 metricMap[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};
 metricMap[Metric.MutationTime] = { name: "Mutation Time", unit: "ms"};
 metricMap[Metric.BoxModelTime] = { name: "Box Model Time", unit: "ms"};
-metricMap[Metric.LoadTime] = { name: "Load Time", unit: "s"};
+metricMap[Metric.StartTime] = { name: "Start Time", unit: "s"};
 metricMap[Metric.ActiveTime] = { name: "Active Time", unit: "ms"};
-metricMap[Metric.UnloadTime] = { name: "Unload Time", unit: "s"};
+metricMap[Metric.EndTime] = { name: "End Time", unit: "s"};
 metricMap[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px"};
 metricMap[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px"};
 metricMap[Metric.DocumentWidth] = { name: "Document Width", unit: "px"};
@@ -27,7 +27,7 @@ metricMap[Metric.DocumentHeight] = { name: "Document Height", unit: "px"};
 
 let metrics: IDecodedMetric = { counters: {}, measures: {}, events: [], marks: [] };
 
-export default function(tokens: Token[]): IDecodedMetric {
+export function metric(tokens: Token[]): IDecodedMetric {
     let i = 0;
     let metricType = null;
     while (i < tokens.length) {
@@ -57,4 +57,8 @@ export default function(tokens: Token[]): IDecodedMetric {
     }
 
     return metrics;
+}
+
+export function reset(): void {
+    metrics = { counters: {}, measures: {}, events: [], marks: [] };
 }
