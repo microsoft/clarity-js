@@ -64,6 +64,8 @@ export interface IChecksum {
     checksum: string;
 }
 
-export interface IChecksumMap extends IChecksum {
+export interface ILayoutSummary {
+    id: number;
+    checksum: string;
     selector: string;
 }

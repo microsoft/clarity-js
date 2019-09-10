@@ -29,7 +29,7 @@ export const enum Event {
     Performance,
     ScriptError,
     ImageError,
-    ChecksumMap
+    LayoutSummary
 }
 
 export const enum Upload {
