@@ -5,16 +5,18 @@ import layout from "./layout";
 import metric from "./metric";
 import page from "./page";
 import * as r from "./render";
+import summarize from "./summary";
 
 let pageId: string = null;
 
-export function json(data: string): IDecodedPayload {
-    let payload = JSON.parse(data);
-    let decoded: IDecodedPayload = { envelope: envelope(payload.e), metrics: metric(payload.m), events: [] };
-    let encoded: Token[][] = payload.d;
+export function decode(data: string): IDecodedPayload {
+    let json = JSON.parse(data);
+    let payload: IDecodedPayload = { envelope: envelope(json.e), metrics: metric(json.m), analytics: [], playback: [], summary: [] };
+    let encoded: Token[][] = json.d;
 
     for (let entry of encoded) {
         let event: IDecodedEvent;
+        let summary: IDecodedEvent;
         switch (entry[1]) {
             case Event.Scroll:
             case Event.Document:
@@ -29,24 +31,34 @@ export function json(data: string): IDecodedPayload {
             case Event.DoubleClick:
             case Event.RightClick:
                 event = interaction(entry);
+                payload.analytics.push(event);
+                break;
+            case Event.BoxModel:
+                event = layout(entry);
+                payload.playback.push(event);
                 break;
             case Event.Discover:
             case Event.Mutation:
-            case Event.BoxModel:
+                event = layout(entry);
+                summary = summarize(event);
+                payload.playback.push(event);
+                payload.summary.push(summary);
+                break;
             case Event.Checksum:
                 event = layout(entry);
+                payload.summary.push(event);
                 break;
             case Event.Page:
                 event = page(entry);
+                payload.analytics.push(event);
                 break;
             default:
                 event = {time: entry[0] as number, event: entry[1] as number, data: entry.slice(2)};
+                payload.playback.push(event);
                 break;
         }
-        decoded.events.push(event);
     }
-    decoded.events.sort(sort);
-    return decoded;
+    return payload;
 }
 
 export function html(decoded: IDecodedPayload): string {
@@ -66,7 +78,8 @@ export function render(decoded: IDecodedPayload, iframe: HTMLIFrameElement, head
     r.metric(decoded.metrics, header);
 
     // Replay events
-    replay(decoded.events, iframe);
+    let events = [...decoded.analytics, ...decoded.playback, ...decoded.summary].sort(sort);
+    replay(events, iframe);
 }
 
 export async function replay(events: IDecodedEvent[], iframe: HTMLIFrameElement): Promise<void> {

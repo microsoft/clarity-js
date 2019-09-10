@@ -28,7 +28,8 @@ export const enum Event {
     Network,
     Performance,
     ScriptError,
-    ImageError
+    ImageError,
+    ChecksumMap
 }
 
 export const enum Upload {
@@ -46,7 +47,9 @@ export interface IPayload {
 export interface IDecodedPayload {
     envelope: IEnvelope;
     metrics: IDecodedMetric;
-    events: IDecodedEvent[];
+    analytics: IDecodedEvent[];
+    playback: IDecodedEvent[];
+    summary: IDecodedEvent[];
 }
 
 export interface IDecodedEvent {

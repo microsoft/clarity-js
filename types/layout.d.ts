@@ -63,3 +63,7 @@ export interface IChecksum {
     id: number;
     checksum: string;
 }
+
+export interface IChecksumMap extends IChecksum {
+    selector: string;
+}
