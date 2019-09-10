@@ -1,31 +1,17 @@
-import { Event, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types/data";
+import { Event, IDecodedEvent, IDecodedPayload, Token } from "../types/data";
 import envelope from "./envelope";
 import interaction from "./interaction";
 import layout from "./layout";
-import * as m from "./metric";
+import metric from "./metric";
 import page from "./page";
 import * as r from "./render";
 
 let pageId: string = null;
-let payloads: IPayload[] = [];
 
 export function json(data: string): IDecodedPayload {
     let payload = JSON.parse(data);
-    let decoded: IDecodedPayload = {
-        envelope: envelope(payload.e),
-        metrics: m.metric(payload.m),
-        events: []
-    };
-
-    if (pageId !== decoded.envelope.pageId) {
-        payloads = [];
-        pageId = decoded.envelope.pageId;
-        r.reset();
-        m.reset();
-    }
-
+    let decoded: IDecodedPayload = { envelope: envelope(payload.e), metrics: metric(payload.m), events: [] };
     let encoded: Token[][] = payload.d;
-    payloads.push(payload);
 
     for (let entry of encoded) {
         let event: IDecodedEvent;
@@ -70,8 +56,14 @@ export function html(decoded: IDecodedPayload): string {
 }
 
 export function render(decoded: IDecodedPayload, iframe: HTMLIFrameElement, header?: HTMLElement): void {
+    // Reset rendering if we receive a new pageId
+    if (pageId !== decoded.envelope.pageId) {
+        pageId = decoded.envelope.pageId;
+        r.reset();
+    }
+
     // Render metrics
-    r.metrics(decoded.metrics, header);
+    r.metric(decoded.metrics, header);
 
     // Replay events
     replay(decoded.events, iframe);

@@ -5,6 +5,7 @@ import { IDecodedMetric } from "../types/metric";
 
 let nodes = {};
 let boxmodels = {};
+let metrics: IDecodedMetric = null;
 let svgns: string = "http://www.w3.org/2000/svg";
 let lean = false;
 
@@ -16,16 +17,27 @@ let clickIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S
 export function reset(): void {
     nodes = {};
     boxmodels = {};
+    metrics = { counters: {}, measures: {}, events: [], marks: [] };
 }
 
-export function metrics(data: IDecodedMetric, header: HTMLElement): void {
+export function metric(data: IDecodedMetric, header: HTMLElement): void {
     let html = [];
 
-    let entries = {...data.counters, ...data.measures};
-    for (let metric in entries) {
-        if (entries[metric]) {
-            let m = entries[metric];
-            html.push(`<li><h2>${value(m.value, m.unit)}<span>${m.unit}</span></h2>${metric}</li>`);
+    // Copy over counters
+    for (let counter in data.counters) {
+        if (data.counters[counter]) { metrics.counters[counter] = data.counters[counter]; }
+    }
+
+    // Copy over measures
+    for (let measure in data.measures) {
+        if (data.measures[measure]) { metrics.measures[measure] = data.measures[measure]; }
+    }
+
+    let entries = {...metrics.counters, ...metrics.measures};
+    for (let entry in entries) {
+        if (entries[entry]) {
+            let m = entries[entry];
+            html.push(`<li><h2>${value(m.value, m.unit)}<span>${m.unit}</span></h2>${entry}</li>`);
         }
     }
 

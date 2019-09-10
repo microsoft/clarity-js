@@ -25,11 +25,12 @@ metricMap[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px"};
 metricMap[Metric.DocumentWidth] = { name: "Document Width", unit: "px"};
 metricMap[Metric.DocumentHeight] = { name: "Document Height", unit: "px"};
 
-let metrics: IDecodedMetric = { counters: {}, measures: {}, events: [], marks: [] };
+let metrics: IDecodedMetric = null;
 
-export function metric(tokens: Token[]): IDecodedMetric {
+export default function(tokens: Token[]): IDecodedMetric {
     let i = 0;
     let metricType = null;
+    metrics = { counters: {}, measures: {}, events: [], marks: [] };
     while (i < tokens.length) {
         // Determine metric time for subsequent processing
         if (typeof(tokens[i]) === "string") {
@@ -57,8 +58,4 @@ export function metric(tokens: Token[]): IDecodedMetric {
     }
 
     return metrics;
-}
-
-export function reset(): void {
-    metrics = { counters: {}, measures: {}, events: [], marks: [] };
 }
