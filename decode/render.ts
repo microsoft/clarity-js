@@ -170,6 +170,7 @@ function insert(data: IDecodedNode, parent: Node, node: Node, next: Node): void 
         }
     } else if (parent === null && node.parentElement !== null) {
         node.parentElement.removeChild(node);
+        node = null;
     }
     nodes[data.id] = node;
 }

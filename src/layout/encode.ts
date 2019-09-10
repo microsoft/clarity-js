@@ -52,15 +52,16 @@ export default async function(type: Event): Promise<void> {
                 if (task.longtask(timer)) { await task.idle(timer); }
                 let metadata = [];
                 let data: INodeData = value.data;
-                let keys = ["tag", "path", "attributes", "value"];
+                let active = value.metadata.active;
+                let keys = active ? ["tag", "path", "attributes", "value"] : ["tag"];
                 for (let key of keys) {
                     if (data[key]) {
                         switch (key) {
                             case "tag":
                                 metric.counter(Metric.Nodes);
                                 tokens.push(value.id);
-                                if (value.parent) { tokens.push(value.parent); }
-                                if (value.next) { tokens.push(value.next); }
+                                if (value.parent && active) { tokens.push(value.parent); }
+                                if (value.next && active) { tokens.push(value.next); }
                                 metadata.push(data[key]);
                                 break;
                             case "path":

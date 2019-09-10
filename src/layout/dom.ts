@@ -68,6 +68,7 @@ export function update(node: Node, data: INodeData, source: Source): void {
 
     if (id in values) {
         let value = values[id];
+        value.metadata.active = true;
 
         // Handle case where internal ordering may have changed
         if (value["next"] !== nextId) {
@@ -87,7 +88,7 @@ export function update(node: Node, data: INodeData, source: Source): void {
                 }
             } else {
                 // Mark this element as deleted if the parent has been updated to null
-                value.metadata.active = false;
+                remove(id, source);
             }
 
             // Remove reference to this node from the old parent
@@ -167,6 +168,15 @@ export function selectors(): INodeValue[] {
     }
     selectorMap = [];
     return v;
+}
+
+function remove(id: number, source: Source): void {
+    let value = values[id];
+    value.metadata.active = false;
+    value.parent = null;
+    track(id, source);
+    for (let child of value.children) { remove(child, source); }
+    value.children = [];
 }
 
 function selector(id: number, data: INodeData, parent: string): string {
