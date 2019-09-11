@@ -13,14 +13,14 @@ export interface IBindingContainer {
 }
 
 export interface IConfig {
-    pageId?: string;
-    userId?: string;
+    sessionId?: string;
     projectId?: string;
     longTask?: number;
     lookahead?: number;
     distance?: number;
     interval?: number;
     delay?: number;
+    expire?: number;
     cssRules?: boolean;
     lean?: boolean;
     tokens?: string[];

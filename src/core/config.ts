@@ -1,14 +1,14 @@
 import { IConfig } from "@clarity-types/core";
 
 let config: IConfig = {
-    pageId: null,
-    userId: null,
+    sessionId: null,
     projectId: null,
     longTask: 30,
     lookahead: 500,
     distance: 20,
     interval: 25,
     delay: 1000,
+    expire: 7,
     cssRules: false,
     lean: false,
     tokens: [],

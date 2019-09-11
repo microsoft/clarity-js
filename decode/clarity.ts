@@ -11,7 +11,8 @@ let pageId: string = null;
 
 export function decode(data: string): IDecodedPayload {
     let json = JSON.parse(data);
-    let payload: IDecodedPayload = { envelope: envelope(json.e), metrics: metric(json.m), analytics: [], playback: [], summary: [] };
+    let time = Date.now();
+    let payload: IDecodedPayload = { time, envelope: envelope(json.e), metrics: metric(json.m), analytics: [], playback: [], summary: [] };
     let encoded: Token[][] = json.d;
 
     for (let entry of encoded) {

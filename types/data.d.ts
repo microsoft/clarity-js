@@ -45,6 +45,7 @@ export interface IPayload {
 }
 
 export interface IDecodedPayload {
+    time: number;
     envelope: IEnvelope;
     metrics: IDecodedMetric;
     analytics: IDecodedEvent[];
@@ -56,6 +57,12 @@ export interface IDecodedEvent {
     time: number;
     event: Event;
     data: any;
+}
+
+export interface ICookieData {
+    userId: string;
+    sessionId: string;
+    timestamp: number;
 }
 
 export interface IMetadata {
@@ -74,6 +81,7 @@ export interface IEnvelope {
     version: string;
     pageId: string;
     userId: string;
+    sessionId: string;
     projectId: string;
     upload: Upload;
     end: number;

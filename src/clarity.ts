@@ -10,26 +10,30 @@ let status = false;
 
 /* Initial discovery of DOM */
 export function start(configuration: IConfig = {}): void {
-  core.start(configuration);
-  metric.start();
-  data.start();
-  diagnostic.start();
-  dom.start();
-  interaction.start();
+  if (core.check()) {
+    core.start(configuration);
+    metric.start();
+    data.start();
+    diagnostic.start();
+    dom.start();
+    interaction.start();
 
-  // Mark Clarity session as active
-  status = true;
+    // Mark Clarity session as active
+    status = true;
+  }
 }
 
 export function end(): void {
-  interaction.end();
-  dom.end();
-  diagnostic.end();
-  data.end();
-  metric.end();
-  core.end();
+  if (status) {
+    interaction.end();
+    dom.end();
+    diagnostic.end();
+    data.end();
+    metric.end();
+    core.end();
 
-  status = false;
+    status = false;
+  }
 }
 
 export function active(): boolean {

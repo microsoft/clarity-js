@@ -6,8 +6,9 @@ export default function(tokens: Token[]): IEnvelope {
         version: tokens[1] as string,
         pageId: tokens[2] as string,
         userId: tokens[3] as string,
-        projectId: tokens[4] as string,
-        upload: tokens[5] as Upload,
-        end: tokens[6] as number
+        sessionId: tokens[4] as string,
+        projectId: tokens[5] as string,
+        upload: tokens[6] as Upload,
+        end: tokens[7] as number
     };
 }

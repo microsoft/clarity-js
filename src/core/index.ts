@@ -14,3 +14,7 @@ export function start(configuration: IConfig): void {
 export function end(): void {
     event.reset();
 }
+
+export function check(): boolean {
+    return window["MutationObserver"] && document["createTreeWalker"] && "now" in Date ? true : false;
+}
