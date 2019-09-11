@@ -4,7 +4,7 @@ import time from "@src/core/time";
 import { queue } from "@src/data/upload";
 import * as metric from "@src/metric";
 import * as change from "./change";
-import * as mouse from "./mouse";
+import * as pointer from "./pointer";
 import * as resize from "./resize";
 import * as scroll from "./scroll";
 import * as selection from "./selection";
@@ -22,16 +22,19 @@ export default function(type: Event): void {
         case Event.Click:
         case Event.DoubleClick:
         case Event.RightClick:
-            let m = mouse.data[type];
-            for (let i = 0; i < m.length; i++) {
-                let entry = m[i];
+        case Event.TouchStart:
+        case Event.TouchEnd:
+        case Event.TouchMove:
+        case Event.TouchCancel:
+            for (let i = 0; i < pointer.data[type].length; i++) {
+                let entry = pointer.data[type][i];
                 tokens = [entry.time, type];
                 tokens.push(entry.target);
                 tokens.push(entry.x);
                 tokens.push(entry.y);
                 queue(tokens);
             }
-            mouse.reset();
+            pointer.reset();
             break;
         case Event.Resize:
             let r = resize.data;
@@ -58,19 +61,18 @@ export default function(type: Event): void {
             change.reset();
             break;
         case Event.Selection:
-            let sl = selection.data;
-            tokens.push(sl.start);
-            tokens.push(sl.startOffset);
-            tokens.push(sl.end);
-            tokens.push(sl.endOffset);
+            let s = selection.data;
+            tokens.push(s.start);
+            tokens.push(s.startOffset);
+            tokens.push(s.end);
+            tokens.push(s.endOffset);
             queue(tokens);
             metric.counter(Metric.Selections);
             selection.reset();
             break;
         case Event.Scroll:
-            let s = scroll.data;
-            for (let i = 0; i < s.length; i++) {
-                let entry = s[i];
+            for (let i = 0; i < scroll.data.length; i++) {
+                let entry = scroll.data[i];
                 tokens = [entry.time, type];
                 tokens.push(entry.target);
                 tokens.push(entry.x);

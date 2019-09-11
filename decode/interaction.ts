@@ -1,5 +1,5 @@
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IChange, IMouse, IResize, IScroll, ISelection } from "../types/interaction";
+import { IChange, IPointer, IResize, IScroll, ISelection } from "../types/interaction";
 
 export default function(tokens: Token[]): IDecodedEvent {
     let time = tokens[0] as number;
@@ -12,8 +12,12 @@ export default function(tokens: Token[]): IDecodedEvent {
         case Event.Click:
         case Event.DoubleClick:
         case Event.RightClick:
-            let mouseData: IMouse = { target: tokens[2] as number, x: tokens[3] as number, y: tokens[4] as number };
-            return { time, event, data: mouseData };
+        case Event.TouchStart:
+        case Event.TouchCancel:
+        case Event.TouchEnd:
+        case Event.TouchMove:
+            let pointerData: IPointer = { target: tokens[2] as number, x: tokens[3] as number, y: tokens[4] as number };
+            return { time, event, data: pointerData };
         case Event.Resize:
             let resizeData: IResize = { width: tokens[2] as number, height: tokens[3] as number };
             return { time, event, data: resizeData };

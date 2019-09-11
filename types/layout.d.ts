@@ -29,7 +29,7 @@ export interface INodeValue {
 
 export interface INodeMetadata {
     active: boolean;
-    leaf: boolean;
+    layout: boolean;
     masked: boolean;
 }
 

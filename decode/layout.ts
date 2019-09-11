@@ -2,6 +2,7 @@ import { resolve } from "../src/data/token";
 import { Event, IDecodedEvent, Token } from "../types/data";
 import { IAttributes, IBoxModel, IChecksum, IDecodedNode, IDocumentSize,  } from "../types/layout";
 
+const ID_ATTRIBUTE = "data-clarity";
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
 let selectorMap = {};
 
@@ -129,11 +130,13 @@ function selector(id: number, path: string, tag: string, attributes: IAttributes
         case "LINK":
         case "META":
         case "*T":
+        case "*D":
             return "";
         default:
             let s = path && path.length > 0 ? path + tag : tag;
             if ("id" in attributes) { s = `${tag}#${attributes["id"]}`; }
             if ("class" in attributes) { s += `.${attributes["class"].trim().split(" ").join(".")}`; }
+            if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
             selectorMap[id] = s;
             return s;
     }

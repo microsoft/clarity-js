@@ -3,6 +3,7 @@ import time from "@src/core/time";
 
 const NODE_ID_PROP: string = "__node_index__";
 const DEVTOOLS_HOOK: string = "__CLARITY_DEVTOOLS_HOOK__";
+const ID_ATTRIBUTE = "data-clarity";
 const MASK_ATTRIBUTE = "data-clarity-mask";
 const UNMASK_ATTRIBUTE = "data-clarity-unmask";
 let index: number = 1;
@@ -55,9 +56,9 @@ export function add(node: Node, data: INodeData, source: Source): void {
         children: [],
         data,
         selector: selector(id, data, parent ? parent.selector : ""),
-        metadata: { active: true, leaf: false, masked }
+        metadata: { active: true, layout: false, masked }
     };
-    leaf(data.tag, id, parentId);
+    layout(data.tag, id, parentId);
     track(id, source);
 }
 
@@ -106,7 +107,12 @@ export function update(node: Node, data: INodeData, source: Source): void {
                 value["data"][key] = data[key];
             }
         }
-        leaf(data.tag, id, parentId);
+
+        // Update selector
+        let parent = parentId && parentId in values ? values[parentId] : null;
+        value.selector = selector(id, data, parent ? parent.selector : ""),
+
+        layout(data.tag, id, parentId);
         track(id, source);
     }
 }
@@ -134,10 +140,10 @@ export function has(node: Node): boolean {
     return getId(node) in nodes;
 }
 
-export function getLeafNodes(): INodeValue[] {
+export function boxmodel(): INodeValue[] {
     let v = [];
     for (let id in values) {
-        if (values[id].metadata.active && values[id].metadata.leaf) {
+        if (values[id].metadata.active && values[id].metadata.layout) {
             v.push(values[id]);
         }
     }
@@ -186,6 +192,7 @@ function selector(id: number, data: INodeData, parent: string): string {
         case "LINK":
         case "META":
         case "*T":
+        case "*D":
             return "";
         default:
             let value = getValue(id);
@@ -193,12 +200,13 @@ function selector(id: number, data: INodeData, parent: string): string {
             let attributes = "attributes" in data ? data.attributes : {};
             let current = "id" in attributes ? `${data.tag}#${attributes.id}` : `${parent}>${data.tag}`;
             if ("class" in attributes) { current = `${current}.${attributes.class.trim().split(" ").join(".")}`; }
+            if (ID_ATTRIBUTE in attributes) { current = `*${attributes[ID_ATTRIBUTE]}`; }
             if (current !== ex && selectorMap.indexOf(id) === -1) { selectorMap.push(id); }
             return current;
     }
 }
 
-function leaf(tag: string, id: number, parentId: number): void {
+function layout(tag: string, id: number, parentId: number): void {
     if (id !== null && parentId !== null) {
         switch (tag) {
             case "*T":
@@ -209,7 +217,7 @@ function leaf(tag: string, id: number, parentId: number): void {
                     for (let i = 0; i < value.length; i++) {
                         let code = value.charCodeAt(i);
                         if (!(code === 32 || code === 10 || code === 9 || code === 13)) {
-                            values[parentId].metadata.leaf = true;
+                            values[parentId].metadata.layout = true;
                             break;
                         }
                     }
@@ -218,7 +226,11 @@ function leaf(tag: string, id: number, parentId: number): void {
             case "IMG":
             case "IFRAME":
             case "svg:svg":
-                values[id].metadata.leaf = true;
+                values[id].metadata.layout = true;
+                break;
+            default:
+                // Capture layout for any element with a user defined selector
+                values[id].metadata.layout = values[id].selector.indexOf("*") === 0;
                 break;
         }
     }

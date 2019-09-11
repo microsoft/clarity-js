@@ -1,4 +1,4 @@
-export interface IMouse {
+export interface IPointer {
     target: number;
     x: number;
     y: number;

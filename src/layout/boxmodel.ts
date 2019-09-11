@@ -22,7 +22,7 @@ function schedule(): void {
 async function boxmodel(): Promise<void> {
     let timer = Metric.BoxModelTime;
     task.start(timer);
-    let values = dom.getLeafNodes();
+    let values = dom.boxmodel();
     let doc = document.documentElement;
     let x = "pageXOffset" in window ? window.pageXOffset : doc.scrollLeft;
     let y = "pageYOffset" in window ? window.pageYOffset : doc.scrollTop;
@@ -67,23 +67,6 @@ function update(id: number, box: number[]): void {
         bm[id] = {id, box};
     }
 }
-
-/* function getTextLayout(x: number, y: number, textNode: Node): number[] {
-    let layout: number[] = [];
-    let range = document.createRange();
-    range.selectNodeContents(textNode);
-    let rects = range.getClientRects();
-
-    for (let i = 0; i < rects.length; i++) {
-        let rect = rects[i];
-        layout.push(Math.floor(rect.left + x));
-        layout.push(Math.floor(rect.top + y));
-        layout.push(Math.floor(rect.width));
-        layout.push(Math.floor(rect.height));
-    }
-
-    return layout.length > 0 ? layout : [0, 0, 0, 0];
-} */
 
 function getLayout(x: number, y: number, element: Element): number[] {
     let layout: number[] = [0, 0, 0, 0];

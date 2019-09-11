@@ -31,6 +31,10 @@ export function decode(data: string): IDecodedPayload {
             case Event.Click:
             case Event.DoubleClick:
             case Event.RightClick:
+            case Event.TouchStart:
+            case Event.TouchCancel:
+            case Event.TouchEnd:
+            case Event.TouchMove:
                 event = interaction(entry);
                 payload.analytics.push(event);
                 break;
@@ -106,7 +110,13 @@ export async function replay(events: IDecodedEvent[], iframe: HTMLIFrameElement)
             case Event.Click:
             case Event.DoubleClick:
             case Event.RightClick:
-                r.mouse(entry.event, entry.data, iframe);
+                r.pointer(entry.event, entry.data, iframe);
+                break;
+            case Event.TouchStart:
+            case Event.TouchCancel:
+            case Event.TouchEnd:
+            case Event.TouchMove:
+                r.pointer(entry.event, entry.data, iframe);
                 break;
             case Event.Change:
                 r.change(entry.data, iframe);
