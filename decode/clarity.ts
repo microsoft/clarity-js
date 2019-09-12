@@ -1,4 +1,4 @@
-import { Event, IDecodedEvent, IDecodedPayload, Token } from "../types/data";
+import { Event, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types/data";
 import envelope from "./envelope";
 import interaction from "./interaction";
 import layout from "./layout";
@@ -9,10 +9,10 @@ import summarize from "./summary";
 
 let pageId: string = null;
 
-export function decode(data: string): IDecodedPayload {
-    let json = JSON.parse(data);
+export function decode(data: string | IPayload): IDecodedPayload {
+    let json: IPayload = typeof data === "string" ? JSON.parse(data) : data;
     let time = Date.now();
-    let payload: IDecodedPayload = { time, envelope: envelope(json.e), metrics: metric(json.m), analytics: [], playback: [], summary: [] };
+    let payload: IDecodedPayload = { time, envelope: envelope(json.e), metrics: metric(json.m), stream: [], backup: [] };
     let encoded: Token[][] = json.d;
 
     for (let entry of encoded) {
@@ -36,30 +36,30 @@ export function decode(data: string): IDecodedPayload {
             case Event.TouchEnd:
             case Event.TouchMove:
                 event = interaction(entry);
-                payload.analytics.push(event);
+                payload.stream.push(event);
                 break;
             case Event.BoxModel:
                 event = layout(entry);
-                payload.playback.push(event);
+                payload.backup.push(event);
                 break;
             case Event.Discover:
             case Event.Mutation:
                 event = layout(entry);
                 summary = summarize(event);
-                payload.playback.push(event);
-                payload.summary.push(summary);
+                payload.stream.push(event);
+                payload.stream.push(summary);
                 break;
             case Event.Checksum:
                 event = layout(entry);
-                payload.summary.push(event);
+                payload.stream.push(event);
                 break;
             case Event.Page:
                 event = page(entry);
-                payload.analytics.push(event);
+                payload.backup.push(event);
                 break;
             default:
                 event = {time: entry[0] as number, event: entry[1] as number, data: entry.slice(2)};
-                payload.playback.push(event);
+                payload.backup.push(event);
                 break;
         }
     }
@@ -83,7 +83,7 @@ export function render(decoded: IDecodedPayload, iframe: HTMLIFrameElement, head
     r.metric(decoded.metrics, header);
 
     // Replay events
-    let events = [...decoded.analytics, ...decoded.playback, ...decoded.summary].sort(sort);
+    let events = [...decoded.stream, ...decoded.backup].sort(sort);
     replay(events, iframe);
 }
 

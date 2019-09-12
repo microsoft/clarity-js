@@ -41,6 +41,12 @@ export const enum Upload {
 }
 
 export interface IPayload {
+    e: Token[];
+    m: Token[];
+    d: Token[][];
+}
+
+export interface ISerializedPayload {
     e: string;
     m: string;
     d: string;
@@ -50,9 +56,8 @@ export interface IDecodedPayload {
     time: number;
     envelope: IEnvelope;
     metrics: IDecodedMetric;
-    analytics: IDecodedEvent[];
-    playback: IDecodedEvent[];
-    summary: IDecodedEvent[];
+    stream: IDecodedEvent[];
+    backup: IDecodedEvent[];
 }
 
 export interface IDecodedEvent {
