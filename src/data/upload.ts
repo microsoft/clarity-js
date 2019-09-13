@@ -2,6 +2,7 @@ import { Event, ISerializedPayload, Token } from "@clarity-types/data";
 import { Metric } from "@clarity-types/metric";
 import config from "@src/core/config";
 import {envelope} from "@src/data/metadata";
+import * as ping from "@src/data/ping";
 import { counter } from "@src/metric";
 import metrics from "@src/metric/encode";
 
@@ -44,6 +45,7 @@ export function queue(data: Token[]): void {
 }
 
 export function end(): void {
+    clearTimeout(timeout);
     upload(true);
     events = [];
 }
@@ -54,6 +56,7 @@ function upload(last: boolean = false): void {
     handler(stringify(payload), last);
     backup(payload);
     events = [];
+    if (!last) { ping.reset(); }
 }
 
 function stringify(payload: ISerializedPayload): string {

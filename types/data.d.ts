@@ -10,6 +10,7 @@ export const enum Event {
     Mutation,
     BoxModel,
     Checksum,
+    Ping,
     Click,
     MouseMove,
     MouseDown,
@@ -72,6 +73,12 @@ export interface ICookieData {
     timestamp: number;
 }
 
+export interface IClarityData {
+    userId: string;
+    sessionId: string;
+    pageId: string;
+}
+
 export interface IMetadata {
     page: IPage;
     envelope: IEnvelope;
@@ -86,10 +93,14 @@ export interface IPage {
 export interface IEnvelope {
     sequence: number;
     version: string;
-    pageId: string;
+    projectId: string;
     userId: string;
     sessionId: string;
-    projectId: string;
+    pageId: string;
     upload: Upload;
     end: number;
+}
+
+export interface IPing {
+    gap: number;
 }

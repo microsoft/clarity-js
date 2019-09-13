@@ -2,7 +2,10 @@ import { IConfig } from "./core";
 
 interface IClarityJs {
   version: string;
-  start: (config: IConfig) => void;
+  config: (config?: IConfig) => boolean;
+  start: (config?: IConfig) => void;
+  pause: () => void;
+  resume: () => void;
   end: () => void;
   active: () => boolean;
 }

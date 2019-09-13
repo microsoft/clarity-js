@@ -1,4 +1,4 @@
-import { IPayload, Token } from "./data";
+import { IClarityData, IPayload, Token } from "./data";
 
 type TaskFunction = () => Promise<void>;
 type TaskResolve = () => void;
@@ -13,18 +13,20 @@ export interface IBindingContainer {
 }
 
 export interface IConfig {
-    sessionId?: string;
     projectId?: string;
-    longTask?: number;
+    longtask?: number;
     lookahead?: number;
     distance?: number;
     interval?: number;
     delay?: number;
     expire?: number;
+    ping?: number;
+    timeout?: number;
     cssRules?: boolean;
     lean?: boolean;
     tokens?: string[];
     url?: string;
+    onstart?: (data: IClarityData) => void;
     upload?: (data: string, last: boolean) => void;
 }
 
