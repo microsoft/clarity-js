@@ -10,13 +10,14 @@ const IndexConfig: webpack.Configuration = {
     mode: "production",
 
     entry: {
-        index: "./src/index.ts",
+        clarity: "./src/index.ts",
         decode: "./decode/clarity.ts"
     },
 
     output: {
         libraryTarget: "commonjs",
-        filename: "[name].js"
+        filename: "[name].js",
+        path: `${__dirname}/../../`
     },
 
     optimization: {

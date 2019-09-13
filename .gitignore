@@ -3,6 +3,8 @@
 
 # Build results
 build/
+clarity.js
+decode.js
 
 # npm packages
 .rpt2_cache

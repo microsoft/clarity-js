@@ -16,6 +16,7 @@ const ProdConfig: webpack.Configuration = {
     },
 
     output: {
+        path: `${__dirname}/../../build`,
         filename: "[name].min.js"
     },
 
