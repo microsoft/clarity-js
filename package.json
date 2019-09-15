@@ -1,6 +1,6 @@
 {
   "name": "clarity-js",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "An analytics library that uses web page interactions to generate aggregated insights",
   "author": "Microsoft Corp.",
   "license": "MIT",
@@ -63,6 +63,7 @@
   },
   "scripts": {
     "build": "yarn build:clean && yarn build:main && yarn build:cjs",
+    "build:dev": "yarn build:clean && yarn build:main && yarn build:cjs:dev",
     "build:main": "webpack --config webpack/configs/index.ts",
     "build:cjs": "webpack --config webpack/configs/prod.ts",
     "build:cjs:dev": "webpack --config webpack/configs/dev.ts",

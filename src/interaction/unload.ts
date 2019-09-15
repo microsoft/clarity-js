@@ -9,6 +9,7 @@ export let data: IUnload;
 export function start(): void {
     bind(window, "beforeunload", recompute);
     bind(window, "unload", recompute);
+    bind(window, "pagehide", recompute);
 }
 
 function recompute(evt: UIEvent): void {

@@ -54,7 +54,7 @@ function upload(last: boolean = false): void {
     let handler = config.upload ? config.upload : send;
     let payload: ISerializedPayload = {e: JSON.stringify(envelope(last)), m: JSON.stringify(metrics(last)), d: `[${events.join()}]`};
     handler(stringify(payload), last);
-    backup(payload);
+    if (last) { backup(payload); }
     events = [];
     if (!last) { ping.reset(); }
 }
@@ -70,14 +70,13 @@ function send(data: string, last: boolean = false): void {
         } else {
             let xhr = new XMLHttpRequest();
             xhr.open("POST", config.url);
-            xhr.setRequestHeader("Content-Type", "application/json");
             xhr.send(data);
         }
     }
 }
 
 function recover(): void {
-    if ("localStorage" in window) {
+    if (typeof localStorage !== "undefined") {
         let data = localStorage.getItem("clarity-backup");
         if (data && data.length > 0) {
             send(data);
@@ -86,7 +85,7 @@ function recover(): void {
 }
 
 function backup(payload: ISerializedPayload): void {
-    if ("localStorage" in window) {
+    if (typeof localStorage !== "undefined") {
         payload.e = JSON.stringify(envelope(true, true));
         localStorage.setItem("clarity-backup", stringify(payload));
     }

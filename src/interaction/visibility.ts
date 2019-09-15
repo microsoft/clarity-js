@@ -6,8 +6,6 @@ import encode from "./encode";
 export let data: IVisibility;
 
 export function start(): void {
-    bind(window, "pagehide", recompute);
-    bind(window, "pageshow", recompute);
     bind(document, "visibilitychange", recompute);
     recompute();
 }

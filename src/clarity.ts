@@ -40,6 +40,7 @@ export function pause(): void {
   bind(document, "touchstart", resume);
   bind(window, "resize", resume);
   bind(window, "scroll", resume);
+  bind(window, "pageshow", resume);
 }
 
 export function resume(): void {
