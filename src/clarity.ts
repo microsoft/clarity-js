@@ -22,15 +22,14 @@ export function config(override: IConfig): boolean {
 export function start(override: IConfig = {}): void {
   if (core.check()) {
     config(override);
+    status = true;
+
     core.start();
     metric.start();
     data.start();
     diagnostic.start();
     dom.start();
     interaction.start();
-
-    // Mark Clarity session as active
-    status = true;
   }
 }
 

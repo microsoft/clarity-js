@@ -56,7 +56,7 @@ function handler(event: Event, current: IPointer): void {
             if (last && similar(last, current)) { data[event].pop(); }
             data[event].push(current);
 
-            if (timeout) { clearTimeout(timeout); }
+            clearTimeout(timeout);
             timeout = window.setTimeout(encode, config.lookahead, event);
             break;
         default:
@@ -81,4 +81,9 @@ function similar(last: IPointer, current: IPointer): boolean {
     let dy = last.y - current.y;
     let distance = Math.sqrt(dx * dx + dy * dy);
     return (distance < config.distance) && (current.time - last.time < config.interval) && current.target === last.target;
+}
+
+export function end(): void {
+    clearTimeout(timeout);
+    data = {};
 }

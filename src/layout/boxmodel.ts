@@ -11,7 +11,7 @@ let updateMap: number[] = [];
 let timeout: number = null;
 
 export function compute(): void {
-    if (timeout) { clearTimeout(timeout); }
+    clearTimeout(timeout);
     timeout = window.setTimeout(schedule, config.lookahead);
 }
 
@@ -48,6 +48,7 @@ export function updates(): IBoxModel[] {
     updateMap = [];
     return summary;
 }
+
 function update(id: number, box: number[]): void {
     let changed = true;
     if (id in bm) {
@@ -86,4 +87,10 @@ function getLayout(x: number, y: number, element: Element): number[] {
         ];
     }
     return layout;
+}
+
+export function reset(): void {
+    clearTimeout(timeout);
+    updateMap = [];
+    bm = {};
 }

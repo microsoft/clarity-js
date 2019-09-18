@@ -25,7 +25,7 @@ function recompute(event: UIEvent = null): void {
     if (last && similar(last, current)) { data.pop(); }
     data.push(current);
 
-    if (timeout) { clearTimeout(timeout); }
+    clearTimeout(timeout);
     timeout = window.setTimeout(encode, config.lookahead, Event.Scroll);
 }
 
@@ -37,4 +37,9 @@ function similar(last: IScroll, current: IScroll): boolean {
     let dx = last.x - current.x;
     let dy = last.y - current.y;
     return (dx * dx + dy * dy < config.distance * config.distance) && (current.time - last.time < config.interval);
+}
+
+export function end(): void {
+    clearTimeout(timeout);
+    data = [];
 }

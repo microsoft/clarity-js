@@ -1,4 +1,5 @@
-import { Event, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types/data";
+import { Event, IAugmentation, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types/data";
+import diagnostic from "./diagnostic";
 import envelope from "./envelope";
 import interaction from "./interaction";
 import layout from "./layout";
@@ -9,10 +10,11 @@ import summarize from "./summary";
 
 let pageId: string = null;
 
-export function decode(data: string | IPayload): IDecodedPayload {
+export function decode(data: string | IPayload, augmentations: IAugmentation = null): IDecodedPayload {
     let json: IPayload = typeof data === "string" ? JSON.parse(data) : data;
-    let time = Date.now();
-    let payload: IDecodedPayload = { time, envelope: envelope(json.e), metrics: metric(json.m), stream: [], backup: [] };
+    let timestamp = augmentations ? augmentations.timestamp : Date.now();
+    let ua = augmentations ? augmentations.ua : (navigator && "userAgent" in navigator ? navigator.userAgent : "");
+    let payload: IDecodedPayload = { timestamp, ua, envelope: envelope(json.e), metrics: metric(json.m), stream: [], backup: [] };
     let encoded: Token[][] = json.d;
 
     for (let entry of encoded) {
@@ -55,7 +57,12 @@ export function decode(data: string | IPayload): IDecodedPayload {
                 break;
             case Event.Page:
                 event = page(entry);
-                payload.backup.push(event);
+                payload.stream.push(event);
+                break;
+            case Event.ScriptError:
+            case Event.ImageError:
+                event = diagnostic(entry);
+                payload.stream.push(event);
                 break;
             default:
                 event = {time: entry[0] as number, event: entry[1] as number, data: entry.slice(2)};

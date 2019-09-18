@@ -20,6 +20,7 @@ export function reset(): void {
     values = [];
     updateMap = [];
     changes = [];
+    selectorMap = [];
     if (DEVTOOLS_HOOK in window) { window[DEVTOOLS_HOOK] = { get, getNode, history }; }
 }
 

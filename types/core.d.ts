@@ -3,13 +3,11 @@ import { IClarityData, IPayload, Token } from "./data";
 type TaskFunction = () => Promise<void>;
 type TaskResolve = () => void;
 
-export interface IEventBindingPair {
+export interface IEventBindingData {
+    event: string;
     target: EventTarget;
     listener: EventListener;
-}
-
-export interface IBindingContainer {
-    [key: string]: IEventBindingPair[];
+    capture: boolean;
 }
 
 export interface IConfig {

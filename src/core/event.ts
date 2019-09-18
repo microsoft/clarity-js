@@ -1,26 +1,16 @@
-import { IBindingContainer, IEventBindingPair } from "@clarity-types/core";
+import { IEventBindingData } from "@clarity-types/core";
 
-let bindings: IBindingContainer = {};
+let bindings: IEventBindingData[] = [];
 
-export function bind(target: EventTarget, event: string, listener: EventListener, useCapture: boolean = false): void {
-    let eventBindings = bindings[event] || [];
-    target.addEventListener(event, listener, useCapture);
-    eventBindings.push({
-      target,
-      listener
-    });
-    bindings[event] = eventBindings;
+export function bind(target: EventTarget, event: string, listener: EventListener, capture: boolean = false): void {
+    target.addEventListener(event, listener, capture);
+    bindings.push({ event, target, listener, capture });
 }
 
 export function reset(): void {
   // Walk through existing list of bindings and remove them all
-  for (let evt in bindings) {
-    if (bindings.hasOwnProperty(evt)) {
-      let eventBindings = bindings[evt] as IEventBindingPair[];
-      for (let i = 0; i < eventBindings.length; i++) {
-        (eventBindings[i].target).removeEventListener(evt, eventBindings[i].listener);
-      }
-    }
+  for (let binding of bindings) {
+    (binding.target).removeEventListener(binding.event, binding.listener, binding.capture);
   }
-  bindings = {};
+  bindings = [];
 }

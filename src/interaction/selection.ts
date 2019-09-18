@@ -19,7 +19,7 @@ function recompute(): void {
     let s = document.getSelection();
 
     if (selection !== null && data.start !== null && data.start !== getId(s.anchorNode)) {
-        if (timeout) { clearTimeout(timeout); }
+        clearTimeout(timeout);
         encode(Event.Selection);
     }
 
@@ -31,11 +31,16 @@ function recompute(): void {
     };
     selection = s;
 
-    if (timeout) { clearTimeout(timeout); }
+    clearTimeout(timeout);
     timeout = window.setTimeout(encode, config.lookahead, Event.Selection);
 }
 
 export function reset(): void {
     selection = null;
     data = { start: 0, startOffset: 0, end: 0, endOffset: 0 };
+}
+
+export function end(): void {
+    reset();
+    clearTimeout(timeout);
 }

@@ -1,5 +1,6 @@
 import { Event, ICookieData, IEnvelope, IMetadata, IPage, Token, Upload } from "@clarity-types/data";
 import config from "@src/core/config";
+import time from "@src/core/time";
 import version from "@src/core/version";
 import encode from "@src/data/encode";
 import hash from "@src/data/hash";
@@ -16,9 +17,11 @@ export function start(): void {
     let userId = cookie && cookie.userId ? cookie.userId : guid();
     let sessionId = cookie && cookie.sessionId && ts - cookie.timestamp < CLARITY_SESSION_LENGTH ? cookie.sessionId : ts.toString(36);
     let pageId = guid();
-    let e: IEnvelope = { sequence: 0, version, pageId, userId, sessionId, projectId, upload: Upload.Async, end: 0 };
-    let p: IPage = { url: location.href, title: document.title, referrer: document.referrer };
+    let e: IEnvelope = { elapsed: time(), sequence: 0, version, pageId, userId, sessionId, projectId, upload: Upload.Async, end: 0 };
+    let p: IPage = { timestamp: ts, elapsed: time(), url: location.href, title: document.title, referrer: document.referrer };
+
     metadata = { page: p, envelope: e };
+
     track({ userId, sessionId, timestamp: ts });
     encode(Event.Page);
     if (config.onstart) { config.onstart({ userId, sessionId, pageId}); }
@@ -31,8 +34,12 @@ export function end(): void {
 export function envelope(last: boolean, backup: boolean = false): Token[] {
     let upload = backup ? Upload.Backup : (last && "sendBeacon" in navigator ? Upload.Beacon : Upload.Async);
     let e = metadata.envelope;
-    if (upload !== Upload.Backup) { e.sequence++; }
-    return [e.sequence, e.version, e.projectId, e.userId, e.sessionId, e.pageId, upload, last ? 1 : 0];
+    if (upload !== Upload.Backup) {
+      e.elapsed = time();
+      e.sequence++;
+    }
+
+    return [e.elapsed, e.sequence, e.version, e.projectId, e.userId, e.sessionId, e.pageId, upload, last ? 1 : 0];
 }
 
 // Credit: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript

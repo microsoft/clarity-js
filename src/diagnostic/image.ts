@@ -10,10 +10,6 @@ export function start(): void {
     bind(document, "error", handler, true);
 }
 
-export function end(): void {
-    return;
-}
-
 function handler(error: ErrorEvent): void {
     let target = error.target as HTMLElement;
     if (target && target.tagName === "IMG") {

@@ -15,5 +15,7 @@ export function start(): void {
 }
 
 export function end(): void {
-    // End calls
+    pointer.end();
+    scroll.end();
+    selection.end();
 }

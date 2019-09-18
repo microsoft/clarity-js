@@ -16,6 +16,8 @@ export default function(event: Event): void {
             break;
         case Event.Page:
             metric.counter(Metric.StartTime, Math.round(performance.now()));
+            tokens.push(metadata.page.timestamp);
+            tokens.push(metadata.page.elapsed);
             tokens.push(metadata.page.url);
             tokens.push(metadata.page.title);
             tokens.push(metadata.page.referrer);

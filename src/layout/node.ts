@@ -2,7 +2,7 @@ import { Source } from "@clarity-types/layout";
 import config from "@src/core/config";
 import * as dom from "./dom";
 
-let ignoreAttributes = ["title", "alt", "onload", "onfocus"];
+const ignoreAttributes = ["title", "alt", "onload", "onfocus"];
 
 export default function(node: Node, source: Source): void {
     // Do not track this change if we are attempting to remove a node before discovering it

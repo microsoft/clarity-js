@@ -5,14 +5,11 @@ export default function(tokens: Token[]): IDecodedEvent {
         time: tokens[0] as number,
         event: tokens[1] as Event,
         data: {
-            sequence: tokens[2] as number,
-            version: tokens[3] as string,
-            pageId: tokens[4] as string,
-            userId: tokens[5] as string,
-            projectId: tokens[6] as string,
-            url: tokens[7] as string,
-            title: tokens[8] as string,
-            referrer: tokens[9] as string
+            timestamp: tokens[2] as number,
+            elapsed: tokens[3] as number,
+            url: tokens[4] as string,
+            title: tokens[5] as string,
+            referrer: tokens[6] as string
         }
     };
 }

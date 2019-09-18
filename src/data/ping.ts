@@ -31,7 +31,7 @@ function ping(): void {
 }
 
 export function end(): void {
-    if (timeout) { clearTimeout(timeout); }
+    clearTimeout(timeout);
     last = 0;
     interval = 0;
 }

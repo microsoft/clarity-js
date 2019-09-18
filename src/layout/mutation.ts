@@ -43,6 +43,7 @@ export function end(): void {
   observer = null;
   CSSStyleSheet.prototype.insertRule = insertRule;
   CSSStyleSheet.prototype.deleteRule = deleteRule;
+  mutations = [];
 }
 
 function handle(m: MutationRecord[]): void {

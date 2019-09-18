@@ -9,10 +9,6 @@ export function start(): void {
     bind(window, "error", handler);
 }
 
-export function end(): void {
-    return;
-}
-
 function handler(error: ErrorEvent): void {
     let e = error["error"] || error;
 
