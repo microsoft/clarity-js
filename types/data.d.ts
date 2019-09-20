@@ -1,4 +1,4 @@
-import { IDecodedMetric } from "./metric";
+import { IMetric } from "./metric";
 
 export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
@@ -41,13 +41,18 @@ export const enum Upload {
     Backup = 2
 }
 
+export const enum Flag {
+    False = 0,
+    True = 1
+}
+
 export interface IPayload {
     e: Token[];
     m: Token[];
     d: Token[][];
 }
 
-export interface ISerializedPayload {
+export interface IEncodedPayload {
     e: string;
     m: string;
     d: string;
@@ -57,9 +62,9 @@ export interface IDecodedPayload {
     timestamp: number;
     ua: string;
     envelope: IEnvelope;
-    metrics: IDecodedMetric;
-    stream: IDecodedEvent[];
-    backup: IDecodedEvent[];
+    metrics: IMetric;
+    analytics: IDecodedEvent[];
+    playback: IDecodedEvent[];
 }
 
 export interface IDecodedEvent {
@@ -102,7 +107,7 @@ export interface IEnvelope {
     sessionId: string;
     pageId: string;
     upload: Upload;
-    end: number;
+    end: Flag;
 }
 
 export interface IPing {

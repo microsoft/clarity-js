@@ -3,8 +3,7 @@ import { Event } from "./data";
 export const enum MetricType {
     Counter = "C",
     Measure = "M",
-    Event = "E",
-    Marks = "K"
+    Tag = "T"
 }
 
 export const enum Metric {
@@ -35,21 +34,14 @@ export const enum Metric {
 export interface IMetric {
     counters: IMetricValue;
     measures: IMetricValue;
-    events: IEventMetric[];
-    marks: IMarkMetric[];
+    tags: IMetricTag[];
 }
 
 export interface IMetricValue {
     [key: number]: number;
 }
 
-export interface IEventMetric {
-    event: Event;
-    time: number;
-    duration: number;
-}
-
-export interface IMarkMetric {
+export interface IMetricTag {
     key: string;
     value: string;
     time: number;
@@ -62,18 +54,4 @@ export interface IMetricMap {
 export interface IMetricMapValue {
     name: string;
     unit: string;
-}
-
-export interface IDecodedMetric {
-    counters: IDecodedMetricValue;
-    measures: IDecodedMetricValue;
-    events: IEventMetric[];
-    marks: IMarkMetric[];
-}
-
-export interface IDecodedMetricValue {
-    [key: string]: {
-        value: number;
-        unit: string;
-    };
 }

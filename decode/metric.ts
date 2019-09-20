@@ -1,36 +1,12 @@
-import { Event, Token } from "../types/data";
-import { IDecodedMetric, IMetricMap, Metric, MetricType } from "../types/metric";
+import { Token } from "../types/data";
+import { IMetric, Metric, MetricType } from "../types/metric";
 
-let metricMap: IMetricMap = {};
+let metrics: IMetric = null;
 
-metricMap[Metric.Nodes] = { name: "Node Count", unit: ""};
-metricMap[Metric.LayoutBytes] = { name: "Layout Bytes", unit: "KB"};
-metricMap[Metric.InteractionBytes] = { name: "Interaction Bytes", unit: "KB"};
-metricMap[Metric.NetworkBytes] = { name: "Network Bytes", unit: "KB"};
-metricMap[Metric.DiagnosticBytes] = { name: "Diagnostic Bytes", unit: "KB"};
-metricMap[Metric.Mutations] = { name: "Mutation Count", unit: ""};
-metricMap[Metric.Interactions] = { name: "Interaction Count", unit: ""};
-metricMap[Metric.Clicks] = { name: "Click Count", unit: ""};
-metricMap[Metric.Selections] = { name: "Selection Count", unit: ""};
-metricMap[Metric.ScriptErrors] = { name: "Script Errors", unit: ""};
-metricMap[Metric.ImageErrors] = { name: "Image Errors", unit: ""};
-metricMap[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};
-metricMap[Metric.MutationTime] = { name: "Mutation Time", unit: "ms"};
-metricMap[Metric.BoxModelTime] = { name: "Box Model Time", unit: "ms"};
-metricMap[Metric.StartTime] = { name: "Start Time", unit: "s"};
-metricMap[Metric.ActiveTime] = { name: "Active Time", unit: "ms"};
-metricMap[Metric.EndTime] = { name: "End Time", unit: "s"};
-metricMap[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px"};
-metricMap[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px"};
-metricMap[Metric.DocumentWidth] = { name: "Document Width", unit: "px"};
-metricMap[Metric.DocumentHeight] = { name: "Document Height", unit: "px"};
-
-let metrics: IDecodedMetric = null;
-
-export default function(tokens: Token[]): IDecodedMetric {
+export default function(tokens: Token[]): IMetric {
     let i = 0;
     let metricType = null;
-    metrics = { counters: {}, measures: {}, events: [], marks: [] };
+    metrics = { counters: {}, measures: {}, tags: [] };
     while (i < tokens.length) {
         // Determine metric time for subsequent processing
         if (typeof(tokens[i]) === "string") {
@@ -41,18 +17,15 @@ export default function(tokens: Token[]): IDecodedMetric {
         // Parse metrics
         switch (metricType) {
             case MetricType.Counter:
-                let counter = metricMap[tokens[i++] as Metric];
-                metrics.counters[counter.name] = { value: tokens[i++] as number, unit: counter.unit };
+                let counter = tokens[i++] as Metric;
+                metrics.counters[counter] = tokens[i++] as number;
                 break;
             case MetricType.Measure:
-                let measure = metricMap[tokens[i++] as Metric];
-                metrics.measures[measure.name] = { value: tokens[i++] as number, unit: measure.unit };
+                let measure = tokens[i++] as Metric;
+                metrics.measures[measure] = tokens[i++] as number;
                 break;
-            case MetricType.Event:
-                metrics.events.push({ event: tokens[i++] as Event, time: tokens[i++] as number, duration: tokens[i++] as number });
-                break;
-            case MetricType.Marks:
-                metrics.marks.push({ key: tokens[i++] as string, value: tokens[i++] as string, time: tokens[i++] as number });
+            case MetricType.Tag:
+                metrics.tags.push({ key: tokens[i++] as string, value: tokens[i++] as string, time: tokens[i++] as number });
                 break;
         }
     }

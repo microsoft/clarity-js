@@ -1,4 +1,4 @@
-import { Event, ICookieData, IEnvelope, IMetadata, IPage, Token, Upload } from "@clarity-types/data";
+import { Event, Flag, ICookieData, IEnvelope, IMetadata, IPage, Token, Upload } from "@clarity-types/data";
 import config from "@src/core/config";
 import time from "@src/core/time";
 import version from "@src/core/version";
@@ -13,12 +13,13 @@ export let metadata: IMetadata = null;
 export function start(): void {
     let cookie: ICookieData = read();
     let ts = Date.now();
+    let elapsed = time();
     let projectId = config.projectId || hash(location.host);
     let userId = cookie && cookie.userId ? cookie.userId : guid();
     let sessionId = cookie && cookie.sessionId && ts - cookie.timestamp < CLARITY_SESSION_LENGTH ? cookie.sessionId : ts.toString(36);
     let pageId = guid();
-    let e: IEnvelope = { elapsed: time(), sequence: 0, version, pageId, userId, sessionId, projectId, upload: Upload.Async, end: 0 };
-    let p: IPage = { timestamp: ts, elapsed: time(), url: location.href, title: document.title, referrer: document.referrer };
+    let e: IEnvelope = { elapsed, sequence: 0, version, pageId, userId, sessionId, projectId, upload: Upload.Async, end: Flag.False };
+    let p: IPage = { timestamp: ts, elapsed, url: location.href, title: document.title, referrer: document.referrer };
 
     metadata = { page: p, envelope: e };
 
@@ -32,14 +33,15 @@ export function end(): void {
 }
 
 export function envelope(last: boolean, backup: boolean = false): Token[] {
-    let upload = backup ? Upload.Backup : (last && "sendBeacon" in navigator ? Upload.Beacon : Upload.Async);
     let e = metadata.envelope;
-    if (upload !== Upload.Backup) {
+    e.upload = backup ? Upload.Backup : (last && "sendBeacon" in navigator ? Upload.Beacon : Upload.Async);
+    e.end = last ? Flag.True : Flag.False;
+    if (e.upload !== Upload.Backup) {
       e.elapsed = time();
       e.sequence++;
     }
 
-    return [e.elapsed, e.sequence, e.version, e.projectId, e.userId, e.sessionId, e.pageId, upload, last ? 1 : 0];
+    return [e.elapsed, e.sequence, e.version, e.projectId, e.userId, e.sessionId, e.pageId, e.upload, e.end];
 }
 
 // Credit: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript

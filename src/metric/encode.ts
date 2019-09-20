@@ -31,18 +31,9 @@ export default function(last: boolean = false): Token[] {
         }
     }
 
-    // Encode events summary
-    if (metrics.events.length > 0) { output.push(MetricType.Event); }
-    let events = metrics.events;
-    for (let event of events) {
-        output.push(event.event);
-        output.push(event.time);
-        output.push(event.duration);
-    }
-
-    // Encode user specified marks
-    if (metrics.marks.length > 0) { output.push(MetricType.Marks); }
-    let marks = metrics.marks;
+    // Encode user specified tags
+    if (metrics.tags.length > 0) { output.push(MetricType.Tag); }
+    let marks = metrics.tags;
     for (let mark of marks) {
         output.push(mark.key);
         output.push(mark.value);

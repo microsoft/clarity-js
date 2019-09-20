@@ -1,13 +1,35 @@
 import { Event } from "../types/data";
 import { IChange, IPointer, IResize, IScroll, ISelection } from "../types/interaction";
 import { IBoxModel, IChecksum, IDecodedNode } from "../types/layout";
-import { IDecodedMetric } from "../types/metric";
+import { IMetric, Metric } from "../types/metric";
 
 let nodes = {};
 let boxmodels = {};
-let metrics: IDecodedMetric = null;
+let metrics: IMetric = null;
 let svgns: string = "http://www.w3.org/2000/svg";
 let lean = false;
+const metricMap = {};
+metricMap[Metric.Nodes] = { name: "Node Count", unit: ""};
+metricMap[Metric.LayoutBytes] = { name: "Layout Bytes", unit: "KB"};
+metricMap[Metric.InteractionBytes] = { name: "Interaction Bytes", unit: "KB"};
+metricMap[Metric.NetworkBytes] = { name: "Network Bytes", unit: "KB"};
+metricMap[Metric.DiagnosticBytes] = { name: "Diagnostic Bytes", unit: "KB"};
+metricMap[Metric.Mutations] = { name: "Mutation Count", unit: ""};
+metricMap[Metric.Interactions] = { name: "Interaction Count", unit: ""};
+metricMap[Metric.Clicks] = { name: "Click Count", unit: ""};
+metricMap[Metric.Selections] = { name: "Selection Count", unit: ""};
+metricMap[Metric.ScriptErrors] = { name: "Script Errors", unit: ""};
+metricMap[Metric.ImageErrors] = { name: "Image Errors", unit: ""};
+metricMap[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};
+metricMap[Metric.MutationTime] = { name: "Mutation Time", unit: "ms"};
+metricMap[Metric.BoxModelTime] = { name: "Box Model Time", unit: "ms"};
+metricMap[Metric.StartTime] = { name: "Start Time", unit: "s"};
+metricMap[Metric.ActiveTime] = { name: "Active Time", unit: "ms"};
+metricMap[Metric.EndTime] = { name: "End Time", unit: "s"};
+metricMap[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px"};
+metricMap[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px"};
+metricMap[Metric.DocumentWidth] = { name: "Document Width", unit: "px"};
+metricMap[Metric.DocumentHeight] = { name: "Document Height", unit: "px"};
 
 // tslint:disable-next-line: max-line-length
 let pointerIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S912AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6AAAdTAAAOpgAAA6lwAAF2+XqZnUAAACaUlEQVR4nGL8f58BHYgAsT8Q2wGxBBAzQcX/AfFrID4CxOuA+BWKLoX/YAoggBjRDHQD4ngglgRiPgyrIOAzEL8E4lVQg1EMBAggFiSFYUAcA8RSOAyCAV4oTgViTiBeiiwJEEAw71gRaRgyEAXiKCB2RBYECCCQgcIMEG+SYhgMiANxEhDzwwQAAghkoAMQK5NhGAwoALE1jAMQQCADQU7mpMBAZqijwAAggEAGqgAxOwUGskHNAAOAAAIZyEtIh4INg3bfHHD6xAUEYAyAAAIZ+IuQgU9fMLCXdzDIzV3JIIhDyQ8YAyCAQAaCUv8/fAZysDP8+/OXgTG7jkFhwRoMQ0F6n8M4AAEEMvAKsg34wM9fDEwgQ1dtRSQTIPgNxFdhHIAAAhm4AYg/EmMgCHz7zsCUVMaguHob3FCQYzbD5AECCGTgJSDeCbWJKPD1GwNzSjmD4tZ9DFxgvQr/b8PkAAIIlvVWA/FuUgz99IWBOTyXQcE+nOEOsjhAACGXNnJAHAnE9kAshqyIV5vB4Ms3cALGBkAlj9////9PgTgAAcSEJPEIiDuBeBYQP2CAhOt3BsLJCpSfNzAyMpqDOAABhF4ewh3FAMmf2kAsyqnBUPDjJ8HcdBvoSjWAAGIEEgTUMTAAbf/AwICSVGCgD4hPgJQA8WegWdsBAogFiyJC4C0QgxI3KLj4gIasRpYECCAGkAsJYSAAuRDEAKUEQwZIzgDxvwCxCrJagAAi1kAQAYpFESh/BlQMhJuR1QIEELEGlgOxHBLflAGSh0Gc60DMBpMDCCCiDMRhyXoGSJUaDgpPmDhAgAEAN5Ugk0bMYNIAAAAASUVORK5CYII=";
@@ -19,10 +41,10 @@ let touchIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S
 export function reset(): void {
     nodes = {};
     boxmodels = {};
-    metrics = { counters: {}, measures: {}, events: [], marks: [] };
+    metrics = { counters: {}, measures: {}, tags: [] };
 }
 
-export function metric(data: IDecodedMetric, header: HTMLElement): void {
+export function metric(data: IMetric, header: HTMLElement): void {
     let html = [];
 
     // Copy over counters
@@ -39,7 +61,8 @@ export function metric(data: IDecodedMetric, header: HTMLElement): void {
     for (let entry in entries) {
         if (entries[entry]) {
             let m = entries[entry];
-            html.push(`<li><h2>${value(m.value, m.unit)}<span>${m.unit}</span></h2>${entry}</li>`);
+            let map = metricMap[entry];
+            html.push(`<li><h2>${value(m, map.unit)}<span>${map.unit}</span></h2>${map.name}</li>`);
         }
     }
 

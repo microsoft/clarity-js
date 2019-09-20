@@ -8,6 +8,7 @@ interface IClarityJs {
   resume: () => void;
   end: () => void;
   active: () => boolean;
+  tag: (key: string, value: string) => void;
 }
 
 declare const clarity: IClarityJs;

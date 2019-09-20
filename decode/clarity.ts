@@ -1,3 +1,4 @@
+import version from "../src/core/version";
 import { Event, IAugmentation, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types/data";
 import diagnostic from "./diagnostic";
 import envelope from "./envelope";
@@ -14,12 +15,15 @@ export function decode(data: string | IPayload, augmentations: IAugmentation = n
     let json: IPayload = typeof data === "string" ? JSON.parse(data) : data;
     let timestamp = augmentations ? augmentations.timestamp : Date.now();
     let ua = augmentations ? augmentations.ua : (navigator && "userAgent" in navigator ? navigator.userAgent : "");
-    let payload: IDecodedPayload = { timestamp, ua, envelope: envelope(json.e), metrics: metric(json.m), stream: [], backup: [] };
+    let payload: IDecodedPayload = { timestamp, ua, envelope: envelope(json.e), metrics: metric(json.m), analytics: [], playback: [] };
     let encoded: Token[][] = json.d;
+
+    if (payload.envelope.version !== version) {
+        throw new Error(`Invalid Clarity Version. Actual: ${payload.envelope.version} | Expected: ${version}`);
+    }
 
     for (let entry of encoded) {
         let event: IDecodedEvent;
-        let summary: IDecodedEvent;
         switch (entry[1]) {
             case Event.Scroll:
             case Event.Document:
@@ -38,35 +42,35 @@ export function decode(data: string | IPayload, augmentations: IAugmentation = n
             case Event.TouchEnd:
             case Event.TouchMove:
                 event = interaction(entry);
-                payload.stream.push(event);
+                payload.analytics.push(event);
                 break;
             case Event.BoxModel:
                 event = layout(entry);
-                payload.backup.push(event);
+                payload.playback.push(event);
                 break;
             case Event.Discover:
             case Event.Mutation:
                 event = layout(entry);
-                summary = summarize(event);
-                payload.stream.push(event);
-                payload.stream.push(summary);
+                payload.playback.push(event);
+                let summary = summarize(event);
+                if (summary) { payload.analytics.push(summary); }
                 break;
             case Event.Checksum:
                 event = layout(entry);
-                payload.stream.push(event);
+                payload.analytics.push(event);
                 break;
             case Event.Page:
                 event = page(entry);
-                payload.stream.push(event);
+                payload.analytics.push(event);
                 break;
             case Event.ScriptError:
             case Event.ImageError:
                 event = diagnostic(entry);
-                payload.stream.push(event);
+                payload.analytics.push(event);
                 break;
             default:
                 event = {time: entry[0] as number, event: entry[1] as number, data: entry.slice(2)};
-                payload.backup.push(event);
+                payload.playback.push(event);
                 break;
         }
     }
@@ -90,7 +94,7 @@ export function render(decoded: IDecodedPayload, iframe: HTMLIFrameElement, head
     r.metric(decoded.metrics, header);
 
     // Replay events
-    let events = [...decoded.stream, ...decoded.backup].sort(sort);
+    let events = [...decoded.analytics, ...decoded.playback].sort(sort);
     replay(events, iframe);
 }
 

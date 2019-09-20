@@ -1,4 +1,3 @@
-import { Event } from "@clarity-types/data";
 import { IMetric, Metric } from "@clarity-types/metric";
 import time from "@src/core/time";
 
@@ -6,7 +5,7 @@ export let metrics: IMetric = null;
 export let updates: Metric[] = [];
 
 export function start(): void {
-    metrics = { counters: {}, measures: {}, events: [], marks: [] };
+    metrics = { counters: {}, measures: {}, tags: [] };
 }
 
 export function end(): void {
@@ -25,12 +24,8 @@ export function measure(metric: Metric, value: number): void {
     track(metric);
 }
 
-export function event(evt: Event, begin: number, duration: number = 0): void {
-    metrics.events.push({ event: evt, time: begin, duration });
-}
-
-export function mark(key: string, value: string): void {
-    metrics.marks.push({ key, value, time: time() });
+export function tag(key: string, value: string): void {
+    metrics.tags.push({ key, value, time: time() });
 }
 
 function track(metric: Metric): void {
@@ -41,6 +36,5 @@ function track(metric: Metric): void {
 
 export function reset(): void {
     updates = [];
-    metrics.events = [];
-    metrics.marks = [];
+    metrics.tags = [];
 }
