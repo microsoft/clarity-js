@@ -33,7 +33,8 @@ export const enum Event {
     ScriptError = 26,
     ImageError = 27,
     Layout = 28,
-    Summary = 29
+    Crawl = 29,
+    Summary = 30
 }
 
 export const enum Upload {

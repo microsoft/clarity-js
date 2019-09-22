@@ -29,7 +29,7 @@ export interface INodeValue {
 
 export interface INodeMetadata {
     active: boolean;
-    layout: boolean;
+    boxmodel: boolean;
     masked: boolean;
 }
 
@@ -44,7 +44,6 @@ export interface IDecodedNode {
     parent: number;
     next: number;
     tag: string;
-    selector: string;
     attributes?: IAttributes;
     value?: string;
 }
@@ -68,4 +67,9 @@ export interface ILayout {
     id: number;
     checksum: string;
     selector: string;
+}
+
+export interface ICrawl {
+    tag: string;
+    url: string;
 }

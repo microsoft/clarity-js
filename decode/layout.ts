@@ -1,17 +1,24 @@
 import hash from "../src/data/hash";
 import { resolve } from "../src/data/token";
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IAttributes, IBoxModel, IChecksum, IDecodedNode, IDocumentSize, ILayout } from "../types/layout";
+import { IAttributes, IBoxModel, IChecksum, ICrawl, IDecodedNode, IDocumentSize, ILayout } from "../types/layout";
 
 const ID_ATTRIBUTE = "data-clarity";
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
-let selectorMap = {};
+let selectors: ILayout[];
+let urls: ICrawl[];
+let lastTime: number;
+
+export function reset(): void {
+    selectors = [];
+    urls = [];
+    lastTime = null;
+}
 
 export function decode(tokens: Token[]): IDecodedEvent {
-    let time = tokens[0] as number;
+    let time = lastTime = tokens[0] as number;
     let event = tokens[1] as Event;
     let decoded: IDecodedEvent = {time, event, data: []};
-    selectorMap = {};
 
     switch (event) {
         case Event.Document:
@@ -79,22 +86,11 @@ export function decode(tokens: Token[]): IDecodedEvent {
     }
 }
 
-export function signature(event: IDecodedEvent): IDecodedEvent {
-    switch (event.event) {
-        case Event.Discover:
-        case Event.Mutation:
-            let layout: IDecodedEvent = {time: event.time, event: Event.Layout, data: []};
-            let nodes: IDecodedNode[] = event.data;
-            for (let node of nodes) {
-                // Do not track nodes where we don't have a valid selector - e.g. text nodes
-                if (node.selector && node.selector.length > 0) {
-                    let checksum = hash(node.selector);
-                    let data: ILayout = { id: node.id, checksum, selector: node.selector };
-                    layout.data.push(data);
-                }
-            }
-            return layout.data.length > 0 ? layout : null;
-    }
+export function enrich(): IDecodedEvent[] {
+    let output = [];
+    if (selectors.length > 0) { output.push({ time: lastTime, event: Event.Layout, data: selectors }); }
+    if (urls.length > 0) { output.push({ time: lastTime, event: Event.Crawl, data: urls }); }
+    return output;
 }
 
 function process(node: any[] | number[], tagIndex: number): IDecodedNode {
@@ -102,13 +98,12 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
         id: node[0],
         parent: tagIndex > 1 ? node[1] : null,
         next: tagIndex > 2 ? node[2] : null,
-        tag: node[tagIndex],
-        selector: "",
+        tag: node[tagIndex]
     };
     let hasAttribute = false;
     let attributes = {};
     let value = null;
-    let path = output.parent in selectorMap ? `${selectorMap[output.parent]}>` : null;
+    let path = output.parent in selectors ? `${selectors[output.parent]}>` : null;
 
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
@@ -135,14 +130,15 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
         }
     }
 
-    output.selector = selector(output.id, path, output.tag, attributes);
+    selector(output.id, output.tag, path, attributes);
+    crawler(output.tag, attributes);
     if (hasAttribute) { output.attributes = attributes; }
     if (value) { output.value = value; }
 
     return output;
 }
 
-function selector(id: number, path: string, tag: string, attributes: IAttributes): string {
+function selector(id: number, tag: string, path: string, attributes: IAttributes): void {
     switch (tag) {
         case "STYLE":
         case "TITLE":
@@ -150,14 +146,22 @@ function selector(id: number, path: string, tag: string, attributes: IAttributes
         case "META":
         case "*T":
         case "*D":
-            return "";
+            break;
         default:
             let s = path && path.length > 0 ? path + tag : tag;
             if ("id" in attributes) { s = `${tag}#${attributes["id"]}`; }
             if ("class" in attributes) { s += `.${attributes["class"].trim().split(" ").join(".")}`; }
             if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
-            selectorMap[id] = s;
-            return s;
+            selectors.push({ id, checksum: hash(s), selector: s });
+            break;
+    }
+}
+
+function crawler(tag: string, attributes: IAttributes): void {
+    switch (tag) {
+        case "LINK":
+            if ("href" in attributes) { urls.push({ tag, url: attributes["href"]}); }
+            break;
     }
 }
 

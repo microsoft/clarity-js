@@ -1,5 +1,5 @@
 import version from "../src/core/version";
-import { Event, IAugmentation, IDecodedEvent, IDecodedPayload, IEventSummary, IPayload, Token } from "../types/data";
+import { Event, IAugmentation, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types/data";
 import diagnostic from "./diagnostic";
 import envelope from "./envelope";
 import interaction from "./interaction";
@@ -7,10 +7,9 @@ import * as layout from "./layout";
 import metric from "./metric";
 import page from "./page";
 import * as r from "./render";
+import * as summary from "./summary";
 
 let pageId: string = null;
-let summary: { [key: number]: IEventSummary[] } = null;
-const SUMMARY_THRESHOLD = 250;
 
 export function decode(data: string | IPayload, augmentations: IAugmentation = null): IDecodedPayload {
     let json: IPayload = typeof data === "string" ? JSON.parse(data) : data;
@@ -18,15 +17,18 @@ export function decode(data: string | IPayload, augmentations: IAugmentation = n
     let ua = augmentations ? augmentations.ua : (navigator && "userAgent" in navigator ? navigator.userAgent : "");
     let payload: IDecodedPayload = { timestamp, ua, envelope: envelope(json.e), metrics: metric(json.m), analytics: [], playback: [] };
     let encoded: Token[][] = json.d;
-    summary = {}; // Reset summary every time to keep it stateless
 
     if (payload.envelope.version !== version) {
         throw new Error(`Invalid Clarity Version. Actual: ${payload.envelope.version} | Expected: ${version}`);
     }
 
+    /* Reset components before decoding to keep them stateless */
+    summary.reset();
+    layout.reset();
+
     for (let entry of encoded) {
-        summarize(entry);
         let event: IDecodedEvent;
+        summary.decode(entry);
         switch (entry[1]) {
             case Event.Scroll:
             case Event.Document:
@@ -54,9 +56,7 @@ export function decode(data: string | IPayload, augmentations: IAugmentation = n
             case Event.Discover:
             case Event.Mutation:
                 event = layout.decode(entry);
-                let signature = layout.signature(event);
                 payload.playback.push(event);
-                if (signature) { payload.analytics.push(signature); }
                 break;
             case Event.Checksum:
                 event = layout.decode(entry);
@@ -78,14 +78,9 @@ export function decode(data: string | IPayload, augmentations: IAugmentation = n
         }
     }
 
-    /* Add summary events */
-    for (let type in summary) {
-        if (summary[type]) {
-            for (let d of summary[type]) {
-                payload.analytics.push({time: d.start, event: Event.Summary, data: d});
-            }
-        }
-    }
+    /* Enrich decoded payload with derived events */
+    payload.analytics.push(...summary.enrich());
+    payload.analytics.push(...layout.enrich());
 
     return payload;
 }
@@ -166,14 +161,4 @@ async function wait(timestamp: number): Promise<number> {
 
 function sort(a: IDecodedEvent, b: IDecodedEvent): number {
     return a.time - b.time;
-}
-
-function summarize(entry: Token[]): void {
-    let time = entry[0] as number;
-    let type = entry[1] as Event;
-    let data: IEventSummary = { event: type, start: time, end: time };
-    if (!(type in summary)) { summary[type] = [data]; }
-
-    let s = summary[type][summary[type].length - 1];
-    if (time - s.end < SUMMARY_THRESHOLD) { s.end = time; } else { summary[type].push(data); }
 }

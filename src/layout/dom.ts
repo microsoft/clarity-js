@@ -57,7 +57,7 @@ export function add(node: Node, data: INodeData, source: Source): void {
         children: [],
         data,
         selector: selector(id, data, parent ? parent.selector : ""),
-        metadata: { active: true, layout: false, masked }
+        metadata: { active: true, boxmodel: false, masked }
     };
     layout(data.tag, id, parentId);
     track(id, source);
@@ -144,7 +144,7 @@ export function has(node: Node): boolean {
 export function boxmodel(): INodeValue[] {
     let v = [];
     for (let id in values) {
-        if (values[id].metadata.active && values[id].metadata.layout) {
+        if (values[id].metadata.active && values[id].metadata.boxmodel) {
             v.push(values[id]);
         }
     }
@@ -218,7 +218,7 @@ function layout(tag: string, id: number, parentId: number): void {
                     for (let i = 0; i < value.length; i++) {
                         let code = value.charCodeAt(i);
                         if (!(code === 32 || code === 10 || code === 9 || code === 13)) {
-                            values[parentId].metadata.layout = true;
+                            values[parentId].metadata.boxmodel = true;
                             break;
                         }
                     }
@@ -227,11 +227,11 @@ function layout(tag: string, id: number, parentId: number): void {
             case "IMG":
             case "IFRAME":
             case "svg:svg":
-                values[id].metadata.layout = true;
+                values[id].metadata.boxmodel = true;
                 break;
             default:
                 // Capture layout for any element with a user defined selector
-                values[id].metadata.layout = values[id].selector.indexOf("*") === 0;
+                values[id].metadata.boxmodel = values[id].selector.indexOf("*") === 0;
                 break;
         }
     }

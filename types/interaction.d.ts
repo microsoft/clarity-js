@@ -2,6 +2,8 @@ export interface IPointer {
     target: number;
     x: number;
     y: number;
+    targetX?: number;
+    targetY?: number;
     time?: number;
 }
 
