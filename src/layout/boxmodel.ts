@@ -36,7 +36,7 @@ async function boxmodel(): Promise<void> {
         update(value.id, getLayout(x, y, dom.getNode(value.id) as Element));
     }
 
-    await encode(Event.BoxModel);
+    if (updateMap.length > 0) { await encode(Event.BoxModel); }
     task.stop(timer);
 }
 
