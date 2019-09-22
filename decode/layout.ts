@@ -152,7 +152,7 @@ function selector(id: number, tag: string, path: string, attributes: IAttributes
             if ("id" in attributes) { s = `${tag}#${attributes["id"]}`; }
             if ("class" in attributes) { s += `.${attributes["class"].trim().split(" ").join(".")}`; }
             if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
-            selectors.push({ id, checksum: hash(s), selector: s });
+            if (s) { selectors.push({ id, checksum: hash(s), selector: s }); }
             break;
     }
 }
