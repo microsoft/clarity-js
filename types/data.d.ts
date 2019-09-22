@@ -32,7 +32,8 @@ export const enum Event {
     Performance = 25,
     ScriptError = 26,
     ImageError = 27,
-    LayoutSummary = 28
+    Layout = 28,
+    Summary = 29
 }
 
 export const enum Upload {
@@ -117,4 +118,10 @@ export interface IPing {
 export interface IAugmentation {
     timestamp: number;
     ua: string;
+}
+
+export interface IEventSummary {
+    event: Event;
+    start: number;
+    end: number;
 }

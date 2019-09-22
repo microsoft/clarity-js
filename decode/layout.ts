@@ -1,12 +1,13 @@
+import hash from "../src/data/hash";
 import { resolve } from "../src/data/token";
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IAttributes, IBoxModel, IChecksum, IDecodedNode, IDocumentSize,  } from "../types/layout";
+import { IAttributes, IBoxModel, IChecksum, IDecodedNode, IDocumentSize, ILayout } from "../types/layout";
 
 const ID_ATTRIBUTE = "data-clarity";
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
 let selectorMap = {};
 
-export default function(tokens: Token[]): IDecodedEvent {
+export function decode(tokens: Token[]): IDecodedEvent {
     let time = tokens[0] as number;
     let event = tokens[1] as Event;
     let decoded: IDecodedEvent = {time, event, data: []};
@@ -75,6 +76,24 @@ export default function(tokens: Token[]): IDecodedEvent {
             // Process last node
             decoded.data.push(process(node, tagIndex));
             return decoded;
+    }
+}
+
+export function signature(event: IDecodedEvent): IDecodedEvent {
+    switch (event.event) {
+        case Event.Discover:
+        case Event.Mutation:
+            let layout: IDecodedEvent = {time: event.time, event: Event.Layout, data: []};
+            let nodes: IDecodedNode[] = event.data;
+            for (let node of nodes) {
+                // Do not track nodes where we don't have a valid selector - e.g. text nodes
+                if (node.selector && node.selector.length > 0) {
+                    let checksum = hash(node.selector);
+                    let data: ILayout = { id: node.id, checksum, selector: node.selector };
+                    layout.data.push(data);
+                }
+            }
+            return layout.data.length > 0 ? layout : null;
     }
 }
 

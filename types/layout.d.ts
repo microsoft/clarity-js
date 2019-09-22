@@ -64,7 +64,7 @@ export interface IChecksum {
     checksum: string;
 }
 
-export interface ILayoutSummary {
+export interface ILayout {
     id: number;
     checksum: string;
     selector: string;
