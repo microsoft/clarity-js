@@ -2,7 +2,7 @@ import { Source } from "@clarity-types/layout";
 import config from "@src/core/config";
 import * as dom from "./dom";
 
-const ignoreAttributes = ["title", "alt", "onload", "onfocus"];
+const IGNORE_ATTRIBUTES = ["title", "alt", "onload", "onfocus"];
 
 export default function(node: Node, source: Source): void {
     // Do not track this change if we are attempting to remove a node before discovering it
@@ -96,7 +96,7 @@ function getAttributes(attributes: NamedNodeMap): {[key: string]: string} {
     if (attributes && attributes.length > 0) {
         for (let i = 0; i < attributes.length; i++) {
             let name = attributes[i].name;
-            if (ignoreAttributes.indexOf(name) < 0) {
+            if (IGNORE_ATTRIBUTES.indexOf(name) < 0) {
                 output[name] = attributes[i].value;
             }
         }

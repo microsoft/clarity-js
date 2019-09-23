@@ -5,8 +5,9 @@ import { bind } from "@src/core/event";
 import * as data from "@src/data";
 import * as diagnostic from "@src/diagnostic";
 import * as interaction from "@src/interaction";
-import * as dom from "@src/layout";
+import * as layout from "@src/layout";
 import * as metric from "@src/metric";
+export { tag } from "@src/data/tag";
 
 let status = false;
 
@@ -28,7 +29,7 @@ export function start(override: IConfig = {}): void {
     metric.start();
     data.start();
     diagnostic.start();
-    dom.start();
+    layout.start();
     interaction.start();
   }
 }
@@ -49,7 +50,7 @@ export function resume(): void {
 export function end(): void {
   if (status) {
     interaction.end();
-    dom.end();
+    layout.end();
     diagnostic.end();
     data.end();
     metric.end();

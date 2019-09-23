@@ -1,4 +1,4 @@
-import { IDecodedMetric } from "./metric";
+import { IMetric } from "./metric";
 
 export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
@@ -10,29 +10,32 @@ export const enum Event {
     Mutation = 3,
     BoxModel = 4,
     Checksum = 5,
-    Ping = 6,
-    Click = 7,
-    MouseMove = 8,
-    MouseDown = 9,
-    MouseUp = 10,
-    MouseWheel = 11,
-    DoubleClick = 12,
-    RightClick = 13,
-    TouchStart = 14,
-    TouchEnd = 15,
-    TouchMove = 16,
-    TouchCancel = 17,
-    Selection = 18,
-    Resize = 19,
-    Scroll = 20,
-    Change = 21,
-    Document = 22,
-    Visibility = 23,
-    Network = 24,
-    Performance = 25,
-    ScriptError = 26,
-    ImageError = 27,
-    LayoutSummary = 28
+    Tag = 6,
+    Ping = 7,
+    Click = 8,
+    MouseMove = 9,
+    MouseDown = 10,
+    MouseUp = 11,
+    MouseWheel = 12,
+    DoubleClick = 13,
+    RightClick = 14,
+    TouchStart = 15,
+    TouchEnd = 16,
+    TouchMove = 17,
+    TouchCancel = 18,
+    Selection = 19,
+    Resize = 20,
+    Scroll = 21,
+    Change = 22,
+    Document = 23,
+    Visibility = 24,
+    Network = 25,
+    Performance = 26,
+    ScriptError = 27,
+    ImageError = 28,
+    Layout = 29,
+    Resource = 30,
+    Summary = 31
 }
 
 export const enum Upload {
@@ -41,13 +44,18 @@ export const enum Upload {
     Backup = 2
 }
 
+export const enum Flag {
+    False = 0,
+    True = 1
+}
+
 export interface IPayload {
     e: Token[];
     m: Token[];
     d: Token[][];
 }
 
-export interface ISerializedPayload {
+export interface IEncodedPayload {
     e: string;
     m: string;
     d: string;
@@ -57,9 +65,9 @@ export interface IDecodedPayload {
     timestamp: number;
     ua: string;
     envelope: IEnvelope;
-    metrics: IDecodedMetric;
-    stream: IDecodedEvent[];
-    backup: IDecodedEvent[];
+    metrics: IMetric;
+    analytics: IDecodedEvent[];
+    playback: IDecodedEvent[];
 }
 
 export interface IDecodedEvent {
@@ -81,11 +89,11 @@ export interface IClarityData {
 }
 
 export interface IMetadata {
-    page: IPage;
+    page: IPageData;
     envelope: IEnvelope;
 }
 
-export interface IPage {
+export interface IPageData {
     timestamp: number;
     elapsed: number;
     url: string;
@@ -102,14 +110,25 @@ export interface IEnvelope {
     sessionId: string;
     pageId: string;
     upload: Upload;
-    end: number;
+    end: Flag;
 }
 
-export interface IPing {
+export interface IPingData {
     gap: number;
+}
+
+export interface ITagData {
+    key: string;
+    value: string;
 }
 
 export interface IAugmentation {
     timestamp: number;
     ua: string;
+}
+
+export interface IEventSummary {
+    event: Event;
+    start: number;
+    end: number;
 }

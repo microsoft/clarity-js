@@ -33,10 +33,10 @@ async function boxmodel(): Promise<void> {
             x = "pageXOffset" in window ? window.pageXOffset : doc.scrollLeft;
             y = "pageYOffset" in window ? window.pageYOffset : doc.scrollTop;
         }
-        update(value.id, getLayout(x, y, dom.getNode(value.id) as Element));
+        update(value.id, layout(dom.getNode(value.id) as Element, x, y));
     }
 
-    await encode(Event.BoxModel);
+    if (updateMap.length > 0) { await encode(Event.BoxModel); }
     task.stop(timer);
 }
 
@@ -47,6 +47,14 @@ export function updates(): IBoxModel[] {
     }
     updateMap = [];
     return summary;
+}
+
+export function relative(x: number, y: number, element: Element): number[] {
+    if (x && x >= 0 && y && y >= 0 && element) {
+        let box = layout(element);
+        return [x - box[0], y - box[1]];
+    }
+    return [null, null];
 }
 
 function update(id: number, box: number[]): void {
@@ -69,8 +77,8 @@ function update(id: number, box: number[]): void {
     }
 }
 
-function getLayout(x: number, y: number, element: Element): number[] {
-    let layout: number[] = [0, 0, 0, 0];
+function layout(element: Element, x: number = 0, y: number = 0): number[] {
+    let box: number[] = [0, 0, 0, 0];
     let rect = element.getBoundingClientRect();
 
     if (rect && rect.width > 0 && rect.height > 0) {
@@ -79,14 +87,14 @@ function getLayout(x: number, y: number, element: Element): number[] {
         // Also: using Math.floor() instead of Math.round() below because in Edge,
         // getBoundingClientRect returns partial pixel values (e.g. 162.5px) and Chrome already
         // floors the value (e.g. 162px). Keeping behavior consistent across
-        layout = [
+        box = [
             Math.floor(rect.left + x),
             Math.floor(rect.top + y),
             Math.floor(rect.width),
             Math.floor(rect.height)
         ];
     }
-    return layout;
+    return box;
 }
 
 export function reset(): void {

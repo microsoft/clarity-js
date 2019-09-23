@@ -1,4 +1,4 @@
-import { IEnvelope, Token, Upload } from "../types/data";
+import { Flag, IEnvelope, Token, Upload } from "../types/data";
 
 export default function(tokens: Token[]): IEnvelope {
     return {
@@ -10,6 +10,6 @@ export default function(tokens: Token[]): IEnvelope {
         sessionId: tokens[5] as string,
         pageId: tokens[6] as string,
         upload: tokens[7] as Upload,
-        end: tokens[8] as number
+        end: tokens[8] as Flag
     };
 }

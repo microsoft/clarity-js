@@ -1,21 +1,32 @@
-import hash from "../src/data/hash";
-import { Event, IDecodedEvent } from "../types/data";
-import { IDecodedNode, ILayoutSummary } from "../types/layout";
+import { Event, IDecodedEvent, IEventSummary, Token } from "../types/data";
 
-export default function(event: IDecodedEvent): IDecodedEvent {
-    switch (event.event) {
-        case Event.Discover:
-        case Event.Mutation:
-            let checksumMap: IDecodedEvent = {time: event.time, event: Event.LayoutSummary, data: []};
-            let nodes: IDecodedNode[] = event.data;
-            for (let node of nodes) {
-                // Do not track nodes where we don't have a valid selector - e.g. text nodes
-                if (node.selector && node.selector.length > 0) {
-                    let checksum = hash(node.selector);
-                    let data: ILayoutSummary = { id: node.id, checksum, selector: node.selector };
-                    checksumMap.data.push(data);
-                }
+let summary: { [key: number]: IEventSummary[] } = null;
+const SUMMARY_THRESHOLD = 250;
+
+export function reset(): void {
+    summary = {};
+}
+
+export function decode(entry: Token[]): void {
+    let time = entry[0] as number;
+    let type = entry[1] as Event;
+    let data: IEventSummary = { event: type, start: time, end: time };
+    if (!(type in summary)) { summary[type] = [data]; }
+
+    let s = summary[type][summary[type].length - 1];
+    if (time - s.end < SUMMARY_THRESHOLD) { s.end = time; } else { summary[type].push(data); }
+}
+
+export function enrich(): IDecodedEvent[] {
+    let data: IEventSummary[] = [];
+    let time = null;
+    for (let type in summary) {
+        if (summary[type]) {
+            for (let d of summary[type]) {
+                time = time ? Math.min(time, d.start) : d.start;
+                data.push(d);
             }
-            return checksumMap;
+        }
     }
+    return data.length > 0 ? [{ time, event: Event.Summary, data }] : [];
 }
