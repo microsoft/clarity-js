@@ -69,7 +69,7 @@ export interface ILayout {
     selector: string;
 }
 
-export interface ICrawl {
+export interface IResource {
     tag: string;
     url: string;
 }

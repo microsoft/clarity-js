@@ -29,9 +29,11 @@ function mouse(event: Event, evt: MouseEvent): void {
     let x = "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null);
     let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null);
     let target = evt.target ? getId(evt.target as Node) : null;
-    let targetX = null;
-    let targetY = null;
+    let targetX = null; // x coordinate relative to the target element
+    let targetY = null; // y coordinate relative to the target element
     if (event === Event.Click) {
+        // Populate (x,y) relative to target only when the above condition is met
+        // It's an expensive operation and we can expand the scope as desired later
         event = evt.buttons === 2 || evt.button === 2 ? Event.RightClick : event;
         let relative = boxmodel.relative(x, y, evt.target as Element);
         targetX = relative[0];

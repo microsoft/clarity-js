@@ -34,7 +34,7 @@ export const enum Event {
     ScriptError = 27,
     ImageError = 28,
     Layout = 29,
-    Crawl = 30,
+    Resource = 30,
     Summary = 31
 }
 

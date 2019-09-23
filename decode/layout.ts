@@ -1,17 +1,17 @@
 import hash from "../src/data/hash";
 import { resolve } from "../src/data/token";
 import { Event, IDecodedEvent, Token } from "../types/data";
-import { IAttributes, IBoxModel, IChecksum, ICrawl, IDecodedNode, IDocumentSize, ILayout } from "../types/layout";
+import { IAttributes, IBoxModel, IChecksum, IDecodedNode, IDocumentSize, ILayout, IResource } from "../types/layout";
 
 const ID_ATTRIBUTE = "data-clarity";
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
 let selectors: ILayout[];
-let urls: ICrawl[];
+let resources: IResource[];
 let lastTime: number;
 
 export function reset(): void {
     selectors = [];
-    urls = [];
+    resources = [];
     lastTime = null;
 }
 
@@ -89,7 +89,7 @@ export function decode(tokens: Token[]): IDecodedEvent {
 export function enrich(): IDecodedEvent[] {
     let output = [];
     if (selectors.length > 0) { output.push({ time: lastTime, event: Event.Layout, data: selectors }); }
-    if (urls.length > 0) { output.push({ time: lastTime, event: Event.Crawl, data: urls }); }
+    if (resources.length > 0) { output.push({ time: lastTime, event: Event.Resource, data: resources }); }
     return output;
 }
 
@@ -131,7 +131,7 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
     }
 
     selector(output.id, output.tag, path, attributes);
-    crawler(output.tag, attributes);
+    resource(output.tag, attributes);
     if (hasAttribute) { output.attributes = attributes; }
     if (value) { output.value = value; }
 
@@ -157,10 +157,12 @@ function selector(id: number, tag: string, path: string, attributes: IAttributes
     }
 }
 
-function crawler(tag: string, attributes: IAttributes): void {
+function resource(tag: string, attributes: IAttributes): void {
     switch (tag) {
         case "LINK":
-            if ("href" in attributes) { urls.push({ tag, url: attributes["href"]}); }
+            if ("href" in attributes && "rel" in attributes && attributes["rel"] === "stylesheet") {
+                resources.push({ tag, url: attributes["href"]});
+            }
             break;
     }
 }
