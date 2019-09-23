@@ -7,6 +7,7 @@ import * as diagnostic from "@src/diagnostic";
 import * as interaction from "@src/interaction";
 import * as layout from "@src/layout";
 import * as metric from "@src/metric";
+export { tag } from "@src/data/tag";
 
 let status = false;
 
@@ -61,9 +62,4 @@ export function end(): void {
 
 export function active(): boolean {
   return status;
-}
-
-export function tag(key: string, value: string): void {
-  if (!status) { return; }
-  metric.tag(key, value);
 }

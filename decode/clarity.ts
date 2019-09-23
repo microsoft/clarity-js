@@ -1,18 +1,18 @@
 import version from "../src/core/version";
 import { Event, IAugmentation, IDecodedEvent, IDecodedPayload, IPayload, Token } from "../types/data";
+import data from "./data";
 import diagnostic from "./diagnostic";
 import envelope from "./envelope";
 import interaction from "./interaction";
 import * as layout from "./layout";
 import metric from "./metric";
-import page from "./page";
 import * as r from "./render";
 import * as summary from "./summary";
 
 let pageId: string = null;
 
-export function decode(data: string | IPayload, augmentations: IAugmentation = null): IDecodedPayload {
-    let json: IPayload = typeof data === "string" ? JSON.parse(data) : data;
+export function decode(input: string | IPayload, augmentations: IAugmentation = null): IDecodedPayload {
+    let json: IPayload = typeof input === "string" ? JSON.parse(input) : input;
     let timestamp = augmentations ? augmentations.timestamp : Date.now();
     let ua = augmentations ? augmentations.ua : (navigator && "userAgent" in navigator ? navigator.userAgent : "");
     let payload: IDecodedPayload = { timestamp, ua, envelope: envelope(json.e), metrics: metric(json.m), analytics: [], playback: [] };
@@ -63,7 +63,9 @@ export function decode(data: string | IPayload, augmentations: IAugmentation = n
                 payload.analytics.push(event);
                 break;
             case Event.Page:
-                event = page(entry);
+            case Event.Ping:
+            case Event.Tag:
+                event = data(entry);
                 payload.analytics.push(event);
                 break;
             case Event.ScriptError:

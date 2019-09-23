@@ -1,11 +1,5 @@
 import { Event } from "./data";
 
-export const enum MetricType {
-    Counter = "C",
-    Measure = "M",
-    Tag = "T"
-}
-
 export const enum Metric {
     Nodes = 0,
     LayoutBytes = 1,
@@ -32,26 +26,5 @@ export const enum Metric {
 }
 
 export interface IMetric {
-    counters: IMetricValue;
-    measures: IMetricValue;
-    tags: IMetricTag[];
-}
-
-export interface IMetricValue {
     [key: number]: number;
-}
-
-export interface IMetricTag {
-    key: string;
-    value: string;
-    time: number;
-}
-
-export interface IMetricMap {
-    [key: number]: IMetricMapValue;
-}
-
-export interface IMetricMapValue {
-    name: string;
-    unit: string;
 }

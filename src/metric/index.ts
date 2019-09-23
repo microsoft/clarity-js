@@ -1,11 +1,10 @@
 import { IMetric, Metric } from "@clarity-types/metric";
-import time from "@src/core/time";
 
 export let metrics: IMetric = null;
 export let updates: Metric[] = [];
 
 export function start(): void {
-    metrics = { counters: {}, measures: {}, tags: [] };
+    metrics = {};
 }
 
 export function end(): void {
@@ -13,19 +12,15 @@ export function end(): void {
 }
 
 export function counter(metric: Metric, increment: number = 1): void {
-    if (!(metric in metrics.counters)) { metrics.counters[metric] = 0; }
-    metrics.counters[metric] += increment;
+    if (!(metric in metrics)) { metrics[metric] = 0; }
+    metrics[metric] += increment;
     track(metric);
 }
 
 export function measure(metric: Metric, value: number): void {
-    if (!(metric in metrics.measures)) { metrics.measures[metric] = 0; }
-    metrics.measures[metric] = Math.max(value, metrics.measures[metric]);
+    if (!(metric in metrics)) { metrics[metric] = 0; }
+    metrics[metric] = Math.max(value, metrics[metric]);
     track(metric);
-}
-
-export function tag(key: string, value: string): void {
-    metrics.tags.push({ key, value, time: time() });
 }
 
 function track(metric: Metric): void {
@@ -36,5 +31,4 @@ function track(metric: Metric): void {
 
 export function reset(): void {
     updates = [];
-    metrics.tags = [];
 }

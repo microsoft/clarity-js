@@ -41,26 +41,19 @@ let touchIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S
 export function reset(): void {
     nodes = {};
     boxmodels = {};
-    metrics = { counters: {}, measures: {}, tags: [] };
+    metrics = {};
 }
 
 export function metric(data: IMetric, header: HTMLElement): void {
     let html = [];
 
-    // Copy over counters
-    for (let counter in data.counters) {
-        if (data.counters[counter]) { metrics.counters[counter] = data.counters[counter]; }
+    // Copy over metrics for future reference
+    for (let m in data) {
+        if (data[m]) { metrics[m] = data[m]; }
     }
-
-    // Copy over measures
-    for (let measure in data.measures) {
-        if (data.measures[measure]) { metrics.measures[measure] = data.measures[measure]; }
-    }
-
-    let entries = {...metrics.counters, ...metrics.measures};
-    for (let entry in entries) {
-        if (entries[entry]) {
-            let m = entries[entry];
+    for (let entry in metrics) {
+        if (metrics[entry]) {
+            let m = metrics[entry];
             let map = METRIC_MAP[entry];
             html.push(`<li><h2>${value(m, map.unit)}<span>${map.unit}</span></h2>${map.name}</li>`);
         }

@@ -1,4 +1,4 @@
-import { Event, Flag, ICookieData, IEnvelope, IMetadata, IPage, Token, Upload } from "@clarity-types/data";
+import { Event, Flag, ICookieData, IEnvelope, IMetadata, IPageData, Token, Upload } from "@clarity-types/data";
 import config from "@src/core/config";
 import time from "@src/core/time";
 import version from "@src/core/version";
@@ -19,7 +19,7 @@ export function start(): void {
     let sessionId = cookie && cookie.sessionId && ts - cookie.timestamp < CLARITY_SESSION_LENGTH ? cookie.sessionId : ts.toString(36);
     let pageId = guid();
     let e: IEnvelope = { elapsed, sequence: 0, version, pageId, userId, sessionId, projectId, upload: Upload.Async, end: Flag.False };
-    let p: IPage = { timestamp: ts, elapsed, url: location.href, title: document.title, referrer: document.referrer };
+    let p: IPageData = { timestamp: ts, elapsed, url: location.href, title: document.title, referrer: document.referrer };
 
     metadata = { page: p, envelope: e };
 
