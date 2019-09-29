@@ -1,6 +1,6 @@
-import { IConfig } from "@clarity-types/core";
+import { Config } from "@clarity-types/core";
 
-let config: IConfig = {
+let config: Config = {
     projectId: null,
     longtask: 30,
     lookahead: 500,

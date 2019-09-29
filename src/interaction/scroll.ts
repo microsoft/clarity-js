@@ -1,12 +1,12 @@
 import { Event } from "@clarity-types/data";
-import { IScrollData } from "@clarity-types/interaction";
+import { ScrollData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
 import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
-export let data: IScrollData[] = [];
+export let data: ScrollData[] = [];
 let timeout: number = null;
 
 export function start(): void {
@@ -18,7 +18,7 @@ function recompute(event: UIEvent = null): void {
     let eventTarget = event ? (event.target === document ? document.documentElement : event.target) : document.documentElement;
     let x = Math.round((eventTarget as HTMLElement).scrollLeft);
     let y = Math.round((eventTarget as HTMLElement).scrollTop);
-    let current: IScrollData = {target: getId(eventTarget as Node), x, y, time: time()};
+    let current: ScrollData = {target: getId(eventTarget as Node), x, y, time: time()};
 
     let length = data.length;
     let last = length > 1 ? data[length - 2] : null;
@@ -33,7 +33,7 @@ export function reset(): void {
     data = [];
 }
 
-function similar(last: IScrollData, current: IScrollData): boolean {
+function similar(last: ScrollData, current: ScrollData): boolean {
     let dx = last.x - current.x;
     let dy = last.y - current.y;
     return (dx * dx + dy * dy < config.distance * config.distance) && (current.time - last.time < config.interval);

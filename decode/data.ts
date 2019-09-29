@@ -1,19 +1,19 @@
-import { Event, IEnvelope, IMetricData, IPageData, IPingData, ISummaryData, ITagData, State, Token, Upload } from "../types/data";
-import { IDataEvent, ISummaryEvent } from "../types/decode";
+import { Envelope, Event, MetricData, PageData, PingData, State, SummaryData, TagData, Token, Upload } from "../types/data";
+import { DataEvent, SummaryEvent } from "../types/decode";
 
-let summaries: { [key: number]: ISummaryData[] } = null;
+let summaries: { [key: number]: SummaryData[] } = null;
 const SUMMARY_THRESHOLD = 250;
 
 export function reset(): void {
     summaries = {};
 }
 
-export function decode(tokens: Token[]): IDataEvent {
+export function decode(tokens: Token[]): DataEvent {
     let time = tokens[0] as number;
     let event = tokens[1] as Event;
     switch (event) {
         case Event.Page:
-            let page: IPageData = {
+            let page: PageData = {
                 timestamp: tokens[2] as number,
                 elapsed: tokens[3] as number,
                 url: tokens[4] as string,
@@ -22,14 +22,14 @@ export function decode(tokens: Token[]): IDataEvent {
             };
             return { time, event, data: page };
         case Event.Ping:
-            let ping: IPingData = { gap: tokens[2] as number };
+            let ping: PingData = { gap: tokens[2] as number };
             return { time, event, data: ping };
         case Event.Tag:
-            let tag: ITagData = { key: tokens[2] as string, value: tokens[3] as string };
+            let tag: TagData = { key: tokens[2] as string, value: tokens[3] as string };
             return { time, event, data: tag };
         case Event.Metric:
             let i = 0;
-            let metrics: IMetricData = {};
+            let metrics: MetricData = {};
             while (i < tokens.length) {
                 metrics[tokens[i++] as number] = tokens[i++] as number;
             }
@@ -37,7 +37,7 @@ export function decode(tokens: Token[]): IDataEvent {
     }
 }
 
-export function envelope(tokens: Token[]): IEnvelope {
+export function envelope(tokens: Token[]): Envelope {
     return {
         elapsed: tokens[0] as number,
         sequence: tokens[1] as number,
@@ -54,15 +54,15 @@ export function envelope(tokens: Token[]): IEnvelope {
 export function summarize(entry: Token[]): void {
     let time = entry[0] as number;
     let type = entry[1] as Event;
-    let data: ISummaryData = { event: type, start: time, end: time };
+    let data: SummaryData = { event: type, start: time, end: time };
     if (!(type in summaries)) { summaries[type] = [data]; }
 
     let s = summaries[type][summaries[type].length - 1];
     if (time - s.end < SUMMARY_THRESHOLD) { s.end = time; } else { summaries[type].push(data); }
 }
 
-export function summary(): ISummaryEvent[] {
-    let data: ISummaryData[] = [];
+export function summary(): SummaryEvent[] {
+    let data: SummaryData[] = [];
     let time = null;
     for (let type in summaries) {
         if (summaries[type]) {

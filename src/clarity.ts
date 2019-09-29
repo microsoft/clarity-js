@@ -1,4 +1,4 @@
-import { IConfig } from "@clarity-types/core";
+import { Config } from "@clarity-types/core";
 import * as core from "@src/core";
 import configuration from "@src/core/config";
 import { bind } from "@src/core/event";
@@ -10,7 +10,7 @@ export { tag } from "@src/data/tag";
 
 let status = false;
 
-export function config(override: IConfig): boolean {
+export function config(override: Config): boolean {
   // Process custom configuration overrides, if available
   if (status) { return false; }
   for (let key in override) {
@@ -19,7 +19,7 @@ export function config(override: IConfig): boolean {
   return true;
 }
 
-export function start(override: IConfig = {}): void {
+export function start(override: Config = {}): void {
   if (core.check()) {
     config(override);
     status = true;

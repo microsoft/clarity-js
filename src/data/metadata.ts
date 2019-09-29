@@ -1,4 +1,4 @@
-import { Event, ICookieInfo, IEnvelope, IMetadata, IPageData, State, Token, Upload } from "@clarity-types/data";
+import { CookieInfo, Envelope, Event, Metadata, PageData, State, Token, Upload } from "@clarity-types/data";
 import config from "@src/core/config";
 import time from "@src/core/time";
 import version from "@src/core/version";
@@ -8,10 +8,10 @@ import hash from "@src/data/hash";
 const CLARITY_COOKIE_NAME: string = "_clarity";
 const CLARITY_COOKIE_SEPARATOR: string = "|";
 const CLARITY_SESSION_LENGTH = 30 * 60 * 1000;
-export let metadata: IMetadata = null;
+export let metadata: Metadata = null;
 
 export function start(): void {
-    let cookie: ICookieInfo = read();
+    let cookie: CookieInfo = read();
     let ts = Date.now();
     let elapsed = time();
     let projectId = config.projectId || hash(location.host);
@@ -20,8 +20,8 @@ export function start(): void {
     let pageId = guid();
     let upload = Upload.Async;
     let lean = config.lean ? State.True : State.False;
-    let e: IEnvelope = { elapsed, sequence: 0, version, pageId, userId, sessionId, projectId, upload, end: State.False };
-    let p: IPageData = { timestamp: ts, elapsed, url: location.href, referrer: document.referrer, lean };
+    let e: Envelope = { elapsed, sequence: 0, version, pageId, userId, sessionId, projectId, upload, end: State.False };
+    let p: PageData = { timestamp: ts, elapsed, url: location.href, referrer: document.referrer, lean };
 
     metadata = { page: p, envelope: e };
 
@@ -64,7 +64,7 @@ function guid() {
 }
 // tslint:enable
 
-function track(data: ICookieInfo): void {
+function track(data: CookieInfo): void {
   let expiry = new Date();
   expiry.setDate(expiry.getDate() + config.expire);
   let expires = expiry ? "expires=" + expiry.toUTCString() : "";
@@ -72,7 +72,7 @@ function track(data: ICookieInfo): void {
   document.cookie = CLARITY_COOKIE_NAME + "=" + value;
 }
 
-function read(): ICookieInfo {
+function read(): CookieInfo {
   let cookies: string[] = document.cookie.split(";");
   if (cookies) {
     for (let i = 0; i < cookies.length; i++) {

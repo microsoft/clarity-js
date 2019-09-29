@@ -1,5 +1,5 @@
 import {Event, Metric, Token} from "@clarity-types/data";
-import {INodeInfo} from "@clarity-types/layout";
+import {NodeInfo} from "@clarity-types/layout";
 import mask from "@src/core/mask";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
@@ -50,7 +50,7 @@ export default async function(type: Event): Promise<void> {
             for (let value of values) {
                 if (task.longtask(timer)) { await task.idle(timer); }
                 let metadata = [];
-                let data: INodeInfo = value.data;
+                let data: NodeInfo = value.data;
                 let active = value.metadata.active;
                 let keys = active ? ["tag", "path", "attributes", "value"] : ["tag"];
                 for (let key of keys) {

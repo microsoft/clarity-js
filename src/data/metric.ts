@@ -1,7 +1,7 @@
-import { Event, IMetricData, Metric } from "@clarity-types/data";
+import { Event, Metric, MetricData } from "@clarity-types/data";
 import encode from "./encode";
 
-export let data: IMetricData = null;
+export let data: MetricData = null;
 export let updates: Metric[] = [];
 
 export function start(): void {

@@ -1,9 +1,9 @@
-import { IConfig } from "./core";
+import { Config } from "./core";
 
-interface IClarityJs {
+interface Clarity {
   version: string;
-  config: (config?: IConfig) => boolean;
-  start: (config?: IConfig) => void;
+  config: (config?: Config) => boolean;
+  start: (config?: Config) => void;
   pause: () => void;
   resume: () => void;
   end: () => void;
@@ -11,7 +11,7 @@ interface IClarityJs {
   tag: (key: string, value: string) => void;
 }
 
-declare const clarity: IClarityJs;
+declare const clarity: Clarity;
 
 export * from "./data";
 export * from "./diagnostic";

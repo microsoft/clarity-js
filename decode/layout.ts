@@ -1,13 +1,13 @@
 import hash from "../src/data/hash";
 import { resolve } from "../src/data/token";
 import { Event, Token } from "../types/data";
-import { IChecksumEvent, IDomData, ILayoutEvent, IResourceEvent } from "../types/decode";
-import { IAttributes, IBoxModelData, IChecksumData, IDocumentData, IResourceData } from "../types/layout";
+import { ChecksumEvent, DomData, LayoutEvent, ResourceEvent } from "../types/decode";
+import { Attributes, BoxModelData, ChecksumData, DocumentData, ResourceData } from "../types/layout";
 
 const ID_ATTRIBUTE = "data-clarity";
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
-export let checksums: IChecksumData[];
-export let resources: IResourceData[];
+export let checksums: ChecksumData[];
+export let resources: ResourceData[];
 let lastTime: number;
 
 export function reset(): void {
@@ -16,28 +16,28 @@ export function reset(): void {
     lastTime = null;
 }
 
-export function decode(tokens: Token[]): ILayoutEvent {
+export function decode(tokens: Token[]): LayoutEvent {
     let time = lastTime = tokens[0] as number;
     let event = tokens[1] as Event;
 
     switch (event) {
         case Event.Document:
-            let documentData: IDocumentData = { width: tokens[2] as number, height: tokens[3] as number };
+            let documentData: DocumentData = { width: tokens[2] as number, height: tokens[3] as number };
             return { time, event, data: documentData };
         case Event.BoxModel:
-            let boxmodelData: IBoxModelData[] = [];
+            let boxmodelData: BoxModelData[] = [];
             for (let i = 2; i < tokens.length; i += 2) {
-                let boxmodel: IBoxModelData = { id: tokens[i] as number, box: tokens[i + 1] as number[] };
+                let boxmodel: BoxModelData = { id: tokens[i] as number, box: tokens[i + 1] as number[] };
                 boxmodelData.push(boxmodel);
             }
             return { time, event, data: boxmodelData };
         case Event.Checksum:
             let reference = 0;
-            let checksumData: IChecksumData[] = [];
+            let checksumData: ChecksumData[] = [];
             for (let i = 2; i < tokens.length; i += 2) {
                 let id = (tokens[i] as number) + reference;
                 let token = tokens[i + 1];
-                let cs: IChecksumData = { id, checksum: typeof(token) === "object" ? tokens[token[0]] : token };
+                let cs: ChecksumData = { id, checksum: typeof(token) === "object" ? tokens[token[0]] : token };
                 checksumData.push(cs);
                 reference = id;
             }
@@ -47,7 +47,7 @@ export function decode(tokens: Token[]): ILayoutEvent {
             let lastType = null;
             let node = [];
             let tagIndex = 0;
-            let domData: IDomData[] = [];
+            let domData: DomData[] = [];
             for (let i = 2; i < tokens.length; i++) {
                 let token = tokens[i];
                 let type = typeof(token);
@@ -89,16 +89,16 @@ export function decode(tokens: Token[]): ILayoutEvent {
     }
 }
 
-export function checksum(): IChecksumEvent[] {
+export function checksum(): ChecksumEvent[] {
     return checksums.length > 0 ? [{ time: lastTime, event: Event.Checksum, data: checksums }] : null;
 }
 
-export function resource(): IResourceEvent[] {
+export function resource(): ResourceEvent[] {
     return resources.length > 0 ? [{ time: lastTime, event: Event.Resource, data: resources }] : null;
 }
 
-function process(node: any[] | number[], tagIndex: number): IDomData {
-    let output: IDomData = {
+function process(node: any[] | number[], tagIndex: number): DomData {
+    let output: DomData = {
         id: node[0],
         parent: tagIndex > 1 ? node[1] : null,
         next: tagIndex > 2 ? node[2] : null,
@@ -142,7 +142,7 @@ function process(node: any[] | number[], tagIndex: number): IDomData {
     return output;
 }
 
-function getChecksum(id: number, tag: string, path: string, attributes: IAttributes): void {
+function getChecksum(id: number, tag: string, path: string, attributes: Attributes): void {
     switch (tag) {
         case "STYLE":
         case "TITLE":
@@ -161,7 +161,7 @@ function getChecksum(id: number, tag: string, path: string, attributes: IAttribu
     }
 }
 
-function getResource(tag: string, attributes: IAttributes): void {
+function getResource(tag: string, attributes: Attributes): void {
     switch (tag) {
         case "LINK":
             if ("href" in attributes && "rel" in attributes && attributes["rel"] === "stylesheet") {

@@ -1,5 +1,5 @@
 import { Event } from "@clarity-types/data";
-import { IPointerData } from "@clarity-types/interaction";
+import { PointerData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
@@ -7,7 +7,7 @@ import * as boxmodel from "@src/layout/boxmodel";
 import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
-export let data: { [key: number]: IPointerData[] } = {};
+export let data: { [key: number]: PointerData[] } = {};
 let timeout: number = null;
 
 export function start(): void {
@@ -56,7 +56,7 @@ function touch(event: Event, evt: TouchEvent): void {
     }
 }
 
-function handler(event: Event, current: IPointerData): void {
+function handler(event: Event, current: PointerData): void {
     switch (event) {
         case Event.MouseMove:
         case Event.MouseWheel:
@@ -86,7 +86,7 @@ export function reset(): void {
     }
 }
 
-function similar(last: IPointerData, current: IPointerData): boolean {
+function similar(last: PointerData, current: PointerData): boolean {
     let dx = last.x - current.x;
     let dy = last.y - current.y;
     let distance = Math.sqrt(dx * dx + dy * dy);

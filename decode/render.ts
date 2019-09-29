@@ -1,11 +1,11 @@
-import { Event, IMetricData, IPageData, Metric } from "../types/data";
-import { IDomData } from "../types/decode";
-import { IChangeData, IPointerData, IResizeData, IScrollData, ISelectionData } from "../types/interaction";
-import { IBoxModelData } from "../types/layout";
+import { Event, Metric, MetricData, PageData } from "../types/data";
+import { DomData } from "../types/decode";
+import { ChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
+import { BoxModelData } from "../types/layout";
 
 let nodes = {};
 let boxmodels = {};
-let metrics: IMetricData = null;
+let metrics: MetricData = null;
 let svgns: string = "http://www.w3.org/2000/svg";
 let lean = false;
 const METRIC_MAP = {};
@@ -44,7 +44,7 @@ export function reset(): void {
     metrics = {};
 }
 
-export function metric(data: IMetricData, header: HTMLElement): void {
+export function metric(data: MetricData, header: HTMLElement): void {
     let html = [];
 
     // Copy over metrics for future reference
@@ -70,11 +70,11 @@ function value(input: number, unit: string): number {
     }
 }
 
-export function page(data: IPageData, iframe: HTMLIFrameElement): void {
+export function page(data: PageData, iframe: HTMLIFrameElement): void {
     lean = !!data.lean;
 }
 
-export function boxmodel(data: IBoxModelData[], iframe: HTMLIFrameElement): void {
+export function boxmodel(data: BoxModelData[], iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     for (let bm of data) {
         let el = element(bm.id) as HTMLElement;
@@ -108,7 +108,7 @@ function css(style: CSSStyleDeclaration, field: string): number {
     return parseInt(style[field], 10);
 }
 
-export function markup(data: IDomData[], iframe: HTMLIFrameElement): void {
+export function markup(data: DomData[], iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     for (let node of data) {
         let parent = element(node.parent);
@@ -189,7 +189,7 @@ function element(nodeId: number): Node {
     return nodeId !== null && nodeId > 0 && nodeId in nodes ? nodes[nodeId] : null;
 }
 
-function insert(data: IDomData, parent: Node, node: Node, next: Node): void {
+function insert(data: DomData, parent: Node, node: Node, next: Node): void {
     if (parent !== null) {
         next = next && next.parentElement !== parent ? null : next;
         try {
@@ -232,12 +232,12 @@ function setAttributes(node: HTMLElement, attributes: object): void {
     }
 }
 
-export function scroll(data: IScrollData, iframe: HTMLIFrameElement): void {
+export function scroll(data: ScrollData, iframe: HTMLIFrameElement): void {
     let target = getNode(data.target);
     if (target) { target.scrollTo(data.x, data.y); }
 }
 
-export function resize(data: IResizeData, iframe: HTMLIFrameElement): void {
+export function resize(data: ResizeData, iframe: HTMLIFrameElement): void {
     iframe.removeAttribute("style");
     let margin = 10;
     let px = "px";
@@ -258,18 +258,18 @@ export function resize(data: IResizeData, iframe: HTMLIFrameElement): void {
     iframe.style.overflow = "hidden";
 }
 
-export function change(data: IChangeData, iframe: HTMLIFrameElement): void {
+export function change(data: ChangeData, iframe: HTMLIFrameElement): void {
     let el = element(data.target) as HTMLInputElement;
     if (el) { el.value = data.value; }
 }
 
-export function selection(data: ISelectionData, iframe: HTMLIFrameElement): void {
+export function selection(data: SelectionData, iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     let s = doc.getSelection();
     s.setBaseAndExtent(element(data.start), data.startOffset, element(data.end), data.endOffset);
 }
 
-export function pointer(event: Event, data: IPointerData, iframe: HTMLIFrameElement): void {
+export function pointer(event: Event, data: PointerData, iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     let p = doc.getElementById("clarity-pointer");
     let pointerWidth = 20;

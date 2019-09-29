@@ -1,9 +1,9 @@
 import { Event } from "@clarity-types/data";
-import { IVisibileData } from "@clarity-types/interaction";
+import { VisibileData } from "@clarity-types/interaction";
 import { bind } from "@src/core/event";
 import encode from "./encode";
 
-export let data: IVisibileData;
+export let data: VisibileData;
 
 export function start(): void {
     bind(document, "visibilitychange", recompute);

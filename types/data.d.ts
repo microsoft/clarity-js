@@ -76,34 +76,34 @@ export const enum State {
 
 /* Helper Interfaces */
 
-export interface IPayload {
+export interface Payload {
     e: Token[];
     d: Token[][];
 }
 
-export interface IEncodedPayload {
+export interface EncodedPayload {
     e: string;
     d: string;
 }
 
-export interface ICookieInfo {
+export interface CookieInfo {
     userId: string;
     sessionId: string;
     timestamp: number;
 }
 
-export interface IClarityInfo {
+export interface ClarityInfo {
     userId: string;
     sessionId: string;
     pageId: string;
 }
 
-export interface IMetadata {
-    page: IPageData;
-    envelope: IEnvelope;
+export interface Metadata {
+    page: PageData;
+    envelope: Envelope;
 }
 
-export interface IEnvelope {
+export interface Envelope {
     elapsed: number;
     sequence: number;
     version: string;
@@ -115,18 +115,18 @@ export interface IEnvelope {
     end: State;
 }
 
-export interface IAugmentation {
+export interface Augmentation {
     timestamp: number;
     ua: string;
 }
 
 /* Event Data */
 
-export interface IMetricData {
+export interface MetricData {
     [key: number]: number;
 }
 
-export interface IPageData {
+export interface PageData {
     timestamp: number;
     elapsed: number;
     url: string;
@@ -134,16 +134,16 @@ export interface IPageData {
     lean: State;
 }
 
-export interface IPingData {
+export interface PingData {
     gap: number;
 }
 
-export interface ITagData {
+export interface TagData {
     key: string;
     value: string;
 }
 
-export interface ISummaryData {
+export interface SummaryData {
     event: Event;
     start: number;
     end: number;

@@ -1,86 +1,86 @@
-import { Event, IEnvelope, IMetricData, IPageData, IPingData, ISummaryData, ITagData,  } from "./data";
-import { IBrokenImageData, IScriptErrorData } from "./diagnostic";
-import { IChangeData, IPointerData, IResizeData, IScrollData, ISelectionData, IUnloadData, IVisibileData } from "./interaction";
-import { IAttributes, IBoxModelData, IChecksumData, IDocumentData, IResourceData } from "./layout";
+import { Envelope, Event, MetricData, PageData, PingData, SummaryData, TagData,  } from "./data";
+import { ImageErrorData, ScriptErrorData } from "./diagnostic";
+import { ChangeData, PointerData, ResizeData, ScrollData, SelectionData, UnloadData, VisibileData } from "./interaction";
+import { Attributes, BoxModelData, ChecksumData, DocumentData, ResourceData } from "./layout";
 
-export type DecodedEvent = IDataEvent | IDiagnosticEvent | IInteractionEvent | ILayoutEvent;
+export type DecodedEvent = DataEvent | DiagnosticEvent | InteractionEvent | LayoutEvent;
 
-export interface IDecodedPayload {
+export interface DecodedPayload {
     timestamp: number;
-    envelope: IEnvelope;
+    envelope: Envelope;
     ua?: string;
-    metric?: IMetricEvent[];
-    page?: IPageEvent[];
-    ping?: IPingEvent[];
-    tag?: ITagEvent[];
-    image?: IBrokenImageEvent[];
-    script?: IScriptErrorEvent[];
-    change?: IChangeEvent[];
-    pointer?: IPointerEvent[];
-    resize?: IResizeEvent[];
-    scroll?: IScrollEvent[];
-    selection?: ISelectionEvent[];
-    unload?: IUnloadEvent[];
-    visible?: IVisibileEvent[];
-    boxmodel?: IBoxModelEvent[];
-    checksum?: IChecksumEvent[];
-    resource?: IResourceEvent[];
-    dom?: IDomEvent[];
-    doc?: IDocumentEvent[];
-    summary?: ISummaryEvent[];
+    metric?: MetricEvent[];
+    page?: PageEvent[];
+    ping?: PingEvent[];
+    tag?: TagEvent[];
+    image?: BrokenImageEvent[];
+    script?: ScriptErrorEvent[];
+    change?: ChangeEvent[];
+    pointer?: PointerEvent[];
+    resize?: ResizeEvent[];
+    scroll?: ScrollEvent[];
+    selection?: SelectionEvent[];
+    unload?: UnloadEvent[];
+    visible?: VisibileEvent[];
+    boxmodel?: BoxModelEvent[];
+    checksum?: ChecksumEvent[];
+    resource?: ResourceEvent[];
+    dom?: DomEvent[];
+    doc?: DocumentEvent[];
+    summary?: SummaryEvent[];
 }
 
-export interface IPartialEvent {
+export interface PartialEvent {
     time: number;
     event: Event;
 }
 
 /* Data Events */
-export interface IMetricEvent extends IPartialEvent { data: IMetricData; }
-export interface IPageEvent extends IPartialEvent { data: IPageData; }
-export interface IPingEvent extends IPartialEvent { data: IPingData; }
-export interface ISummaryEvent extends IPartialEvent { data: ISummaryData[]; }
-export interface ITagEvent extends IPartialEvent { data: ITagData; }
-export interface IDataEvent extends IPartialEvent {
-    data: IMetricData | IPageData | IPingData | ISummaryData[] | ITagData;
+export interface MetricEvent extends PartialEvent { data: MetricData; }
+export interface PageEvent extends PartialEvent { data: PageData; }
+export interface PingEvent extends PartialEvent { data: PingData; }
+export interface SummaryEvent extends PartialEvent { data: SummaryData[]; }
+export interface TagEvent extends PartialEvent { data: TagData; }
+export interface DataEvent extends PartialEvent {
+    data: MetricData | PageData | PingData | SummaryData[] | TagData;
 }
 
 /* Diagnostic Events */
-export interface IBrokenImageEvent extends IPartialEvent { data: IBrokenImageData; }
-export interface IScriptErrorEvent extends IPartialEvent { data: IScriptErrorData; }
-export interface IDiagnosticEvent extends IPartialEvent {
-    data: IBrokenImageData | IScriptErrorData;
+export interface BrokenImageEvent extends PartialEvent { data: ImageErrorData; }
+export interface ScriptErrorEvent extends PartialEvent { data: ScriptErrorData; }
+export interface DiagnosticEvent extends PartialEvent {
+    data: ImageErrorData | ScriptErrorData;
 }
 
 /* Interaction Events */
-export interface IChangeEvent extends IPartialEvent { data: IChangeData; }
-export interface IPointerEvent extends IPartialEvent { data: IPointerData; }
-export interface IResizeEvent extends IPartialEvent { data: IResizeData; }
-export interface IScrollEvent extends IPartialEvent { data: IScrollData; }
-export interface ISelectionEvent extends IPartialEvent { data: ISelectionData; }
-export interface IUnloadEvent extends IPartialEvent { data: IUnloadData; }
-export interface IVisibileEvent extends IPartialEvent { data: IVisibileData; }
-export interface IInteractionEvent extends IPartialEvent {
-    data: IChangeData | IPointerData | IResizeData | IScrollData | ISelectionData | IUnloadData | IVisibileData;
+export interface ChangeEvent extends PartialEvent { data: ChangeData; }
+export interface PointerEvent extends PartialEvent { data: PointerData; }
+export interface ResizeEvent extends PartialEvent { data: ResizeData; }
+export interface ScrollEvent extends PartialEvent { data: ScrollData; }
+export interface SelectionEvent extends PartialEvent { data: SelectionData; }
+export interface UnloadEvent extends PartialEvent { data: UnloadData; }
+export interface VisibileEvent extends PartialEvent { data: VisibileData; }
+export interface InteractionEvent extends PartialEvent {
+    data: ChangeData | PointerData | ResizeData | ScrollData | SelectionData | UnloadData | VisibileData;
 }
 
 /* Layout Events */
-export interface IBoxModelEvent extends IPartialEvent { data: IBoxModelData[]; }
-export interface IChecksumEvent extends IPartialEvent { data: IChecksumData[]; }
-export interface IDocumentEvent extends IPartialEvent { data: IDocumentData; }
-export interface IDomEvent extends IPartialEvent { data: IDomData[]; }
-export interface IResourceEvent extends IPartialEvent { data: IResourceData[]; }
-export interface ILayoutEvent extends IPartialEvent {
-    data: IBoxModelData[] | IChecksumData[] | IDocumentData | IDomData[] | IResourceData[];
+export interface BoxModelEvent extends PartialEvent { data: BoxModelData[]; }
+export interface ChecksumEvent extends PartialEvent { data: ChecksumData[]; }
+export interface DocumentEvent extends PartialEvent { data: DocumentData; }
+export interface DomEvent extends PartialEvent { data: DomData[]; }
+export interface ResourceEvent extends PartialEvent { data: ResourceData[]; }
+export interface LayoutEvent extends PartialEvent {
+    data: BoxModelData[] | ChecksumData[] | DocumentData | DomData[] | ResourceData[];
 }
 
 /* Event Data */
 
-export interface IDomData {
+export interface DomData {
     id: number;
     parent: number;
     next: number;
     tag: string;
-    attributes?: IAttributes;
+    attributes?: Attributes;
     value?: string;
 }

@@ -1,4 +1,4 @@
-import { Event, IEncodedPayload, Metric, Token } from "@clarity-types/data";
+import { EncodedPayload, Event, Metric, Token } from "@clarity-types/data";
 import config from "@src/core/config";
 import {envelope} from "@src/data/metadata";
 import * as metric from "@src/data/metric";
@@ -54,13 +54,13 @@ export function end(): void {
 function upload(last: boolean = false): void {
     metric.compute();
     let handler = config.upload ? config.upload : send;
-    let payload: IEncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
+    let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
     handler(stringify(payload), last);
     if (last) { backup(payload); } else { ping.reset(); }
     events = [];
 }
 
-function stringify(payload: IEncodedPayload): string {
+function stringify(payload: EncodedPayload): string {
     return `{"e":${payload.e},"d":${payload.d}}`;
 }
 
@@ -85,7 +85,7 @@ function recover(): void {
     }
 }
 
-function backup(payload: IEncodedPayload): void {
+function backup(payload: EncodedPayload): void {
     if (typeof localStorage !== "undefined") {
         payload.e = JSON.stringify(envelope(true, true));
         localStorage.setItem("clarity-backup", stringify(payload));

@@ -1,4 +1,4 @@
-import { INodeChange, INodeInfo, INodeValue, Source } from "@clarity-types/layout";
+import { NodeChange, NodeInfo, NodeValue, Source } from "@clarity-types/layout";
 import time from "@src/core/time";
 
 const NODE_ID_PROP: string = "__node_index__";
@@ -9,8 +9,8 @@ const UNMASK_ATTRIBUTE = "data-clarity-unmask";
 let index: number = 1;
 
 let nodes: Node[] = [];
-let values: INodeValue[] = [];
-let changes: INodeChange[][] = [];
+let values: NodeValue[] = [];
+let changes: NodeChange[][] = [];
 let updateMap: number[] = [];
 let selectorMap: number[] = [];
 
@@ -33,7 +33,7 @@ export function getId(node: Node, autogen: boolean = false): number {
     return id ? id : null;
 }
 
-export function add(node: Node, data: INodeInfo, source: Source): void {
+export function add(node: Node, data: NodeInfo, source: Source): void {
     let id = getId(node, true);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = getNextId(node);
@@ -63,7 +63,7 @@ export function add(node: Node, data: INodeInfo, source: Source): void {
     track(id, source);
 }
 
-export function update(node: Node, data: INodeInfo, source: Source): void {
+export function update(node: Node, data: NodeInfo, source: Source): void {
     let id = getId(node);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = getNextId(node);
@@ -125,14 +125,14 @@ export function getNode(id: number): Node {
     return null;
 }
 
-export function getValue(id: number): INodeValue {
+export function getValue(id: number): NodeValue {
     if (id in values) {
         return values[id];
     }
     return null;
 }
 
-export function get(node: Node): INodeValue {
+export function get(node: Node): NodeValue {
     let id = getId(node);
     return values[id];
 }
@@ -141,7 +141,7 @@ export function has(node: Node): boolean {
     return getId(node) in nodes;
 }
 
-export function boxmodel(): INodeValue[] {
+export function boxmodel(): NodeValue[] {
     let v = [];
     for (let id in values) {
         if (values[id].metadata.active && values[id].metadata.boxmodel) {
@@ -151,7 +151,7 @@ export function boxmodel(): INodeValue[] {
     return v;
 }
 
-export function updates(): INodeValue[] {
+export function updates(): NodeValue[] {
     let output = [];
     for (let id of updateMap) {
         if (id in values) {
@@ -166,7 +166,7 @@ export function updates(): INodeValue[] {
     return output;
 }
 
-export function selectors(): INodeValue[] {
+export function selectors(): NodeValue[] {
     let v = [];
     for (let id of selectorMap) {
         if (id in values) {
@@ -186,7 +186,7 @@ function remove(id: number, source: Source): void {
     value.children = [];
 }
 
-function selector(id: number, data: INodeInfo, parent: string): string {
+function selector(id: number, data: NodeInfo, parent: string): string {
     switch (data.tag) {
         case "STYLE":
         case "TITLE":
@@ -246,7 +246,7 @@ function getNextId(node: Node): number {
     return id;
 }
 
-function copy(input: INodeValue[]): INodeValue[] {
+function copy(input: NodeValue[]): NodeValue[] {
     return JSON.parse(JSON.stringify(input));
 }
 
@@ -268,7 +268,7 @@ function track(id: number, source: Source): void {
     }
 }
 
-function history(id: number): INodeChange[] {
+function history(id: number): NodeChange[] {
     if (id in changes) {
         return changes[id];
     }

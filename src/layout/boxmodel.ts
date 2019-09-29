@@ -1,11 +1,11 @@
 import { Event, Metric } from "@clarity-types/data";
-import { IBoxModelData } from "@clarity-types/layout";
+import { BoxModelData } from "@clarity-types/layout";
 import config from "@src/core/config";
 import * as task from "@src/core/task";
 import encode from "@src/layout/encode";
 import * as dom from "./dom";
 
-let bm: {[key: number]: IBoxModelData} = {};
+let bm: {[key: number]: BoxModelData} = {};
 let updateMap: number[] = [];
 let timeout: number = null;
 
@@ -39,7 +39,7 @@ async function boxmodel(): Promise<void> {
     task.stop(timer);
 }
 
-export function updates(): IBoxModelData[] {
+export function updates(): BoxModelData[] {
     let summary = [];
     for (let id of updateMap) {
         summary.push(bm[id]);

@@ -1,8 +1,8 @@
 import { Event, Token } from "../types/data";
-import { IInteractionEvent } from "../types/decode";
-import { IChangeData, IPointerData, IResizeData, IScrollData, ISelectionData, IUnloadData } from "../types/interaction";
+import { InteractionEvent } from "../types/decode";
+import { ChangeData, PointerData, ResizeData, ScrollData, SelectionData, UnloadData } from "../types/interaction";
 
-export function decode(tokens: Token[]): IInteractionEvent  {
+export function decode(tokens: Token[]): InteractionEvent  {
     let time = tokens[0] as number;
     let event = tokens[1] as Event;
     switch (event) {
@@ -17,23 +17,23 @@ export function decode(tokens: Token[]): IInteractionEvent  {
         case Event.TouchCancel:
         case Event.TouchEnd:
         case Event.TouchMove:
-            let pointerData: IPointerData = { target: tokens[2] as number, x: tokens[3] as number, y: tokens[4] as number };
+            let pointerData: PointerData = { target: tokens[2] as number, x: tokens[3] as number, y: tokens[4] as number };
             if (tokens.length > 6) {
                 pointerData.targetX = tokens[5] as number;
                 pointerData.targetY = tokens[6] as number;
             }
             return { time, event, data: pointerData };
         case Event.Resize:
-            let resizeData: IResizeData = { width: tokens[2] as number, height: tokens[3] as number };
+            let resizeData: ResizeData = { width: tokens[2] as number, height: tokens[3] as number };
             return { time, event, data: resizeData };
         case Event.Change:
-            let changeData: IChangeData = {
+            let changeData: ChangeData = {
                 target: tokens[2] as number,
                 value: tokens[3] as string
             };
             return { time, event, data: changeData };
         case Event.Selection:
-            let selectionData: ISelectionData = {
+            let selectionData: SelectionData = {
                 start: tokens[2] as number,
                 startOffset: tokens[3] as number,
                 end: tokens[4] as number,
@@ -41,10 +41,10 @@ export function decode(tokens: Token[]): IInteractionEvent  {
             };
             return { time, event, data: selectionData };
         case Event.Scroll:
-            let scrollData: IScrollData = { target: tokens[2] as number, x: tokens[3] as number, y: tokens[4] as number };
+            let scrollData: ScrollData = { target: tokens[2] as number, x: tokens[3] as number, y: tokens[4] as number };
             return { time, event, data: scrollData };
         case Event.Unload:
-            let unloadData: IUnloadData = { name: tokens[2] as string };
+            let unloadData: UnloadData = { name: tokens[2] as string };
             return { time, event, data: unloadData };
     }
 }

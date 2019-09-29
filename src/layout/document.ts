@@ -1,8 +1,8 @@
 import { Event } from "@clarity-types/data";
-import { IDocumentData } from "@clarity-types/layout";
+import { DocumentData } from "@clarity-types/layout";
 import encode from "./encode";
 
-export let data: IDocumentData;
+export let data: DocumentData;
 
 export function reset(): void {
     data = null;

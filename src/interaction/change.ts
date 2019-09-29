@@ -1,11 +1,11 @@
 import { Event } from "@clarity-types/data";
-import { IChangeData } from "@clarity-types/interaction";
+import { ChangeData } from "@clarity-types/interaction";
 import { bind } from "@src/core/event";
 import mask from "@src/core/mask";
 import { get } from "@src/layout/dom";
 import encode from "./encode";
 
-export let data: IChangeData;
+export let data: ChangeData;
 
 export function start(): void {
     bind(document, "change", recompute, true);

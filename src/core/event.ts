@@ -1,6 +1,6 @@
-import { IBrowserEvent } from "@clarity-types/core";
+import { BrowserEvent } from "@clarity-types/core";
 
-let bindings: IBrowserEvent[] = [];
+let bindings: BrowserEvent[] = [];
 
 export function bind(target: EventTarget, event: string, listener: EventListener, capture: boolean = false): void {
     target.addEventListener(event, listener, capture);

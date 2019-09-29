@@ -10,58 +10,58 @@ export const enum Source {
 
 /* Helper Interfaces */
 
-export interface IAttributes {
+export interface Attributes {
     [key: string]: string;
 }
 
-export interface INodeInfo {
+export interface NodeInfo {
     tag: string;
     path?: string;
-    attributes?: IAttributes;
+    attributes?: Attributes;
     value?: string;
 }
 
-export interface INodeValue {
+export interface NodeValue {
     id: number;
     parent: number;
     next: number;
     children: number[];
-    data: INodeInfo;
+    data: NodeInfo;
     selector: string;
-    metadata: INodeMeta;
+    metadata: NodeMeta;
 }
 
-export interface INodeMeta {
+export interface NodeMeta {
     active: boolean;
     boxmodel: boolean;
     masked: boolean;
 }
 
-export interface INodeChange {
+export interface NodeChange {
     time: number;
     source: Source;
-    value: INodeValue;
+    value: NodeValue;
 }
 
 /* Event Data */
 
-export interface IDocumentData {
+export interface DocumentData {
     width: number;
     height: number;
 }
 
-export interface IBoxModelData {
+export interface BoxModelData {
     id: number;
     box: number[];
 }
 
-export interface IChecksumData {
+export interface ChecksumData {
     id: number;
     checksum: string;
     selector?: string;
 }
 
-export interface IResourceData {
+export interface ResourceData {
     tag: string;
     url: string;
 }

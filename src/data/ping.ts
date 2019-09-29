@@ -1,10 +1,10 @@
-import { Event, IPingData } from "@clarity-types/data";
+import { Event, PingData } from "@clarity-types/data";
 import { pause } from "@src/clarity";
 import config from "@src/core/config";
 import time from "@src/core/time";
 import encode from "./encode";
 
-export let data: IPingData;
+export let data: PingData;
 let last = 0;
 let interval = 0;
 let timeout: number = null;
