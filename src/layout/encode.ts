@@ -1,15 +1,14 @@
-import {Event, Token} from "@clarity-types/data";
-import {INodeData} from "@clarity-types/layout";
-import {Metric} from "@clarity-types/metric";
+import {Event, Metric, Token} from "@clarity-types/data";
+import {INodeInfo} from "@clarity-types/layout";
 import mask from "@src/core/mask";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
 import hash from "@src/data/hash";
+import * as metric from "@src/data/metric";
 import {check} from "@src/data/token";
 import { queue } from "@src/data/upload";
-import * as metric from "@src/metric";
 import * as boxmodel from "./boxmodel";
-import {doc} from "./document";
+import * as doc from "./document";
 import * as dom from "./dom";
 
 export default async function(type: Event): Promise<void> {
@@ -17,7 +16,7 @@ export default async function(type: Event): Promise<void> {
     let timer = type === Event.Discover ? Metric.DiscoverTime : Metric.MutationTime;
     switch (type) {
         case Event.Document:
-            let d = doc;
+            let d = doc.data;
             tokens.push(d.width);
             tokens.push(d.height);
             metric.measure(Metric.DocumentWidth, d.width);
@@ -51,7 +50,7 @@ export default async function(type: Event): Promise<void> {
             for (let value of values) {
                 if (task.longtask(timer)) { await task.idle(timer); }
                 let metadata = [];
-                let data: INodeData = value.data;
+                let data: INodeInfo = value.data;
                 let active = value.metadata.active;
                 let keys = active ? ["tag", "path", "attributes", "value"] : ["tag"];
                 for (let key of keys) {

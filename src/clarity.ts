@@ -6,7 +6,6 @@ import * as data from "@src/data";
 import * as diagnostic from "@src/diagnostic";
 import * as interaction from "@src/interaction";
 import * as layout from "@src/layout";
-import * as metric from "@src/metric";
 export { tag } from "@src/data/tag";
 
 let status = false;
@@ -26,7 +25,6 @@ export function start(override: IConfig = {}): void {
     status = true;
 
     core.start();
-    metric.start();
     data.start();
     diagnostic.start();
     layout.start();
@@ -53,7 +51,6 @@ export function end(): void {
     layout.end();
     diagnostic.end();
     data.end();
-    metric.end();
     core.end();
 
     status = false;

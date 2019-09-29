@@ -1,4 +1,4 @@
-import { INodeChange, INodeData, INodeValue, Source } from "@clarity-types/layout";
+import { INodeChange, INodeInfo, INodeValue, Source } from "@clarity-types/layout";
 import time from "@src/core/time";
 
 const NODE_ID_PROP: string = "__node_index__";
@@ -33,7 +33,7 @@ export function getId(node: Node, autogen: boolean = false): number {
     return id ? id : null;
 }
 
-export function add(node: Node, data: INodeData, source: Source): void {
+export function add(node: Node, data: INodeInfo, source: Source): void {
     let id = getId(node, true);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = getNextId(node);
@@ -63,7 +63,7 @@ export function add(node: Node, data: INodeData, source: Source): void {
     track(id, source);
 }
 
-export function update(node: Node, data: INodeData, source: Source): void {
+export function update(node: Node, data: INodeInfo, source: Source): void {
     let id = getId(node);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = getNextId(node);
@@ -186,7 +186,7 @@ function remove(id: number, source: Source): void {
     value.children = [];
 }
 
-function selector(id: number, data: INodeData, parent: string): string {
+function selector(id: number, data: INodeInfo, parent: string): string {
     switch (data.tag) {
         case "STYLE":
         case "TITLE":

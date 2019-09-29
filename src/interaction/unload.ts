@@ -1,10 +1,10 @@
 import { Event } from "@clarity-types/data";
-import { IUnload } from "@clarity-types/interaction";
+import { IUnloadData } from "@clarity-types/interaction";
 import { end } from "@src/clarity";
 import { bind } from "@src/core/event";
 import encode from "./encode";
 
-export let data: IUnload;
+export let data: IUnloadData;
 
 export function start(): void {
     bind(window, "beforeunload", recompute);

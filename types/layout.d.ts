@@ -1,3 +1,5 @@
+/* Enum */
+
 export const enum Source {
     Discover,
     ChildListAdd,
@@ -6,11 +8,13 @@ export const enum Source {
     CharacterData
 }
 
+/* Helper Interfaces */
+
 export interface IAttributes {
     [key: string]: string;
 }
 
-export interface INodeData {
+export interface INodeInfo {
     tag: string;
     path?: string;
     attributes?: IAttributes;
@@ -22,12 +26,12 @@ export interface INodeValue {
     parent: number;
     next: number;
     children: number[];
-    data: INodeData;
+    data: INodeInfo;
     selector: string;
-    metadata: INodeMetadata;
+    metadata: INodeMeta;
 }
 
-export interface INodeMetadata {
+export interface INodeMeta {
     active: boolean;
     boxmodel: boolean;
     masked: boolean;
@@ -39,37 +43,25 @@ export interface INodeChange {
     value: INodeValue;
 }
 
-export interface IDecodedNode {
-    id: number;
-    parent: number;
-    next: number;
-    tag: string;
-    attributes?: IAttributes;
-    value?: string;
-}
+/* Event Data */
 
-export interface IDocumentSize {
+export interface IDocumentData {
     width: number;
     height: number;
 }
 
-export interface IBoxModel {
+export interface IBoxModelData {
     id: number;
     box: number[];
 }
 
-export interface IChecksum {
+export interface IChecksumData {
     id: number;
     checksum: string;
+    selector?: string;
 }
 
-export interface ILayout {
-    id: number;
-    checksum: string;
-    selector: string;
-}
-
-export interface IResource {
+export interface IResourceData {
     tag: string;
     url: string;
 }

@@ -1,4 +1,6 @@
-export interface IScriptError {
+/* Event Data */
+
+export interface IScriptErrorData {
     source: string;
     message: string;
     line: number;
@@ -6,7 +8,7 @@ export interface IScriptError {
     stack: string;
 }
 
-export interface IImageError {
+export interface IBrokenImageData {
     source: string;
     target: number;
 }

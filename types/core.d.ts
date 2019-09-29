@@ -1,9 +1,16 @@
-import { IClarityData, IPayload, Token } from "./data";
+import { IClarityInfo, IPayload, Token } from "./data";
 
 type TaskFunction = () => Promise<void>;
 type TaskResolve = () => void;
 
-export interface IEventBindingData {
+/* Helper Interfaces */
+
+export interface IAsyncTask {
+    task: TaskFunction;
+    resolve: TaskResolve;
+}
+
+export interface IBrowserEvent {
     event: string;
     target: EventTarget;
     listener: EventListener;
@@ -24,15 +31,10 @@ export interface IConfig {
     lean?: boolean;
     tokens?: string[];
     url?: string;
-    onstart?: (data: IClarityData) => void;
+    onstart?: (data: IClarityInfo) => void;
     upload?: (data: string, last: boolean) => void;
 }
 
-export interface ITaskTracker {
+export interface ITaskTiming {
     [key: number]: number;
-}
-
-export interface IAsyncTask {
-    task: TaskFunction;
-    resolve: TaskResolve;
 }

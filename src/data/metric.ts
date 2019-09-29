@@ -1,26 +1,31 @@
-import { IMetric, Metric } from "@clarity-types/metric";
+import { Event, IMetricData, Metric } from "@clarity-types/data";
+import encode from "./encode";
 
-export let metrics: IMetric = null;
+export let data: IMetricData = null;
 export let updates: Metric[] = [];
 
 export function start(): void {
-    metrics = {};
+    data = {};
 }
 
 export function end(): void {
-    metrics = null;
+    data = null;
 }
 
 export function counter(metric: Metric, increment: number = 1): void {
-    if (!(metric in metrics)) { metrics[metric] = 0; }
-    metrics[metric] += increment;
+    if (!(metric in data)) { data[metric] = 0; }
+    data[metric] += increment;
     track(metric);
 }
 
 export function measure(metric: Metric, value: number): void {
-    if (!(metric in metrics)) { metrics[metric] = 0; }
-    metrics[metric] = Math.max(value, metrics[metric]);
+    if (!(metric in data)) { data[metric] = 0; }
+    data[metric] = Math.max(value, data[metric]);
     track(metric);
+}
+
+export function compute(): void {
+    encode(Event.Metric);
 }
 
 function track(metric: Metric): void {

@@ -1,4 +1,10 @@
-export interface IPointer {
+/* Event Data */
+export interface IChangeData {
+    target: number;
+    value: string;
+}
+
+export interface IPointerData {
     target: number;
     x: number;
     y: number;
@@ -7,34 +13,29 @@ export interface IPointer {
     time?: number;
 }
 
-export interface IResize {
+export interface IResizeData {
     width: number;
     height: number;
 }
 
-export interface IScroll {
+export interface IScrollData {
     target: number;
     x: number;
     y: number;
     time?: number;
 }
 
-export interface IVisibility {
-    visible: string;
-}
-
-export interface ISelection {
+export interface ISelectionData {
     start: number;
     startOffset: number;
     end: number;
     endOffset: number;
 }
 
-export interface IChange {
-    target: number;
-    value: string;
+export interface IUnloadData {
+    name: string;
 }
 
-export interface IUnload {
-    name: string;
+export interface IVisibileData {
+    visible: string;
 }

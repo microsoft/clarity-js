@@ -1,10 +1,9 @@
-import {Event, Token} from "@clarity-types/data";
-import {Metric} from "@clarity-types/metric";
+import {Event, Metric, Token} from "@clarity-types/data";
 import time from "@src/core/time";
+import * as metric from "@src/data/metric";
 import { queue } from "@src/data/upload";
 import * as image from "@src/diagnostic/image";
 import * as script from "@src/diagnostic/script";
-import * as metric from "@src/metric";
 
 export default function(type: Event): Token[] {
     let tokens: Token[] = [time(), type];

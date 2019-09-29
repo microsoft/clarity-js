@@ -1,10 +1,9 @@
-import {Event, Token } from "@clarity-types/data";
-import { Metric } from "@clarity-types/metric";
+import {Event, Metric, Token } from "@clarity-types/data";
 import time from "@src/core/time";
 import { metadata } from "@src/data/metadata";
+import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
 import * as tag from "@src/data/tag";
-import * as metric from "@src/metric";
 import { queue } from "./upload";
 
 export default function(event: Event): void {
@@ -20,14 +19,29 @@ export default function(event: Event): void {
             tokens.push(metadata.page.timestamp);
             tokens.push(metadata.page.elapsed);
             tokens.push(metadata.page.url);
-            tokens.push(metadata.page.title);
             tokens.push(metadata.page.referrer);
+            tokens.push(metadata.page.lean);
             queue(tokens);
             break;
         case Event.Tag:
             tokens.push(tag.data.key);
             tokens.push(tag.data.value);
             queue(tokens);
+            break;
+        case Event.Metric:
+            if (metric.updates.length > 0) {
+                for (let d in metric.data) {
+                    if (metric.data[d]) {
+                        let m = parseInt(d, 10);
+                        if (metric.updates.indexOf(m) >= 0) {
+                            tokens.push(m);
+                            tokens.push(metric.data[d]);
+                        }
+                    }
+                }
+                metric.reset();
+                queue(tokens);
+            }
             break;
     }
 }

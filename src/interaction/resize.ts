@@ -1,9 +1,9 @@
 import { Event } from "@clarity-types/data";
-import { IResize } from "@clarity-types/interaction";
+import { IResizeData } from "@clarity-types/interaction";
 import { bind } from "@src/core/event";
 import encode from "./encode";
 
-export let data: IResize;
+export let data: IResizeData;
 
 export function start(): void {
     bind(window, "resize", recompute);

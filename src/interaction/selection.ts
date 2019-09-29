@@ -1,11 +1,11 @@
 import { Event } from "@clarity-types/data";
-import { ISelection } from "@clarity-types/interaction";
+import { ISelectionData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
-export let data: ISelection = null;
+export let data: ISelectionData = null;
 let selection: Selection = null;
 let timeout: number = null;
 

@@ -1,17 +1,17 @@
-import { IMetric } from "./metric";
-
 export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
 
+/* Enum */
+
 export const enum Event {
-    Page = 0,
-    Unload = 1,
-    Discover = 2,
-    Mutation = 3,
-    BoxModel = 4,
-    Checksum = 5,
-    Tag = 6,
-    Ping = 7,
+    Metric = 0,
+    Discover = 1,
+    Mutation = 2,
+    BoxModel = 3,
+    Checksum = 4,
+    Resize = 5,
+    Document = 6,
+    Scroll = 7,
     Click = 8,
     MouseMove = 9,
     MouseDown = 10,
@@ -24,18 +24,43 @@ export const enum Event {
     TouchMove = 17,
     TouchCancel = 18,
     Selection = 19,
-    Resize = 20,
-    Scroll = 21,
-    Change = 22,
-    Document = 23,
-    Visibility = 24,
-    Network = 25,
-    Performance = 26,
-    ScriptError = 27,
-    ImageError = 28,
-    Layout = 29,
+    Page = 20,
+    Tag = 21,
+    Ping = 22,
+    Unload = 23,
+    Change = 24,
+    Visibility = 25,
+    Network = 26,
+    Performance = 27,
+    ScriptError = 28,
+    ImageError = 29,
     Resource = 30,
     Summary = 31
+}
+
+export const enum Metric {
+    Nodes = 0,
+    LayoutBytes = 1,
+    InteractionBytes = 2,
+    NetworkBytes = 3,
+    DiagnosticBytes = 4,
+    Mutations = 5,
+    Interactions = 6,
+    Clicks = 7,
+    Selections = 8,
+    Changes = 9,
+    ScriptErrors = 10,
+    ImageErrors = 11,
+    DiscoverTime = 12,
+    MutationTime = 13,
+    BoxModelTime = 14,
+    StartTime = 15,
+    ActiveTime = 16,
+    EndTime = 17,
+    ViewportWidth = 18,
+    ViewportHeight = 19,
+    DocumentWidth = 20,
+    DocumentHeight = 21
 }
 
 export const enum Upload {
@@ -44,45 +69,30 @@ export const enum Upload {
     Backup = 2
 }
 
-export const enum Flag {
+export const enum State {
     False = 0,
     True = 1
 }
 
+/* Helper Interfaces */
+
 export interface IPayload {
     e: Token[];
-    m: Token[];
     d: Token[][];
 }
 
 export interface IEncodedPayload {
     e: string;
-    m: string;
     d: string;
 }
 
-export interface IDecodedPayload {
-    timestamp: number;
-    ua: string;
-    envelope: IEnvelope;
-    metrics: IMetric;
-    analytics: IDecodedEvent[];
-    playback: IDecodedEvent[];
-}
-
-export interface IDecodedEvent {
-    time: number;
-    event: Event;
-    data: any;
-}
-
-export interface ICookieData {
+export interface ICookieInfo {
     userId: string;
     sessionId: string;
     timestamp: number;
 }
 
-export interface IClarityData {
+export interface IClarityInfo {
     userId: string;
     sessionId: string;
     pageId: string;
@@ -91,14 +101,6 @@ export interface IClarityData {
 export interface IMetadata {
     page: IPageData;
     envelope: IEnvelope;
-}
-
-export interface IPageData {
-    timestamp: number;
-    elapsed: number;
-    url: string;
-    title: string;
-    referrer: string;
 }
 
 export interface IEnvelope {
@@ -110,7 +112,26 @@ export interface IEnvelope {
     sessionId: string;
     pageId: string;
     upload: Upload;
-    end: Flag;
+    end: State;
+}
+
+export interface IAugmentation {
+    timestamp: number;
+    ua: string;
+}
+
+/* Event Data */
+
+export interface IMetricData {
+    [key: number]: number;
+}
+
+export interface IPageData {
+    timestamp: number;
+    elapsed: number;
+    url: string;
+    referrer: string;
+    lean: State;
 }
 
 export interface IPingData {
@@ -122,12 +143,7 @@ export interface ITagData {
     value: string;
 }
 
-export interface IAugmentation {
-    timestamp: number;
-    ua: string;
-}
-
-export interface IEventSummary {
+export interface ISummaryData {
     event: Event;
     start: number;
     end: number;

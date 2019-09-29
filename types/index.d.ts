@@ -17,6 +17,6 @@ export * from "./data";
 export * from "./diagnostic";
 export * from "./layout";
 export * from "./interaction";
-export * from "./metric";
+export * from "./decode";
 
 export { clarity };

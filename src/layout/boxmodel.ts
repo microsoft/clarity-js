@@ -1,12 +1,11 @@
-import { Event } from "@clarity-types/data";
-import { IBoxModel } from "@clarity-types/layout";
-import { Metric } from "@clarity-types/metric";
+import { Event, Metric } from "@clarity-types/data";
+import { IBoxModelData } from "@clarity-types/layout";
 import config from "@src/core/config";
 import * as task from "@src/core/task";
 import encode from "@src/layout/encode";
 import * as dom from "./dom";
 
-let bm: {[key: number]: IBoxModel} = {};
+let bm: {[key: number]: IBoxModelData} = {};
 let updateMap: number[] = [];
 let timeout: number = null;
 
@@ -40,7 +39,7 @@ async function boxmodel(): Promise<void> {
     task.stop(timer);
 }
 
-export function updates(): IBoxModel[] {
+export function updates(): IBoxModelData[] {
     let summary = [];
     for (let id of updateMap) {
         summary.push(bm[id]);
@@ -58,7 +57,7 @@ export function relative(x: number, y: number, element: Element): number[] {
 }
 
 function update(id: number, box: number[]): void {
-    let changed = true;
+    let changed = box !== null;
     if (id in bm) {
         changed = box.length === bm[id].box.length ? false : true;
         if (changed === false) {
@@ -78,7 +77,7 @@ function update(id: number, box: number[]): void {
 }
 
 function layout(element: Element, x: number = 0, y: number = 0): number[] {
-    let box: number[] = [0, 0, 0, 0];
+    let box: number[] = null;
     let rect = element.getBoundingClientRect();
 
     if (rect && rect.width > 0 && rect.height > 0) {

@@ -1,10 +1,8 @@
-import { Event, IEncodedPayload, Token } from "@clarity-types/data";
-import { Metric } from "@clarity-types/metric";
+import { Event, IEncodedPayload, Metric, Token } from "@clarity-types/data";
 import config from "@src/core/config";
 import {envelope} from "@src/data/metadata";
+import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
-import { counter } from "@src/metric";
-import metrics from "@src/metric/encode";
 
 let events: string[];
 let timeout: number = null;
@@ -19,24 +17,27 @@ export function queue(data: Token[]): void {
     let event = JSON.stringify(data);
     events.push(event);
 
+    // For Event.Metric, do not schedule upload callback
+    if (type === Event.Metric) { return; }
+
     switch (type) {
         case Event.Discover:
         case Event.Mutation:
         case Event.BoxModel:
         case Event.Checksum:
         case Event.Document:
-            counter(Metric.LayoutBytes, event.length);
+            metric.counter(Metric.LayoutBytes, event.length);
             break;
         case Event.Network:
         case Event.Performance:
-            counter(Metric.NetworkBytes, event.length);
+            metric.counter(Metric.NetworkBytes, event.length);
             break;
         case Event.ScriptError:
         case Event.ImageError:
-            counter(Metric.DiagnosticBytes, event.length);
+            metric.counter(Metric.DiagnosticBytes, event.length);
             break;
         default:
-            counter(Metric.InteractionBytes, event.length);
+            metric.counter(Metric.InteractionBytes, event.length);
             break;
     }
 
@@ -51,16 +52,16 @@ export function end(): void {
 }
 
 function upload(last: boolean = false): void {
+    metric.compute();
     let handler = config.upload ? config.upload : send;
-    let payload: IEncodedPayload = {e: JSON.stringify(envelope(last)), m: JSON.stringify(metrics(last)), d: `[${events.join()}]`};
+    let payload: IEncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
     handler(stringify(payload), last);
-    if (last) { backup(payload); }
+    if (last) { backup(payload); } else { ping.reset(); }
     events = [];
-    if (!last) { ping.reset(); }
 }
 
 function stringify(payload: IEncodedPayload): string {
-    return `{"e":${payload.e},"m":${payload.m},"d":${payload.d}}`;
+    return `{"e":${payload.e},"d":${payload.d}}`;
 }
 
 function send(data: string, last: boolean = false): void {
