@@ -1,6 +1,12 @@
 import version from "../src/core/version";
-import { Augmentation, Event, Payload, Token } from "../types/data";
-import * as Decode from "../types/decode";
+import { Event, Payload, Token } from "../types/data";
+import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, UploadEvent } from "../types/decode/data";
+import { DecodedEvent, DecodedPayload } from "../types/decode/decode";
+import { BrokenImageEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
+import { InputChangeEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
+import { SelectionEvent, UnloadEvent, VisibileEvent } from "../types/decode/interaction";
+import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
+
 import * as data from "./data";
 import * as diagnostic from "./diagnostic";
 import * as interaction from "./interaction";
@@ -9,13 +15,11 @@ import * as r from "./render";
 
 let pageId: string = null;
 
-export function decode(input: string | Payload, augmentations: Augmentation = null): Decode.DecodedPayload {
+export function decode(input: string): DecodedPayload {
     let json: Payload = typeof input === "string" ? JSON.parse(input) : input;
     let envelope = data.envelope(json.e);
-    let timestamp = augmentations && augmentations.timestamp ? augmentations.timestamp : Date.now();
-    let ua = augmentations && augmentations.ua ? augmentations.ua : (navigator && "userAgent" in navigator ? navigator.userAgent : "");
-    let payload: Decode.DecodedPayload = { timestamp, envelope };
-    if (envelope.sequence === 1) { payload.ua = ua; }
+    let timestamp = Date.now();
+    let payload: DecodedPayload = { timestamp, envelope };
     let encoded: Token[][] = json.d;
 
     if (payload.envelope.version !== version) {
@@ -31,23 +35,23 @@ export function decode(input: string | Payload, augmentations: Augmentation = nu
         switch (entry[1]) {
             case Event.Page:
                 if (payload.page === undefined) { payload.page = []; }
-                payload.page.push(data.decode(entry) as Decode.PageEvent);
+                payload.page.push(data.decode(entry) as PageEvent);
                 break;
             case Event.Ping:
                 if (payload.ping === undefined) { payload.ping = []; }
-                payload.ping.push(data.decode(entry) as Decode.PingEvent);
+                payload.ping.push(data.decode(entry) as PingEvent);
                 break;
             case Event.Tag:
                 if (payload.tag === undefined) { payload.tag = []; }
-                payload.tag.push(data.decode(entry) as Decode.TagEvent);
+                payload.tag.push(data.decode(entry) as TagEvent);
                 break;
             case Event.Metric:
                 if (payload.metric === undefined) { payload.metric = []; }
-                payload.metric.push(data.decode(entry) as Decode.MetricEvent);
+                payload.metric.push(data.decode(entry) as MetricEvent);
                 break;
             case Event.Upload:
                 if (payload.upload === undefined) { payload.upload = []; }
-                payload.upload.push(data.decode(entry) as Decode.UploadEvent);
+                payload.upload.push(data.decode(entry) as UploadEvent);
                 break;
             case Event.MouseDown:
             case Event.MouseUp:
@@ -61,52 +65,56 @@ export function decode(input: string | Payload, augmentations: Augmentation = nu
             case Event.TouchEnd:
             case Event.TouchMove:
                 if (payload.pointer === undefined) { payload.pointer = []; }
-                payload.pointer.push(interaction.decode(entry) as Decode.PointerEvent);
+                payload.pointer.push(interaction.decode(entry) as PointerEvent);
                 break;
             case Event.Scroll:
                 if (payload.scroll === undefined) { payload.scroll = []; }
-                payload.scroll.push(interaction.decode(entry) as Decode.ScrollEvent);
+                payload.scroll.push(interaction.decode(entry) as ScrollEvent);
                 break;
             case Event.Resize:
                 if (payload.resize === undefined) { payload.resize = []; }
-                payload.resize.push(interaction.decode(entry) as Decode.ResizeEvent);
+                payload.resize.push(interaction.decode(entry) as ResizeEvent);
                 break;
             case Event.Selection:
                 if (payload.selection === undefined) { payload.selection = []; }
-                payload.selection.push(interaction.decode(entry) as Decode.SelectionEvent);
+                payload.selection.push(interaction.decode(entry) as SelectionEvent);
                 break;
-            case Event.Change:
-                if (payload.change === undefined) { payload.change = []; }
-                payload.change.push(interaction.decode(entry) as Decode.ChangeEvent);
+            case Event.InputChange:
+                if (payload.input === undefined) { payload.input = []; }
+                payload.input.push(interaction.decode(entry) as InputChangeEvent);
+                break;
+            case Event.Unload:
+                if (payload.unload === undefined) { payload.unload = []; }
+                payload.unload.push(interaction.decode(entry) as UnloadEvent);
                 break;
             case Event.Visible:
                 if (payload.visible === undefined) { payload.visible = []; }
-                payload.visible.push(interaction.decode(entry) as Decode.VisibileEvent);
+                payload.visible.push(interaction.decode(entry) as VisibileEvent);
                 break;
             case Event.BoxModel:
                 if (payload.boxmodel === undefined) { payload.boxmodel = []; }
-                payload.boxmodel.push(layout.decode(entry) as Decode.BoxModelEvent);
+                payload.boxmodel.push(layout.decode(entry) as BoxModelEvent);
                 break;
             case Event.Discover:
             case Event.Mutation:
                 if (payload.dom === undefined) { payload.dom = []; }
-                payload.dom.push(layout.decode(entry) as Decode.DomEvent);
+                payload.dom.push(layout.decode(entry) as DomEvent);
                 break;
-            case Event.Checksum:
-                if (payload.checksum === undefined) { payload.checksum = []; }
-                payload.checksum.push(layout.decode(entry) as Decode.ChecksumEvent);
+            case Event.Hash:
+                if (payload.hash === undefined) { payload.hash = []; }
+                payload.hash.push(layout.decode(entry) as HashEvent);
                 break;
             case Event.Document:
                 if (payload.doc === undefined) { payload.doc = []; }
-                payload.doc.push(layout.decode(entry) as Decode.DocumentEvent);
+                payload.doc.push(layout.decode(entry) as DocumentEvent);
                 break;
             case Event.ScriptError:
                 if (payload.script === undefined) { payload.script = []; }
-                payload.script.push(diagnostic.decode(entry) as Decode.ScriptErrorEvent);
+                payload.script.push(diagnostic.decode(entry) as ScriptErrorEvent);
                 break;
             case Event.ImageError:
                 if (payload.image === undefined) { payload.image = []; }
-                payload.image.push(diagnostic.decode(entry) as Decode.BrokenImageEvent);
+                payload.image.push(diagnostic.decode(entry) as BrokenImageEvent);
                 break;
             default:
                 console.error(`No handler for Event: ${JSON.stringify(entry)}`);
@@ -115,20 +123,20 @@ export function decode(input: string | Payload, augmentations: Augmentation = nu
     }
 
     /* Enrich decoded payload with derived events */
-    payload.summary = data.summary();
-    if (layout.checksums.length > 0) { payload.checksum = layout.checksum(); }
-    if (layout.resources.length > 0) { payload.resource = layout.resource(); }
+    payload.summary = data.summary() as SummaryEvent[];
+    if (layout.hashes.length > 0) { payload.hash = layout.hash() as HashEvent[]; }
+    if (layout.resources.length > 0) { payload.resource = layout.resource() as ResourceEvent[]; }
 
     return payload;
 }
 
-export function html(decoded: Decode.DecodedPayload): string {
+export function html(decoded: DecodedPayload): string {
     let iframe = document.createElement("iframe");
     render(decoded, iframe);
     return iframe.contentDocument.documentElement.outerHTML;
 }
 
-export function render(decoded: Decode.DecodedPayload, iframe: HTMLIFrameElement, header?: HTMLElement): void {
+export function render(decoded: DecodedPayload, iframe: HTMLIFrameElement, header?: HTMLElement): void {
     // Reset rendering if we receive a new pageId
     if (pageId !== decoded.envelope.pageId) {
         pageId = decoded.envelope.pageId;
@@ -136,7 +144,7 @@ export function render(decoded: Decode.DecodedPayload, iframe: HTMLIFrameElement
     }
 
     // Replay events
-    let events: Decode.DecodedEvent[] = [];
+    let events: DecodedEvent[] = [];
     for (let key in decoded) {
         if (Array.isArray(decoded[key])) {
             events = events.concat(decoded[key]);
@@ -145,27 +153,27 @@ export function render(decoded: Decode.DecodedPayload, iframe: HTMLIFrameElement
     replay(events.sort(sort), iframe, header);
 }
 
-export async function replay(events: Decode.DecodedEvent[], iframe: HTMLIFrameElement, header?: HTMLElement): Promise<void> {
+export async function replay(events: DecodedEvent[], iframe: HTMLIFrameElement, header?: HTMLElement): Promise<void> {
     let start = events[0].time;
     for (let entry of events) {
         if (entry.time - start > 16) { start = await wait(entry.time); }
 
         switch (entry.event) {
             case Event.Page:
-                let pageEvent = entry as Decode.PageEvent;
+                let pageEvent = entry as PageEvent;
                 r.page(pageEvent.data, iframe);
                 break;
             case Event.Metric:
-                let metricEvent = entry as Decode.MetricEvent;
+                let metricEvent = entry as MetricEvent;
                 if (header) { r.metric(metricEvent.data, header); }
                 break;
             case Event.Discover:
             case Event.Mutation:
-                let domEvent = entry as Decode.DomEvent;
+                let domEvent = entry as DomEvent;
                 r.markup(domEvent.data, iframe);
                 break;
             case Event.BoxModel:
-                let boxModelEvent = entry as Decode.BoxModelEvent;
+                let boxModelEvent = entry as BoxModelEvent;
                 r.boxmodel(boxModelEvent.data, iframe);
                 break;
             case Event.MouseDown:
@@ -179,23 +187,23 @@ export async function replay(events: Decode.DecodedEvent[], iframe: HTMLIFrameEl
             case Event.TouchCancel:
             case Event.TouchEnd:
             case Event.TouchMove:
-                let pointerEvent = entry as Decode.PointerEvent;
+                let pointerEvent = entry as PointerEvent;
                 r.pointer(pointerEvent.event, pointerEvent.data, iframe);
                 break;
-            case Event.Change:
-                let changeEvent = entry as Decode.ChangeEvent;
+            case Event.InputChange:
+                let changeEvent = entry as InputChangeEvent;
                 r.change(changeEvent.data, iframe);
                 break;
             case Event.Selection:
-                let selectionEvent = entry as Decode.SelectionEvent;
+                let selectionEvent = entry as SelectionEvent;
                 r.selection(selectionEvent.data, iframe);
                 break;
             case Event.Resize:
-                let resizeEvent = entry as Decode.ResizeEvent;
+                let resizeEvent = entry as ResizeEvent;
                 r.resize(resizeEvent.data, iframe);
                 break;
             case Event.Scroll:
-                let scrollEvent = entry as Decode.ScrollEvent;
+                let scrollEvent = entry as ScrollEvent;
                 r.scroll(scrollEvent.data, iframe);
                 break;
         }
@@ -208,6 +216,6 @@ async function wait(timestamp: number): Promise<number> {
     });
 }
 
-function sort(a: Decode.DecodedEvent, b: Decode.DecodedEvent): number {
+function sort(a: DecodedEvent, b: DecodedEvent): number {
     return a.time - b.time;
 }

@@ -31,15 +31,15 @@ export default async function(type: Event): Promise<void> {
             }
             queue(tokens);
             break;
-        case Event.Checksum:
+        case Event.Hash:
             let selectors = dom.selectors();
             let reference = 0;
             for (let value of selectors) {
                 if (task.longtask(timer)) { await task.idle(timer); }
-                let checksum = hash(value.selector);
-                let pointer = tokens.indexOf(checksum);
+                let h = hash(value.selector);
+                let pointer = tokens.indexOf(h);
                 tokens.push(value.id - reference);
-                tokens.push(pointer >= 0 ? [pointer] : checksum);
+                tokens.push(pointer >= 0 ? [pointer] : h);
                 reference = value.id;
             }
             queue(tokens);

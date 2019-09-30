@@ -1,5 +1,5 @@
 /* Event Data */
-export interface ChangeData {
+export interface InputChangeData {
     target: number;
     value: string;
 }

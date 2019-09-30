@@ -8,7 +8,7 @@ export const enum Event {
     Discover = 1,
     Mutation = 2,
     BoxModel = 3,
-    Checksum = 4,
+    Hash = 4,
     Resize = 5,
     Document = 6,
     Scroll = 7,
@@ -28,7 +28,7 @@ export const enum Event {
     Tag = 21,
     Ping = 22,
     Unload = 23,
-    Change = 24,
+    InputChange = 24,
     Visible = 25,
     Network = 26,
     Performance = 27,
@@ -70,7 +70,7 @@ export const enum Upload {
     Backup = 2
 }
 
-export const enum State {
+export const enum BooleanFlag {
     False = 0,
     True = 1
 }
@@ -105,7 +105,6 @@ export interface Metadata {
 }
 
 export interface Envelope {
-    elapsed: number;
     sequence: number;
     version: string;
     projectId: string;
@@ -113,12 +112,7 @@ export interface Envelope {
     sessionId: string;
     pageId: string;
     upload: Upload;
-    end: State;
-}
-
-export interface Augmentation {
-    timestamp: number;
-    ua: string;
+    end: BooleanFlag;
 }
 
 export interface Transit {
@@ -136,10 +130,10 @@ export interface MetricData {
 
 export interface PageData {
     timestamp: number;
-    elapsed: number;
+    ua: string;
     url: string;
     referrer: string;
-    lean: State;
+    lean: BooleanFlag;
 }
 
 export interface PingData {

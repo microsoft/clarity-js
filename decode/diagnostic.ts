@@ -1,5 +1,5 @@
 import { Event, Token } from "../types/data";
-import { DiagnosticEvent } from "../types/decode";
+import { DiagnosticEvent } from "../types/decode/diagnostic";
 import { ImageErrorData, ScriptErrorData } from "../types/diagnostic";
 
 export function decode(tokens: Token[]): DiagnosticEvent {

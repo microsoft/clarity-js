@@ -1,6 +1,6 @@
 import { Event, Metric, MetricData, PageData } from "../types/data";
-import { DomData } from "../types/decode";
-import { ChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
+import { DomData } from "../types/decode/layout";
+import { InputChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
 import { BoxModelData } from "../types/layout";
 
 let nodes = {};
@@ -258,7 +258,7 @@ export function resize(data: ResizeData, iframe: HTMLIFrameElement): void {
     iframe.style.overflow = "hidden";
 }
 
-export function change(data: ChangeData, iframe: HTMLIFrameElement): void {
+export function change(data: InputChangeData, iframe: HTMLIFrameElement): void {
     let el = element(data.target) as HTMLInputElement;
     if (el) { el.value = data.value; }
 }

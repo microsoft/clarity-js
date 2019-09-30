@@ -55,7 +55,7 @@ export default function(type: Event): void {
             metric.counter(Metric.EndTime, t);
             unload.reset();
             break;
-        case Event.Change:
+        case Event.InputChange:
             let ch = change.data;
             tokens.push(ch.target);
             tokens.push(ch.value);

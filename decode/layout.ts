@@ -1,17 +1,17 @@
-import hash from "../src/data/hash";
+import generateHash from "../src/data/hash";
 import { resolve } from "../src/data/token";
 import { Event, Token } from "../types/data";
-import { ChecksumEvent, DomData, LayoutEvent, ResourceEvent } from "../types/decode";
-import { Attributes, BoxModelData, ChecksumData, DocumentData, ResourceData } from "../types/layout";
+import { DomData, LayoutEvent } from "../types/decode/layout";
+import { Attributes, BoxModelData, DocumentData, HashData, ResourceData } from "../types/layout";
 
 const ID_ATTRIBUTE = "data-clarity";
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
-export let checksums: ChecksumData[];
+export let hashes: HashData[];
 export let resources: ResourceData[];
 let lastTime: number;
 
 export function reset(): void {
-    checksums = [];
+    hashes = [];
     resources = [];
     lastTime = null;
 }
@@ -31,17 +31,17 @@ export function decode(tokens: Token[]): LayoutEvent {
                 boxmodelData.push(boxmodel);
             }
             return { time, event, data: boxmodelData };
-        case Event.Checksum:
+        case Event.Hash:
             let reference = 0;
-            let checksumData: ChecksumData[] = [];
+            let hashData: HashData[] = [];
             for (let i = 2; i < tokens.length; i += 2) {
                 let id = (tokens[i] as number) + reference;
                 let token = tokens[i + 1];
-                let cs: ChecksumData = { id, checksum: typeof(token) === "object" ? tokens[token[0]] : token };
-                checksumData.push(cs);
+                let cs: HashData = { id, hash: typeof(token) === "object" ? tokens[token[0]] : token };
+                hashData.push(cs);
                 reference = id;
             }
-            return { time, event, data: checksumData };
+            return { time, event, data: hashData };
         case Event.Discover:
         case Event.Mutation:
             let lastType = null;
@@ -89,11 +89,11 @@ export function decode(tokens: Token[]): LayoutEvent {
     }
 }
 
-export function checksum(): ChecksumEvent[] {
-    return checksums.length > 0 ? [{ time: lastTime, event: Event.Checksum, data: checksums }] : null;
+export function hash(): LayoutEvent[] {
+    return hashes.length > 0 ? [{ time: lastTime, event: Event.Hash, data: hashes }] : null;
 }
 
-export function resource(): ResourceEvent[] {
+export function resource(): LayoutEvent[] {
     return resources.length > 0 ? [{ time: lastTime, event: Event.Resource, data: resources }] : null;
 }
 
@@ -107,7 +107,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
     let hasAttribute = false;
     let attributes = {};
     let value = null;
-    let path = output.parent in checksums ? `${checksums[output.parent]}>` : null;
+    let path = output.parent in hashes ? `${hashes[output.parent]}>` : null;
 
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
@@ -134,7 +134,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
         }
     }
 
-    getChecksum(output.id, output.tag, path, attributes);
+    getHash(output.id, output.tag, path, attributes);
     getResource(output.tag, attributes);
     if (hasAttribute) { output.attributes = attributes; }
     if (value) { output.value = value; }
@@ -142,7 +142,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
     return output;
 }
 
-function getChecksum(id: number, tag: string, path: string, attributes: Attributes): void {
+function getHash(id: number, tag: string, path: string, attributes: Attributes): void {
     switch (tag) {
         case "STYLE":
         case "TITLE":
@@ -156,7 +156,7 @@ function getChecksum(id: number, tag: string, path: string, attributes: Attribut
             if ("id" in attributes) { s = `${tag}#${attributes["id"]}`; }
             if ("class" in attributes) { s += `.${attributes["class"].trim().split(" ").join(".")}`; }
             if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
-            if (s) { checksums.push({ id, checksum: hash(s), selector: s }); }
+            if (s) { hashes.push({ id, hash: generateHash(s), selector: s }); }
             break;
     }
 }

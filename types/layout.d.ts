@@ -55,9 +55,9 @@ export interface BoxModelData {
     box: number[];
 }
 
-export interface ChecksumData {
+export interface HashData {
     id: number;
-    checksum: string;
+    hash: string;
     selector?: string;
 }
 

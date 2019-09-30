@@ -30,7 +30,7 @@ export function queue(data: Token[]): void {
         case Event.Discover:
         case Event.Mutation:
         case Event.BoxModel:
-        case Event.Checksum:
+        case Event.Hash:
         case Event.Document:
             metric.counter(Metric.LayoutBytes, event.length);
             break;

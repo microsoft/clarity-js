@@ -104,7 +104,7 @@ async function process(): Promise<void> {
           break;
       }
     }
-    await encode(config.lean ? Event.Checksum : Event.Mutation);
+    await encode(config.lean ? Event.Hash : Event.Mutation);
     task.stop(timer);
 }
 
