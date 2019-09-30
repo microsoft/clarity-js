@@ -1,12 +1,12 @@
-import { IAsyncTask, ITaskTracker, TaskFunction, TaskResolve } from "@clarity-types/core";
-import { Metric } from "@clarity-types/metric";
+import { AsyncTask, TaskFunction, TaskResolve, TaskTiming } from "@clarity-types/core";
+import { Metric } from "@clarity-types/data";
 import config from "@src/core/config";
-import * as metrics from "@src/metric";
+import * as metrics from "@src/data/metric";
 
-let tracker: ITaskTracker = {};
+let tracker: TaskTiming = {};
 let threshold = config.longtask;
-let queue: IAsyncTask[] = [];
-let active: IAsyncTask = null;
+let queue: AsyncTask[] = [];
+let active: AsyncTask = null;
 
 export async function schedule(task: TaskFunction): Promise<void> {
     // If this task is already scheduled, skip it

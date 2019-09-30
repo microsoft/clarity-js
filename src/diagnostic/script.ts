@@ -1,9 +1,9 @@
 import { Event } from "@clarity-types/data";
-import { IScriptError } from "@clarity-types/diagnostic";
+import { ScriptErrorData } from "@clarity-types/diagnostic";
 import { bind } from "@src/core/event";
 import encode from "./encode";
 
-export let data: IScriptError[] = [];
+export let data: ScriptErrorData[] = [];
 
 export function start(): void {
     bind(window, "error", handler);

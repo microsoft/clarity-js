@@ -1,6 +1,5 @@
-import { Event } from "@clarity-types/data";
+import { Event, Metric } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
-import { Metric } from "@clarity-types/metric";
 import config from "@src/core/config";
 import * as task from "@src/core/task";
 import * as boxmodel from "@src/layout/boxmodel";
@@ -26,6 +25,6 @@ async function discover(): Promise<void> {
         processNode(node, Source.Discover);
         node = walker.nextNode();
     }
-    await encode(config.lean ? Event.Checksum : Event.Discover);
+    await encode(config.lean ? Event.Hash : Event.Discover);
     task.stop(timer);
 }

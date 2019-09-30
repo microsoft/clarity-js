@@ -1,58 +1,60 @@
-import hash from "../src/data/hash";
+import generateHash from "../src/data/hash";
 import { resolve } from "../src/data/token";
-import { Event, IDecodedEvent, Token } from "../types/data";
-import { IAttributes, IBoxModel, IChecksum, IDecodedNode, IDocumentSize, ILayout, IResource } from "../types/layout";
+import { Event, Token } from "../types/data";
+import { DomData, LayoutEvent } from "../types/decode/layout";
+import { Attributes, BoxModelData, DocumentData, HashData, ResourceData } from "../types/layout";
 
 const ID_ATTRIBUTE = "data-clarity";
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
-let selectors: ILayout[];
-let resources: IResource[];
+export let hashes: HashData[];
+export let resources: ResourceData[];
 let lastTime: number;
 
 export function reset(): void {
-    selectors = [];
+    hashes = [];
     resources = [];
     lastTime = null;
 }
 
-export function decode(tokens: Token[]): IDecodedEvent {
+export function decode(tokens: Token[]): LayoutEvent {
     let time = lastTime = tokens[0] as number;
     let event = tokens[1] as Event;
-    let decoded: IDecodedEvent = {time, event, data: []};
 
     switch (event) {
         case Event.Document:
-            let d: IDocumentSize = { width: tokens[2] as number, height: tokens[3] as number };
-            decoded.data.push(d);
-            return decoded;
+            let documentData: DocumentData = { width: tokens[2] as number, height: tokens[3] as number };
+            return { time, event, data: documentData };
         case Event.BoxModel:
+            let boxmodelData: BoxModelData[] = [];
             for (let i = 2; i < tokens.length; i += 2) {
-                let boxmodel: IBoxModel = { id: tokens[i] as number, box: tokens[i + 1] as number[] };
-                decoded.data.push(boxmodel);
+                let boxmodel: BoxModelData = { id: tokens[i] as number, box: tokens[i + 1] as number[] };
+                boxmodelData.push(boxmodel);
             }
-            return decoded;
-        case Event.Checksum:
+            return { time, event, data: boxmodelData };
+        case Event.Hash:
             let reference = 0;
+            let hashData: HashData[] = [];
             for (let i = 2; i < tokens.length; i += 2) {
                 let id = (tokens[i] as number) + reference;
                 let token = tokens[i + 1];
-                let checksum: IChecksum = { id, checksum: typeof(token) === "object" ? tokens[token[0]] : token };
-                decoded.data.push(checksum);
+                let cs: HashData = { id, hash: typeof(token) === "object" ? tokens[token[0]] : token };
+                hashData.push(cs);
                 reference = id;
             }
-            return decoded;
+            return { time, event, data: hashData };
         case Event.Discover:
         case Event.Mutation:
             let lastType = null;
             let node = [];
             let tagIndex = 0;
+            let domData: DomData[] = [];
             for (let i = 2; i < tokens.length; i++) {
                 let token = tokens[i];
                 let type = typeof(token);
                 switch (type) {
                     case "number":
                         if (type !== lastType && lastType !== null) {
-                            decoded.data.push(process(node, tagIndex));
+                            domData.push(process(node, tagIndex));
                             node = [];
                             tagIndex = 0;
                         }
@@ -81,20 +83,22 @@ export function decode(tokens: Token[]): IDecodedEvent {
                 lastType = type;
             }
             // Process last node
-            decoded.data.push(process(node, tagIndex));
-            return decoded;
+            domData.push(process(node, tagIndex));
+
+            return { time, event, data: domData };
     }
 }
 
-export function enrich(): IDecodedEvent[] {
-    let output = [];
-    if (selectors.length > 0) { output.push({ time: lastTime, event: Event.Layout, data: selectors }); }
-    if (resources.length > 0) { output.push({ time: lastTime, event: Event.Resource, data: resources }); }
-    return output;
+export function hash(): LayoutEvent[] {
+    return hashes.length > 0 ? [{ time: lastTime, event: Event.Hash, data: hashes }] : null;
 }
 
-function process(node: any[] | number[], tagIndex: number): IDecodedNode {
-    let output: IDecodedNode = {
+export function resource(): LayoutEvent[] {
+    return resources.length > 0 ? [{ time: lastTime, event: Event.Resource, data: resources }] : null;
+}
+
+function process(node: any[] | number[], tagIndex: number): DomData {
+    let output: DomData = {
         id: node[0],
         parent: tagIndex > 1 ? node[1] : null,
         next: tagIndex > 2 ? node[2] : null,
@@ -103,7 +107,7 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
     let hasAttribute = false;
     let attributes = {};
     let value = null;
-    let path = output.parent in selectors ? `${selectors[output.parent]}>` : null;
+    let path = output.parent in hashes ? `${hashes[output.parent]}>` : null;
 
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
@@ -130,15 +134,15 @@ function process(node: any[] | number[], tagIndex: number): IDecodedNode {
         }
     }
 
-    selector(output.id, output.tag, path, attributes);
-    resource(output.tag, attributes);
+    getHash(output.id, output.tag, path, attributes);
+    getResource(output.tag, attributes);
     if (hasAttribute) { output.attributes = attributes; }
     if (value) { output.value = value; }
 
     return output;
 }
 
-function selector(id: number, tag: string, path: string, attributes: IAttributes): void {
+function getHash(id: number, tag: string, path: string, attributes: Attributes): void {
     switch (tag) {
         case "STYLE":
         case "TITLE":
@@ -152,12 +156,12 @@ function selector(id: number, tag: string, path: string, attributes: IAttributes
             if ("id" in attributes) { s = `${tag}#${attributes["id"]}`; }
             if ("class" in attributes) { s += `.${attributes["class"].trim().split(" ").join(".")}`; }
             if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
-            if (s) { selectors.push({ id, checksum: hash(s), selector: s }); }
+            if (s) { hashes.push({ id, hash: generateHash(s), selector: s }); }
             break;
     }
 }
 
-function resource(tag: string, attributes: IAttributes): void {
+function getResource(tag: string, attributes: Attributes): void {
     switch (tag) {
         case "LINK":
             if ("href" in attributes && "rel" in attributes && attributes["rel"] === "stylesheet") {

@@ -1,5 +1,5 @@
 import { Event } from "@clarity-types/data";
-import { IPointer } from "@clarity-types/interaction";
+import { PointerData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
@@ -7,7 +7,7 @@ import * as boxmodel from "@src/layout/boxmodel";
 import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
-export let data: { [key: number]: IPointer[] } = {};
+export let data: { [key: number]: PointerData[] } = {};
 let timeout: number = null;
 
 export function start(): void {
@@ -56,7 +56,7 @@ function touch(event: Event, evt: TouchEvent): void {
     }
 }
 
-function handler(event: Event, current: IPointer): void {
+function handler(event: Event, current: PointerData): void {
     switch (event) {
         case Event.MouseMove:
         case Event.MouseWheel:
@@ -78,7 +78,7 @@ function handler(event: Event, current: IPointer): void {
 
 export function reset(): void {
     data = {};
-    let mouseEvents = [Event.MouseDown, Event.MouseUp, Event.MouseWheel, Event.MouseMove, Event.DoubleClick, Event.Click];
+    let mouseEvents = [Event.MouseDown, Event.MouseUp, Event.MouseWheel, Event.MouseMove, Event.DoubleClick, Event.Click, Event.RightClick];
     let touchEvents = [Event.TouchStart, Event.TouchMove, Event.TouchEnd, Event.TouchCancel];
     let events = mouseEvents.concat(touchEvents);
     for (let event of events) {
@@ -86,7 +86,7 @@ export function reset(): void {
     }
 }
 
-function similar(last: IPointer, current: IPointer): boolean {
+function similar(last: PointerData, current: PointerData): boolean {
     let dx = last.x - current.x;
     let dy = last.y - current.y;
     let distance = Math.sqrt(dx * dx + dy * dy);

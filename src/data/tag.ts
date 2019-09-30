@@ -1,7 +1,7 @@
-import { Event, ITagData } from "@clarity-types/data";
+import { Event, TagData } from "@clarity-types/data";
 import encode from "@src/data/encode";
 
-export let data: ITagData = null;
+export let data: TagData = null;
 
 export function reset(): void {
     data = null;

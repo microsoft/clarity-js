@@ -1,6 +1,5 @@
-import { Event, Flag, ICookieData, IEnvelope, IMetadata, IPageData, Token, Upload } from "@clarity-types/data";
+import { BooleanFlag, CookieInfo, Envelope, Event, Metadata, PageData, Token, Upload } from "@clarity-types/data";
 import config from "@src/core/config";
-import time from "@src/core/time";
 import version from "@src/core/version";
 import encode from "@src/data/encode";
 import hash from "@src/data/hash";
@@ -8,18 +7,20 @@ import hash from "@src/data/hash";
 const CLARITY_COOKIE_NAME: string = "_clarity";
 const CLARITY_COOKIE_SEPARATOR: string = "|";
 const CLARITY_SESSION_LENGTH = 30 * 60 * 1000;
-export let metadata: IMetadata = null;
+export let metadata: Metadata = null;
 
 export function start(): void {
-    let cookie: ICookieData = read();
+    let cookie: CookieInfo = read();
     let ts = Date.now();
-    let elapsed = time();
     let projectId = config.projectId || hash(location.host);
     let userId = cookie && cookie.userId ? cookie.userId : guid();
     let sessionId = cookie && cookie.sessionId && ts - cookie.timestamp < CLARITY_SESSION_LENGTH ? cookie.sessionId : ts.toString(36);
     let pageId = guid();
-    let e: IEnvelope = { elapsed, sequence: 0, version, pageId, userId, sessionId, projectId, upload: Upload.Async, end: Flag.False };
-    let p: IPageData = { timestamp: ts, elapsed, url: location.href, title: document.title, referrer: document.referrer };
+    let ua = navigator && "userAgent" in navigator ? navigator.userAgent : "";
+    let upload = Upload.Async;
+    let lean = config.lean ? BooleanFlag.True : BooleanFlag.False;
+    let e: Envelope = { sequence: 0, version, pageId, userId, sessionId, projectId, upload, end: BooleanFlag.False };
+    let p: PageData = { timestamp: ts, ua, url: location.href, referrer: document.referrer, lean };
 
     metadata = { page: p, envelope: e };
 
@@ -35,13 +36,10 @@ export function end(): void {
 export function envelope(last: boolean, backup: boolean = false): Token[] {
     let e = metadata.envelope;
     e.upload = backup ? Upload.Backup : (last && "sendBeacon" in navigator ? Upload.Beacon : Upload.Async);
-    e.end = last ? Flag.True : Flag.False;
-    if (e.upload !== Upload.Backup) {
-      e.elapsed = time();
-      e.sequence++;
-    }
+    e.end = last ? BooleanFlag.True : BooleanFlag.False;
+    if (e.upload !== Upload.Backup) { e.sequence++; }
 
-    return [e.elapsed, e.sequence, e.version, e.projectId, e.userId, e.sessionId, e.pageId, e.upload, e.end];
+    return [e.sequence, e.version, e.projectId, e.userId, e.sessionId, e.pageId, e.upload, e.end];
 }
 
 // Credit: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
@@ -62,7 +60,7 @@ function guid() {
 }
 // tslint:enable
 
-function track(data: ICookieData): void {
+function track(data: CookieInfo): void {
   let expiry = new Date();
   expiry.setDate(expiry.getDate() + config.expire);
   let expires = expiry ? "expires=" + expiry.toUTCString() : "";
@@ -70,7 +68,7 @@ function track(data: ICookieData): void {
   document.cookie = CLARITY_COOKIE_NAME + "=" + value;
 }
 
-function read(): ICookieData {
+function read(): CookieInfo {
   let cookies: string[] = document.cookie.split(";");
   if (cookies) {
     for (let i = 0; i < cookies.length; i++) {

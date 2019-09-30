@@ -1,6 +1,5 @@
-import { Event } from "@clarity-types/data";
+import { Event, Metric } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
-import { Metric } from "@clarity-types/metric";
 import config from "@src/core/config";
 import * as task from "@src/core/task";
 import * as boxmodel from "@src/layout/boxmodel";
@@ -105,7 +104,7 @@ async function process(): Promise<void> {
           break;
       }
     }
-    await encode(config.lean ? Event.Checksum : Event.Mutation);
+    await encode(config.lean ? Event.Hash : Event.Mutation);
     task.stop(timer);
 }
 

@@ -1,16 +1,23 @@
-import { IClarityData, IPayload, Token } from "./data";
+import { ClarityInfo, Payload, Token } from "./data";
 
 type TaskFunction = () => Promise<void>;
 type TaskResolve = () => void;
 
-export interface IEventBindingData {
+/* Helper Interfaces */
+
+export interface AsyncTask {
+    task: TaskFunction;
+    resolve: TaskResolve;
+}
+
+export interface BrowserEvent {
     event: string;
     target: EventTarget;
     listener: EventListener;
     capture: boolean;
 }
 
-export interface IConfig {
+export interface Config {
     projectId?: string;
     longtask?: number;
     lookahead?: number;
@@ -24,15 +31,10 @@ export interface IConfig {
     lean?: boolean;
     tokens?: string[];
     url?: string;
-    onstart?: (data: IClarityData) => void;
-    upload?: (data: string, last: boolean) => void;
+    onstart?: (data: ClarityInfo) => void;
+    upload?: (data: string, sequence: number, last: boolean) => void;
 }
 
-export interface ITaskTracker {
+export interface TaskTiming {
     [key: number]: number;
-}
-
-export interface IAsyncTask {
-    task: TaskFunction;
-    resolve: TaskResolve;
 }

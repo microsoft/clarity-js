@@ -1,8 +1,7 @@
-import {Event, Token} from "@clarity-types/data";
-import {Metric} from "@clarity-types/metric";
+import {Event, Metric, Token} from "@clarity-types/data";
 import time from "@src/core/time";
+import * as metric from "@src/data/metric";
 import { queue } from "@src/data/upload";
-import * as metric from "@src/metric";
 import * as change from "./change";
 import * as pointer from "./pointer";
 import * as resize from "./resize";
@@ -56,7 +55,7 @@ export default function(type: Event): void {
             metric.counter(Metric.EndTime, t);
             unload.reset();
             break;
-        case Event.Change:
+        case Event.InputChange:
             let ch = change.data;
             tokens.push(ch.target);
             tokens.push(ch.value);

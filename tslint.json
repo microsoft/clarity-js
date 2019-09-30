@@ -17,6 +17,7 @@
       false
     ],
     "variable-name": false,
+    "interface-name": false,
     "interface-over-type-literal": false,
     "only-arrow-functions": false,
     "typedef": [
