@@ -45,6 +45,10 @@ export function decode(input: string | Payload, augmentations: Augmentation = nu
                 if (payload.metric === undefined) { payload.metric = []; }
                 payload.metric.push(data.decode(entry) as Decode.MetricEvent);
                 break;
+            case Event.Upload:
+                if (payload.upload === undefined) { payload.upload = []; }
+                payload.upload.push(data.decode(entry) as Decode.UploadEvent);
+                break;
             case Event.MouseDown:
             case Event.MouseUp:
             case Event.MouseMove:
@@ -75,6 +79,10 @@ export function decode(input: string | Payload, augmentations: Augmentation = nu
                 if (payload.change === undefined) { payload.change = []; }
                 payload.change.push(interaction.decode(entry) as Decode.ChangeEvent);
                 break;
+            case Event.Visible:
+                if (payload.visible === undefined) { payload.visible = []; }
+                payload.visible.push(interaction.decode(entry) as Decode.VisibileEvent);
+                break;
             case Event.BoxModel:
                 if (payload.boxmodel === undefined) { payload.boxmodel = []; }
                 payload.boxmodel.push(layout.decode(entry) as Decode.BoxModelEvent);
@@ -101,7 +109,7 @@ export function decode(input: string | Payload, augmentations: Augmentation = nu
                 payload.image.push(diagnostic.decode(entry) as Decode.BrokenImageEvent);
                 break;
             default:
-                console.error(`No handler for Event# ${event}: ${JSON.stringify(entry)}`);
+                console.error(`No handler for Event: ${JSON.stringify(entry)}`);
                 break;
         }
     }

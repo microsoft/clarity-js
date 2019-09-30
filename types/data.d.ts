@@ -29,13 +29,14 @@ export const enum Event {
     Ping = 22,
     Unload = 23,
     Change = 24,
-    Visibility = 25,
+    Visible = 25,
     Network = 26,
     Performance = 27,
     ScriptError = 28,
     ImageError = 29,
     Resource = 30,
-    Summary = 31
+    Summary = 31,
+    Upload = 32
 }
 
 export const enum Metric {
@@ -120,6 +121,13 @@ export interface Augmentation {
     ua: string;
 }
 
+export interface Transit {
+    [key: number]: {
+        data: string;
+        attempts: number;
+    };
+}
+
 /* Event Data */
 
 export interface MetricData {
@@ -141,6 +149,12 @@ export interface PingData {
 export interface TagData {
     key: string;
     value: string;
+}
+
+export interface UploadData {
+    sequence: number;
+    attempts: number;
+    status: number;
 }
 
 export interface SummaryData {

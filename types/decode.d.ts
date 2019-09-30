@@ -1,4 +1,4 @@
-import { Envelope, Event, MetricData, PageData, PingData, SummaryData, TagData,  } from "./data";
+import { Envelope, Event, MetricData, PageData, PingData, SummaryData, TagData, UploadData } from "./data";
 import { ImageErrorData, ScriptErrorData } from "./diagnostic";
 import { ChangeData, PointerData, ResizeData, ScrollData, SelectionData, UnloadData, VisibileData } from "./interaction";
 import { Attributes, BoxModelData, ChecksumData, DocumentData, ResourceData } from "./layout";
@@ -28,6 +28,7 @@ export interface DecodedPayload {
     dom?: DomEvent[];
     doc?: DocumentEvent[];
     summary?: SummaryEvent[];
+    upload?: UploadEvent[];
 }
 
 export interface PartialEvent {
@@ -41,8 +42,9 @@ export interface PageEvent extends PartialEvent { data: PageData; }
 export interface PingEvent extends PartialEvent { data: PingData; }
 export interface SummaryEvent extends PartialEvent { data: SummaryData[]; }
 export interface TagEvent extends PartialEvent { data: TagData; }
+export interface UploadEvent extends PartialEvent { data: UploadData; }
 export interface DataEvent extends PartialEvent {
-    data: MetricData | PageData | PingData | SummaryData[] | TagData;
+    data: MetricData | PageData | PingData | SummaryData[] | TagData | UploadData;
 }
 
 /* Diagnostic Events */

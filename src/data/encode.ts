@@ -4,7 +4,7 @@ import { metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
 import * as tag from "@src/data/tag";
-import { queue } from "./upload";
+import { queue, track } from "./upload";
 
 export default function(event: Event): void {
     let t = time();
@@ -26,6 +26,12 @@ export default function(event: Event): void {
         case Event.Tag:
             tokens.push(tag.data.key);
             tokens.push(tag.data.value);
+            queue(tokens);
+            break;
+        case Event.Upload:
+            tokens.push(track.sequence);
+            tokens.push(track.attempts);
+            tokens.push(track.status);
             queue(tokens);
             break;
         case Event.Metric:

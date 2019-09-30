@@ -1,14 +1,20 @@
-import { EncodedPayload, Event, Metric, Token } from "@clarity-types/data";
+import { EncodedPayload, Event, Metric, Token, Transit, UploadData } from "@clarity-types/data";
 import config from "@src/core/config";
-import {envelope} from "@src/data/metadata";
+import encode from "@src/data/encode";
+import { envelope, metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
 
+const MAX_RETRIES = 2;
 let events: string[];
 let timeout: number = null;
+let transit: Transit;
+export let track: UploadData;
 
 export function start(): void {
     events = [];
+    transit = {};
+    track = null;
     recover();
 }
 
@@ -17,10 +23,10 @@ export function queue(data: Token[]): void {
     let event = JSON.stringify(data);
     events.push(event);
 
-    // For Event.Metric, do not schedule upload callback
-    if (type === Event.Metric) { return; }
-
     switch (type) {
+        case Event.Metric:
+        case Event.Upload:
+            return; // do not schedule upload callback
         case Event.Discover:
         case Event.Mutation:
         case Event.BoxModel:
@@ -49,13 +55,17 @@ export function end(): void {
     clearTimeout(timeout);
     upload(true);
     events = [];
+    transit = {};
+    track = null;
 }
 
 function upload(last: boolean = false): void {
     metric.compute();
     let handler = config.upload ? config.upload : send;
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
-    handler(stringify(payload), last);
+    let sequence = metadata.envelope.sequence;
+    transit[sequence] = { data: stringify(payload), attempts: 1 };
+    handler(transit[sequence].data, sequence, last);
     if (last) { backup(payload); } else { ping.reset(); }
     events = [];
 }
@@ -64,14 +74,28 @@ function stringify(payload: EncodedPayload): string {
     return `{"e":${payload.e},"d":${payload.d}}`;
 }
 
-function send(data: string, last: boolean = false): void {
+function send(data: string, sequence: number = null, last: boolean = false): void {
     if (config.url.length > 0) {
         if (last && "sendBeacon" in navigator) {
             navigator.sendBeacon(config.url, data);
         } else {
             let xhr = new XMLHttpRequest();
             xhr.open("POST", config.url);
+            if (sequence !== null) { xhr.onreadystatechange = (): void => { check(xhr, sequence); }; }
             xhr.send(data);
+        }
+    }
+}
+
+function check(xhr: XMLHttpRequest, sequence: number): void {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+        if ((xhr.status < 200 || xhr.status > 208) && transit[sequence].attempts <= MAX_RETRIES) {
+            transit[sequence].attempts++;
+            send(transit[sequence].data, sequence);
+        } else {
+            track = { sequence, attempts: transit[sequence].attempts, status: xhr.status };
+            encode(Event.Upload);
+            delete transit[sequence];
         }
     }
 }

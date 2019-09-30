@@ -1,4 +1,4 @@
-import { Envelope, Event, MetricData, PageData, PingData, State, SummaryData, TagData, Token, Upload } from "../types/data";
+import { Envelope, Event, MetricData, PageData, PingData, State, SummaryData, TagData, Token, Upload, UploadData } from "../types/data";
 import { DataEvent, SummaryEvent } from "../types/decode";
 
 let summaries: { [key: number]: SummaryData[] } = null;
@@ -27,6 +27,9 @@ export function decode(tokens: Token[]): DataEvent {
         case Event.Tag:
             let tag: TagData = { key: tokens[2] as string, value: tokens[3] as string };
             return { time, event, data: tag };
+        case Event.Upload:
+            let upload: UploadData = { sequence: tokens[2] as number, attempts: tokens[3] as number, status: tokens[4] as number};
+            return { time, event, data: upload };
         case Event.Metric:
             let i = 0;
             let metrics: MetricData = {};

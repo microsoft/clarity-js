@@ -12,7 +12,7 @@ export function start(): void {
 
 function recompute(): void {
     data = { visible: "visibilityState" in document ? document.visibilityState : "default" };
-    encode(Event.Visibility);
+    encode(Event.Visible);
 }
 
 export function reset(): void {
