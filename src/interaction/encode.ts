@@ -84,7 +84,7 @@ export default function(type: Event): void {
             }
             scroll.reset();
             break;
-        case Event.Visible:
+        case Event.Visibility:
             let v = visibility.data;
             tokens.push(v.visible);
             queue(tokens);

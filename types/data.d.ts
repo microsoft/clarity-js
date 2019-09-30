@@ -29,7 +29,7 @@ export const enum Event {
     Ping = 22,
     Unload = 23,
     InputChange = 24,
-    Visible = 25,
+    Visibility = 25,
     Network = 26,
     Performance = 27,
     ScriptError = 28,

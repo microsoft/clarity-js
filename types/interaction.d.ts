@@ -36,6 +36,6 @@ export interface UnloadData {
     name: string;
 }
 
-export interface VisibileData {
+export interface VisibilityData {
     visible: string;
 }

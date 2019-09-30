@@ -4,7 +4,7 @@ import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, UploadEvent 
 import { DecodedEvent, DecodedPayload } from "../types/decode/decode";
 import { BrokenImageEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
 import { InputChangeEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
-import { SelectionEvent, UnloadEvent, VisibileEvent } from "../types/decode/interaction";
+import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
 
 import * as data from "./data";
@@ -87,9 +87,9 @@ export function decode(input: string): DecodedPayload {
                 if (payload.unload === undefined) { payload.unload = []; }
                 payload.unload.push(interaction.decode(entry) as UnloadEvent);
                 break;
-            case Event.Visible:
-                if (payload.visible === undefined) { payload.visible = []; }
-                payload.visible.push(interaction.decode(entry) as VisibileEvent);
+            case Event.Visibility:
+                if (payload.visibility === undefined) { payload.visibility = []; }
+                payload.visibility.push(interaction.decode(entry) as VisibilityEvent);
                 break;
             case Event.BoxModel:
                 if (payload.boxmodel === undefined) { payload.boxmodel = []; }

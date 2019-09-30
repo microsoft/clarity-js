@@ -1,9 +1,9 @@
 import { Event } from "@clarity-types/data";
-import { VisibileData } from "@clarity-types/interaction";
+import { VisibilityData } from "@clarity-types/interaction";
 import { bind } from "@src/core/event";
 import encode from "./encode";
 
-export let data: VisibileData;
+export let data: VisibilityData;
 
 export function start(): void {
     bind(document, "visibilitychange", recompute);
@@ -12,7 +12,7 @@ export function start(): void {
 
 function recompute(): void {
     data = { visible: "visibilityState" in document ? document.visibilityState : "default" };
-    encode(Event.Visible);
+    encode(Event.Visibility);
 }
 
 export function reset(): void {
