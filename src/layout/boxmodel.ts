@@ -60,7 +60,7 @@ export function relative(x: number, y: number, element: Element): number[] {
 
 function update(id: number, box: number[]): void {
     let changed = box !== null;
-    if (id in bm) {
+    if (id in bm && box !== null && bm[id].box !== null) {
         changed = box.length === bm[id].box.length ? false : true;
         if (changed === false) {
             for (let i = 0; i < box.length; i++) {
