@@ -14,7 +14,12 @@ export function end(): void {
 
 export function check(): boolean {
     try {
-        return typeof Promise !== "undefined" && MutationObserver && document["createTreeWalker"] && "now" in Date && "now" in performance;
+        return typeof Promise !== "undefined" &&
+            MutationObserver &&
+            document["createTreeWalker"] &&
+            "now" in Date &&
+            "now" in performance &&
+            typeof WeakMap !== "undefined";
     } catch (ex) {
         return false;
     }

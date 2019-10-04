@@ -1,7 +1,6 @@
 import { NodeChange, NodeInfo, NodeValue, Source } from "@clarity-types/layout";
 import time from "@src/core/time";
 
-const NODE_ID_PROP: string = "__node_index__";
 const DEVTOOLS_HOOK: string = "__CLARITY_DEVTOOLS_HOOK__";
 const ID_ATTRIBUTE = "data-clarity";
 const MASK_ATTRIBUTE = "data-clarity-mask";
@@ -13,6 +12,7 @@ let values: NodeValue[] = [];
 let changes: NodeChange[][] = [];
 let updateMap: number[] = [];
 let selectorMap: number[] = [];
+let idMap: WeakMap<Node, number> = null;
 
 export function reset(): void {
     index = 1;
@@ -21,15 +21,18 @@ export function reset(): void {
     updateMap = [];
     changes = [];
     selectorMap = [];
+    idMap = new WeakMap();
     if (DEVTOOLS_HOOK in window) { window[DEVTOOLS_HOOK] = { get, getNode, history }; }
 }
 
 export function getId(node: Node, autogen: boolean = false): number {
     if (node === null) { return null; }
-    let id = node[NODE_ID_PROP];
+    let id = idMap.get(node);
     if (!id && autogen) {
-        id = node[NODE_ID_PROP] = index++;
+        id = index++;
+        idMap.set(node, id);
     }
+
     return id ? id : null;
 }
 

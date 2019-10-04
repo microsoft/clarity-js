@@ -6,7 +6,6 @@ import * as data from "@src/data";
 import * as diagnostic from "@src/diagnostic";
 import * as interaction from "@src/interaction";
 import * as layout from "@src/layout";
-export { tag } from "@src/data/tag";
 
 let status = false;
 
@@ -54,6 +53,13 @@ export function end(): void {
     core.end();
 
     status = false;
+  }
+}
+
+export function tag(key: string, value: string): void {
+  // Do not process tags if Clarity is not already activated
+  if (status) {
+    data.tag(key, value);
   }
 }
 

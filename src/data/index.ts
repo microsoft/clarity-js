@@ -3,6 +3,7 @@ import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
 import * as tag from "@src/data/tag";
 import * as upload from "@src/data/upload";
+export { tag } from "@src/data/tag";
 
 export function start(): void {
     upload.start();

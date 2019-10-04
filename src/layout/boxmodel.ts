@@ -51,14 +51,16 @@ export function updates(): BoxModelData[] {
 export function relative(x: number, y: number, element: Element): number[] {
     if (x && x >= 0 && y && y >= 0 && element) {
         let box = layout(element);
-        return [x - box[0], y - box[1]];
+        if (box !== null) {
+            return [x - box[0], y - box[1]];
+        }
     }
     return [null, null];
 }
 
 function update(id: number, box: number[]): void {
     let changed = box !== null;
-    if (id in bm) {
+    if (id in bm && box !== null && bm[id].box !== null) {
         changed = box.length === bm[id].box.length ? false : true;
         if (changed === false) {
             for (let i = 0; i < box.length; i++) {
