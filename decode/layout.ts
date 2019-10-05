@@ -7,11 +7,13 @@ import { Attributes, BoxModelData, DocumentData, HashData, ResourceData } from "
 const ID_ATTRIBUTE = "data-clarity";
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
 export let hashes: HashData[];
+export let hashLookup: { [key: number]: number } = {};
 export let resources: ResourceData[];
 let lastTime: number;
 
 export function reset(): void {
     hashes = [];
+    hashLookup = {};
     resources = [];
     lastTime = null;
 }
@@ -107,7 +109,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
     let hasAttribute = false;
     let attributes = {};
     let value = null;
-    let path = output.parent in hashes ? `${hashes[output.parent]}>` : null;
+    let path = output.parent in hashLookup ? `${hashes[hashLookup[output.parent]].selector}>` : null;
 
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
@@ -156,7 +158,10 @@ function getHash(id: number, tag: string, path: string, attributes: Attributes):
             if ("id" in attributes) { s = `${tag}#${attributes["id"]}`; }
             if ("class" in attributes) { s += `.${attributes["class"].trim().split(" ").join(".")}`; }
             if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
-            if (s) { hashes.push({ id, hash: generateHash(s), selector: s }); }
+            if (s) {
+                hashLookup[id] = hashes.length;
+                hashes.push({ id, hash: generateHash(s), selector: s });
+            }
             break;
     }
 }
