@@ -32,7 +32,7 @@ export interface Config {
     tokens?: string[];
     url?: string;
     onstart?: (data: ClarityInfo) => void;
-    upload?: (data: string, sequence: number, last: boolean) => void;
+    upload?: (data: string, sequence?: number, last?: boolean) => void;
 }
 
 export interface TaskTiming {

@@ -63,9 +63,7 @@ function upload(last: boolean = false): void {
     metric.compute();
     let handler = config.upload ? config.upload : send;
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
-    let sequence = metadata.envelope.sequence;
-    transit[sequence] = { data: stringify(payload), attempts: 1 };
-    handler(transit[sequence].data, sequence, last);
+    handler(stringify(payload), metadata.envelope.sequence, last);
     if (last) { backup(payload); } else { ping.reset(); }
     events = [];
 }
@@ -79,6 +77,7 @@ function send(data: string, sequence: number = null, last: boolean = false): voi
         if (last && "sendBeacon" in navigator) {
             navigator.sendBeacon(config.url, data);
         } else {
+            transit[sequence] = { data, attempts: 1 };
             let xhr = new XMLHttpRequest();
             xhr.open("POST", config.url);
             if (sequence !== null) { xhr.onreadystatechange = (): void => { check(xhr, sequence); }; }
@@ -88,7 +87,7 @@ function send(data: string, sequence: number = null, last: boolean = false): voi
 }
 
 function check(xhr: XMLHttpRequest, sequence: number): void {
-    if (xhr.readyState === XMLHttpRequest.DONE) {
+    if (xhr && xhr.readyState === XMLHttpRequest.DONE && sequence in transit) {
         if ((xhr.status < 200 || xhr.status > 208) && transit[sequence].attempts <= MAX_RETRIES) {
             transit[sequence].attempts++;
             send(transit[sequence].data, sequence);
@@ -104,7 +103,8 @@ function recover(): void {
     if (typeof localStorage !== "undefined") {
         let data = localStorage.getItem("clarity-backup");
         if (data && data.length > 0) {
-            send(data);
+            let handler = config.upload ? config.upload : send;
+            handler(data);
         }
     }
 }
