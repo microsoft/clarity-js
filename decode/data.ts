@@ -32,7 +32,7 @@ export function decode(tokens: Token[]): DataEvent {
             let upload: UploadData = { sequence: tokens[2] as number, attempts: tokens[3] as number, status: tokens[4] as number};
             return { time, event, data: upload };
         case Event.Metric:
-            let i = 0;
+            let i = 2;
             let metrics: MetricData = {};
             while (i < tokens.length) {
                 metrics[tokens[i++] as number] = tokens[i++] as number;

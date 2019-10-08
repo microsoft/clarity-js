@@ -18,15 +18,24 @@ export function start(): void {
 function recompute(): void {
     let s = document.getSelection();
 
-    if (selection !== null && data.start !== null && data.start !== getId(s.anchorNode)) {
+    // Bail out if we don't have a valid selection
+    if (s === null) { return; }
+
+    let anchorNode = getId(s.anchorNode);
+    let focusNode = getId(s.focusNode);
+
+    // Bail out if we got valid selection but not valid nodes
+    if (anchorNode === null && focusNode === null) { return; }
+
+    if (selection !== null && data.start !== null && data.start !== anchorNode) {
         clearTimeout(timeout);
         encode(Event.Selection);
     }
 
     data = {
-        start: getId(s.anchorNode),
+        start: anchorNode,
         startOffset: s.anchorOffset,
-        end: getId(s.focusNode),
+        end: focusNode,
         endOffset: s.focusOffset
     };
     selection = s;
