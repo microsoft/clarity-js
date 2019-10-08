@@ -1,5 +1,6 @@
 // tslint:disable: no-bitwise
 export default function(input: string): string {
+    // Code inspired from C# GetHashCode: https://github.com/Microsoft/referencesource/blob/master/mscorlib/system/string.cs
     let hash = 0;
     let hashOne = 5381;
     let hashTwo = hashOne;
@@ -11,6 +12,6 @@ export default function(input: string): string {
             hashTwo = ((hashTwo << 5) + hashTwo) ^ charTwo;
         }
     }
-    hash = (hashOne + (hashTwo * 1566083941)) & 0xffffffffff;
+    hash = (hashOne + (hashTwo * 1566083941));
     return hash.toString(36);
 }
