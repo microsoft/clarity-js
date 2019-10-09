@@ -12,6 +12,6 @@ export default function(input: string): string {
             hashTwo = ((hashTwo << 5) + hashTwo) ^ charTwo;
         }
     }
-    hash = (hashOne + (hashTwo * 1566083941));
-    return hash.toString(36);
+    hash = Math.abs(hashOne + (hashTwo * 1566083941));
+    return hash.toString(36).slice(-6); // Limit hashes to 6 characters
 }

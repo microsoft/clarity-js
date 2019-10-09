@@ -6,14 +6,12 @@ import { Attributes, BoxModelData, DocumentData, HashData, ResourceData } from "
 
 const ID_ATTRIBUTE = "data-clarity";
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
-export let hashes: HashData[];
-export let hashLookup: { [key: number]: number } = {};
+export let hashes: { [key: number]: HashData } = {};
 export let resources: ResourceData[];
 let lastTime: number;
 
 export function reset(): void {
     hashes = [];
-    hashLookup = {};
     resources = [];
     lastTime = null;
 }
@@ -92,7 +90,9 @@ export function decode(tokens: Token[]): LayoutEvent {
 }
 
 export function hash(): LayoutEvent[] {
-    return hashes.length > 0 ? [{ time: lastTime, event: Event.Hash, data: hashes }] : null;
+    let data = [];
+    for (let id in hashes) { if (hashes[id]) { data.push(hashes[id]); } }
+    return data.length > 0 ? [{ time: lastTime, event: Event.Hash, data }] : null;
 }
 
 export function resource(): LayoutEvent[] {
@@ -109,7 +109,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
     let hasAttribute = false;
     let attributes = {};
     let value = null;
-    let path = output.parent in hashLookup ? `${hashes[hashLookup[output.parent]].selector}>` : null;
+    let path = output.parent in hashes ? `${hashes[output.parent].selector}>` : null;
 
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
@@ -155,13 +155,10 @@ function getHash(id: number, tag: string, path: string, attributes: Attributes):
             break;
         default:
             let s = path && path.length > 0 ? path + tag : tag;
-            if ("id" in attributes) { s = `${tag}#${attributes["id"]}`; }
-            if ("class" in attributes) { s += `.${attributes["class"].trim().split(" ").join(".")}`; }
+            if ("id" in attributes && attributes["id"].length > 0) { s = `${tag}#${attributes["id"]}`; }
+            if ("class" in attributes && attributes["class"].length > 0) { s += `.${attributes["class"].trim().split(" ").join(".")}`; }
             if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
-            if (s) {
-                hashLookup[id] = hashes.length;
-                hashes.push({ id, hash: generateHash(s), selector: s });
-            }
+            if (s) { hashes[id] = { id, hash: generateHash(s), selector: s }; }
             break;
     }
 }

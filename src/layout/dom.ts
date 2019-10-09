@@ -202,11 +202,11 @@ function selector(id: number, data: NodeInfo, parent: string): string {
             let value = getValue(id);
             let ex = value ? value.selector : null;
             let attributes = "attributes" in data ? data.attributes : {};
-            let current = "id" in attributes ? `${data.tag}#${attributes.id}` : `${parent}>${data.tag}`;
-            if ("class" in attributes) { current = `${current}.${attributes.class.trim().split(" ").join(".")}`; }
-            if (ID_ATTRIBUTE in attributes) { current = `*${attributes[ID_ATTRIBUTE]}`; }
-            if (current !== ex && selectorMap.indexOf(id) === -1) { selectorMap.push(id); }
-            return current;
+            let s = "id" in attributes && attributes["id"].length > 0 ? `${data.tag}#${attributes.id}` : `${parent}>${data.tag}`;
+            if ("class" in attributes && attributes["class"].length > 0) { s = `${s}.${attributes.class.trim().split(" ").join(".")}`; }
+            if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
+            if (s !== ex && selectorMap.indexOf(id) === -1) { selectorMap.push(id); }
+            return s;
     }
 }
 
