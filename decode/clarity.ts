@@ -124,7 +124,7 @@ export function decode(input: string): DecodedPayload {
 
     /* Enrich decoded payload with derived events */
     payload.summary = data.summary() as SummaryEvent[];
-    if (payload.dom.length > 0) { payload.hash = layout.hash() as HashEvent[]; }
+    if (payload.dom && payload.dom.length > 0) { payload.hash = layout.hash() as HashEvent[]; }
     if (layout.resources.length > 0) { payload.resource = layout.resource() as ResourceEvent[]; }
 
     return payload;
