@@ -5,6 +5,8 @@ const DEVTOOLS_HOOK: string = "__CLARITY_DEVTOOLS_HOOK__";
 const ID_ATTRIBUTE = "data-clarity";
 const MASK_ATTRIBUTE = "data-clarity-mask";
 const UNMASK_ATTRIBUTE = "data-clarity-unmask";
+const SVG_PREFIX: string = "svg:";
+
 let index: number = 1;
 
 let nodes: Node[] = [];
@@ -207,8 +209,9 @@ function selector(id: number, data: NodeInfo, parent: NodeValue): string {
             let value = getValue(id);
             let ex = value ? value.selector : null;
             let attributes = "attributes" in data ? data.attributes : {};
-            let s = "id" in attributes && attributes["id"].length > 0 ? `${data.tag}#${attributes.id}` : `${parentSelector}>${data.tag}`;
-            if ("class" in attributes && attributes["class"].length > 0) { s = `${s}.${attributes.class.trim().split(" ").join(".")}`; }
+            let tag = data.tag.indexOf(SVG_PREFIX) === 0 ? data.tag.substr(SVG_PREFIX.length) : data.tag;
+            let s = "id" in attributes && attributes["id"].length > 0 ? `${tag}#${attributes.id}` : `${parentSelector}>${tag}`;
+            if ("class" in attributes && attributes["class"].length > 0) { s = `${s}.${attributes.class.trim().split(/\s+/).join(".")}`; }
             if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
             if (s !== ex && selectorMap.indexOf(id) === -1) { selectorMap.push(id); }
             return s;
@@ -234,7 +237,6 @@ function layout(tag: string, id: number, parentId: number): void {
                 break;
             case "IMG":
             case "IFRAME":
-            case "svg:svg":
                 values[id].metadata.boxmodel = true;
                 break;
             default:

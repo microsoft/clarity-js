@@ -3,10 +3,12 @@ import { DomData } from "../types/decode/layout";
 import { InputChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
 import { BoxModelData } from "../types/layout";
 
+const SVG_NAMESPACE: string = "http://www.w3.org/2000/svg";
+const SVG_PREFIX: string = "svg:";
+
 let nodes = {};
 let boxmodels = {};
 let metrics: MetricData = null;
-let svgns: string = "http://www.w3.org/2000/svg";
 let lean = false;
 const METRIC_MAP = {};
 METRIC_MAP[Metric.Nodes] = { name: "Node Count", unit: ""};
@@ -179,8 +181,8 @@ export function markup(data: DomData[], iframe: HTMLIFrameElement): void {
 }
 
 function createElement(doc: Document, tag: string, parent: HTMLElement): HTMLElement {
-    if (tag && tag.indexOf("svg:") === 0) {
-        return doc.createElementNS(svgns, tag) as HTMLElement;
+    if (tag && tag.indexOf(SVG_PREFIX) === 0) {
+        return doc.createElementNS(SVG_NAMESPACE, tag.substr(SVG_PREFIX.length)) as HTMLElement;
     }
     return doc.createElement(tag);
 }
