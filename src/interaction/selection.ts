@@ -25,6 +25,8 @@ function recompute(): void {
     let focusNode = getId(current.focusNode);
 
     // Bail out if we got valid selection but not valid nodes
+    // In Edge, selectionchange gets fired even on interactions like right clicks and
+    // can result in null anchorNode and focusNode if there was no previous selection on page
     if (anchorNode === null && focusNode === null) { return; }
 
     if (previous !== null && data.start !== null && data.start !== anchorNode) {
