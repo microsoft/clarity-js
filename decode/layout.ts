@@ -190,7 +190,6 @@ function unmask(value: string): string {
             } else if (wordCount > 0 && textCount > 0) {
                 value = "";
                 let avg = Math.floor(textCount / wordCount);
-                console.log(`Value: ${value} | Text: ${textCount} | Word: ${wordCount} | Avg: ${avg} | Parts: ${parts.join(" |||| ")}`);
                 while (value.length < textCount + wordCount) {
                     let gap = Math.min(avg, textCount + wordCount - value.length);
                     value += Array(gap + 1).join(placeholder) + " ";
