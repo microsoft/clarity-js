@@ -12,6 +12,8 @@ export default function(input: string): string {
             hashTwo = ((hashTwo << 5) + hashTwo) ^ charTwo;
         }
     }
-    hash = Math.abs(hashOne + (hashTwo * 1566083941));
+    // Replace the magic number from C# implementation (1566083941) with a smaller prime number (11579)
+    // This ensures we don't hit integer overflow and prevent collisions
+    hash = Math.abs(hashOne + (hashTwo * 11579));
     return hash.toString(36).slice(-6); // Limit hashes to 6 characters
 }

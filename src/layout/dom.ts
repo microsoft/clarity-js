@@ -59,7 +59,7 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
         next: nextId,
         children: [],
         data,
-        selector: selector(id, data, parent ? parent.selector : ""),
+        selector: selector(id, data, parent),
         metadata: { active: true, boxmodel: false, masked }
     };
     layout(data.tag, id, parentId);
@@ -114,7 +114,7 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
 
         // Update selector
         let parent = parentId && parentId in values ? values[parentId] : null;
-        value.selector = selector(id, data, parent ? parent.selector : ""),
+        value.selector = selector(id, data, parent),
 
         layout(data.tag, id, parentId);
         track(id, source);
@@ -189,7 +189,7 @@ function remove(id: number, source: Source): void {
     value.children = [];
 }
 
-function selector(id: number, data: NodeInfo, parent: string): string {
+function selector(id: number, data: NodeInfo, parent: NodeValue): string {
     switch (data.tag) {
         case "STYLE":
         case "TITLE":
@@ -199,10 +199,15 @@ function selector(id: number, data: NodeInfo, parent: string): string {
         case "*D":
             return "";
         default:
+            // Do not compute hash for nodes that are disconnected from DOM (i.e. no parent)
+            // The only exception is HTML element, which is the root element of DOM tree
+            if (parent === null && data.tag !== "HTML") { return ""; }
+
+            let parentSelector = parent ? parent.selector : "";
             let value = getValue(id);
             let ex = value ? value.selector : null;
             let attributes = "attributes" in data ? data.attributes : {};
-            let s = "id" in attributes && attributes["id"].length > 0 ? `${data.tag}#${attributes.id}` : `${parent}>${data.tag}`;
+            let s = "id" in attributes && attributes["id"].length > 0 ? `${data.tag}#${attributes.id}` : `${parentSelector}>${data.tag}`;
             if ("class" in attributes && attributes["class"].length > 0) { s = `${s}.${attributes.class.trim().split(" ").join(".")}`; }
             if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
             if (s !== ex && selectorMap.indexOf(id) === -1) { selectorMap.push(id); }

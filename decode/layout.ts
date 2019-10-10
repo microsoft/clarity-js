@@ -136,7 +136,10 @@ function process(node: any[] | number[], tagIndex: number): DomData {
         }
     }
 
-    getHash(output.id, output.tag, path, attributes);
+    // Do not compute hash for nodes that are disconnected from DOM (i.e. no parent)
+    // The only exception is HTML element, which is the root element of DOM tree
+    if (output.parent !== null || output.tag === "HTML") { getHash(output.id, output.tag, path, attributes); }
+
     getResource(output.tag, attributes);
     if (hasAttribute) { output.attributes = attributes; }
     if (value) { output.value = value; }
@@ -176,9 +179,9 @@ function getResource(tag: string, attributes: Attributes): void {
 function unmask(value: string): string {
     let parts = value.split("*");
     let placeholder = "x";
-    if (parts.length === 2) {
-        let textCount = parseInt(parts[0], 36);
-        let wordCount = parseInt(parts[1], 36);
+    if (parts.length === 3 && parts[0] === "") {
+        let textCount = parseInt(parts[1], 36);
+        let wordCount = parseInt(parts[2], 36);
         if (isFinite(textCount) && isFinite(wordCount)) {
             if (wordCount > 0 && textCount === 0) {
                 value = " ";
@@ -187,6 +190,7 @@ function unmask(value: string): string {
             } else if (wordCount > 0 && textCount > 0) {
                 value = "";
                 let avg = Math.floor(textCount / wordCount);
+                console.log(`Value: ${value} | Text: ${textCount} | Word: ${wordCount} | Avg: ${avg} | Parts: ${parts.join(" |||| ")}`);
                 while (value.length < textCount + wordCount) {
                     let gap = Math.min(avg, textCount + wordCount - value.length);
                     value += Array(gap + 1).join(placeholder) + " ";

@@ -10,5 +10,5 @@ export default function(value: string): string {
         wordCount += isWhiteSpace && !wasWhiteSpace ? 1 : 0;
         wasWhiteSpace = isWhiteSpace;
     }
-    return `${textCount.toString(36)}*${wordCount.toString(36)}`;
+    return `*${textCount.toString(36)}*${wordCount.toString(36)}`;
 }

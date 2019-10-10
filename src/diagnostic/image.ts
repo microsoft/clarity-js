@@ -17,7 +17,6 @@ function handler(error: ErrorEvent): void {
             source: (target as HTMLImageElement).src,
             target: getId(target)
         };
+        encode(Event.ImageError);
     }
-
-    encode(Event.ImageError);
 }
