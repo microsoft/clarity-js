@@ -77,7 +77,7 @@ function send(data: string, sequence: number = null, last: boolean = false): voi
         if (last && "sendBeacon" in navigator) {
             navigator.sendBeacon(config.url, data);
         } else {
-            transit[sequence] = { data, attempts: 1 };
+            if (sequence in transit) { transit[sequence].attempts++; } else { transit[sequence] = { data, attempts: 1 }; }
             let xhr = new XMLHttpRequest();
             xhr.open("POST", config.url);
             if (sequence !== null) { xhr.onreadystatechange = (): void => { check(xhr, sequence); }; }
@@ -89,7 +89,6 @@ function send(data: string, sequence: number = null, last: boolean = false): voi
 function check(xhr: XMLHttpRequest, sequence: number): void {
     if (xhr && xhr.readyState === XMLHttpRequest.DONE && sequence in transit) {
         if ((xhr.status < 200 || xhr.status > 208) && transit[sequence].attempts <= MAX_RETRIES) {
-            transit[sequence].attempts++;
             send(transit[sequence].data, sequence);
         } else {
             track = { sequence, attempts: transit[sequence].attempts, status: xhr.status };
