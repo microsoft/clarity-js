@@ -50,9 +50,11 @@ export function updates(): BoxModelData[] {
 
 export function relative(x: number, y: number, element: Element): number[] {
     if (x && x >= 0 && y && y >= 0 && element) {
-        let box = layout(element);
+        let scrollX = "pageXOffset" in window ? window.pageXOffset : document.documentElement.scrollLeft;
+        let scrollY = "pageYOffset" in window ? window.pageYOffset : document.documentElement.scrollTop;
+        let box = layout(element, scrollX, scrollY);
         if (box !== null) {
-            return [x - box[0], y - box[1]];
+            return [((x - box[0]) / box[2]), ((y - box[1]) / box[3])];
         }
     }
     return [null, null];
