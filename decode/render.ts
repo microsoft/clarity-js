@@ -1,10 +1,7 @@
 import { Event, Metric, MetricData, PageData } from "../types/data";
 import { DomData } from "../types/decode/layout";
 import { InputChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
-import { BoxModelData } from "../types/layout";
-
-const SVG_NAMESPACE: string = "http://www.w3.org/2000/svg";
-const SVG_PREFIX: string = "svg:";
+import { BoxModelData, Constant } from "../types/layout";
 
 let nodes = {};
 let boxmodels = {};
@@ -181,8 +178,8 @@ export function markup(data: DomData[], iframe: HTMLIFrameElement): void {
 }
 
 function createElement(doc: Document, tag: string, parent: HTMLElement): HTMLElement {
-    if (tag && tag.indexOf(SVG_PREFIX) === 0) {
-        return doc.createElementNS(SVG_NAMESPACE, tag.substr(SVG_PREFIX.length)) as HTMLElement;
+    if (tag && tag.indexOf(Constant.SVG_PREFIX) === 0) {
+        return doc.createElementNS(Constant.SVG_NAMESPACE as string, tag.substr(Constant.SVG_PREFIX.length)) as HTMLElement;
     }
     return doc.createElement(tag);
 }

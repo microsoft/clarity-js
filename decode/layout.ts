@@ -2,10 +2,7 @@ import generateHash from "../src/data/hash";
 import { resolve } from "../src/data/token";
 import { Event, Token } from "../types/data";
 import { DomData, LayoutEvent } from "../types/decode/layout";
-import { Attributes, BoxModelData, DocumentData, HashData, ResourceData } from "../types/layout";
-
-const ID_ATTRIBUTE = "data-clarity";
-const SVG_PREFIX: string = "svg:";
+import { Attributes, BoxModelData, Constant, DocumentData, HashData, ResourceData } from "../types/layout";
 
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
 export let hashes: { [key: number]: HashData } = {};
@@ -159,11 +156,11 @@ function getHash(id: number, tag: string, path: string, attributes: Attributes):
         case "*D":
             break;
         default:
-            tag = tag.indexOf(SVG_PREFIX) === 0 ? tag.substr(SVG_PREFIX.length) : tag;
+            tag = tag.indexOf(Constant.SVG_PREFIX) === 0 ? tag.substr(Constant.SVG_PREFIX.length) : tag;
             let s = path && path.length > 0 ? path + tag : tag;
             if ("id" in attributes && attributes["id"].length > 0) { s = `${tag}#${attributes["id"]}`; }
             if ("class" in attributes && attributes["class"].length > 0) { s += `.${attributes["class"].trim().split(/\s+/).join(".")}`; }
-            if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
+            if (Constant.ID_ATTRIBUTE in attributes) { s = `*${attributes[Constant.ID_ATTRIBUTE]}`; }
             if (s) { hashes[id] = { id, hash: generateHash(s), selector: s }; }
             break;
     }

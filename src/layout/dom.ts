@@ -1,11 +1,5 @@
-import { NodeChange, NodeInfo, NodeValue, Source } from "@clarity-types/layout";
+import { Constant, NodeChange, NodeInfo, NodeValue, Source } from "@clarity-types/layout";
 import time from "@src/core/time";
-
-const DEVTOOLS_HOOK: string = "__CLARITY_DEVTOOLS_HOOK__";
-const ID_ATTRIBUTE = "data-clarity";
-const MASK_ATTRIBUTE = "data-clarity-mask";
-const UNMASK_ATTRIBUTE = "data-clarity-unmask";
-const SVG_PREFIX: string = "svg:";
 
 let index: number = 1;
 
@@ -24,7 +18,7 @@ export function reset(): void {
     changes = [];
     selectorMap = [];
     idMap = new WeakMap();
-    if (DEVTOOLS_HOOK in window) { window[DEVTOOLS_HOOK] = { get, getNode, history }; }
+    if (Constant.DEVTOOLS_HOOK in window) { window[Constant.DEVTOOLS_HOOK] = { get, getNode, history }; }
 }
 
 export function getId(node: Node, autogen: boolean = false): number {
@@ -51,8 +45,8 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
         masked = parent.metadata.masked;
     }
 
-    if (data.attributes && MASK_ATTRIBUTE in data.attributes) { masked = true; }
-    if (data.attributes && UNMASK_ATTRIBUTE in data.attributes) { masked = false; }
+    if (data.attributes && Constant.MASK_ATTRIBUTE in data.attributes) { masked = true; }
+    if (data.attributes && Constant.UNMASK_ATTRIBUTE in data.attributes) { masked = false; }
 
     nodes[id] = node;
     values[id] = {
@@ -209,10 +203,10 @@ function selector(id: number, data: NodeInfo, parent: NodeValue): string {
             let value = getValue(id);
             let ex = value ? value.selector : null;
             let attributes = "attributes" in data ? data.attributes : {};
-            let tag = data.tag.indexOf(SVG_PREFIX) === 0 ? data.tag.substr(SVG_PREFIX.length) : data.tag;
+            let tag = data.tag.indexOf(Constant.SVG_PREFIX) === 0 ? data.tag.substr(Constant.SVG_PREFIX.length) : data.tag;
             let s = "id" in attributes && attributes["id"].length > 0 ? `${tag}#${attributes.id}` : `${parentSelector}>${tag}`;
             if ("class" in attributes && attributes["class"].length > 0) { s = `${s}.${attributes.class.trim().split(/\s+/).join(".")}`; }
-            if (ID_ATTRIBUTE in attributes) { s = `*${attributes[ID_ATTRIBUTE]}`; }
+            if (Constant.ID_ATTRIBUTE in attributes) { s = `*${attributes[Constant.ID_ATTRIBUTE]}`; }
             if (s !== ex && selectorMap.indexOf(id) === -1) { selectorMap.push(id); }
             return s;
     }
@@ -270,7 +264,7 @@ function track(id: number, source: Source): void {
         updateMap.push(id);
     } else if (uIndex === -1) { updateMap.push(id); }
 
-    if (DEVTOOLS_HOOK in window) {
+    if (Constant.DEVTOOLS_HOOK in window) {
         let value = copy([values[id]])[0];
         let change = { time: time(), source, value };
         if (!(id in changes)) { changes[id] = []; }
