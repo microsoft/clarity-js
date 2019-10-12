@@ -137,7 +137,9 @@ function process(node: any[] | number[], tagIndex: number): DomData {
 
     // Do not compute hash for nodes that are disconnected from DOM (i.e. no parent)
     // The only exception is HTML element, which is the root element of DOM tree
-    if (output.parent !== null || output.tag === "HTML") { getHash(output.id, output.tag, path, attributes); }
+    if (output.parent !== null || output.tag === "HTML") {
+        getHash(output.id, output.tag, path, attributes);
+    }
 
     getResource(output.tag, attributes);
     if (hasAttribute) { output.attributes = attributes; }
