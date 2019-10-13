@@ -1,4 +1,4 @@
-import { Attributes, Constant } from "@clarity-types/layout";
+import { Attributes, Constant } from "../../types/layout";
 
 export default function(tag: string, prefix: string, attributes: Attributes): string {
     let empty = "";
