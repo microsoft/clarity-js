@@ -119,7 +119,7 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
 }
 
 function updateSelector(value: NodeValue): void {
-    let prefix = value.parent && value.parent in values ? values[value.parent].selector : null;
+    let prefix = value.parent && value.parent in values ? `${values[value.parent].selector}>` : null;
     let ex = value.selector;
     let current = selector(value.data.tag, prefix, value.data.attributes);
     if (current !== ex && selectorMap.indexOf(value.id) === -1) { selectorMap.push(value.id); }
