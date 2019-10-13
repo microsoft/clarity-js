@@ -61,10 +61,16 @@ export function end(): void {
 
 function upload(last: boolean = false): void {
     metric.compute();
-    let handler = config.upload ? config.upload : send;
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
-    handler(stringify(payload), metadata.envelope.sequence, last);
+    let data = stringify(payload);
+    let sequence = metadata.envelope.sequence;
+    send(data, sequence, last);
     if (last) { backup(payload); } else { ping.reset(); }
+
+    // Send data to upload hook, if defined in the config
+    if (config.upload) { config.upload(data, sequence, last); }
+
+    // Clear out events now that payload has been dispatched
     events = [];
 }
 
@@ -73,6 +79,7 @@ function stringify(payload: EncodedPayload): string {
 }
 
 function send(data: string, sequence: number = null, last: boolean = false): void {
+    // Upload data if a valid URL is defined in the config
     if (config.url.length > 0) {
         if (last && "sendBeacon" in navigator) {
             navigator.sendBeacon(config.url, data);
@@ -99,17 +106,16 @@ function check(xhr: XMLHttpRequest, sequence: number): void {
 }
 
 function recover(): void {
-    if (typeof localStorage !== "undefined") {
+    if (typeof localStorage !== "undefined" && config.url.length > 0) {
         let data = localStorage.getItem("clarity-backup");
         if (data && data.length > 0) {
-            let handler = config.upload ? config.upload : send;
-            handler(data);
+            send(data);
         }
     }
 }
 
 function backup(payload: EncodedPayload): void {
-    if (typeof localStorage !== "undefined") {
+    if (typeof localStorage !== "undefined" && config.url.length > 0) {
         payload.e = JSON.stringify(envelope(true, true));
         localStorage.setItem("clarity-backup", stringify(payload));
     }
