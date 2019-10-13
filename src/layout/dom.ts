@@ -1,5 +1,6 @@
 import { Constant, NodeChange, NodeInfo, NodeValue, Source } from "@clarity-types/layout";
 import time from "@src/core/time";
+import selector from "@src/layout/selector";
 
 let index: number = 1;
 
@@ -55,9 +56,10 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
         next: nextId,
         children: [],
         data,
-        selector: selector(id, data, parent),
+        selector: "",
         metadata: { active: true, boxmodel: false, masked }
     };
+    updateSelector(values[id]);
     layout(data.tag, id, parentId);
     track(id, source);
 }
@@ -109,12 +111,19 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
         }
 
         // Update selector
-        let parent = parentId && parentId in values ? values[parentId] : null;
-        value.selector = selector(id, data, parent),
+        updateSelector(value);
 
         layout(data.tag, id, parentId);
         track(id, source);
     }
+}
+
+function updateSelector(value: NodeValue): void {
+    let prefix = value.parent && value.parent in values ? values[value.parent].selector : null;
+    let ex = value.selector;
+    let current = selector(value.data.tag, prefix, value.data.attributes);
+    if (current !== ex && selectorMap.indexOf(value.id) === -1) { selectorMap.push(value.id); }
+    value.selector = current;
 }
 
 export function getNode(id: number): Node {
@@ -183,33 +192,6 @@ function remove(id: number, source: Source): void {
     track(id, source);
     for (let child of value.children) { remove(child, source); }
     value.children = [];
-}
-
-function selector(id: number, data: NodeInfo, parent: NodeValue): string {
-    switch (data.tag) {
-        case "STYLE":
-        case "TITLE":
-        case "LINK":
-        case "META":
-        case "*T":
-        case "*D":
-            return "";
-        default:
-            // Do not compute hash for nodes that are disconnected from DOM (i.e. no parent)
-            // The only exception is HTML element, which is the root element of DOM tree
-            if (parent === null && data.tag !== "HTML") { return ""; }
-
-            let parentSelector = parent ? parent.selector : "";
-            let value = getValue(id);
-            let ex = value ? value.selector : null;
-            let attributes = "attributes" in data ? data.attributes : {};
-            let tag = data.tag.indexOf(Constant.SVG_PREFIX) === 0 ? data.tag.substr(Constant.SVG_PREFIX.length) : data.tag;
-            let s = "id" in attributes && attributes["id"].length > 0 ? `${tag}#${attributes.id}` : `${parentSelector}>${tag}`;
-            if ("class" in attributes && attributes["class"].length > 0) { s = `${s}.${attributes.class.trim().split(/\s+/).join(".")}`; }
-            if (Constant.ID_ATTRIBUTE in attributes) { s = `*${attributes[Constant.ID_ATTRIBUTE]}`; }
-            if (s !== ex && selectorMap.indexOf(id) === -1) { selectorMap.push(id); }
-            return s;
-    }
 }
 
 function layout(tag: string, id: number, parentId: number): void {

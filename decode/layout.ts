@@ -1,8 +1,9 @@
 import generateHash from "../src/data/hash";
 import { resolve } from "../src/data/token";
+import selector from "../src/layout/selector";
 import { Event, Token } from "../types/data";
 import { DomData, LayoutEvent } from "../types/decode/layout";
-import { Attributes, BoxModelData, Constant, DocumentData, HashData, ResourceData } from "../types/layout";
+import { Attributes, BoxModelData, DocumentData, HashData, ResourceData } from "../types/layout";
 
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
 export let hashes: { [key: number]: HashData } = {};
@@ -108,7 +109,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
     let hasAttribute = false;
     let attributes = {};
     let value = null;
-    let path = output.parent in hashes ? `${hashes[output.parent].selector}>` : null;
+    let prefix = output.parent in hashes ? `${hashes[output.parent].selector}>` : null;
 
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
@@ -117,7 +118,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
         if (i === (node.length - 1) && output.tag === "STYLE") {
             value = token;
         } else if (lastChar === ">" && keyIndex === -1) {
-            path = token;
+            prefix = token;
         } else if (output.tag !== "*T" && keyIndex > 0) {
             hasAttribute = true;
             let k = token.substr(0, keyIndex);
@@ -135,37 +136,14 @@ function process(node: any[] | number[], tagIndex: number): DomData {
         }
     }
 
-    // Do not compute hash for nodes that are disconnected from DOM (i.e. no parent)
-    // The only exception is HTML element, which is the root element of DOM tree
-    if (output.parent !== null || output.tag === "HTML") {
-        getHash(output.id, output.tag, path, attributes);
-    }
+    let s = selector(output.tag, prefix, attributes);
+    if (s.length > 0) { hashes[output.id] = { id: output.id, hash: generateHash(s), selector: s }; }
 
     getResource(output.tag, attributes);
     if (hasAttribute) { output.attributes = attributes; }
     if (value) { output.value = value; }
 
     return output;
-}
-
-function getHash(id: number, tag: string, path: string, attributes: Attributes): void {
-    switch (tag) {
-        case "STYLE":
-        case "TITLE":
-        case "LINK":
-        case "META":
-        case "*T":
-        case "*D":
-            break;
-        default:
-            tag = tag.indexOf(Constant.SVG_PREFIX) === 0 ? tag.substr(Constant.SVG_PREFIX.length) : tag;
-            let s = path && path.length > 0 ? path + tag : tag;
-            if ("id" in attributes && attributes["id"].length > 0) { s = `${tag}#${attributes["id"]}`; }
-            if ("class" in attributes && attributes["class"].length > 0) { s += `.${attributes["class"].trim().split(/\s+/).join(".")}`; }
-            if (Constant.ID_ATTRIBUTE in attributes) { s = `*${attributes[Constant.ID_ATTRIBUTE]}`; }
-            if (s) { hashes[id] = { id, hash: generateHash(s), selector: s }; }
-            break;
-    }
 }
 
 function getResource(tag: string, attributes: Attributes): void {
