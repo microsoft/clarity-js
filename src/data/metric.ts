@@ -9,7 +9,7 @@ export function start(): void {
 }
 
 export function end(): void {
-    data = null;
+    data = {};
 }
 
 export function counter(metric: Metric, increment: number = 1): void {

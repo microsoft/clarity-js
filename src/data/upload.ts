@@ -9,9 +9,11 @@ const MAX_RETRIES = 2;
 let events: string[];
 let timeout: number = null;
 let transit: Transit;
+let active: boolean;
 export let track: UploadData;
 
 export function start(): void {
+    active = true;
     events = [];
     transit = {};
     track = null;
@@ -19,36 +21,38 @@ export function start(): void {
 }
 
 export function queue(data: Token[]): void {
-    let type = data.length > 1 ? data[1] : null;
-    let event = JSON.stringify(data);
-    events.push(event);
+    if (active) {
+        let type = data.length > 1 ? data[1] : null;
+        let event = JSON.stringify(data);
+        events.push(event);
 
-    switch (type) {
-        case Event.Metric:
-        case Event.Upload:
-            return; // do not schedule upload callback
-        case Event.Discover:
-        case Event.Mutation:
-        case Event.BoxModel:
-        case Event.Hash:
-        case Event.Document:
-            metric.counter(Metric.LayoutBytes, event.length);
-            break;
-        case Event.Network:
-        case Event.Performance:
-            metric.counter(Metric.NetworkBytes, event.length);
-            break;
-        case Event.ScriptError:
-        case Event.ImageError:
-            metric.counter(Metric.DiagnosticBytes, event.length);
-            break;
-        default:
-            metric.counter(Metric.InteractionBytes, event.length);
-            break;
+        switch (type) {
+            case Event.Metric:
+            case Event.Upload:
+                return; // do not schedule upload callback
+            case Event.Discover:
+            case Event.Mutation:
+            case Event.BoxModel:
+            case Event.Hash:
+            case Event.Document:
+                metric.counter(Metric.LayoutBytes, event.length);
+                break;
+            case Event.Network:
+            case Event.Performance:
+                metric.counter(Metric.NetworkBytes, event.length);
+                break;
+            case Event.ScriptError:
+            case Event.ImageError:
+                metric.counter(Metric.DiagnosticBytes, event.length);
+                break;
+            default:
+                metric.counter(Metric.InteractionBytes, event.length);
+                break;
+        }
+
+        clearTimeout(timeout);
+        timeout = window.setTimeout(upload, config.delay);
     }
-
-    clearTimeout(timeout);
-    timeout = window.setTimeout(upload, config.delay);
 }
 
 export function end(): void {
@@ -57,6 +61,7 @@ export function end(): void {
     events = [];
     transit = {};
     track = null;
+    active = false;
 }
 
 function upload(last: boolean = false): void {
