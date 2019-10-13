@@ -52,9 +52,12 @@ export function relative(x: number, y: number, element: Element): number[] {
     if (x && x >= 0 && y && y >= 0 && element) {
         let scrollX = "pageXOffset" in window ? window.pageXOffset : document.documentElement.scrollLeft;
         let scrollY = "pageYOffset" in window ? window.pageYOffset : document.documentElement.scrollTop;
-        let [ex, ey, ew, eh]: number[]  = layout(element, scrollX, scrollY);
-        if (ew > 0 && eh > 0) {
-            return [((x - ex) / ew), ((y - ey) / eh)];
+        let box = layout(element, scrollX, scrollY);
+        if (box) {
+            let [ex, ey, ew, eh]: number[]  = box;
+            if (ew > 0 && eh > 0) {
+                return [((x - ex) / ew), ((y - ey) / eh)];
+            }
         }
     }
     return [null, null];

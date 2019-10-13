@@ -11,7 +11,7 @@ export let resources: ResourceData[];
 let lastTime: number;
 
 export function reset(): void {
-    hashes = [];
+    hashes = {};
     resources = [];
     lastTime = null;
 }
@@ -107,9 +107,9 @@ function process(node: any[] | number[], tagIndex: number): DomData {
         tag: node[tagIndex]
     };
     let hasAttribute = false;
-    let attributes = {};
+    let attributes: Attributes = {};
     let value = null;
-    let prefix = output.parent in hashes ? `${hashes[output.parent].selector}>` : null;
+    let prefix = output.parent in hashes ? `${hashes[output.parent].selector}>` : (output.parent ? "" : null);
 
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
