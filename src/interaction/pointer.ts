@@ -12,16 +12,16 @@ let timeout: number = null;
 
 export function start(): void {
     reset();
-    bind(document, "mousedown", mouse.bind(this, Event.MouseDown));
-    bind(document, "mouseup", mouse.bind(this, Event.MouseUp));
-    bind(document, "mousemove", mouse.bind(this, Event.MouseMove));
-    bind(document, "mousewheel", mouse.bind(this, Event.MouseWheel));
-    bind(document, "dblclick", mouse.bind(this, Event.DoubleClick));
-    bind(document, "click", mouse.bind(this, Event.Click));
-    bind(document, "touchstart", touch.bind(this, Event.TouchStart));
-    bind(document, "touchend", touch.bind(this, Event.TouchEnd));
-    bind(document, "touchmove", touch.bind(this, Event.TouchMove));
-    bind(document, "touchcancel", touch.bind(this, Event.TouchCancel));
+    bind(document, "mousedown", mouse.bind(this, Event.MouseDown), true);
+    bind(document, "mouseup", mouse.bind(this, Event.MouseUp), true);
+    bind(document, "mousemove", mouse.bind(this, Event.MouseMove), true);
+    bind(document, "mousewheel", mouse.bind(this, Event.MouseWheel), true);
+    bind(document, "dblclick", mouse.bind(this, Event.DoubleClick), true);
+    bind(document, "click", mouse.bind(this, Event.Click), true);
+    bind(document, "touchstart", touch.bind(this, Event.TouchStart), true);
+    bind(document, "touchend", touch.bind(this, Event.TouchEnd), true);
+    bind(document, "touchmove", touch.bind(this, Event.TouchMove), true);
+    bind(document, "touchcancel", touch.bind(this, Event.TouchCancel), true);
 }
 
 function mouse(event: Event, evt: MouseEvent): void {

@@ -10,27 +10,18 @@ export default function(type: Event): Token[] {
 
     switch (type) {
         case Event.ScriptError:
-            let scripts = script.data;
-            for (let e of scripts) {
-                tokens.push(e.source);
-                tokens.push(e.message);
-                tokens.push(e.line);
-                tokens.push(e.column);
-                tokens.push(e.stack);
-                queue(tokens);
-                metric.counter(Metric.ScriptErrors);
-            }
-            script.reset();
+            tokens.push(script.data.source);
+            tokens.push(script.data.message);
+            tokens.push(script.data.line);
+            tokens.push(script.data.column);
+            tokens.push(script.data.stack);
+            queue(tokens);
+            metric.counter(Metric.ScriptErrors);
             break;
         case Event.ImageError:
-            let images = image.data;
-            for (let e of images) {
-                tokens.push(e.source);
-                tokens.push(e.target);
-                queue(tokens);
-                metric.counter(Metric.ImageErrors);
-            }
-            image.reset();
+            tokens.push(image.data.source);
+            tokens.push(image.data.target);
+            queue(tokens);
             break;
     }
 

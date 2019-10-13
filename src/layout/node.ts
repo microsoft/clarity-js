@@ -1,4 +1,4 @@
-import { Source } from "@clarity-types/layout";
+import { Constant, Source } from "@clarity-types/layout";
 import config from "@src/core/config";
 import * as dom from "./dom";
 
@@ -39,7 +39,7 @@ export default function(node: Node, source: Source): void {
         case Node.ELEMENT_NODE:
             let element = (node as HTMLElement);
             let tag = element.tagName;
-            tag = (element.namespaceURI === "http://www.w3.org/2000/svg") ? "svg:" + tag : tag;
+            tag = (element.namespaceURI === Constant.SVG_NAMESPACE) ? Constant.SVG_PREFIX + tag : tag;
             switch (tag) {
                 case "SCRIPT":
                 case "NOSCRIPT":

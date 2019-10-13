@@ -8,6 +8,15 @@ export const enum Source {
     CharacterData
 }
 
+export const enum Constant {
+    SVG_PREFIX = "svg:",
+    SVG_NAMESPACE = "http://www.w3.org/2000/svg",
+    DEVTOOLS_HOOK = "__CLARITY_DEVTOOLS_HOOK__",
+    ID_ATTRIBUTE = "data-clarity",
+    MASK_ATTRIBUTE = "data-clarity-mask",
+    UNMASK_ATTRIBUTE = "data-clarity-unmask"
+}
+
 /* Helper Interfaces */
 
 export interface Attributes {

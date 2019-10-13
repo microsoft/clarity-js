@@ -6,7 +6,7 @@ import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
 export let data: SelectionData = null;
-let selection: Selection = null;
+let previous: Selection = null;
 let timeout: number = null;
 
 export function start(): void {
@@ -16,27 +16,38 @@ export function start(): void {
 }
 
 function recompute(): void {
-    let s = document.getSelection();
+    let current = document.getSelection();
 
-    if (selection !== null && data.start !== null && data.start !== getId(s.anchorNode)) {
+    // Bail out if we don't have a valid selection
+    if (current === null) { return; }
+
+    let anchorNode = getId(current.anchorNode);
+    let focusNode = getId(current.focusNode);
+
+    // Bail out if we got valid selection but not valid nodes
+    // In Edge, selectionchange gets fired even on interactions like right clicks and
+    // can result in null anchorNode and focusNode if there was no previous selection on page
+    if (anchorNode === null && focusNode === null) { return; }
+
+    if (previous !== null && data.start !== null && data.start !== anchorNode) {
         clearTimeout(timeout);
         encode(Event.Selection);
     }
 
     data = {
-        start: getId(s.anchorNode),
-        startOffset: s.anchorOffset,
-        end: getId(s.focusNode),
-        endOffset: s.focusOffset
+        start: anchorNode,
+        startOffset: current.anchorOffset,
+        end: focusNode,
+        endOffset: current.focusOffset
     };
-    selection = s;
+    previous = current;
 
     clearTimeout(timeout);
     timeout = window.setTimeout(encode, config.lookahead, Event.Selection);
 }
 
 export function reset(): void {
-    selection = null;
+    previous = null;
     data = { start: 0, startOffset: 0, end: 0, endOffset: 0 };
 }
 
