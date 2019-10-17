@@ -29,7 +29,7 @@ function ping(): void {
         interval = Math.min(interval * 2, config.timeout);
         timeout = window.setTimeout(ping, interval);
     } else {
-        if (onTimeout) onTimeout();
+        if (onTimeout) { onTimeout(); }
     }
     last = now;
 }
