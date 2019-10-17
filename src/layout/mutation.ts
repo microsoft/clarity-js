@@ -13,9 +13,7 @@ let insertRule: (rule: string, index?: number) => number = null;
 let deleteRule: (index?: number) => void = null;
 
 export function start(): void {
-    if (observer) {
-        observer.disconnect();
-    }
+    if (observer) { observer.disconnect(); }
     observer = window["MutationObserver"] ? new MutationObserver(handle) : null;
     observer.observe(document, { attributes: true, childList: true, characterData: true, subtree: true });
     if (insertRule === null) { insertRule = CSSStyleSheet.prototype.insertRule; }
@@ -38,7 +36,7 @@ export function start(): void {
 }
 
 export function end(): void {
-  observer.disconnect();
+  if (observer) { observer.disconnect(); }
   observer = null;
 
   // Restoring original insertRule

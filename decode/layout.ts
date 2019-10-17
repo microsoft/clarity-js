@@ -122,7 +122,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
         } else if (output.tag !== "*T" && keyIndex > 0) {
             hasAttribute = true;
             let k = token.substr(0, keyIndex);
-            let v = unmask(token.substr(keyIndex + 1));
+            let v = token.substr(keyIndex + 1);
             switch (k) {
                 case "src":
                     v = v.length === 0 ? placeholderImage : v;
@@ -132,7 +132,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
             }
             attributes[k] = v;
         } else if (output.tag === "*T") {
-            value = unmask(token);
+            value = token;
         }
     }
 
@@ -154,30 +154,4 @@ function getResource(tag: string, attributes: Attributes): void {
             }
             break;
     }
-}
-
-function unmask(value: string): string {
-    let parts = value.split("*");
-    let placeholder = "x";
-    if (parts.length === 3 && parts[0] === "") {
-        let textCount = parseInt(parts[1], 36);
-        let wordCount = parseInt(parts[2], 36);
-        if (isFinite(textCount) && isFinite(wordCount)) {
-            if (wordCount > 0 && textCount === 0) {
-                value = " ";
-            } else if (wordCount === 0 && textCount > 0) {
-                value = Array(textCount + 1).join(placeholder);
-            } else if (wordCount > 0 && textCount > 0) {
-                value = "";
-                let avg = Math.floor(textCount / wordCount);
-                while (value.length < textCount + wordCount) {
-                    let gap = Math.min(avg, textCount + wordCount - value.length);
-                    value += Array(gap + 1).join(placeholder) + " ";
-                }
-            } else {
-                value = Array(textCount + wordCount + 1).join(placeholder);
-            }
-        }
-    }
-    return value;
 }

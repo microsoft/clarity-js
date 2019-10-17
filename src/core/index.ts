@@ -15,7 +15,7 @@ export function end(): void {
 export function check(): boolean {
     try {
         return typeof Promise !== "undefined" &&
-            MutationObserver &&
+            window["MutationObserver"] &&
             document["createTreeWalker"] &&
             "now" in Date &&
             "now" in performance &&

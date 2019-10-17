@@ -33,11 +33,11 @@ export function end(): void {
     metadata = null;
 }
 
-export function envelope(last: boolean, backup: boolean = false): Token[] {
+export function envelope(last: boolean): Token[] {
     let e = metadata.envelope;
-    e.upload = backup ? Upload.Backup : (last && "sendBeacon" in navigator ? Upload.Beacon : Upload.Async);
+    e.upload = last && "sendBeacon" in navigator ? Upload.Beacon : Upload.Async;
     e.end = last ? BooleanFlag.True : BooleanFlag.False;
-    if (e.upload !== Upload.Backup) { e.sequence++; }
+    e.sequence++;
 
     return [e.sequence, e.version, e.projectId, e.userId, e.sessionId, e.pageId, e.upload, e.end];
 }
