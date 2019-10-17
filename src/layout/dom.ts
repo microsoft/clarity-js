@@ -1,10 +1,7 @@
-import { NodeChange, NodeInfo, NodeValue, Source } from "@clarity-types/layout";
+import { Constant, NodeChange, NodeInfo, NodeValue, Source } from "@clarity-types/layout";
 import time from "@src/core/time";
+import selector from "@src/layout/selector";
 
-const DEVTOOLS_HOOK: string = "__CLARITY_DEVTOOLS_HOOK__";
-const ID_ATTRIBUTE = "data-clarity";
-const MASK_ATTRIBUTE = "data-clarity-mask";
-const UNMASK_ATTRIBUTE = "data-clarity-unmask";
 let index: number = 1;
 
 let nodes: Node[] = [];
@@ -22,7 +19,7 @@ export function reset(): void {
     changes = [];
     selectorMap = [];
     idMap = new WeakMap();
-    if (DEVTOOLS_HOOK in window) { window[DEVTOOLS_HOOK] = { get, getNode, history }; }
+    if (Constant.DEVTOOLS_HOOK in window) { window[Constant.DEVTOOLS_HOOK] = { get, getNode, history }; }
 }
 
 export function getId(node: Node, autogen: boolean = false): number {
@@ -49,8 +46,8 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
         masked = parent.metadata.masked;
     }
 
-    if (data.attributes && MASK_ATTRIBUTE in data.attributes) { masked = true; }
-    if (data.attributes && UNMASK_ATTRIBUTE in data.attributes) { masked = false; }
+    if (data.attributes && Constant.MASK_ATTRIBUTE in data.attributes) { masked = true; }
+    if (data.attributes && Constant.UNMASK_ATTRIBUTE in data.attributes) { masked = false; }
 
     nodes[id] = node;
     values[id] = {
@@ -59,9 +56,10 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
         next: nextId,
         children: [],
         data,
-        selector: selector(id, data, parent ? parent.selector : ""),
+        selector: "",
         metadata: { active: true, boxmodel: false, masked }
     };
+    updateSelector(values[id]);
     layout(data.tag, id, parentId);
     track(id, source);
 }
@@ -113,12 +111,19 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
         }
 
         // Update selector
-        let parent = parentId && parentId in values ? values[parentId] : null;
-        value.selector = selector(id, data, parent ? parent.selector : ""),
+        updateSelector(value);
 
         layout(data.tag, id, parentId);
         track(id, source);
     }
+}
+
+function updateSelector(value: NodeValue): void {
+    let prefix = value.parent && value.parent in values ? `${values[value.parent].selector}>` : null;
+    let ex = value.selector;
+    let current = selector(value.data.tag, prefix, value.data.attributes);
+    if (current !== ex && selectorMap.indexOf(value.id) === -1) { selectorMap.push(value.id); }
+    value.selector = current;
 }
 
 export function getNode(id: number): Node {
@@ -189,27 +194,6 @@ function remove(id: number, source: Source): void {
     value.children = [];
 }
 
-function selector(id: number, data: NodeInfo, parent: string): string {
-    switch (data.tag) {
-        case "STYLE":
-        case "TITLE":
-        case "LINK":
-        case "META":
-        case "*T":
-        case "*D":
-            return "";
-        default:
-            let value = getValue(id);
-            let ex = value ? value.selector : null;
-            let attributes = "attributes" in data ? data.attributes : {};
-            let current = "id" in attributes ? `${data.tag}#${attributes.id}` : `${parent}>${data.tag}`;
-            if ("class" in attributes) { current = `${current}.${attributes.class.trim().split(" ").join(".")}`; }
-            if (ID_ATTRIBUTE in attributes) { current = `*${attributes[ID_ATTRIBUTE]}`; }
-            if (current !== ex && selectorMap.indexOf(id) === -1) { selectorMap.push(id); }
-            return current;
-    }
-}
-
 function layout(tag: string, id: number, parentId: number): void {
     if (id !== null && parentId !== null) {
         switch (tag) {
@@ -229,7 +213,6 @@ function layout(tag: string, id: number, parentId: number): void {
                 break;
             case "IMG":
             case "IFRAME":
-            case "svg:svg":
                 values[id].metadata.boxmodel = true;
                 break;
             default:
@@ -263,7 +246,7 @@ function track(id: number, source: Source): void {
         updateMap.push(id);
     } else if (uIndex === -1) { updateMap.push(id); }
 
-    if (DEVTOOLS_HOOK in window) {
+    if (Constant.DEVTOOLS_HOOK in window) {
         let value = copy([values[id]])[0];
         let change = { time: time(), source, value };
         if (!(id in changes)) { changes[id] = []; }

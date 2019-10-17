@@ -1,12 +1,11 @@
 import { Event, Metric, MetricData, PageData } from "../types/data";
 import { DomData } from "../types/decode/layout";
 import { InputChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
-import { BoxModelData } from "../types/layout";
+import { BoxModelData, Constant } from "../types/layout";
 
 let nodes = {};
 let boxmodels = {};
 let metrics: MetricData = null;
-let svgns: string = "http://www.w3.org/2000/svg";
 let lean = false;
 const METRIC_MAP = {};
 METRIC_MAP[Metric.Nodes] = { name: "Node Count", unit: ""};
@@ -179,8 +178,8 @@ export function markup(data: DomData[], iframe: HTMLIFrameElement): void {
 }
 
 function createElement(doc: Document, tag: string, parent: HTMLElement): HTMLElement {
-    if (tag && tag.indexOf("svg:") === 0) {
-        return doc.createElementNS(svgns, tag) as HTMLElement;
+    if (tag && tag.indexOf(Constant.SVG_PREFIX) === 0) {
+        return doc.createElementNS(Constant.SVG_NAMESPACE as string, tag.substr(Constant.SVG_PREFIX.length)) as HTMLElement;
     }
     return doc.createElement(tag);
 }

@@ -2,7 +2,7 @@ import version from "../src/core/version";
 import { Event, Payload, Token } from "../types/data";
 import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, UploadEvent } from "../types/decode/data";
 import { DecodedEvent, DecodedPayload } from "../types/decode/decode";
-import { BrokenImageEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
+import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
 import { InputChangeEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
 import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
@@ -114,7 +114,7 @@ export function decode(input: string): DecodedPayload {
                 break;
             case Event.ImageError:
                 if (payload.image === undefined) { payload.image = []; }
-                payload.image.push(diagnostic.decode(entry) as BrokenImageEvent);
+                payload.image.push(diagnostic.decode(entry) as ImageErrorEvent);
                 break;
             default:
                 console.error(`No handler for Event: ${JSON.stringify(entry)}`);
@@ -124,7 +124,7 @@ export function decode(input: string): DecodedPayload {
 
     /* Enrich decoded payload with derived events */
     payload.summary = data.summary() as SummaryEvent[];
-    if (layout.hashes.length > 0) { payload.hash = layout.hash() as HashEvent[]; }
+    if (payload.dom && payload.dom.length > 0) { payload.hash = layout.hash() as HashEvent[]; }
     if (layout.resources.length > 0) { payload.resource = layout.resource() as ResourceEvent[]; }
 
     return payload;
