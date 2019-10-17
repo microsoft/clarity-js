@@ -22,12 +22,12 @@ export function start(override: Config = {}): void {
   if (core.check()) {
     config(override);
     status = true;
-
     core.start();
     data.start();
     diagnostic.start();
     layout.start();
     interaction.start();
+    data.setPingTimeoutCallback(pause);
   }
 }
 
@@ -38,6 +38,7 @@ export function pause(): void {
   bind(window, "resize", resume);
   bind(window, "scroll", resume);
   bind(window, "pageshow", resume);
+
 }
 
 export function resume(): void {

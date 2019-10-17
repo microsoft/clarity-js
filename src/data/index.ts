@@ -20,3 +20,7 @@ export function end(): void {
     metadata.end();
     metric.end();
 }
+
+export function setPingTimeoutCallback(callback: VoidFunction): void {
+    ping.setTimeoutCallback(callback);
+}
