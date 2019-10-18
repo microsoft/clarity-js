@@ -3,7 +3,7 @@ import { SummaryData, TagData, Token, Upload, UploadData } from "../types/data";
 import { DataEvent } from "../types/decode/data";
 
 let summaries: { [key: number]: SummaryData[] } = null;
-const SUMMARY_THRESHOLD = 250;
+const SUMMARY_THRESHOLD = 30;
 
 export function reset(): void {
     summaries = {};

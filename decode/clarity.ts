@@ -23,7 +23,7 @@ export function decode(input: string): DecodedPayload {
     let encoded: Token[][] = json.d;
 
     if (payload.envelope.version !== version) {
-        throw new Error(`Invalid Clarity Version. Actual: ${payload.envelope.version} | Expected: ${version}`);
+        throw new Error(`Invalid Clarity Version. Actual: ${payload.envelope.version} | Expected: ${version} | ${input.substr(0, 250)}`);
     }
 
     /* Reset components before decoding to keep them stateless */

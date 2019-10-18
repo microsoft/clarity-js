@@ -17,7 +17,6 @@ export function start(): void {
     events = [];
     transit = {};
     track = null;
-    recover();
 }
 
 export function queue(data: Token[]): void {
@@ -70,7 +69,7 @@ function upload(last: boolean = false): void {
     let data = stringify(payload);
     let sequence = metadata.envelope.sequence;
     send(data, sequence, last);
-    if (last) { backup(payload); } else { ping.reset(); }
+    if (!last) { ping.reset(); }
 
     // Send data to upload hook, if defined in the config
     if (config.upload) { config.upload(data, sequence, last); }
@@ -107,21 +106,5 @@ function check(xhr: XMLHttpRequest, sequence: number): void {
             encode(Event.Upload);
             delete transit[sequence];
         }
-    }
-}
-
-function recover(): void {
-    if (typeof localStorage !== "undefined" && config.url.length > 0) {
-        let data = localStorage.getItem("clarity-backup");
-        if (data && data.length > 0) {
-            send(data);
-        }
-    }
-}
-
-function backup(payload: EncodedPayload): void {
-    if (typeof localStorage !== "undefined" && config.url.length > 0) {
-        payload.e = JSON.stringify(envelope(true, true));
-        localStorage.setItem("clarity-backup", stringify(payload));
     }
 }

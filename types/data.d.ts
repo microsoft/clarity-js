@@ -66,8 +66,7 @@ export const enum Metric {
 
 export const enum Upload {
     Async = 0,
-    Beacon = 1,
-    Backup = 2
+    Beacon = 1
 }
 
 export const enum BooleanFlag {
