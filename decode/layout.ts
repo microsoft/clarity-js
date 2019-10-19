@@ -100,7 +100,7 @@ export function resource(): LayoutEvent[] {
 }
 
 function process(node: any[] | number[], tagIndex: number): DomData {
-    let [tag, position]: string[]  = node[tagIndex] ? node[tagIndex].split(".") : [node[tagIndex]];
+    let [tag, position]: string[]  = node[tagIndex] ? node[tagIndex].split("~") : [node[tagIndex]];
     let output: DomData = {
         id: node[0],
         parent: tagIndex > 1 ? node[1] : null,

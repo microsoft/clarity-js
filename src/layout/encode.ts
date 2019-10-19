@@ -61,7 +61,7 @@ export default async function(type: Event): Promise<void> {
                                 tokens.push(value.id);
                                 if (value.parent && active) { tokens.push(value.parent); }
                                 if (value.next && active) { tokens.push(value.next); }
-                                metadata.push(value.position ? `${data[key]}.${value.position}` : data[key]);
+                                metadata.push(value.position ? `${data[key]}~${value.position}` : data[key]);
                                 break;
                             case "path":
                                 metadata.push(`${value.data.path}>`);
