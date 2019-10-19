@@ -34,6 +34,7 @@ export interface NodeValue {
     id: number;
     parent: number;
     next: number;
+    position: number;
     children: number[];
     data: NodeInfo;
     selector: string;

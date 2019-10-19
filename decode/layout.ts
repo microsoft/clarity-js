@@ -100,11 +100,13 @@ export function resource(): LayoutEvent[] {
 }
 
 function process(node: any[] | number[], tagIndex: number): DomData {
+    let [tag, position]: string[]  = node[tagIndex] ? node[tagIndex].split(".") : [node[tagIndex]];
     let output: DomData = {
         id: node[0],
         parent: tagIndex > 1 ? node[1] : null,
         next: tagIndex > 2 ? node[2] : null,
-        tag: node[tagIndex]
+        tag,
+        position: position ? parseInt(position, 10) : null
     };
     let hasAttribute = false;
     let attributes: Attributes = {};
@@ -136,7 +138,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
         }
     }
 
-    let s = selector(output.tag, prefix, attributes);
+    let s = selector(output.tag, prefix, attributes, output.position);
     if (s.length > 0) { hashes[output.id] = { id: output.id, hash: generateHash(s), selector: s }; }
 
     getResource(output.tag, attributes);

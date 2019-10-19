@@ -16,6 +16,7 @@ export interface DomData {
     parent: number;
     next: number;
     tag: string;
+    position: number;
     attributes?: Attributes;
     value?: string;
 }
