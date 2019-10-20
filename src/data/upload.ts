@@ -1,5 +1,6 @@
 import { EncodedPayload, Event, Metric, Token, Transit, UploadData } from "@clarity-types/data";
 import config from "@src/core/config";
+import time from "@src/core/time";
 import encode from "@src/data/encode";
 import { envelope, metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
@@ -49,8 +50,15 @@ export function queue(data: Token[]): void {
                 break;
         }
 
-        clearTimeout(timeout);
-        timeout = window.setTimeout(upload, config.delay);
+        // This is a precautionary check acting as a fail safe mechanism to get out of
+        // unexpected situations. Ideally, expectation is that pause / resume will work as designed.
+        // However, in some cases involving script errors, we may fail to pause Clarity instrumentation.
+        // In those edge cases, we will cut the cord after a configurable shutdown value.
+        // The only exception is the very last payload, for which we will attempt one final delivery to the server.
+        if (time() < config.shutdown) {
+            clearTimeout(timeout);
+            timeout = window.setTimeout(upload, config.delay);
+        }
     }
 }
 
