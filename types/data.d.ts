@@ -36,7 +36,8 @@ export const enum Event {
     ImageError = 29,
     Resource = 30,
     Summary = 31,
-    Upload = 32
+    Upload = 32,
+    Target = 33
 }
 
 export const enum Metric {

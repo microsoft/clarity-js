@@ -31,10 +31,6 @@ export default function(type: Event): void {
                 tokens.push(entry.target);
                 tokens.push(entry.x);
                 tokens.push(entry.y);
-                if (entry.targetX && entry.targetY) {
-                    tokens.push(entry.targetX);
-                    tokens.push(entry.targetY);
-                }
                 queue(tokens);
             }
             pointer.reset();

@@ -48,21 +48,6 @@ export function updates(): BoxModelData[] {
     return summary;
 }
 
-export function relative(x: number, y: number, element: Element): number[] {
-    if (x && x >= 0 && y && y >= 0 && element) {
-        let scrollX = "pageXOffset" in window ? window.pageXOffset : document.documentElement.scrollLeft;
-        let scrollY = "pageYOffset" in window ? window.pageYOffset : document.documentElement.scrollTop;
-        let box = layout(element, scrollX, scrollY);
-        if (box) {
-            let [ex, ey, ew, eh]: number[]  = box;
-            if (ew > 0 && eh > 0) {
-                return [((x - ex) / ew), ((y - ey) / eh)];
-            }
-        }
-    }
-    return [null, null];
-}
-
 function update(id: number, box: number[]): void {
     let changed = box !== null;
     if (id in bm && box !== null && bm[id].box !== null) {
@@ -83,7 +68,7 @@ function update(id: number, box: number[]): void {
     }
 }
 
-function layout(element: Element, x: number = 0, y: number = 0): number[] {
+export function layout(element: Element, x: number = 0, y: number = 0): number[] {
     let box: number[] = null;
     let rect = element.getBoundingClientRect();
 

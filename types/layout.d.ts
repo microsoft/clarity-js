@@ -53,6 +53,12 @@ export interface NodeChange {
     value: NodeValue;
 }
 
+export interface TargetQueue {
+    ids: number[];
+    data: TargetData[];
+    time: number;
+}
+
 /* Event Data */
 
 export interface DocumentData {
@@ -62,6 +68,12 @@ export interface DocumentData {
 
 export interface BoxModelData {
     id: number;
+    box: number[];
+}
+
+export interface TargetData {
+    id: number;
+    hash: string;
     box: number[];
 }
 
