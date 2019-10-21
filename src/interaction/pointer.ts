@@ -3,8 +3,8 @@ import { PointerData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
-import * as boxmodel from "@src/layout/boxmodel";
 import { getId } from "@src/layout/dom";
+import * as target from "@src/layout/target";
 import encode from "./encode";
 
 export let data: { [key: number]: PointerData[] } = {};
@@ -28,30 +28,24 @@ function mouse(event: Event, evt: MouseEvent): void {
     let de = document.documentElement;
     let x = "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null);
     let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null);
-    let target = evt.target ? getId(evt.target as Node) : null;
-    let targetX = null; // x coordinate relative to the target element
-    let targetY = null; // y coordinate relative to the target element
-    if (event === Event.Click) {
-        // Populate (x,y) relative to target only when the above condition is met
-        // It's an expensive operation and we can expand the scope as desired later
-        event = evt.buttons === 2 || evt.button === 2 ? Event.RightClick : event;
-        let relative = boxmodel.relative(x, y, evt.target as Element);
-        targetX = relative[0];
-        targetY = relative[1];
-    }
-    handler(event, {target, x, y, targetX, targetY, time: time()});
+    let id = evt.target ? getId(evt.target as Node) : null;
+    target.observe(id);
+    event = event === Event.Click && (evt.buttons === 2 || evt.button === 2) ? Event.RightClick : event;
+    handler(event, {target: id, x, y, time: time()});
 }
 
 function touch(event: Event, evt: TouchEvent): void {
     let de = document.documentElement;
     let touches = evt.changedTouches;
-    let target = evt.target ? getId(evt.target as Node) : null;
+    let id = evt.target ? getId(evt.target as Node) : null;
+    let t = time();
+    target.observe(id);
     if (touches) {
         for (let i = 0; i < touches.length; i++) {
-            let t = touches[i];
-            let x = "clientX" in t ? Math.round(t["clientX"] + de.scrollLeft) : null;
-            let y = "clientY" in t ? Math.round(t["clientY"] + de.scrollTop) : null;
-            handler(event, {target, x, y, time: time()});
+            let entry = touches[i];
+            let x = "clientX" in entry ? Math.round(entry["clientX"] + de.scrollLeft) : null;
+            let y = "clientY" in entry ? Math.round(entry["clientY"] + de.scrollTop) : null;
+            handler(event, {target: id, x, y, time: t});
         }
     }
 }

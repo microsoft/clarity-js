@@ -3,6 +3,7 @@ import { InputChangeData } from "@clarity-types/interaction";
 import { bind } from "@src/core/event";
 import mask from "@src/core/mask";
 import { get } from "@src/layout/dom";
+import * as target from "@src/layout/target";
 import encode from "./encode";
 
 export let data: InputChangeData;
@@ -12,10 +13,11 @@ export function start(): void {
 }
 
 function recompute(evt: UIEvent): void {
-    let target = evt.target as HTMLInputElement;
-    let value = get(target);
-    if (target && value) {
-        data = { target: value.id, value: value.metadata.masked ? mask(target.value) : target.value };
+    let input = evt.target as HTMLInputElement;
+    let value = get(input);
+    if (input && value) {
+        target.observe(value.id);
+        data = { target: value.id, value: value.metadata.masked ? mask(input.value) : input.value };
         encode(Event.InputChange);
     }
 }

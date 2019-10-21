@@ -8,8 +8,6 @@ export interface PointerData {
     target: number;
     x: number;
     y: number;
-    targetX?: number;
-    targetY?: number;
     time?: number;
 }
 

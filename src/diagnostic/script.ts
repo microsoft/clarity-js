@@ -14,9 +14,9 @@ function handler(error: ErrorEvent): void {
 
     data = {
         message: e.message,
-        stack: e.stack,
         line: error["lineno"],
         column: error["colno"],
+        stack: e.stack,
         source: error["filename"]
     };
 

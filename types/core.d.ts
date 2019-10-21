@@ -27,6 +27,7 @@ export interface Config {
     expire?: number;
     ping?: number;
     timeout?: number;
+    shutdown?: number;
     cssRules?: boolean;
     lean?: boolean;
     tokens?: string[];

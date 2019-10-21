@@ -10,11 +10,11 @@ export default function(type: Event): Token[] {
 
     switch (type) {
         case Event.ScriptError:
-            tokens.push(script.data.source);
             tokens.push(script.data.message);
             tokens.push(script.data.line);
             tokens.push(script.data.column);
             tokens.push(script.data.stack);
+            tokens.push(script.data.source);
             queue(tokens);
             metric.counter(Metric.ScriptErrors);
             break;

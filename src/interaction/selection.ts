@@ -3,6 +3,7 @@ import { SelectionData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import { getId } from "@src/layout/dom";
+import * as target from "@src/layout/target";
 import encode from "./encode";
 
 export let data: SelectionData = null;
@@ -31,6 +32,8 @@ function recompute(): void {
 
     if (previous !== null && data.start !== null && data.start !== anchorNode) {
         clearTimeout(timeout);
+        target.observe(data.start);
+        target.observe(data.end);
         encode(Event.Selection);
     }
 

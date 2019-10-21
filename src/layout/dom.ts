@@ -55,6 +55,7 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
         parent: parentId,
         next: nextId,
         children: [],
+        position: null,
         data,
         selector: "",
         metadata: { active: true, boxmodel: false, masked }
@@ -118,10 +119,27 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
     }
 }
 
+function position(parent: NodeValue, child: NodeValue): number {
+    let tag = child.data.tag;
+    // Find relative position of the element to generate :nth-of-type selector
+    // We restrict relative positioning to handful of tags for now.
+    if (parent && (tag === "DIV" || tag === "TR" || tag === "P" || tag === "LI")) {
+        child.position = 1;
+        let idx = parent ? parent.children.indexOf(child.id) : -1;
+        while (idx-- > 0) {
+            let sibling = values[parent.children[idx]];
+            if (child.data.tag === sibling.data.tag) { child.position = sibling.position + 1; }
+            break;
+        }
+    }
+    return child.position;
+}
+
 function updateSelector(value: NodeValue): void {
-    let prefix = value.parent && value.parent in values ? `${values[value.parent].selector}>` : null;
+    let parent = value.parent && value.parent in values ? values[value.parent] : null;
+    let prefix = parent ? `${parent.selector}>` : null;
     let ex = value.selector;
-    let current = selector(value.data.tag, prefix, value.data.attributes);
+    let current = selector(value.data.tag, prefix, value.data.attributes, position(parent, value));
     if (current !== ex && selectorMap.indexOf(value.id) === -1) { selectorMap.push(value.id); }
     value.selector = current;
 }

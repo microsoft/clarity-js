@@ -34,6 +34,7 @@ export interface NodeValue {
     id: number;
     parent: number;
     next: number;
+    position: number;
     children: number[];
     data: NodeInfo;
     selector: string;
@@ -61,6 +62,12 @@ export interface DocumentData {
 
 export interface BoxModelData {
     id: number;
+    box: number[];
+}
+
+export interface TargetData {
+    id: number;
+    hash: string;
     box: number[];
 }
 

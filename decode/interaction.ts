@@ -18,10 +18,6 @@ export function decode(tokens: Token[]): InteractionEvent  {
         case Event.TouchEnd:
         case Event.TouchMove:
             let pointerData: PointerData = { target: tokens[2] as number, x: tokens[3] as number, y: tokens[4] as number };
-            if (tokens.length > 6) {
-                pointerData.targetX = tokens[5] as number;
-                pointerData.targetY = tokens[6] as number;
-            }
             return { time, event, data: pointerData };
         case Event.Resize:
             let resizeData: ResizeData = { width: tokens[2] as number, height: tokens[3] as number };
