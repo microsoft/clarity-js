@@ -20,9 +20,8 @@ function recompute(event: UIEvent = null): void {
     let x = Math.round((eventTarget as HTMLElement).scrollLeft);
     let y = Math.round((eventTarget as HTMLElement).scrollTop);
     let id = getId(eventTarget as Node);
-    let t = time();
-    target.observe(id, t);
-    let current: ScrollData = {target: id, x, y, time: t};
+    target.observe(id);
+    let current: ScrollData = {target: id, x, y, time: time()};
 
     let length = data.length;
     let last = length > 1 ? data[length - 2] : null;

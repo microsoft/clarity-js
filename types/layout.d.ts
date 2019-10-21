@@ -53,12 +53,6 @@ export interface NodeChange {
     value: NodeValue;
 }
 
-export interface TargetQueue {
-    ids: number[];
-    data: TargetData[];
-    time: number;
-}
-
 /* Event Data */
 
 export interface DocumentData {

@@ -33,13 +33,12 @@ export default async function(type: Event): Promise<void> {
             queue(tokens);
             break;
         case Event.Target:
-            tokens = [target.queue.time, type];
-            for (let value of target.queue.data) {
+            let targets = target.updates();
+            for (let value of targets) {
                 tokens.push(value.id);
                 tokens.push(value.hash);
                 tokens.push(value.box);
             }
-            target.reset();
             queue(tokens);
             break;
         case Event.Hash:
