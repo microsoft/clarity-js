@@ -35,7 +35,7 @@ export function updates(): TargetData[] {
             data.push({
                 id,
                 hash: value ? hash(value.selector) : "",
-                box: node ? layout(node, x, y) : []
+                box: node && node.nodeType !== Node.TEXT_NODE ? layout(node, x, y) : []
             });
         }
         reset();
