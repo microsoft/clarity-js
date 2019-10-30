@@ -15,6 +15,7 @@ import * as target from "./target";
 export default async function(type: Event): Promise<void> {
     let tokens: Token[] = [time(), type];
     let timer = type === Event.Discover ? Metric.DiscoverTime : Metric.MutationTime;
+    let addEventToQueue = true;
     switch (type) {
         case Event.Document:
             let d = doc.data;
@@ -80,6 +81,13 @@ export default async function(type: Event): Promise<void> {
                                 for (let attr in data[key]) {
                                     if (data[key][attr] !== undefined) {
                                         metadata.push(attribute(value.metadata.masked, attr, data[key][attr]));
+                                        if (attr === "clarity") {
+                                            switch (data[key][attr]) {
+                                                case "no-track":
+                                                    addEventToQueue = false;
+                                                    break;
+                                            }
+                                        }
                                     }
                                 }
                                 break;
@@ -100,7 +108,9 @@ export default async function(type: Event): Promise<void> {
                     tokens.push(index >= 0 && token.length > index.toString().length ? [index] : token);
                 }
             }
-            queue(tokens);
+            if (addEventToQueue) {
+                queue(tokens);
+            }
             break;
         }
 }
