@@ -12,7 +12,7 @@ const ProdConfig: webpack.Configuration = {
 
     entry: {
         clarity: "./webpack/globalize.ts",
-        decode: "./decode/clarity.ts"
+        decode: "./webpack/globalizeDecoder.ts"
     },
 
     output: {
