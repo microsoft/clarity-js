@@ -5,6 +5,7 @@ import encode from "@src/data/encode";
 import { envelope, metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
+import * as target from "@src/data/target";
 
 const MAX_RETRIES = 2;
 let events: string[];
@@ -28,6 +29,7 @@ export function queue(data: Token[]): void {
 
         switch (type) {
             case Event.Metric:
+            case Event.Target:
             case Event.Upload:
                 return; // do not schedule upload callback
             case Event.Discover:
@@ -73,6 +75,7 @@ export function end(): void {
 }
 
 function upload(last: boolean = false): void {
+    target.compute();
     metric.compute();
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
     let data = stringify(payload);

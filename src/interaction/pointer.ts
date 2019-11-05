@@ -4,7 +4,6 @@ import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
 import { getId } from "@src/layout/dom";
-import * as target from "@src/layout/target";
 import encode from "./encode";
 
 export let data: { [key: number]: PointerData[] } = {};
@@ -29,7 +28,6 @@ function mouse(event: Event, evt: MouseEvent): void {
     let x = "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null);
     let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null);
     let id = evt.target ? getId(evt.target as Node) : null;
-    target.observe(id);
     event = event === Event.Click && (evt.buttons === 2 || evt.button === 2) ? Event.RightClick : event;
     handler(event, {target: id, x, y, time: time()});
 }
@@ -39,7 +37,6 @@ function touch(event: Event, evt: TouchEvent): void {
     let touches = evt.changedTouches;
     let id = evt.target ? getId(evt.target as Node) : null;
     let t = time();
-    target.observe(id);
     if (touches) {
         for (let i = 0; i < touches.length; i++) {
             let entry = touches[i];

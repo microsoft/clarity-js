@@ -10,7 +10,6 @@ import { queue } from "@src/data/upload";
 import * as boxmodel from "./boxmodel";
 import * as doc from "./document";
 import * as dom from "./dom";
-import * as target from "./target";
 
 export default async function(type: Event): Promise<void> {
     let tokens: Token[] = [time(), type];
@@ -28,15 +27,6 @@ export default async function(type: Event): Promise<void> {
             let bm = boxmodel.updates();
             for (let value of bm) {
                 tokens.push(value.id);
-                tokens.push(value.box);
-            }
-            queue(tokens);
-            break;
-        case Event.Target:
-            let targets = target.updates();
-            for (let value of targets) {
-                tokens.push(value.id);
-                tokens.push(value.hash);
                 tokens.push(value.box);
             }
             queue(tokens);

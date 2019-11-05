@@ -145,6 +145,12 @@ export interface TagData {
     value: string;
 }
 
+export interface TargetData {
+    id: number;
+    hash: string;
+    box: number[];
+}
+
 export interface UploadData {
     sequence: number;
     attempts: number;

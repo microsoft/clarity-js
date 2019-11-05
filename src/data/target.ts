@@ -1,24 +1,20 @@
-import { Event } from "@clarity-types/data";
-import { TargetData } from "@clarity-types/layout";
-import config from "@src/core/config";
+import { Event, TargetData } from "@clarity-types/data";
+import encode from "@src/data/encode";
 import hash from "@src/data/hash";
 import { layout } from "@src/layout/boxmodel";
-import encode from "@src/layout/encode";
-import * as dom from "./dom";
+import * as dom from "@src/layout/dom";
 
 let queue: number[] = [];
-let timeout: number = null;
 
 export function reset(): void {
     queue = [];
-    clearTimeout(timeout);
-    timeout = null;
 }
 
-export function observe(id: number): void {
-    if (queue.indexOf(id) === -1) { queue.push(id); }
-    clearTimeout(timeout);
-    timeout = window.setTimeout(encode, config.lookahead, Event.Target);
+export function observe(id: number): number {
+    if (id !== null && queue.indexOf(id) === -1) {
+        queue.push(id);
+    }
+    return id;
 }
 
 export function updates(): TargetData[] {
@@ -41,4 +37,8 @@ export function updates(): TargetData[] {
         reset();
     }
     return data;
+}
+
+export function compute(): void {
+    encode(Event.Target);
 }

@@ -65,12 +65,6 @@ export interface BoxModelData {
     box: number[];
 }
 
-export interface TargetData {
-    id: number;
-    hash: string;
-    box: number[];
-}
-
 export interface HashData {
     id: number;
     hash: string;
