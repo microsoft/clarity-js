@@ -26,7 +26,7 @@ export function decode(tokens: Token[]): DataEvent {
             let ping: PingData = { gap: tokens[2] as number };
             return { time, event, data: ping };
         case Event.Tag:
-            let tag: TagData = { key: tokens[2] as string, value: tokens[3] as string };
+            let tag: TagData = { key: tokens[2] as string, value: tokens[3] as string[] };
             return { time, event, data: tag };
         case Event.Target:
             let targetData: TargetData[] = [];

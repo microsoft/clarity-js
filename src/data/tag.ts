@@ -7,7 +7,8 @@ export function reset(): void {
     data = null;
 }
 
-export function tag(key: string, value: string): void {
+export function tag(key: string, value: string | string[]): void {
+    value = typeof value === "string" ? [value] : value;
     data = { key, value };
     encode(Event.Tag);
 }

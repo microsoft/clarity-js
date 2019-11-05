@@ -142,7 +142,7 @@ export interface PingData {
 
 export interface TagData {
     key: string;
-    value: string;
+    value: string[];
 }
 
 export interface TargetData {
