@@ -25,6 +25,6 @@ async function discover(): Promise<void> {
         processNode(node, Source.Discover);
         node = walker.nextNode();
     }
-    await encode(config.lean ? Event.Hash : Event.Discover);
+    if (!config.lean) { await encode(Event.Discover); }
     task.stop(timer);
 }

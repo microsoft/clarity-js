@@ -192,17 +192,6 @@ export function updates(): NodeValue[] {
     return output;
 }
 
-export function selectors(): NodeValue[] {
-    let v = [];
-    for (let id of selectorMap) {
-        if (id in values) {
-            v.push(values[id]);
-        }
-    }
-    selectorMap = [];
-    return v;
-}
-
 function remove(id: number, source: Source): void {
     let value = values[id];
     value.metadata.active = false;

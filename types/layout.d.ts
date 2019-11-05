@@ -68,7 +68,7 @@ export interface BoxModelData {
 export interface HashData {
     id: number;
     hash: string;
-    selector?: string;
+    selector: string;
 }
 
 export interface ResourceData {

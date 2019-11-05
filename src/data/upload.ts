@@ -35,9 +35,7 @@ export function queue(data: Token[]): void {
             case Event.Discover:
             case Event.Mutation:
             case Event.BoxModel:
-            case Event.Hash:
             case Event.Document:
-            case Event.Target:
                 metric.counter(Metric.LayoutBytes, event.length);
                 break;
             case Event.Network:

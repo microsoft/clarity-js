@@ -102,7 +102,7 @@ async function process(): Promise<void> {
           break;
       }
     }
-    await encode(config.lean ? Event.Hash : Event.Mutation);
+    if (!config.lean) { await encode(Event.Mutation); }
     task.stop(timer);
 }
 

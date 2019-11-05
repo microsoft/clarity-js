@@ -104,10 +104,6 @@ export function decode(input: string): DecodedPayload {
                 if (payload.dom === undefined) { payload.dom = []; }
                 payload.dom.push(layout.decode(entry) as DomEvent);
                 break;
-            case Event.Hash:
-                if (payload.hash === undefined) { payload.hash = []; }
-                payload.hash.push(layout.decode(entry) as HashEvent);
-                break;
             case Event.Document:
                 if (payload.doc === undefined) { payload.doc = []; }
                 payload.doc.push(layout.decode(entry) as DocumentEvent);
