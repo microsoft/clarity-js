@@ -21,6 +21,9 @@ function recompute(event: UIEvent = null): void {
     let id = getId(eventTarget as Node);
     let current: ScrollData = {target: id, x, y, time: time()};
 
+    // Bail out if we are attempting to retrieve initial scroll position and it turns out to be (0,0)
+    if (event === null && x === 0 && y === 0) { return; }
+
     let length = data.length;
     let last = length > 1 ? data[length - 2] : null;
     if (last && similar(last, current)) { data.pop(); }

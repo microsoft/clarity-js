@@ -113,7 +113,8 @@ function check(xhr: XMLHttpRequest, sequence: number): void {
             send(transit[sequence].data, sequence);
         } else {
             track = { sequence, attempts: transit[sequence].attempts, status: xhr.status };
-            encode(Event.Upload);
+            // Send back an event only if we were not successful in our first attempt
+            if (transit[sequence].attempts > 1) { encode(Event.Upload); }
             delete transit[sequence];
         }
     }

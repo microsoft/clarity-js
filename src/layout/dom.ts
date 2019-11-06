@@ -69,6 +69,7 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
     let id = getId(node);
     let parentId = node.parentElement ? getId(node.parentElement) : null;
     let nextId = getNextId(node);
+    let changed = false;
 
     if (id in values) {
         let value = values[id];
@@ -76,11 +77,13 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
 
         // Handle case where internal ordering may have changed
         if (value["next"] !== nextId) {
+            changed = true;
             value["next"] = nextId;
         }
 
         // Handle case where parent might have been updated
         if (value["parent"] !== parentId) {
+            changed = true;
             let oldParentId = value["parent"];
             value["parent"] = parentId;
             // Move this node to the right location under new parent
@@ -106,7 +109,8 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
 
         // Update data
         for (let key in data) {
-            if (key in value["data"]) {
+            if (value["data"][key] !== data[key]) {
+                changed = true;
                 value["data"][key] = data[key];
             }
         }
@@ -115,7 +119,7 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
         updateSelector(value);
 
         layout(data.tag, id, parentId);
-        track(id, source);
+        if (changed) { track(id, source); }
     }
 }
 
