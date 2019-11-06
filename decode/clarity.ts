@@ -137,8 +137,8 @@ export function html(decoded: DecodedPayload): string {
 }
 
 export function render(decoded: DecodedPayload, iframe: HTMLIFrameElement, header?: HTMLElement): void {
-    // Reset rendering if we receive a new pageId
-    if (pageId !== decoded.envelope.pageId) {
+    // Reset rendering if we receive a new pageId or we receive the first sequence
+    if (pageId !== decoded.envelope.pageId || decoded.envelope.sequence === 1) {
         pageId = decoded.envelope.pageId;
         r.reset();
     }
