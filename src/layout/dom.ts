@@ -109,7 +109,7 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
 
         // Update data
         for (let key in data) {
-            if (value["data"][key] !== data[key]) {
+            if (diff(value["data"], data, key)) {
                 changed = true;
                 value["data"][key] = data[key];
             }
@@ -119,8 +119,17 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
         updateSelector(value);
 
         layout(data.tag, id, parentId);
-        if (changed) { track(id, source); }
+        track(id, source, changed);
     }
+}
+
+function diff(a: NodeInfo, b: NodeInfo, field: string): boolean {
+    if (typeof a[field] === "object" && typeof b[field] === "object") {
+        for (let key in a[field]) { if (a[field][key] !== b[field][key]) { return true; } }
+        for (let key in b[field]) { if (b[field][key] !== a[field][key]) { return true; } }
+        return false;
+    }
+    return a[field] !== b[field];
 }
 
 function position(parent: NodeValue, child: NodeValue): number {
@@ -247,7 +256,7 @@ function copy(input: NodeValue[]): NodeValue[] {
     return JSON.parse(JSON.stringify(input));
 }
 
-function track(id: number, source: Source): void {
+function track(id: number, source: Source, changed: boolean = true): void {
     // Keep track of the order in which mutations happened, they may not be sequential
     // Edge case: If an element is added later on, and pre-discovered element is moved as a child.
     // In that case, we need to reorder the prediscovered element in the update list to keep visualization consistent.
@@ -255,7 +264,7 @@ function track(id: number, source: Source): void {
     if (uIndex >= 0 && source === Source.ChildListAdd) {
         updateMap.splice(uIndex, 1);
         updateMap.push(id);
-    } else if (uIndex === -1) { updateMap.push(id); }
+    } else if (uIndex === -1 && changed) { updateMap.push(id); }
 
     if (Constant.DEVTOOLS_HOOK in window) {
         let value = copy([values[id]])[0];
