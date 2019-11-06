@@ -11,6 +11,7 @@ let timeout: number = null;
 
 export function start(): void {
     interval = config.ping;
+    last = 0;
 }
 
 export function reset(): void {
