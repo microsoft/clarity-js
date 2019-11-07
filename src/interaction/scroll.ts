@@ -21,8 +21,7 @@ function recompute(event: UIEvent = null): void {
     let id = getId(eventTarget as Node);
     let current: ScrollData = {target: id, x, y, time: time()};
 
-    // We don't send any scroll events if the current position is at the top (0, 0)
-    // and we proactively try to fetch the scroll position at the start of the page (event === null).
+    // We don't send any scroll events if this is the first event and the current position is top (0,0)
     if (event === null && x === 0 && y === 0) { return; }
 
     let length = data.length;

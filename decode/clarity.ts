@@ -20,6 +20,7 @@ export function decode(input: string): DecodedPayload {
     let envelope = data.envelope(json.e);
     let timestamp = Date.now();
     let payload: DecodedPayload = { timestamp, envelope };
+    // Sort encoded events by time to simplify summary computation
     let encoded: Token[][] = json.d.sort((a: Token[], b: Token[]) => (a[0] as number) - (b[0] as number));
 
     if (payload.envelope.version !== version) {
