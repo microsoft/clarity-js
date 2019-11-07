@@ -68,9 +68,11 @@ function update(id: number, box: number[]): void {
     }
 }
 
-export function layout(element: Element, x: number = 0, y: number = 0): number[] {
+export function layout(element: Element, x: number = null, y: number = null): number[] {
     let box: number[] = null;
     let rect = element.getBoundingClientRect();
+    x = x !== null ? x : ("pageXOffset" in window ? window.pageXOffset : document.documentElement.scrollLeft);
+    y = y !== null ? y : ("pageYOffset" in window ? window.pageYOffset : document.documentElement.scrollTop);
 
     if (rect && rect.width > 0 && rect.height > 0) {
         // getBoundingClientRect returns relative positioning to viewport and therefore needs

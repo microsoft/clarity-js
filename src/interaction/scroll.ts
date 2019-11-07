@@ -4,7 +4,6 @@ import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
 import { getId } from "@src/layout/dom";
-import * as target from "@src/layout/target";
 import encode from "./encode";
 
 export let data: ScrollData[] = [];
@@ -20,8 +19,10 @@ function recompute(event: UIEvent = null): void {
     let x = Math.round((eventTarget as HTMLElement).scrollLeft);
     let y = Math.round((eventTarget as HTMLElement).scrollTop);
     let id = getId(eventTarget as Node);
-    target.observe(id);
     let current: ScrollData = {target: id, x, y, time: time()};
+
+    // We don't send any scroll events if this is the first event and the current position is top (0,0)
+    if (event === null && x === 0 && y === 0) { return; }
 
     let length = data.length;
     let last = length > 1 ? data[length - 2] : null;

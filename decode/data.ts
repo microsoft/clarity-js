@@ -1,5 +1,5 @@
 import { BooleanFlag, Envelope, Event, MetricData, PageData, PingData } from "../types/data";
-import { SummaryData, TagData, Token, Upload, UploadData } from "../types/data";
+import { SummaryData, TagData, TargetData, Token, Upload, UploadData } from "../types/data";
 import { DataEvent } from "../types/decode/data";
 
 let summaries: { [key: number]: SummaryData[] } = null;
@@ -26,8 +26,15 @@ export function decode(tokens: Token[]): DataEvent {
             let ping: PingData = { gap: tokens[2] as number };
             return { time, event, data: ping };
         case Event.Tag:
-            let tag: TagData = { key: tokens[2] as string, value: tokens[3] as string };
+            let tag: TagData = { key: tokens[2] as string, value: tokens[3] as string[] };
             return { time, event, data: tag };
+        case Event.Target:
+            let targetData: TargetData[] = [];
+            for (let t = 2; t < tokens.length; t += 3) {
+                let target: TargetData = { id: tokens[t] as number, hash: tokens[t + 1] as string, box: tokens[t + 2] as number[] };
+                targetData.push(target);
+            }
+            return { time, event, data: targetData };
         case Event.Upload:
             let upload: UploadData = { sequence: tokens[2] as number, attempts: tokens[3] as number, status: tokens[4] as number};
             return { time, event, data: upload };

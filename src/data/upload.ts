@@ -5,6 +5,7 @@ import encode from "@src/data/encode";
 import { envelope, metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
+import * as target from "@src/data/target";
 
 const MAX_RETRIES = 2;
 let events: string[];
@@ -28,14 +29,13 @@ export function queue(data: Token[]): void {
 
         switch (type) {
             case Event.Metric:
+            case Event.Target:
             case Event.Upload:
                 return; // do not schedule upload callback
             case Event.Discover:
             case Event.Mutation:
             case Event.BoxModel:
-            case Event.Hash:
             case Event.Document:
-            case Event.Target:
                 metric.counter(Metric.LayoutBytes, event.length);
                 break;
             case Event.Network:
@@ -73,6 +73,7 @@ export function end(): void {
 }
 
 function upload(last: boolean = false): void {
+    target.compute();
     metric.compute();
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
     let data = stringify(payload);
@@ -112,7 +113,8 @@ function check(xhr: XMLHttpRequest, sequence: number): void {
             send(transit[sequence].data, sequence);
         } else {
             track = { sequence, attempts: transit[sequence].attempts, status: xhr.status };
-            encode(Event.Upload);
+            // Send back an event only if we were not successful in our first attempt
+            if (transit[sequence].attempts > 1) { encode(Event.Upload); }
             delete transit[sequence];
         }
     }

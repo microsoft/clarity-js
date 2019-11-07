@@ -4,6 +4,7 @@ import { metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
 import * as tag from "@src/data/tag";
+import * as target from "@src/data/target";
 import { queue, track } from "./upload";
 
 export default function(event: Event): void {
@@ -27,6 +28,17 @@ export default function(event: Event): void {
             tokens.push(tag.data.key);
             tokens.push(tag.data.value);
             queue(tokens);
+            break;
+        case Event.Target:
+            let targets = target.updates();
+            if (targets.length > 0) {
+                for (let value of targets) {
+                    tokens.push(value.id);
+                    tokens.push(value.hash);
+                    tokens.push(value.box);
+                }
+                queue(tokens);
+            }
             break;
         case Event.Upload:
             tokens.push(track.sequence);

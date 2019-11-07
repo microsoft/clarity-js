@@ -11,7 +11,7 @@ const DevConfig: webpack.Configuration = {
 
     entry: {
         clarity: "./webpack/globalize.ts",
-        decode: "./decode/clarity.ts"
+        decode: "./webpack/globalizeDecode.ts",
     },
 
     output: {

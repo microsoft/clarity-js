@@ -3,7 +3,7 @@ import { resolve } from "../src/data/token";
 import selector from "../src/layout/selector";
 import { Event, Token } from "../types/data";
 import { DomData, LayoutEvent } from "../types/decode/layout";
-import { Attributes, BoxModelData, DocumentData, HashData, ResourceData, TargetData } from "../types/layout";
+import { Attributes, BoxModelData, DocumentData, HashData, ResourceData } from "../types/layout";
 
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
 export let hashes: { [key: number]: HashData } = {};
@@ -31,24 +31,6 @@ export function decode(tokens: Token[]): LayoutEvent {
                 boxmodelData.push(boxmodel);
             }
             return { time, event, data: boxmodelData };
-        case Event.Target:
-            let targetData: TargetData[] = [];
-            for (let i = 2; i < tokens.length; i += 3) {
-                let target: TargetData = { id: tokens[i] as number, hash: tokens[i + 1] as string, box: tokens[i + 2] as number[] };
-                targetData.push(target);
-            }
-            return { time, event, data: targetData };
-        case Event.Hash:
-            let reference = 0;
-            let hashData: HashData[] = [];
-            for (let i = 2; i < tokens.length; i += 2) {
-                let id = (tokens[i] as number) + reference;
-                let token = tokens[i + 1];
-                let cs: HashData = { id, hash: typeof(token) === "object" ? tokens[token[0]] : token };
-                hashData.push(cs);
-                reference = id;
-            }
-            return { time, event, data: hashData };
         case Event.Discover:
         case Event.Mutation:
             let lastType = null;

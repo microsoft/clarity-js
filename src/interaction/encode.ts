@@ -1,6 +1,7 @@
 import {Event, Metric, Token} from "@clarity-types/data";
 import time from "@src/core/time";
 import * as metric from "@src/data/metric";
+import { observe } from "@src/data/target";
 import { queue } from "@src/data/upload";
 import * as change from "./change";
 import * as pointer from "./pointer";
@@ -28,7 +29,7 @@ export default function(type: Event): void {
             for (let i = 0; i < pointer.data[type].length; i++) {
                 let entry = pointer.data[type][i];
                 tokens = [entry.time, type];
-                tokens.push(entry.target);
+                tokens.push(observe(entry.target));
                 tokens.push(entry.x);
                 tokens.push(entry.y);
                 queue(tokens);
@@ -53,7 +54,7 @@ export default function(type: Event): void {
             break;
         case Event.InputChange:
             let ch = change.data;
-            tokens.push(ch.target);
+            tokens.push(observe(ch.target));
             tokens.push(ch.value);
             queue(tokens);
             metric.counter(Metric.Changes);
@@ -61,9 +62,9 @@ export default function(type: Event): void {
             break;
         case Event.Selection:
             let s = selection.data;
-            tokens.push(s.start);
+            tokens.push(observe(s.start));
             tokens.push(s.startOffset);
-            tokens.push(s.end);
+            tokens.push(observe(s.end));
             tokens.push(s.endOffset);
             queue(tokens);
             metric.counter(Metric.Selections);
@@ -73,7 +74,7 @@ export default function(type: Event): void {
             for (let i = 0; i < scroll.data.length; i++) {
                 let entry = scroll.data[i];
                 tokens = [entry.time, type];
-                tokens.push(entry.target);
+                tokens.push(observe(entry.target));
                 tokens.push(entry.x);
                 tokens.push(entry.y);
                 queue(tokens);

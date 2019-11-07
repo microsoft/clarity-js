@@ -1,11 +1,11 @@
 import version from "../src/core/version";
 import { Event, Payload, Token } from "../types/data";
-import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, UploadEvent } from "../types/decode/data";
+import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UploadEvent } from "../types/decode/data";
 import { DecodedEvent, DecodedPayload } from "../types/decode/decode";
 import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
 import { InputChangeEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
 import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
-import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent, TargetEvent } from "../types/decode/layout";
+import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
 
 import * as data from "./data";
 import * as diagnostic from "./diagnostic";
@@ -20,7 +20,8 @@ export function decode(input: string): DecodedPayload {
     let envelope = data.envelope(json.e);
     let timestamp = Date.now();
     let payload: DecodedPayload = { timestamp, envelope };
-    let encoded: Token[][] = json.d;
+    // Sort encoded events by time to simplify summary computation
+    let encoded: Token[][] = json.d.sort((a: Token[], b: Token[]) => (a[0] as number) - (b[0] as number));
 
     if (payload.envelope.version !== version) {
         throw new Error(`Invalid Clarity Version. Actual: ${payload.envelope.version} | Expected: ${version} | ${input.substr(0, 250)}`);
@@ -44,6 +45,10 @@ export function decode(input: string): DecodedPayload {
             case Event.Tag:
                 if (payload.tag === undefined) { payload.tag = []; }
                 payload.tag.push(data.decode(entry) as TagEvent);
+                break;
+            case Event.Target:
+                if (payload.target === undefined) { payload.target = []; }
+                payload.target.push(data.decode(entry) as TargetEvent);
                 break;
             case Event.Metric:
                 if (payload.metric === undefined) { payload.metric = []; }
@@ -91,10 +96,6 @@ export function decode(input: string): DecodedPayload {
                 if (payload.visibility === undefined) { payload.visibility = []; }
                 payload.visibility.push(interaction.decode(entry) as VisibilityEvent);
                 break;
-            case Event.Target:
-                if (payload.target === undefined) { payload.target = []; }
-                payload.target.push(layout.decode(entry) as TargetEvent);
-                break;
             case Event.BoxModel:
                 if (payload.boxmodel === undefined) { payload.boxmodel = []; }
                 payload.boxmodel.push(layout.decode(entry) as BoxModelEvent);
@@ -103,10 +104,6 @@ export function decode(input: string): DecodedPayload {
             case Event.Mutation:
                 if (payload.dom === undefined) { payload.dom = []; }
                 payload.dom.push(layout.decode(entry) as DomEvent);
-                break;
-            case Event.Hash:
-                if (payload.hash === undefined) { payload.hash = []; }
-                payload.hash.push(layout.decode(entry) as HashEvent);
                 break;
             case Event.Document:
                 if (payload.doc === undefined) { payload.doc = []; }
@@ -141,8 +138,8 @@ export function html(decoded: DecodedPayload): string {
 }
 
 export function render(decoded: DecodedPayload, iframe: HTMLIFrameElement, header?: HTMLElement): void {
-    // Reset rendering if we receive a new pageId
-    if (pageId !== decoded.envelope.pageId) {
+    // Reset rendering if we receive a new pageId or we receive the first sequence
+    if (pageId !== decoded.envelope.pageId || decoded.envelope.sequence === 1) {
         pageId = decoded.envelope.pageId;
         r.reset();
     }

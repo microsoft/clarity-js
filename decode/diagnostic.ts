@@ -14,11 +14,11 @@ export function decode(tokens: Token[]): DiagnosticEvent {
             return { time, event, data: imageError };
         case Event.ScriptError:
             let scriptError: ScriptErrorData = {
-                message: tokens[3] as string,
-                line: tokens[4] as number,
-                column: tokens[5] as number,
-                stack: tokens[6] as string,
-                source: tokens[2] as string
+                message: tokens[2] as string,
+                line: tokens[3] as number,
+                column: tokens[4] as number,
+                stack: tokens[5] as string,
+                source: tokens[6] as string
             };
             return { time, event, data: scriptError };
     }
