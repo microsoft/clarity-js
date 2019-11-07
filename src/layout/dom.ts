@@ -136,7 +136,7 @@ function position(parent: NodeValue, child: NodeValue): number {
     let tag = child.data.tag;
     // Find relative position of the element to generate :nth-of-type selector
     // We restrict relative positioning to handful of tags for now.
-    if (parent && (tag === "DIV" || tag === "TR" || tag === "P" || tag === "LI")) {
+    if (parent && (tag === "DIV" || tag === "TR" || tag === "P" || tag === "LI" || tag === "UL")) {
         child.position = 1;
         let idx = parent ? parent.children.indexOf(child.id) : -1;
         while (idx-- > 0) {
