@@ -1,5 +1,9 @@
 // tslint:disable: no-bitwise
+const MAX_HASH_LENGTH = 9;
 export default function(input: string): string {
+    // Don't hash the input if its less is than or same as max hash length
+    if (input && input.length <= MAX_HASH_LENGTH) { return input; }
+
     // Code inspired from C# GetHashCode: https://github.com/Microsoft/referencesource/blob/master/mscorlib/system/string.cs
     let hash = 0;
     let hashOne = 5381;
