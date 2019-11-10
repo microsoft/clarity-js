@@ -1,8 +1,8 @@
 import { Event, Metric } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
 import config from "@src/core/config";
+import measure from "@src/core/measure";
 import * as task from "@src/core/task";
-import wrap from "@src/core/wrap";
 import * as boxmodel from "@src/layout/boxmodel";
 import * as doc from "@src/layout/document";
 import encode from "@src/layout/encode";
@@ -15,7 +15,7 @@ let deleteRule: (index?: number) => void = null;
 
 export function start(): void {
     if (observer) { observer.disconnect(); }
-    observer = window["MutationObserver"] ? new MutationObserver(wrap(handle) as MutationCallback) : null;
+    observer = window["MutationObserver"] ? new MutationObserver(measure(handle) as MutationCallback) : null;
     observer.observe(document, { attributes: true, childList: true, characterData: true, subtree: true });
     if (insertRule === null) { insertRule = CSSStyleSheet.prototype.insertRule; }
     if (deleteRule === null) { deleteRule = CSSStyleSheet.prototype.deleteRule; }
@@ -59,13 +59,13 @@ function handle(m: MutationRecord[]): void {
   // Queue up mutation records for asynchronous processing
   for (let i = 0; i < m.length; i++) { mutations.push(m[i]); }
   task.schedule(process).then(() => {
-      wrap(doc.compute)();
-      wrap(boxmodel.compute)();
+      measure(doc.compute)();
+      measure(boxmodel.compute)();
   });
 }
 
 async function process(): Promise<void> {
-    let timer = Metric.MutationCost;
+    let timer = Metric.MutationLatency;
     task.start(timer);
     while (mutations.length > 0) {
       let mutation = mutations.shift();
@@ -108,7 +108,7 @@ async function process(): Promise<void> {
 }
 
 function generate(target: Node, type: MutationRecordType): void {
-  wrap(handle)([{
+  measure(handle)([{
     addedNodes: null,
     attributeName: null,
     attributeNamespace: null,

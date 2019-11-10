@@ -52,7 +52,7 @@ export default function(event: Event): void {
                         let m = parseInt(d, 10);
                         if (metric.updates.indexOf(m) >= 0) {
                             tokens.push(m);
-                            tokens.push(metric.data[d]);
+                            tokens.push(Math.round(metric.data[d]));
                         }
                     }
                 }

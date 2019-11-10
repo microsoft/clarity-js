@@ -1,4 +1,4 @@
-import wrap from "@src/core/wrap";
+import measure from "@src/core/measure";
 import * as metadata from "@src/data/metadata";
 import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
@@ -9,18 +9,18 @@ export { tag } from "@src/data/tag";
 
 export function start(): void {
     metric.start();
-    wrap(upload.start)();
-    wrap(target.reset)();
-    wrap(metadata.start)();
-    wrap(ping.start)();
-    wrap(tag.reset)();
+    measure(upload.start)();
+    measure(target.reset)();
+    measure(metadata.start)();
+    measure(ping.start)();
+    measure(tag.reset)();
 }
 
 export function end(): void {
-    wrap(tag.reset)();
-    wrap(ping.end)();
-    wrap(upload.end)();
-    wrap(target.reset)();
-    wrap(metadata.end)();
+    measure(tag.reset)();
+    measure(ping.end)();
+    measure(upload.end)();
+    measure(target.reset)();
+    measure(metadata.end)();
     metric.end();
 }

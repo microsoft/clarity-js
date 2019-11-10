@@ -1,8 +1,8 @@
 import { EncodedPayload, Event, Metric, Token, Transit, UploadData } from "@clarity-types/data";
 import config from "@src/core/config";
+import measure from "@src/core/measure";
 import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
-import wrap from "@src/core/wrap";
 import encode from "@src/data/encode";
 import { envelope, metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
@@ -105,7 +105,7 @@ function send(data: string, sequence: number = null, last: boolean = false): voi
             if (sequence in transit) { transit[sequence].attempts++; } else { transit[sequence] = { data, attempts: 1 }; }
             let xhr = new XMLHttpRequest();
             xhr.open("POST", config.url);
-            if (sequence !== null) { xhr.onreadystatechange = (): void => { wrap(check)(xhr, sequence); }; }
+            if (sequence !== null) { xhr.onreadystatechange = (): void => { measure(check)(xhr, sequence); }; }
             xhr.send(data);
         }
     }

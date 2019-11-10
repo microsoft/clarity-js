@@ -20,7 +20,7 @@ function schedule(): void {
 }
 
 async function boxmodel(): Promise<void> {
-    let timer = Metric.BoxModelCost;
+    let timer = Metric.BoxModelLatency;
     task.start(timer);
     let values = dom.boxmodel();
     let doc = document.documentElement;

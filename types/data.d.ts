@@ -46,13 +46,13 @@ export const enum Metric {
     InteractionBytes = 2,
     NetworkBytes = 3,
     TargetBytes = 4,
-    Calls = 5,
-    LongTasks = 6,
-    Cost = 7,
-    DiscoverCost = 8,
-    MutationCost = 9,
-    BoxModelCost = 10,
-    MaxBlockTime = 11
+    InvokeCount = 5,
+    LongTaskCount = 6,
+    Latency = 7,
+    DiscoverLatency = 8,
+    MutationLatency = 9,
+    BoxModelLatency = 10,
+    MaxBlockDuration = 11
 }
 
 export const enum Upload {

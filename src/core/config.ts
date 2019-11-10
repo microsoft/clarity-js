@@ -2,7 +2,7 @@ import { Config } from "@clarity-types/core";
 
 let config: Config = {
     projectId: null,
-    yield: 30, // 30 milliseconds
+    longtask: 30, // 30 milliseconds
     lookahead: 500, // 500 milliseconds
     distance: 20, // 20 pixels
     interval: 25, // 25 milliseconds

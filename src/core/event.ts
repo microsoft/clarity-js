@@ -1,10 +1,10 @@
 import { BrowserEvent } from "@clarity-types/core";
-import wrap from "./wrap";
+import measure from "./measure";
 
 let bindings: BrowserEvent[] = [];
 
 export function bind(target: EventTarget, event: string, listener: EventListener, capture: boolean = false): void {
-    listener = wrap(listener) as EventListener;
+    listener = measure(listener) as EventListener;
     target.addEventListener(event, listener, capture);
     bindings.push({ event, target, listener, capture });
 }

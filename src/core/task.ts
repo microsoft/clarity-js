@@ -37,20 +37,20 @@ function run(): void {
 }
 
 export function blocking(method: Metric): boolean {
-    let elapsed = Date.now() - tracker[method];
-    return (elapsed > config.yield);
+    let elapsed = performance.now() - tracker[method];
+    return (elapsed > config.longtask);
 }
 
 export function start(method: Metric): void {
-    tracker[method] = Date.now();
+    tracker[method] = performance.now();
 }
 
 export function stop(method: Metric): void {
-    let end = Date.now();
+    let end = performance.now();
     let duration = end - tracker[method];
-    metric.counter(method, duration);
-    metric.counter(Metric.Cost, duration);
-    metric.counter(Metric.Calls);
+    metric.duration(method, duration);
+    metric.duration(Metric.Latency, duration);
+    metric.counter(Metric.InvokeCount);
 }
 
 export async function idle(method: Metric): Promise<void> {

@@ -18,7 +18,13 @@ export function counter(metric: Metric, increment: number = 1): void {
     track(metric);
 }
 
-export function measure(metric: Metric, value: number): void {
+export function duration(metric: Metric, time: number): void {
+    if (!(metric in data)) { data[metric] = 0; }
+    data[metric] += time;
+    track(metric);
+}
+
+export function max(metric: Metric, value: number): void {
     if (!(metric in data)) { data[metric] = 0; }
     data[metric] = Math.max(value, data[metric]);
     track(metric);
