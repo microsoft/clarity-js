@@ -2,6 +2,7 @@ import { Event, PingData } from "@clarity-types/data";
 import { pause } from "@src/clarity";
 import config from "@src/core/config";
 import time from "@src/core/time";
+import { clearTimeout, setTimeout } from "@src/core/timeout";
 import encode from "./encode";
 
 export let data: PingData;
@@ -16,7 +17,7 @@ export function start(): void {
 
 export function reset(): void {
     if (timeout) { clearTimeout(timeout); }
-    timeout = window.setTimeout(ping, interval);
+    timeout = setTimeout(ping, interval);
 }
 
 function ping(): void {
@@ -25,7 +26,7 @@ function ping(): void {
     encode(Event.Ping);
     if (data.gap < config.timeout) {
         interval = Math.min(interval * 2, config.timeout);
-        timeout = window.setTimeout(ping, interval);
+        timeout = setTimeout(ping, interval);
     } else { pause(); }
 
     last = now;

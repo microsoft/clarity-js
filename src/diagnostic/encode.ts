@@ -1,6 +1,5 @@
-import {Event, Metric, Token} from "@clarity-types/data";
+import {Event, Token} from "@clarity-types/data";
 import time from "@src/core/time";
-import * as metric from "@src/data/metric";
 import { observe } from "@src/data/target";
 import { queue } from "@src/data/upload";
 import * as image from "@src/diagnostic/image";
@@ -17,7 +16,6 @@ export default function(type: Event): Token[] {
             tokens.push(script.data.stack);
             tokens.push(script.data.source);
             queue(tokens);
-            metric.counter(Metric.ScriptErrors);
             break;
         case Event.ImageError:
             tokens.push(image.data.source);

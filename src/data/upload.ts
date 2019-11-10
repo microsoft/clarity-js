@@ -1,6 +1,8 @@
 import { EncodedPayload, Event, Metric, Token, Transit, UploadData } from "@clarity-types/data";
 import config from "@src/core/config";
 import time from "@src/core/time";
+import { clearTimeout, setTimeout } from "@src/core/timeout";
+import wrap from "@src/core/wrap";
 import encode from "@src/data/encode";
 import { envelope, metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
@@ -28,8 +30,10 @@ export function queue(data: Token[]): void {
         events.push(event);
 
         switch (type) {
-            case Event.Metric:
             case Event.Target:
+                metric.counter(Metric.TargetBytes, event.length);
+                return; // do not schedule upload callback
+            case Event.Metric:
             case Event.Upload:
                 return; // do not schedule upload callback
             case Event.Discover:
@@ -44,7 +48,6 @@ export function queue(data: Token[]): void {
                 break;
             case Event.ScriptError:
             case Event.ImageError:
-                metric.counter(Metric.DiagnosticBytes, event.length);
                 break;
             default:
                 metric.counter(Metric.InteractionBytes, event.length);
@@ -58,7 +61,7 @@ export function queue(data: Token[]): void {
         // The only exception is the very last payload, for which we will attempt one final delivery to the server.
         if (time() < config.shutdown) {
             clearTimeout(timeout);
-            timeout = window.setTimeout(upload, config.delay);
+            timeout = setTimeout(upload, config.delay);
         }
     }
 }
@@ -78,6 +81,7 @@ function upload(last: boolean = false): void {
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
     let data = stringify(payload);
     let sequence = metadata.envelope.sequence;
+    metric.counter(Metric.Bytes, data.length);
     send(data, sequence, last);
     if (!last) { ping.reset(); }
 
@@ -101,7 +105,7 @@ function send(data: string, sequence: number = null, last: boolean = false): voi
             if (sequence in transit) { transit[sequence].attempts++; } else { transit[sequence] = { data, attempts: 1 }; }
             let xhr = new XMLHttpRequest();
             xhr.open("POST", config.url);
-            if (sequence !== null) { xhr.onreadystatechange = (): void => { check(xhr, sequence); }; }
+            if (sequence !== null) { xhr.onreadystatechange = (): void => { wrap(check)(xhr, sequence); }; }
             xhr.send(data);
         }
     }

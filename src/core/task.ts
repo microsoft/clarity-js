@@ -1,10 +1,9 @@
 import { AsyncTask, TaskFunction, TaskResolve, TaskTiming } from "@clarity-types/core";
 import { Metric } from "@clarity-types/data";
 import config from "@src/core/config";
-import * as metrics from "@src/data/metric";
+import * as metric from "@src/data/metric";
 
 let tracker: TaskTiming = {};
-let threshold = config.longtask;
 let queue: AsyncTask[] = [];
 let active: AsyncTask = null;
 
@@ -20,7 +19,7 @@ export async function schedule(task: TaskFunction): Promise<void> {
         queue.push({task, resolve});
     });
 
-    if (active === null) { run(); }
+    if (active === null) { requestAnimationFrame(run); }
 
     return promise;
 }
@@ -37,22 +36,21 @@ function run(): void {
     }
 }
 
-export function longtask(method: Metric): boolean {
+export function blocking(method: Metric): boolean {
     let elapsed = Date.now() - tracker[method];
-    return (elapsed > threshold);
+    return (elapsed > config.yield);
 }
 
 export function start(method: Metric): void {
-    if (!(method in tracker)) {
-        tracker[method] = 0;
-    }
     tracker[method] = Date.now();
 }
 
 export function stop(method: Metric): void {
     let end = Date.now();
     let duration = end - tracker[method];
-    metrics.counter(method, duration);
+    metric.counter(method, duration);
+    metric.counter(Metric.Cost, duration);
+    metric.counter(Metric.Calls);
 }
 
 export async function idle(method: Metric): Promise<void> {

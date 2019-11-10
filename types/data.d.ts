@@ -41,28 +41,18 @@ export const enum Event {
 }
 
 export const enum Metric {
-    Nodes = 0,
+    Bytes = 0,
     LayoutBytes = 1,
     InteractionBytes = 2,
     NetworkBytes = 3,
-    DiagnosticBytes = 4,
-    Mutations = 5,
-    Interactions = 6,
-    Clicks = 7,
-    Selections = 8,
-    Changes = 9,
-    ScriptErrors = 10,
-    ImageErrors = 11,
-    DiscoverTime = 12,
-    MutationTime = 13,
-    BoxModelTime = 14,
-    StartTime = 15,
-    ActiveTime = 16,
-    EndTime = 17,
-    ViewportWidth = 18,
-    ViewportHeight = 19,
-    DocumentWidth = 20,
-    DocumentHeight = 21
+    TargetBytes = 4,
+    Calls = 5,
+    LongTasks = 6,
+    Cost = 7,
+    DiscoverCost = 8,
+    MutationCost = 9,
+    BoxModelCost = 10,
+    MaxBlockTime = 11
 }
 
 export const enum Upload {

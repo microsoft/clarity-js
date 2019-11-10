@@ -1,5 +1,5 @@
 import version from "../src/core/version";
-import { Event, Payload, Token } from "../types/data";
+import { Event, Metric, Payload, Token } from "../types/data";
 import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UploadEvent } from "../types/decode/data";
 import { DecodedEvent, DecodedPayload } from "../types/decode/decode";
 import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
@@ -16,7 +16,7 @@ import * as r from "./render";
 let pageId: string = null;
 
 export function decode(input: string): DecodedPayload {
-    let json: Payload = typeof input === "string" ? JSON.parse(input) : input;
+    let json: Payload = JSON.parse(input);
     let envelope = data.envelope(json.e);
     let timestamp = Date.now();
     let payload: DecodedPayload = { timestamp, envelope };
@@ -52,7 +52,11 @@ export function decode(input: string): DecodedPayload {
                 break;
             case Event.Metric:
                 if (payload.metric === undefined) { payload.metric = []; }
-                payload.metric.push(data.decode(entry) as MetricEvent);
+                let metric = data.decode(entry) as MetricEvent;
+                // It's not possible to accurately include the byte count of the payload within the same payload
+                // So, we manually increment the bytes from the incoming payload at decode time.
+                metric.data[Metric.Bytes] += input.length;
+                payload.metric.push(metric);
                 break;
             case Event.Upload:
                 if (payload.upload === undefined) { payload.upload = []; }

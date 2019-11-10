@@ -19,7 +19,7 @@ export interface BrowserEvent {
 
 export interface Config {
     projectId?: string;
-    longtask?: number;
+    yield?: number;
     lookahead?: number;
     distance?: number;
     interval?: number;

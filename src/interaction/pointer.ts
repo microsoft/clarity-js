@@ -3,6 +3,7 @@ import { PointerData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
+import { clearTimeout, setTimeout } from "@src/core/timeout";
 import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
@@ -58,7 +59,7 @@ function handler(event: Event, current: PointerData): void {
             data[event].push(current);
 
             clearTimeout(timeout);
-            timeout = window.setTimeout(encode, config.lookahead, event);
+            timeout = setTimeout(encode, config.lookahead, event);
             break;
         default:
             data[event].push(current);

@@ -2,6 +2,7 @@ import { Event, Metric } from "@clarity-types/data";
 import { BoxModelData } from "@clarity-types/layout";
 import config from "@src/core/config";
 import * as task from "@src/core/task";
+import { clearTimeout, setTimeout } from "@src/core/timeout";
 import encode from "@src/layout/encode";
 import * as dom from "./dom";
 
@@ -11,7 +12,7 @@ let timeout: number = null;
 
 export function compute(): void {
     clearTimeout(timeout);
-    timeout = window.setTimeout(schedule, config.lookahead);
+    timeout = setTimeout(schedule, config.lookahead);
 }
 
 function schedule(): void {
@@ -19,7 +20,7 @@ function schedule(): void {
 }
 
 async function boxmodel(): Promise<void> {
-    let timer = Metric.BoxModelTime;
+    let timer = Metric.BoxModelCost;
     task.start(timer);
     let values = dom.boxmodel();
     let doc = document.documentElement;
@@ -27,7 +28,7 @@ async function boxmodel(): Promise<void> {
     let y = "pageYOffset" in window ? window.pageYOffset : doc.scrollTop;
 
     for (let value of values) {
-        if (task.longtask(timer)) {
+        if (task.blocking(timer)) {
             await task.idle(timer);
             x = "pageXOffset" in window ? window.pageXOffset : doc.scrollLeft;
             y = "pageYOffset" in window ? window.pageYOffset : doc.scrollTop;

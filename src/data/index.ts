@@ -1,3 +1,4 @@
+import wrap from "@src/core/wrap";
 import * as metadata from "@src/data/metadata";
 import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
@@ -7,19 +8,19 @@ import * as upload from "@src/data/upload";
 export { tag } from "@src/data/tag";
 
 export function start(): void {
-    upload.start();
-    target.reset();
     metric.start();
-    metadata.start();
-    ping.start();
-    tag.reset();
+    wrap(upload.start)();
+    wrap(target.reset)();
+    wrap(metadata.start)();
+    wrap(ping.start)();
+    wrap(tag.reset)();
 }
 
 export function end(): void {
-    tag.reset();
-    ping.end();
-    upload.end();
-    target.reset();
-    metadata.end();
+    wrap(tag.reset)();
+    wrap(ping.end)();
+    wrap(upload.end)();
+    wrap(target.reset)();
+    wrap(metadata.end)();
     metric.end();
 }
