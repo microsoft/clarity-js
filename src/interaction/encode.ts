@@ -1,6 +1,5 @@
-import {Event, Metric, Token} from "@clarity-types/data";
+import {Event, Token} from "@clarity-types/data";
 import time from "@src/core/time";
-import * as metric from "@src/data/metric";
 import { observe } from "@src/data/target";
 import { queue } from "@src/data/upload";
 import * as change from "./change";
@@ -41,15 +40,12 @@ export default function(type: Event): void {
             tokens.push(r.width);
             tokens.push(r.height);
             queue(tokens);
-            metric.measure(Metric.ViewportWidth, r.width);
-            metric.measure(Metric.ViewportHeight, r.height);
             resize.reset();
             break;
         case Event.Unload:
             let u = unload.data;
             tokens.push(u.name);
             queue(tokens);
-            metric.counter(Metric.EndTime, t);
             unload.reset();
             break;
         case Event.InputChange:
@@ -57,7 +53,6 @@ export default function(type: Event): void {
             tokens.push(observe(ch.target));
             tokens.push(ch.value);
             queue(tokens);
-            metric.counter(Metric.Changes);
             change.reset();
             break;
         case Event.Selection:
@@ -67,7 +62,6 @@ export default function(type: Event): void {
             tokens.push(observe(s.end));
             tokens.push(s.endOffset);
             queue(tokens);
-            metric.counter(Metric.Selections);
             selection.reset();
             break;
         case Event.Scroll:

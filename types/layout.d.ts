@@ -12,7 +12,9 @@ export const enum Constant {
     SVG_PREFIX = "svg:",
     SVG_NAMESPACE = "http://www.w3.org/2000/svg",
     DEVTOOLS_HOOK = "__CLARITY_DEVTOOLS_HOOK__",
-    ID_ATTRIBUTE = "data-clarity",
+    CLARITY_ID_ATTRIBUTE = "data-clarity",
+    ID_ATTRIBUTE = "id",
+    CLASS_ATTRIBUTE = "class",
     MASK_ATTRIBUTE = "data-clarity-mask",
     UNMASK_ATTRIBUTE = "data-clarity-unmask"
 }

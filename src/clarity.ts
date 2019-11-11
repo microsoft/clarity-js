@@ -2,6 +2,7 @@ import { Config } from "@clarity-types/core";
 import * as core from "@src/core";
 import configuration from "@src/core/config";
 import { bind } from "@src/core/event";
+import measure from "@src/core/measure";
 import * as data from "@src/data";
 import * as diagnostic from "@src/diagnostic";
 import * as interaction from "@src/interaction";
@@ -25,9 +26,9 @@ export function start(override: Config = {}): void {
 
     core.start();
     data.start();
-    diagnostic.start();
-    layout.start();
-    interaction.start();
+    measure(diagnostic.start)();
+    measure(layout.start)();
+    measure(interaction.start)();
   }
 }
 
@@ -46,9 +47,9 @@ export function resume(): void {
 
 export function end(): void {
   if (status) {
-    interaction.end();
-    layout.end();
-    diagnostic.end();
+    measure(interaction.end)();
+    measure(layout.end)();
+    measure(diagnostic.end)();
     data.end();
     core.end();
 
@@ -59,7 +60,7 @@ export function end(): void {
 export function tag(key: string, value: string): void {
   // Do not process tags if Clarity is not already activated
   if (status) {
-    data.tag(key, value);
+    measure(data.tag)(key, value);
   }
 }
 

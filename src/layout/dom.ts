@@ -134,9 +134,12 @@ function diff(a: NodeInfo, b: NodeInfo, field: string): boolean {
 
 function position(parent: NodeValue, child: NodeValue): number {
     let tag = child.data.tag;
+    let hasClassName = child.data.attributes && !(Constant.CLASS_ATTRIBUTE in child.data.attributes);
     // Find relative position of the element to generate :nth-of-type selector
-    // We restrict relative positioning to handful of tags for now.
-    if (parent && (tag === "DIV" || tag === "TR" || tag === "P" || tag === "LI" || tag === "UL")) {
+    // We restrict relative positioning to two cases:
+    //   a) For specific whitelist of tags
+    //   b) And, for remaining tags, only if they don't have a valid class name
+    if (parent && ((tag === "DIV" || tag === "TR" || tag === "P" || tag === "LI" || tag === "UL") || hasClassName)) {
         child.position = 1;
         let idx = parent ? parent.children.indexOf(child.id) : -1;
         while (idx-- > 0) {
@@ -196,7 +199,7 @@ export function updates(): NodeValue[] {
         if (id in values) {
             let v = values[id];
             let p = v.parent;
-            let hasId = "attributes" in v.data && "id" in v.data.attributes;
+            let hasId = "attributes" in v.data && Constant.ID_ATTRIBUTE in v.data.attributes;
             v.data.path = p === null || p in updateMap || hasId || v.selector.length === 0 ? null : values[p].selector;
             output.push(values[id]);
         }

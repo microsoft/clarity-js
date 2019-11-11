@@ -4,7 +4,6 @@ import mask from "@src/core/mask";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
 import hash from "@src/data/hash";
-import * as metric from "@src/data/metric";
 import {check} from "@src/data/token";
 import { queue } from "@src/data/upload";
 import * as boxmodel from "./boxmodel";
@@ -13,14 +12,12 @@ import * as dom from "./dom";
 
 export default async function(type: Event): Promise<void> {
     let tokens: Token[] = [time(), type];
-    let timer = type === Event.Discover ? Metric.DiscoverTime : Metric.MutationTime;
+    let timer = type === Event.Discover ? Metric.DiscoverDuration : Metric.MutationDuration;
     switch (type) {
         case Event.Document:
             let d = doc.data;
             tokens.push(d.width);
             tokens.push(d.height);
-            metric.measure(Metric.DocumentWidth, d.width);
-            metric.measure(Metric.DocumentHeight, d.height);
             queue(tokens);
             break;
         case Event.BoxModel:
@@ -35,7 +32,7 @@ export default async function(type: Event): Promise<void> {
         case Event.Mutation:
             let values = dom.updates();
             for (let value of values) {
-                if (task.longtask(timer)) { await task.idle(timer); }
+                if (task.blocking(timer)) { await task.idle(timer); }
                 let metadata = [];
                 let data: NodeInfo = value.data;
                 let active = value.metadata.active;
@@ -44,7 +41,6 @@ export default async function(type: Event): Promise<void> {
                     if (data[key]) {
                         switch (key) {
                             case "tag":
-                                metric.counter(Metric.Nodes);
                                 tokens.push(value.id);
                                 if (value.parent && active) { tokens.push(value.parent); }
                                 if (value.next && active) { tokens.push(value.next); }

@@ -3,6 +3,7 @@ import { ScrollData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import time from "@src/core/time";
+import { clearTimeout, setTimeout } from "@src/core/timeout";
 import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
@@ -30,7 +31,7 @@ function recompute(event: UIEvent = null): void {
     data.push(current);
 
     clearTimeout(timeout);
-    timeout = window.setTimeout(encode, config.lookahead, Event.Scroll);
+    timeout = setTimeout(encode, config.lookahead, Event.Scroll);
 }
 
 export function reset(): void {

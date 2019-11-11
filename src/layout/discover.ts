@@ -1,6 +1,7 @@
 import { Event, Metric } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
 import config from "@src/core/config";
+import measure from "@src/core/measure";
 import * as task from "@src/core/task";
 import * as boxmodel from "@src/layout/boxmodel";
 import * as doc from "@src/layout/document";
@@ -10,18 +11,18 @@ import processNode from "./node";
 
 export function start(): void {
     task.schedule(discover).then(() => {
-        doc.compute();
-        boxmodel.compute();
+        measure(doc.compute)();
+        measure(boxmodel.compute)();
     });
 }
 
 async function discover(): Promise<void> {
-    let timer = Metric.DiscoverTime;
+    let timer = Metric.DiscoverDuration;
     task.start(timer);
     let walker = document.createTreeWalker(document, NodeFilter.SHOW_ALL, null, false);
     let node = walker.nextNode();
     while (node) {
-        if (task.longtask(timer)) { await task.idle(timer); }
+        if (task.blocking(timer)) { await task.idle(timer); }
         processNode(node, Source.Discover);
         node = walker.nextNode();
     }

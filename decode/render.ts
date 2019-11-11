@@ -8,27 +8,18 @@ let boxmodels = {};
 let metrics: MetricData = null;
 let lean = false;
 const METRIC_MAP = {};
-METRIC_MAP[Metric.Nodes] = { name: "Node Count", unit: ""};
+METRIC_MAP[Metric.TotalBytes] = { name: "Total Bytes", unit: "KB"};
 METRIC_MAP[Metric.LayoutBytes] = { name: "Layout Bytes", unit: "KB"};
 METRIC_MAP[Metric.InteractionBytes] = { name: "Interaction Bytes", unit: "KB"};
 METRIC_MAP[Metric.NetworkBytes] = { name: "Network Bytes", unit: "KB"};
-METRIC_MAP[Metric.DiagnosticBytes] = { name: "Diagnostic Bytes", unit: "KB"};
-METRIC_MAP[Metric.Mutations] = { name: "Mutation Count", unit: ""};
-METRIC_MAP[Metric.Interactions] = { name: "Interaction Count", unit: ""};
-METRIC_MAP[Metric.Clicks] = { name: "Click Count", unit: ""};
-METRIC_MAP[Metric.Selections] = { name: "Selection Count", unit: ""};
-METRIC_MAP[Metric.ScriptErrors] = { name: "Script Errors", unit: ""};
-METRIC_MAP[Metric.ImageErrors] = { name: "Image Errors", unit: ""};
-METRIC_MAP[Metric.DiscoverTime] = { name: "Discover Time", unit: "ms"};
-METRIC_MAP[Metric.MutationTime] = { name: "Mutation Time", unit: "ms"};
-METRIC_MAP[Metric.BoxModelTime] = { name: "Box Model Time", unit: "ms"};
-METRIC_MAP[Metric.StartTime] = { name: "Start Time", unit: "s"};
-METRIC_MAP[Metric.ActiveTime] = { name: "Active Time", unit: "ms"};
-METRIC_MAP[Metric.EndTime] = { name: "End Time", unit: "s"};
-METRIC_MAP[Metric.ViewportWidth] = { name: "Viewport Width", unit: "px"};
-METRIC_MAP[Metric.ViewportHeight] = { name: "Viewport Height", unit: "px"};
-METRIC_MAP[Metric.DocumentWidth] = { name: "Document Width", unit: "px"};
-METRIC_MAP[Metric.DocumentHeight] = { name: "Document Height", unit: "px"};
+METRIC_MAP[Metric.TargetBytes] = { name: "Target Bytes", unit: "KB"};
+METRIC_MAP[Metric.InvokeCount] = { name: "Invoke Count" };
+METRIC_MAP[Metric.LongTaskCount] = { name: "Long Tasks" };
+METRIC_MAP[Metric.TotalDuration] = { name: "Total Duration", unit: "ms"};
+METRIC_MAP[Metric.DiscoverDuration] = { name: "Discover", unit: "ms"};
+METRIC_MAP[Metric.MutationDuration] = { name: "Mutation", unit: "ms"};
+METRIC_MAP[Metric.BoxModelDuration] = { name: "BoxModel", unit: "ms"};
+METRIC_MAP[Metric.MaxThreadBlockedDuration] = { name: "Thread Blocked", unit: "ms"};
 
 // tslint:disable-next-line: max-line-length
 let pointerIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S912AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6AAAdTAAAOpgAAA6lwAAF2+XqZnUAAACaUlEQVR4nGL8f58BHYgAsT8Q2wGxBBAzQcX/AfFrID4CxOuA+BWKLoX/YAoggBjRDHQD4ngglgRiPgyrIOAzEL8E4lVQg1EMBAggFiSFYUAcA8RSOAyCAV4oTgViTiBeiiwJEEAw71gRaRgyEAXiKCB2RBYECCCQgcIMEG+SYhgMiANxEhDzwwQAAghkoAMQK5NhGAwoALE1jAMQQCADQU7mpMBAZqijwAAggEAGqgAxOwUGskHNAAOAAAIZyEtIh4INg3bfHHD6xAUEYAyAAAIZ+IuQgU9fMLCXdzDIzV3JIIhDyQ8YAyCAQAaCUv8/fAZysDP8+/OXgTG7jkFhwRoMQ0F6n8M4AAEEMvAKsg34wM9fDEwgQ1dtRSQTIPgNxFdhHIAAAhm4AYg/EmMgCHz7zsCUVMaguHob3FCQYzbD5AECCGTgJSDeCbWJKPD1GwNzSjmD4tZ9DFxgvQr/b8PkAAIIlvVWA/FuUgz99IWBOTyXQcE+nOEOsjhAACGXNnJAHAnE9kAshqyIV5vB4Ms3cALGBkAlj9////9PgTgAAcSEJPEIiDuBeBYQP2CAhOt3BsLJCpSfNzAyMpqDOAABhF4ewh3FAMmf2kAsyqnBUPDjJ8HcdBvoSjWAAGIEEgTUMTAAbf/AwICSVGCgD4hPgJQA8WegWdsBAogFiyJC4C0QgxI3KLj4gIasRpYECCAGkAsJYSAAuRDEAKUEQwZIzgDxvwCxCrJagAAi1kAQAYpFESh/BlQMhJuR1QIEELEGlgOxHBLflAGSh0Gc60DMBpMDCCCiDMRhyXoGSJUaDgpPmDhAgAEAN5Ugk0bMYNIAAAAASUVORK5CYII=";
@@ -54,7 +45,8 @@ export function metric(data: MetricData, header: HTMLElement): void {
         if (metrics[entry]) {
             let m = metrics[entry];
             let map = METRIC_MAP[entry];
-            html.push(`<li><h2>${value(m, map.unit)}<span>${map.unit}</span></h2>${map.name}</li>`);
+            let unit = "unit" in map ? map.unit : "";
+            html.push(`<li><h2>${value(m, unit)}<span>${unit}</span></h2>${map.name}</li>`);
         }
     }
 

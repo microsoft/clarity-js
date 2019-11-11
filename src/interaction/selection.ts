@@ -2,6 +2,7 @@ import { Event } from "@clarity-types/data";
 import { SelectionData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
+import { clearTimeout, setTimeout } from "@src/core/timeout";
 import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
@@ -43,7 +44,7 @@ function recompute(): void {
     previous = current;
 
     clearTimeout(timeout);
-    timeout = window.setTimeout(encode, config.lookahead, Event.Selection);
+    timeout = setTimeout(encode, config.lookahead, Event.Selection);
 }
 
 export function reset(): void {

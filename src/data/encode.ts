@@ -1,4 +1,4 @@
-import {Event, Metric, Token } from "@clarity-types/data";
+import {Event, Token } from "@clarity-types/data";
 import time from "@src/core/time";
 import { metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
@@ -16,7 +16,6 @@ export default function(event: Event): void {
             queue(tokens);
             break;
         case Event.Page:
-            metric.counter(Metric.StartTime, Math.round(performance.now()));
             tokens.push(metadata.page.timestamp);
             tokens.push(metadata.page.ua);
             tokens.push(metadata.page.url);
@@ -53,7 +52,9 @@ export default function(event: Event): void {
                         let m = parseInt(d, 10);
                         if (metric.updates.indexOf(m) >= 0) {
                             tokens.push(m);
-                            tokens.push(metric.data[d]);
+                            // For computation, we need microseconds precision that performance.now() API offers
+                            // However, for data over the wire, we round it off to milliseconds precision.
+                            tokens.push(Math.round(metric.data[d]));
                         }
                     }
                 }
