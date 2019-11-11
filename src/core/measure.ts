@@ -12,7 +12,7 @@ export default function(method: Function): Function {
         metric.counter(Metric.InvokeCount);
         if (duration > config.longtask) {
             metric.counter(Metric.LongTaskCount);
-            metric.max(Metric.MaxBlockDuration, duration);
+            metric.max(Metric.ThreadBlockDuration, duration);
         }
     };
 }

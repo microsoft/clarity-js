@@ -52,7 +52,7 @@ export const enum Metric {
     DiscoverLatency = 8,
     MutationLatency = 9,
     BoxModelLatency = 10,
-    MaxBlockDuration = 11
+    ThreadBlockDuration = 11
 }
 
 export const enum Upload {
