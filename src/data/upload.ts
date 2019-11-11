@@ -31,7 +31,7 @@ export function queue(data: Token[]): void {
 
         switch (type) {
             case Event.Target:
-                metric.counter(Metric.TargetBytes, event.length);
+                metric.count(Metric.TargetBytes, event.length);
                 return; // do not schedule upload callback
             case Event.Metric:
             case Event.Upload:
@@ -40,17 +40,17 @@ export function queue(data: Token[]): void {
             case Event.Mutation:
             case Event.BoxModel:
             case Event.Document:
-                metric.counter(Metric.LayoutBytes, event.length);
+                metric.count(Metric.LayoutBytes, event.length);
                 break;
             case Event.Network:
             case Event.Performance:
-                metric.counter(Metric.NetworkBytes, event.length);
+                metric.count(Metric.NetworkBytes, event.length);
                 break;
             case Event.ScriptError:
             case Event.ImageError:
                 break;
             default:
-                metric.counter(Metric.InteractionBytes, event.length);
+                metric.count(Metric.InteractionBytes, event.length);
                 break;
         }
 
@@ -81,7 +81,7 @@ function upload(last: boolean = false): void {
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
     let data = stringify(payload);
     let sequence = metadata.envelope.sequence;
-    metric.counter(Metric.Bytes, data.length);
+    metric.count(Metric.TotalBytes, data.length);
     send(data, sequence, last);
     if (!last) { ping.reset(); }
 

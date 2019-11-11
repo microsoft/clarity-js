@@ -41,18 +41,18 @@ export const enum Event {
 }
 
 export const enum Metric {
-    Bytes = 0,
+    TotalBytes = 0,
     LayoutBytes = 1,
     InteractionBytes = 2,
     NetworkBytes = 3,
     TargetBytes = 4,
     InvokeCount = 5,
     LongTaskCount = 6,
-    Latency = 7,
-    DiscoverLatency = 8,
-    MutationLatency = 9,
-    BoxModelLatency = 10,
-    ThreadBlockDuration = 11
+    TotalDuration = 7,
+    DiscoverDuration = 8,
+    MutationDuration = 9,
+    BoxModelDuration = 10,
+    MaxThreadBlockedDuration = 11
 }
 
 export const enum Upload {

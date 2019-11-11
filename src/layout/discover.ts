@@ -17,7 +17,7 @@ export function start(): void {
 }
 
 async function discover(): Promise<void> {
-    let timer = Metric.DiscoverLatency;
+    let timer = Metric.DiscoverDuration;
     task.start(timer);
     let walker = document.createTreeWalker(document, NodeFilter.SHOW_ALL, null, false);
     let node = walker.nextNode();

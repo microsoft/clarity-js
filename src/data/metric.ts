@@ -12,13 +12,13 @@ export function end(): void {
     data = {};
 }
 
-export function counter(metric: Metric, increment: number = 1): void {
+export function count(metric: Metric, increment: number = 1): void {
     if (!(metric in data)) { data[metric] = 0; }
     data[metric] += increment;
     track(metric);
 }
 
-export function duration(metric: Metric, time: number): void {
+export function accumulate(metric: Metric, time: number): void {
     if (!(metric in data)) { data[metric] = 0; }
     data[metric] += time;
     track(metric);

@@ -55,7 +55,7 @@ export function decode(input: string): DecodedPayload {
                 let metric = data.decode(entry) as MetricEvent;
                 // It's not possible to accurately include the byte count of the payload within the same payload
                 // So, we increment the bytes from the incoming payload at decode time.
-                metric.data[Metric.Bytes] += input.length;
+                metric.data[Metric.TotalBytes] += input.length;
                 payload.metric.push(metric);
                 break;
             case Event.Upload:

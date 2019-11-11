@@ -52,6 +52,8 @@ export default function(event: Event): void {
                         let m = parseInt(d, 10);
                         if (metric.updates.indexOf(m) >= 0) {
                             tokens.push(m);
+                            // For computation, we need microseconds precision that performance.now() API offers
+                            // However, for data over the wire, we round it off to milliseconds precision.
                             tokens.push(Math.round(metric.data[d]));
                         }
                     }

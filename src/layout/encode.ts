@@ -12,7 +12,7 @@ import * as dom from "./dom";
 
 export default async function(type: Event): Promise<void> {
     let tokens: Token[] = [time(), type];
-    let timer = type === Event.Discover ? Metric.DiscoverLatency : Metric.MutationLatency;
+    let timer = type === Event.Discover ? Metric.DiscoverDuration : Metric.MutationDuration;
     switch (type) {
         case Event.Document:
             let d = doc.data;

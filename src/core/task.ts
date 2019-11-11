@@ -48,9 +48,9 @@ export function start(method: Metric): void {
 export function stop(method: Metric): void {
     let end = performance.now();
     let duration = end - tracker[method];
-    metric.duration(method, duration);
-    metric.duration(Metric.Latency, duration);
-    metric.counter(Metric.InvokeCount);
+    metric.accumulate(method, duration);
+    metric.accumulate(Metric.TotalDuration, duration);
+    metric.count(Metric.InvokeCount);
 }
 
 export async function idle(method: Metric): Promise<void> {

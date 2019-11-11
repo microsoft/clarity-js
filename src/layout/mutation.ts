@@ -65,7 +65,7 @@ function handle(m: MutationRecord[]): void {
 }
 
 async function process(): Promise<void> {
-    let timer = Metric.MutationLatency;
+    let timer = Metric.MutationDuration;
     task.start(timer);
     while (mutations.length > 0) {
       let mutation = mutations.shift();
