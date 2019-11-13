@@ -1,4 +1,5 @@
-import {Event, Token} from "@clarity-types/data";
+import {Event, Metric, Token} from "@clarity-types/data";
+import * as task from "@src/core/task";
 import time from "@src/core/time";
 import { observe } from "@src/data/target";
 import { queue } from "@src/data/upload";
@@ -10,9 +11,11 @@ import * as selection from "./selection";
 import * as unload from "./unload";
 import * as visibility from "./visibility";
 
-export default function(type: Event): void {
+export default async function(type: Event): Promise<void> {
     let t = time();
     let tokens: Token[] = [t, type];
+    let timer = Metric.InteractionDuration;
+    task.start(timer);
     switch (type) {
         case Event.MouseDown:
         case Event.MouseUp:
@@ -26,6 +29,7 @@ export default function(type: Event): void {
         case Event.TouchMove:
         case Event.TouchCancel:
             for (let i = 0; i < pointer.data[type].length; i++) {
+                if (task.blocking(timer)) { await task.idle(timer); }
                 let entry = pointer.data[type][i];
                 tokens = [entry.time, type];
                 tokens.push(observe(entry.target));
@@ -66,6 +70,7 @@ export default function(type: Event): void {
             break;
         case Event.Scroll:
             for (let i = 0; i < scroll.data.length; i++) {
+                if (task.blocking(timer)) { await task.idle(timer); }
                 let entry = scroll.data[i];
                 tokens = [entry.time, type];
                 tokens.push(observe(entry.target));
@@ -82,4 +87,5 @@ export default function(type: Event): void {
             visibility.reset();
             break;
     }
+    task.stop(timer);
 }

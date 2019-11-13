@@ -1,3 +1,10 @@
+/* Helper Interfaces */
+export interface PointerQueue {
+    time: number;
+    target: Element;
+    data: PointerData;
+}
+
 /* Event Data */
 export interface InputChangeData {
     target: number;

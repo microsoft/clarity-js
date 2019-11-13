@@ -2,6 +2,7 @@ import { Event } from "@clarity-types/data";
 import { PointerData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
+import * as task from "@src/core/task";
 import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
 import { getId } from "@src/layout/dom";
@@ -59,13 +60,20 @@ function handler(event: Event, current: PointerData): void {
             data[event].push(current);
 
             clearTimeout(timeout);
-            timeout = setTimeout(encode, config.lookahead, event);
+            timeout = setTimeout(process, config.lookahead, event);
             break;
         default:
             data[event].push(current);
-            encode(event);
+            process(event);
             break;
     }
+}
+
+function process(event: Event): void {
+    let t = time();
+    task.schedule(encode.bind(this, event)).then(() => {
+        console.log(`Event ${event} => Queued at: ${t} | Processed at: ${time()}`);
+    });
 }
 
 export function reset(): void {
