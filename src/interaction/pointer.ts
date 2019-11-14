@@ -1,14 +1,13 @@
 import { Event } from "@clarity-types/data";
-import { PointerData } from "@clarity-types/interaction";
+import { PointerState } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
-import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
-export let data: { [key: number]: PointerData[] } = {};
+export let data: PointerState[] = [];
 let timeout: number = null;
 
 export function start(): void {
@@ -29,42 +28,42 @@ function mouse(event: Event, evt: MouseEvent): void {
     let de = document.documentElement;
     let x = "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null);
     let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null);
-    let id = evt.target ? getId(evt.target as Node) : null;
+    let target = evt.target ? evt.target as Node : null;
     event = event === Event.Click && (evt.buttons === 2 || evt.button === 2) ? Event.RightClick : event;
-    handler(event, {target: id, x, y, time: time()});
+    handler({ time: time(), event, data: { target, x, y } });
 }
 
 function touch(event: Event, evt: TouchEvent): void {
     let de = document.documentElement;
     let touches = evt.changedTouches;
-    let id = evt.target ? getId(evt.target as Node) : null;
+    let target = evt.target ? evt.target as Node : null;
     let t = time();
     if (touches) {
         for (let i = 0; i < touches.length; i++) {
             let entry = touches[i];
             let x = "clientX" in entry ? Math.round(entry["clientX"] + de.scrollLeft) : null;
             let y = "clientY" in entry ? Math.round(entry["clientY"] + de.scrollTop) : null;
-            handler(event, {target: id, x, y, time: t});
+            handler({ time: t, event, data: { target, x, y } });
         }
     }
 }
 
-function handler(event: Event, current: PointerData): void {
-    switch (event) {
+function handler(current: PointerState): void {
+    switch (current.event) {
         case Event.MouseMove:
         case Event.MouseWheel:
         case Event.TouchMove:
-            let length = data[event].length;
-            let last = length > 1 ? data[event][length - 2] : null;
-            if (last && similar(last, current)) { data[event].pop(); }
-            data[event].push(current);
+            let length = data.length;
+            let last = length > 1 ? data[length - 2] : null;
+            if (last && similar(last, current)) { data.pop(); }
+            data.push(current);
 
             clearTimeout(timeout);
-            timeout = setTimeout(process, config.lookahead, event);
+            timeout = setTimeout(process, config.lookahead, current.event);
             break;
         default:
-            data[event].push(current);
-            process(event);
+            data.push(current);
+            process(current.event);
             break;
     }
 }
@@ -77,23 +76,19 @@ function process(event: Event): void {
 }
 
 export function reset(): void {
-    data = {};
-    let mouseEvents = [Event.MouseDown, Event.MouseUp, Event.MouseWheel, Event.MouseMove, Event.DoubleClick, Event.Click, Event.RightClick];
-    let touchEvents = [Event.TouchStart, Event.TouchMove, Event.TouchEnd, Event.TouchCancel];
-    let events = mouseEvents.concat(touchEvents);
-    for (let event of events) {
-        data[event] = [];
-    }
+    data = [];
 }
 
-function similar(last: PointerData, current: PointerData): boolean {
-    let dx = last.x - current.x;
-    let dy = last.y - current.y;
+function similar(last: PointerState, current: PointerState): boolean {
+    let dx = last.data.x - current.data.x;
+    let dy = last.data.y - current.data.y;
     let distance = Math.sqrt(dx * dx + dy * dy);
-    return (distance < config.distance) && (current.time - last.time < config.interval) && current.target === last.target;
+    let gap = current.time - last.time;
+    return current.event === last.event && distance < config.distance && gap < config.interval && current.data.target === last.data.target;
 }
 
 export function end(): void {
     clearTimeout(timeout);
-    data = {};
+    // Send out any pending pointer events in the pipeline
+    if (data.length > 0) { process(data[data.length - 1].event); }
 }

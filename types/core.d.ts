@@ -35,7 +35,3 @@ export interface Config {
     onstart?: (data: ClarityInfo) => void;
     upload?: (data: string, sequence?: number, last?: boolean) => void;
 }
-
-export interface TaskTiming {
-    [key: number]: number;
-}

@@ -28,13 +28,13 @@ export default async function(type: Event): Promise<void> {
         case Event.TouchEnd:
         case Event.TouchMove:
         case Event.TouchCancel:
-            for (let i = 0; i < pointer.data[type].length; i++) {
+            for (let i = 0; i < pointer.data.length; i++) {
                 if (task.blocking(timer)) { await task.idle(timer); }
-                let entry = pointer.data[type][i];
-                tokens = [entry.time, type];
-                tokens.push(observe(entry.target));
-                tokens.push(entry.x);
-                tokens.push(entry.y);
+                let entry = pointer.data[i];
+                tokens = [entry.time, entry.event];
+                tokens.push(observe(entry.data.target as Node));
+                tokens.push(entry.data.x);
+                tokens.push(entry.data.y);
                 queue(tokens);
             }
             pointer.reset();
