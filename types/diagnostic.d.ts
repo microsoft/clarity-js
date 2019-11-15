@@ -1,5 +1,6 @@
-/* Event Data */
+import { Target } from "./data";
 
+/* Event Data */
 export interface ScriptErrorData {
     source: string;
     message: string;
@@ -10,5 +11,5 @@ export interface ScriptErrorData {
 
 export interface ImageErrorData {
     source: string;
-    target: number;
+    target: Target;
 }

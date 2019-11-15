@@ -2,8 +2,8 @@ import { Event } from "@clarity-types/data";
 import { SelectionData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
+import { schedule } from "@src/core/task";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
-import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
 export let data: SelectionData = null;
@@ -22,29 +22,30 @@ function recompute(): void {
     // Bail out if we don't have a valid selection
     if (current === null) { return; }
 
-    let anchorNode = getId(current.anchorNode);
-    let focusNode = getId(current.focusNode);
-
     // Bail out if we got valid selection but not valid nodes
     // In Edge, selectionchange gets fired even on interactions like right clicks and
     // can result in null anchorNode and focusNode if there was no previous selection on page
-    if (anchorNode === null && focusNode === null) { return; }
+    if (current.anchorNode === null && current.focusNode === null) { return; }
 
-    if (previous !== null && data.start !== null && data.start !== anchorNode) {
+    if (previous !== null && data.start !== null && data.start !== current.anchorNode) {
         clearTimeout(timeout);
-        encode(Event.Selection);
+        process(Event.Selection);
     }
 
     data = {
-        start: anchorNode,
+        start: current.anchorNode,
         startOffset: current.anchorOffset,
-        end: focusNode,
+        end: current.focusNode,
         endOffset: current.focusOffset
     };
     previous = current;
 
     clearTimeout(timeout);
-    timeout = setTimeout(encode, config.lookahead, Event.Selection);
+    timeout = setTimeout(process, config.lookahead, Event.Selection);
+}
+
+function process(event: Event): void {
+    schedule(encode.bind(this, event));
 }
 
 export function reset(): void {

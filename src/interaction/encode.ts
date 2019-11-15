@@ -1,4 +1,5 @@
-import {Event, Token} from "@clarity-types/data";
+import {Event, Metric, Token} from "@clarity-types/data";
+import * as task from "@src/core/task";
 import time from "@src/core/time";
 import { observe } from "@src/data/target";
 import { queue } from "@src/data/upload";
@@ -10,9 +11,11 @@ import * as selection from "./selection";
 import * as unload from "./unload";
 import * as visibility from "./visibility";
 
-export default function(type: Event): void {
+export default async function(type: Event): Promise<void> {
     let t = time();
     let tokens: Token[] = [t, type];
+    let timer = Metric.InteractionDuration;
+    task.start(timer);
     switch (type) {
         case Event.MouseDown:
         case Event.MouseUp:
@@ -25,12 +28,13 @@ export default function(type: Event): void {
         case Event.TouchEnd:
         case Event.TouchMove:
         case Event.TouchCancel:
-            for (let i = 0; i < pointer.data[type].length; i++) {
-                let entry = pointer.data[type][i];
-                tokens = [entry.time, type];
-                tokens.push(observe(entry.target));
-                tokens.push(entry.x);
-                tokens.push(entry.y);
+            for (let i = 0; i < pointer.data.length; i++) {
+                if (task.shouldYield(timer)) { await task.pause(timer); }
+                let entry = pointer.data[i];
+                tokens = [entry.time, entry.event];
+                tokens.push(observe(entry.data.target as Node));
+                tokens.push(entry.data.x);
+                tokens.push(entry.data.y);
                 queue(tokens);
             }
             pointer.reset();
@@ -50,27 +54,28 @@ export default function(type: Event): void {
             break;
         case Event.InputChange:
             let ch = change.data;
-            tokens.push(observe(ch.target));
+            tokens.push(observe(ch.target as Node));
             tokens.push(ch.value);
             queue(tokens);
             change.reset();
             break;
         case Event.Selection:
             let s = selection.data;
-            tokens.push(observe(s.start));
+            tokens.push(observe(s.start as Node));
             tokens.push(s.startOffset);
-            tokens.push(observe(s.end));
+            tokens.push(observe(s.end as Node));
             tokens.push(s.endOffset);
             queue(tokens);
             selection.reset();
             break;
         case Event.Scroll:
             for (let i = 0; i < scroll.data.length; i++) {
+                if (task.shouldYield(timer)) { await task.pause(timer); }
                 let entry = scroll.data[i];
                 tokens = [entry.time, type];
-                tokens.push(observe(entry.target));
-                tokens.push(entry.x);
-                tokens.push(entry.y);
+                tokens.push(observe(entry.data.target as Node));
+                tokens.push(entry.data.x);
+                tokens.push(entry.data.y);
                 queue(tokens);
             }
             scroll.reset();
@@ -82,4 +87,5 @@ export default function(type: Event): void {
             visibility.reset();
             break;
     }
+    task.stop(timer);
 }

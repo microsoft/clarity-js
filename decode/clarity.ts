@@ -145,7 +145,7 @@ export function render(decoded: DecodedPayload, iframe: HTMLIFrameElement, heade
     // Reset rendering if we receive a new pageId or we receive the first sequence
     if (pageId !== decoded.envelope.pageId || decoded.envelope.sequence === 1) {
         pageId = decoded.envelope.pageId;
-        r.reset();
+        reset();
     }
 
     // Replay events
@@ -156,6 +156,10 @@ export function render(decoded: DecodedPayload, iframe: HTMLIFrameElement, heade
         }
     }
     replay(events.sort(sort), iframe, header);
+}
+
+export function reset(): void {
+    r.reset();
 }
 
 export async function replay(events: DecodedEvent[], iframe: HTMLIFrameElement, header?: HTMLElement): Promise<void> {

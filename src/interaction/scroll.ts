@@ -1,13 +1,13 @@
 import { Event } from "@clarity-types/data";
-import { ScrollData } from "@clarity-types/interaction";
+import { ScrollState } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
+import { schedule } from "@src/core/task";
 import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
-import { getId } from "@src/layout/dom";
 import encode from "./encode";
 
-export let data: ScrollData[] = [];
+export let data: ScrollState[] = [];
 let timeout: number = null;
 
 export function start(): void {
@@ -16,11 +16,10 @@ export function start(): void {
 }
 
 function recompute(event: UIEvent = null): void {
-    let eventTarget = event ? (event.target === document ? document.documentElement : event.target) : document.documentElement;
-    let x = Math.round((eventTarget as HTMLElement).scrollLeft);
-    let y = Math.round((eventTarget as HTMLElement).scrollTop);
-    let id = getId(eventTarget as Node);
-    let current: ScrollData = {target: id, x, y, time: time()};
+    let target = event ? (event.target === document ? document.documentElement : event.target) as HTMLElement : document.documentElement;
+    let x = Math.round(target.scrollLeft);
+    let y = Math.round(target.scrollTop);
+    let current: ScrollState = { time: time(), event: Event.Scroll, data: {target, x, y} };
 
     // We don't send any scroll events if this is the first event and the current position is top (0,0)
     if (event === null && x === 0 && y === 0) { return; }
@@ -31,16 +30,20 @@ function recompute(event: UIEvent = null): void {
     data.push(current);
 
     clearTimeout(timeout);
-    timeout = setTimeout(encode, config.lookahead, Event.Scroll);
+    timeout = setTimeout(process, config.lookahead, Event.Scroll);
 }
 
 export function reset(): void {
     data = [];
 }
 
-function similar(last: ScrollData, current: ScrollData): boolean {
-    let dx = last.x - current.x;
-    let dy = last.y - current.y;
+function process(event: Event): void {
+    schedule(encode.bind(this, event));
+}
+
+function similar(last: ScrollState, current: ScrollState): boolean {
+    let dx = last.data.x - current.data.x;
+    let dy = last.data.y - current.data.y;
     return (dx * dx + dy * dy < config.distance * config.distance) && (current.time - last.time < config.interval);
 }
 

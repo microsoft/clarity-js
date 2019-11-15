@@ -1,7 +1,7 @@
 import { Event } from "@clarity-types/data";
 import { ImageErrorData } from "@clarity-types/diagnostic";
 import { bind } from "@src/core/event";
-import { getId } from "@src/layout/dom";
+import { schedule } from "@src/core/task";
 import encode from "./encode";
 
 export let data: ImageErrorData;
@@ -13,10 +13,7 @@ export function start(): void {
 function handler(error: ErrorEvent): void {
     let target = error.target as HTMLElement;
     if (target && target.tagName === "IMG") {
-        data = {
-            source: (target as HTMLImageElement).src,
-            target: getId(target)
-        };
-        encode(Event.ImageError);
+        data = { source: (target as HTMLImageElement).src, target };
+        schedule(encode.bind(this, Event.ImageError));
     }
 }

@@ -1,14 +1,28 @@
+import { Target } from "./data";
+
+/* Helper Interfaces */
+export interface PointerState {
+    time: number;
+    event: number;
+    data: PointerData;
+}
+
+export interface ScrollState {
+    time: number;
+    event: number;
+    data: ScrollData;
+}
+
 /* Event Data */
 export interface InputChangeData {
-    target: number;
+    target: Target;
     value: string;
 }
 
 export interface PointerData {
-    target: number;
+    target: Target;
     x: number;
     y: number;
-    time?: number;
 }
 
 export interface ResizeData {
@@ -17,16 +31,15 @@ export interface ResizeData {
 }
 
 export interface ScrollData {
-    target: number;
+    target: Target;
     x: number;
     y: number;
-    time?: number;
 }
 
 export interface SelectionData {
-    start: number;
+    start: Target;
     startOffset: number;
-    end: number;
+    end: Target;
     endOffset: number;
 }
 

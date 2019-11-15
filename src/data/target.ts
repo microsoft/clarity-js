@@ -10,15 +10,20 @@ export function reset(): void {
     queue = {};
 }
 
-export function observe(id: number): number {
-    if (id !== null && !(id in queue)) {
-        let value = dom.getValue(id);
-        let node = dom.getNode(id) as Element;
-        queue[id] = {
-            id,
-            hash: value ? hash(value.selector) : "",
-            box: node && node.nodeType !== Node.TEXT_NODE ? layout(node) : null
-        };
+export function observe(node: Node): number {
+    let id = null;
+    if (node !== null) {
+        let value = dom.get(node);
+        if (value !== null) {
+            id = value.id;
+            if (id !== null && !(id in queue)) {
+                queue[id] = {
+                    id,
+                    hash: value ? hash(value.selector) : "",
+                    box: node && node.nodeType !== Node.TEXT_NODE ? layout(node as Element) : null
+                };
+            }
+        }
     }
     return id;
 }

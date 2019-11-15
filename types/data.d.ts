@@ -1,3 +1,4 @@
+export type Target = (number | Node);
 export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
 
@@ -52,7 +53,10 @@ export const enum Metric {
     DiscoverDuration = 8,
     MutationDuration = 9,
     BoxModelDuration = 10,
-    MaxThreadBlockedDuration = 11
+    MaxThreadBlockedDuration = 11,
+    DataDuration = 12,
+    DiagnosticDuration = 13,
+    InteractionDuration = 14
 }
 
 export const enum Upload {
