@@ -5,7 +5,7 @@ import { queue } from "@src/data/upload";
 import * as image from "@src/diagnostic/image";
 import * as script from "@src/diagnostic/script";
 
-export default function(type: Event): Token[] {
+export default async function(type: Event): Promise<void> {
     let tokens: Token[] = [time(), type];
 
     switch (type) {
@@ -23,6 +23,4 @@ export default function(type: Event): Token[] {
             queue(tokens);
             break;
     }
-
-    return tokens;
 }

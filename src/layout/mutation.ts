@@ -73,11 +73,11 @@ async function process(): Promise<void> {
 
       switch (mutation.type) {
         case "attributes":
-            if (task.blocking(timer)) { await task.idle(timer); }
+            if (task.shouldYield(timer)) { await task.pause(timer); }
             processNode(target, Source.Attributes);
             break;
         case "characterData":
-            if (task.blocking(timer)) { await task.idle(timer); }
+            if (task.shouldYield(timer)) { await task.pause(timer); }
             processNode(target, Source.CharacterData);
             break;
         case "childList":
@@ -87,7 +87,7 @@ async function process(): Promise<void> {
             let walker = document.createTreeWalker(mutation.addedNodes[j], NodeFilter.SHOW_ALL, null, false);
             let node = walker.currentNode;
             while (node) {
-                if (task.blocking(timer)) { await task.idle(timer); }
+                if (task.shouldYield(timer)) { await task.pause(timer); }
                 processNode(node, Source.ChildListAdd);
                 node = walker.nextNode();
             }
@@ -95,7 +95,7 @@ async function process(): Promise<void> {
           // Process removes
           let removedLength = mutation.removedNodes.length;
           for (let j = 0; j < removedLength; j++) {
-            if (task.blocking(timer)) { await task.idle(timer); }
+            if (task.shouldYield(timer)) { await task.pause(timer); }
             processNode(mutation.removedNodes[j], Source.ChildListRemove);
           }
           break;

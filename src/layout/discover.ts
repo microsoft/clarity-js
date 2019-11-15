@@ -22,7 +22,7 @@ async function discover(): Promise<void> {
     let walker = document.createTreeWalker(document, NodeFilter.SHOW_ALL, null, false);
     let node = walker.nextNode();
     while (node) {
-        if (task.blocking(timer)) { await task.idle(timer); }
+        if (task.shouldYield(timer)) { await task.pause(timer); }
         processNode(node, Source.Discover);
         node = walker.nextNode();
     }

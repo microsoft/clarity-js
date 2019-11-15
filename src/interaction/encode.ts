@@ -29,7 +29,7 @@ export default async function(type: Event): Promise<void> {
         case Event.TouchMove:
         case Event.TouchCancel:
             for (let i = 0; i < pointer.data.length; i++) {
-                if (task.blocking(timer)) { await task.idle(timer); }
+                if (task.shouldYield(timer)) { await task.pause(timer); }
                 let entry = pointer.data[i];
                 tokens = [entry.time, entry.event];
                 tokens.push(observe(entry.data.target as Node));
@@ -70,7 +70,7 @@ export default async function(type: Event): Promise<void> {
             break;
         case Event.Scroll:
             for (let i = 0; i < scroll.data.length; i++) {
-                if (task.blocking(timer)) { await task.idle(timer); }
+                if (task.shouldYield(timer)) { await task.pause(timer); }
                 let entry = scroll.data[i];
                 tokens = [entry.time, type];
                 tokens.push(observe(entry.data.target as Node));
