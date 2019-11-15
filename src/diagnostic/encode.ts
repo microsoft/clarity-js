@@ -19,7 +19,7 @@ export default function(type: Event): Token[] {
             break;
         case Event.ImageError:
             tokens.push(image.data.source);
-            tokens.push(observe(image.data.target));
+            tokens.push(observe(image.data.target as Node));
             queue(tokens);
             break;
     }

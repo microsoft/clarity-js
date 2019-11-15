@@ -20,9 +20,9 @@ METRIC_MAP[Metric.DiscoverDuration] = { name: "Discover", unit: "ms"};
 METRIC_MAP[Metric.MutationDuration] = { name: "Mutation", unit: "ms"};
 METRIC_MAP[Metric.BoxModelDuration] = { name: "BoxModel", unit: "ms"};
 METRIC_MAP[Metric.MaxThreadBlockedDuration] = { name: "Thread Blocked", unit: "ms"};
-METRIC_MAP[Metric.DataDuration] = { name: "Data Duration", unit: "ms"};
-METRIC_MAP[Metric.DiagnosticDuration] = { name: "Diagnostic Duration", unit: "ms"};
-METRIC_MAP[Metric.InteractionDuration] = { name: "Interaction Duration", unit: "ms"};
+METRIC_MAP[Metric.DataDuration] = { name: "Data", unit: "ms"};
+METRIC_MAP[Metric.DiagnosticDuration] = { name: "Diagnostic", unit: "ms"};
+METRIC_MAP[Metric.InteractionDuration] = { name: "Interaction", unit: "ms"};
 
 // tslint:disable-next-line: max-line-length
 let pointerIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S912AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6AAAdTAAAOpgAAA6lwAAF2+XqZnUAAACaUlEQVR4nGL8f58BHYgAsT8Q2wGxBBAzQcX/AfFrID4CxOuA+BWKLoX/YAoggBjRDHQD4ngglgRiPgyrIOAzEL8E4lVQg1EMBAggFiSFYUAcA8RSOAyCAV4oTgViTiBeiiwJEEAw71gRaRgyEAXiKCB2RBYECCCQgcIMEG+SYhgMiANxEhDzwwQAAghkoAMQK5NhGAwoALE1jAMQQCADQU7mpMBAZqijwAAggEAGqgAxOwUGskHNAAOAAAIZyEtIh4INg3bfHHD6xAUEYAyAAAIZ+IuQgU9fMLCXdzDIzV3JIIhDyQ8YAyCAQAaCUv8/fAZysDP8+/OXgTG7jkFhwRoMQ0F6n8M4AAEEMvAKsg34wM9fDEwgQ1dtRSQTIPgNxFdhHIAAAhm4AYg/EmMgCHz7zsCUVMaguHob3FCQYzbD5AECCGTgJSDeCbWJKPD1GwNzSjmD4tZ9DFxgvQr/b8PkAAIIlvVWA/FuUgz99IWBOTyXQcE+nOEOsjhAACGXNnJAHAnE9kAshqyIV5vB4Ms3cALGBkAlj9////9PgTgAAcSEJPEIiDuBeBYQP2CAhOt3BsLJCpSfNzAyMpqDOAABhF4ewh3FAMmf2kAsyqnBUPDjJ8HcdBvoSjWAAGIEEgTUMTAAbf/AwICSVGCgD4hPgJQA8WegWdsBAogFiyJC4C0QgxI3KLj4gIasRpYECCAGkAsJYSAAuRDEAKUEQwZIzgDxvwCxCrJagAAi1kAQAYpFESh/BlQMhJuR1QIEELEGlgOxHBLflAGSh0Gc60DMBpMDCCCiDMRhyXoGSJUaDgpPmDhAgAEAN5Ugk0bMYNIAAAAASUVORK5CYII=";
@@ -228,7 +228,7 @@ function setAttributes(node: HTMLElement, attributes: object): void {
 }
 
 export function scroll(data: ScrollData, iframe: HTMLIFrameElement): void {
-    let target = getNode(data.target);
+    let target = getNode(data.target as number);
     if (target) { target.scrollTo(data.x, data.y); }
 }
 
@@ -254,14 +254,14 @@ export function resize(data: ResizeData, iframe: HTMLIFrameElement): void {
 }
 
 export function change(data: InputChangeData, iframe: HTMLIFrameElement): void {
-    let el = element(data.target) as HTMLInputElement;
+    let el = element(data.target as number) as HTMLInputElement;
     if (el) { el.value = data.value; }
 }
 
 export function selection(data: SelectionData, iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     let s = doc.getSelection();
-    s.setBaseAndExtent(element(data.start), data.startOffset, element(data.end), data.endOffset);
+    s.setBaseAndExtent(element(data.start as number), data.startOffset, element(data.end as number), data.endOffset);
 }
 
 export function pointer(event: Event, data: PointerData, iframe: HTMLIFrameElement): void {

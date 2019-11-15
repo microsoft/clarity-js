@@ -54,16 +54,16 @@ export default async function(type: Event): Promise<void> {
             break;
         case Event.InputChange:
             let ch = change.data;
-            tokens.push(observe(ch.target));
+            tokens.push(observe(ch.target as Node));
             tokens.push(ch.value);
             queue(tokens);
             change.reset();
             break;
         case Event.Selection:
             let s = selection.data;
-            tokens.push(observe(s.start));
+            tokens.push(observe(s.start as Node));
             tokens.push(s.startOffset);
-            tokens.push(observe(s.end));
+            tokens.push(observe(s.end as Node));
             tokens.push(s.endOffset);
             queue(tokens);
             selection.reset();
@@ -73,9 +73,9 @@ export default async function(type: Event): Promise<void> {
                 if (task.blocking(timer)) { await task.idle(timer); }
                 let entry = scroll.data[i];
                 tokens = [entry.time, type];
-                tokens.push(observe(entry.target));
-                tokens.push(entry.x);
-                tokens.push(entry.y);
+                tokens.push(observe(entry.data.target as Node));
+                tokens.push(entry.data.x);
+                tokens.push(entry.data.y);
                 queue(tokens);
             }
             scroll.reset();

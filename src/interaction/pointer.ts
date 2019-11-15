@@ -2,7 +2,7 @@ import { Event } from "@clarity-types/data";
 import { PointerState } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
-import * as task from "@src/core/task";
+import { schedule } from "@src/core/task";
 import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
 import encode from "./encode";
@@ -69,10 +69,7 @@ function handler(current: PointerState): void {
 }
 
 function process(event: Event): void {
-    let t = time();
-    task.schedule(encode.bind(this, event)).then(() => {
-        console.log(`Event ${event} => Queued at: ${t} | Processed at: ${time()}`);
-    });
+    schedule(encode.bind(this, event));
 }
 
 export function reset(): void {
