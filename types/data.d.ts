@@ -41,7 +41,7 @@ export const enum Event {
     Target = 33,
     LongTask = 34,
     Paint = 35,
-    Contentful = 36,
+    ContentfulPaint = 36,
     Memory = 37,
     Connection = 38
 }

@@ -1,16 +1,21 @@
-
 import { BooleanFlag, Target } from "./data";
 
 /* Helper Interface */
 
 // Reference: https://wicg.github.io/largest-contentful-paint/
-export interface LargestContentfulPaint extends PerformanceEntry {
+export interface LargestContentfulPaintEntry extends PerformanceEntry {
     renderTime: DOMHighResTimeStamp;
     loadTime: DOMHighResTimeStamp;
     size: number;
     id: string;
     url: string;
     element?: Element;
+}
+
+// Reference: https://w3c.github.io/longtasks/#sec-PerformanceLongTaskTiming
+export interface LongTaskEntry extends PerformanceEntry {
+    duration: number;
+    attribution: string;
 }
 
 // Reference: https://wicg.github.io/netinfo/#networkinformation-interface
@@ -47,6 +52,7 @@ export interface NetworkState {
 /* Event Data */
 export interface LongTaskData {
     duration: number;
+    attribution: string;
 }
 
 export interface PaintData {
@@ -63,7 +69,7 @@ export interface NetworkData {
     host: string;
 }
 
-export interface LargestContentfulData {
+export interface LargestContentfulPaintData {
     load: number;
     render: number;
     size: number;
@@ -79,7 +85,9 @@ export interface NavigationData {
     responseEnd: number;
     domInteractive: number;
     domComplete: number;
+    loadEventStart: number;
     loadEventEnd: number;
+    redirectCount: number;
     size: number;
     type: string;
     protocol: string;

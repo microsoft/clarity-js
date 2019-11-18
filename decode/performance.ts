@@ -1,6 +1,6 @@
 import { Event, Token } from "../types/data";
 import { PerformanceEvent } from "../types/decode/performance";
-import { ConnectionData, LargestContentfulData, LongTaskData, MemoryData } from "../types/performance";
+import { ConnectionData, LargestContentfulPaintData, LongTaskData, MemoryData } from "../types/performance";
 import { NavigationData, NetworkData, PaintData } from "../types/performance";
 
 export function decode(tokens: Token[]): PerformanceEvent  {
@@ -15,8 +15,8 @@ export function decode(tokens: Token[]): PerformanceEvent  {
                 type: tokens[5] as string
             };
             return { time, event, data: connectionData };
-        case Event.Contentful:
-            let contentfulData: LargestContentfulData = {
+        case Event.ContentfulPaint:
+            let contentfulData: LargestContentfulPaintData = {
                 load: tokens[2] as number,
                 render: tokens[3] as number,
                 size: tokens[4] as number,
@@ -24,7 +24,10 @@ export function decode(tokens: Token[]): PerformanceEvent  {
             };
             return { time, event, data: contentfulData };
         case Event.LongTask:
-            let longTaskData: LongTaskData = { duration: tokens[2] as number };
+            let longTaskData: LongTaskData = {
+                duration: tokens[2] as number,
+                attribution: tokens[3] as string
+            };
             return { time, event, data: longTaskData };
         case Event.Memory:
             let memoryData: MemoryData = {
@@ -43,10 +46,12 @@ export function decode(tokens: Token[]): PerformanceEvent  {
                 responseEnd: tokens[7] as number,
                 domInteractive: tokens[8] as number,
                 domComplete: tokens[9] as number,
-                loadEventEnd: tokens[10] as number,
-                size: tokens[11] as number,
-                type: tokens[12] as string,
-                protocol: tokens[13] as string
+                loadEventStart: tokens[10] as number,
+                loadEventEnd: tokens[11] as number,
+                redirectCount: tokens[12] as number,
+                size: tokens[13] as number,
+                type: tokens[14] as string,
+                protocol: tokens[15] as string
             };
             return { time, event, data: navigationData };
         case Event.Network:
@@ -71,6 +76,10 @@ export function decode(tokens: Token[]): PerformanceEvent  {
                         network.push(token);
                         break;
                     case "object":
+                        // Reference: src/data/token.ts
+                        // Continuing the example used above, following code expands an array of tokens by getting rid of any optimizations
+                        // E.g. Current token: [1,3], from array of tokens: ["hello", "world", "coding", "language", [1, 3], "example"]
+                        // Following code will expand [1,3] into "world", "language".
                         let subtoken = token[0];
                         let subtype = typeof(subtoken);
                         switch (subtype) {

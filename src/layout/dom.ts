@@ -63,7 +63,7 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
         metadata: { active: true, boxmodel: false, masked }
     };
     updateSelector(values[id]);
-    meta(data.tag, id, parentId);
+    metadata(data.tag, id, parentId);
     track(id, source);
 }
 
@@ -119,7 +119,7 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
 
         // Update selector
         updateSelector(value);
-        meta(data.tag, id, parentId);
+        metadata(data.tag, id, parentId);
         track(id, source, changed);
     }
 }
@@ -225,7 +225,7 @@ function remove(id: number, source: Source): void {
     value.children = [];
 }
 
-function meta(tag: string, id: number, parentId: number): void {
+function metadata(tag: string, id: number, parentId: number): void {
     if (id !== null && parentId !== null) {
         let value = values[id];
         let attributes = "attributes" in value.data ? value.data.attributes : {};

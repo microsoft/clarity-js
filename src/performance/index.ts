@@ -1,5 +1,5 @@
 import * as connection from "@src/performance/connection";
-import * as contentful from "@src/performance/contentful";
+import * as contentful from "@src/performance/contentfulPaint";
 import * as longtask from "@src/performance/longtask";
 import * as memory from "@src/performance/memory";
 import * as navigation from "@src/performance/navigation";

@@ -6,7 +6,7 @@ import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
 import { InputChangeEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
 import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
-import { ConnectionEvent, LargestContentfulEvent, LongTaskEvent, MemoryEvent } from "../types/decode/performance";
+import { ConnectionEvent, LargestContentfulPaintEvent, LongTaskEvent, MemoryEvent } from "../types/decode/performance";
 import { NavigationEvent, NetworkEvent, PaintEvent } from "../types/decode/performance";
 
 import * as data from "./data";
@@ -58,7 +58,7 @@ export function decode(input: string): DecodedPayload {
                 let metric = data.decode(entry) as MetricEvent;
                 // It's not possible to accurately include the byte count of the payload within the same payload
                 // So, we increment the bytes from the incoming payload at decode time.
-                // Alos, initialize TotalBytes if it doesn't exist. For the first payload, this value can be null.
+                // Also, initialize TotalBytes if it doesn't exist. For the first payload, this value can be null.
                 if (!(Metric.TotalBytes in metric.data)) { metric.data[Metric.TotalBytes] = 0; }
                 metric.data[Metric.TotalBytes] += input.length;
                 payload.metric.push(metric);
@@ -130,9 +130,9 @@ export function decode(input: string): DecodedPayload {
                 if (payload.connection === undefined) { payload.connection = []; }
                 payload.connection.push(performance.decode(entry) as ConnectionEvent);
                 break;
-            case Event.Contentful:
-                if (payload.contentful === undefined) { payload.contentful = []; }
-                payload.contentful.push(performance.decode(entry) as LargestContentfulEvent);
+            case Event.ContentfulPaint:
+                if (payload.contentfulPaint === undefined) { payload.contentfulPaint = []; }
+                payload.contentfulPaint.push(performance.decode(entry) as LargestContentfulPaintEvent);
                 break;
             case Event.LongTask:
                 if (payload.longtask === undefined) { payload.longtask = []; }

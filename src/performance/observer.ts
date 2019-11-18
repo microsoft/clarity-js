@@ -1,6 +1,6 @@
-import { LargestContentfulPaint } from "@clarity-types/performance";
+import { LargestContentfulPaintEntry, LongTaskEntry } from "@clarity-types/performance";
 import measure from "@src/core/measure";
-import * as contentful from "@src/performance/contentful";
+import * as contentful from "@src/performance/contentfulPaint";
 import * as longtask from "@src/performance/longtask";
 import * as memory from "@src/performance/memory";
 import * as navigation from "@src/performance/navigation";
@@ -31,10 +31,10 @@ function handle(entries: PerformanceObserverEntryList): void {
                 paint.compute(entry);
                 break;
             case "longtask":
-                longtask.compute(entry);
+                longtask.compute(entry as LongTaskEntry);
                 break;
             case "largest-contentful-paint":
-                contentful.compute(entry as LargestContentfulPaint);
+                contentful.compute(entry as LargestContentfulPaintEntry);
                 break;
         }
     }

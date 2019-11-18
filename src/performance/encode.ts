@@ -7,7 +7,7 @@ import tokenize from "@src/data/token";
 import { queue } from "@src/data/upload";
 import { getMatch } from "@src/layout/dom";
 import * as connection from "@src/performance/connection";
-import * as contentful from "@src/performance/contentful";
+import * as contentful from "@src/performance/contentfulPaint";
 import * as longtask from "@src/performance/longtask";
 import * as memory from "@src/performance/memory";
 import * as navigation from "@src/performance/navigation";
@@ -28,7 +28,7 @@ export default async function(type: Event): Promise<void> {
             connection.reset();
             queue(tokens);
             break;
-        case Event.Contentful:
+        case Event.ContentfulPaint:
             tokens.push(contentful.data.load);
             tokens.push(contentful.data.render);
             tokens.push(contentful.data.size);
@@ -39,6 +39,7 @@ export default async function(type: Event): Promise<void> {
         case Event.LongTask:
             tokens = [longtask.state.time, type];
             tokens.push(longtask.state.data.duration);
+            tokens.push(longtask.state.data.attribution);
             longtask.reset();
             queue(tokens);
             break;
@@ -58,7 +59,9 @@ export default async function(type: Event): Promise<void> {
             tokens.push(navigation.data.responseEnd);
             tokens.push(navigation.data.domInteractive);
             tokens.push(navigation.data.domComplete);
+            tokens.push(navigation.data.loadEventStart);
             tokens.push(navigation.data.loadEventEnd);
+            tokens.push(navigation.data.redirectCount);
             tokens.push(navigation.data.size);
             tokens.push(navigation.data.type);
             tokens.push(navigation.data.protocol);

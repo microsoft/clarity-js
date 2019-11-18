@@ -43,7 +43,7 @@ export function queue(data: Token[]): void {
                 metric.count(Metric.LayoutBytes, event.length);
                 break;
             case Event.Connection:
-            case Event.Contentful:
+            case Event.ContentfulPaint:
             case Event.LongTask:
             case Event.Memory:
             case Event.Navigation:
