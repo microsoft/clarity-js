@@ -6,11 +6,14 @@ import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
 import { InputChangeEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
 import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
+import { ConnectionEvent, LargestContentfulEvent, LongTaskEvent, MemoryEvent } from "../types/decode/performance";
+import { NavigationEvent, NetworkEvent, PaintEvent } from "../types/decode/performance";
 
 import * as data from "./data";
 import * as diagnostic from "./diagnostic";
 import * as interaction from "./interaction";
 import * as layout from "./layout";
+import * as performance from "./performance";
 import * as r from "./render";
 
 let pageId: string = null;
@@ -55,6 +58,8 @@ export function decode(input: string): DecodedPayload {
                 let metric = data.decode(entry) as MetricEvent;
                 // It's not possible to accurately include the byte count of the payload within the same payload
                 // So, we increment the bytes from the incoming payload at decode time.
+                // Alos, initialize TotalBytes if it doesn't exist. For the first payload, this value can be null.
+                if (!(Metric.TotalBytes in metric.data)) { metric.data[Metric.TotalBytes] = 0; }
                 metric.data[Metric.TotalBytes] += input.length;
                 payload.metric.push(metric);
                 break;
@@ -120,6 +125,34 @@ export function decode(input: string): DecodedPayload {
             case Event.ImageError:
                 if (payload.image === undefined) { payload.image = []; }
                 payload.image.push(diagnostic.decode(entry) as ImageErrorEvent);
+                break;
+            case Event.Connection:
+                if (payload.connection === undefined) { payload.connection = []; }
+                payload.connection.push(performance.decode(entry) as ConnectionEvent);
+                break;
+            case Event.Contentful:
+                if (payload.contentful === undefined) { payload.contentful = []; }
+                payload.contentful.push(performance.decode(entry) as LargestContentfulEvent);
+                break;
+            case Event.LongTask:
+                if (payload.longtask === undefined) { payload.longtask = []; }
+                payload.longtask.push(performance.decode(entry) as LongTaskEvent);
+                break;
+            case Event.Memory:
+                if (payload.memory === undefined) { payload.memory = []; }
+                payload.memory.push(performance.decode(entry) as MemoryEvent);
+                break;
+            case Event.Navigation:
+                if (payload.navigation === undefined) { payload.navigation = []; }
+                payload.navigation.push(performance.decode(entry) as NavigationEvent);
+                break;
+            case Event.Network:
+                if (payload.network === undefined) { payload.network = []; }
+                payload.network.push(performance.decode(entry) as NetworkEvent);
+                break;
+            case Event.Paint:
+                if (payload.paint === undefined) { payload.paint = []; }
+                payload.paint.push(performance.decode(entry) as PaintEvent);
                 break;
             default:
                 console.error(`No handler for Event: ${JSON.stringify(entry)}`);

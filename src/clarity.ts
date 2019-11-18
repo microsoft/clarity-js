@@ -7,6 +7,7 @@ import * as data from "@src/data";
 import * as diagnostic from "@src/diagnostic";
 import * as interaction from "@src/interaction";
 import * as layout from "@src/layout";
+import * as performance from "@src/performance";
 
 let status = false;
 
@@ -29,6 +30,7 @@ export function start(override: Config = {}): void {
     measure(diagnostic.start)();
     measure(layout.start)();
     measure(interaction.start)();
+    measure(performance.start)();
   }
 }
 
@@ -47,6 +49,7 @@ export function resume(): void {
 
 export function end(): void {
   if (status) {
+    measure(performance.end)();
     measure(interaction.end)();
     measure(layout.end)();
     measure(diagnostic.end)();

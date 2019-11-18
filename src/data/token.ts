@@ -1,10 +1,18 @@
-let tokens: string[] = [];
+import {Token} from "@clarity-types/data";
 
-export function check(hash: string): boolean {
-    let output = tokens.indexOf(hash) >= 0;
-    return output;
-}
-
-export function resolve(hash: string): string[] {
-    return check(hash) ? tokens[hash] : [];
+export default function(tokens: Token[], metadata: Token[]): Token[] {
+    let reference = null;
+    for (let token of metadata) {
+        let index = tokens.indexOf(token);
+        if (index >= 0) {
+            if (reference) { reference.push(index); } else {
+                reference = [index];
+                tokens.push(reference);
+            }
+        } else {
+            reference = null;
+            tokens.push(token);
+        }
+    }
+    return tokens;
 }

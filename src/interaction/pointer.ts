@@ -7,7 +7,7 @@ import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
 import encode from "./encode";
 
-export let data: PointerState[] = [];
+export let state: PointerState[] = [];
 let timeout: number = null;
 
 export function start(): void {
@@ -53,16 +53,16 @@ function handler(current: PointerState): void {
         case Event.MouseMove:
         case Event.MouseWheel:
         case Event.TouchMove:
-            let length = data.length;
-            let last = length > 1 ? data[length - 2] : null;
-            if (last && similar(last, current)) { data.pop(); }
-            data.push(current);
+            let length = state.length;
+            let last = length > 1 ? state[length - 2] : null;
+            if (last && similar(last, current)) { state.pop(); }
+            state.push(current);
 
             clearTimeout(timeout);
             timeout = setTimeout(process, config.lookahead, current.event);
             break;
         default:
-            data.push(current);
+            state.push(current);
             process(current.event);
             break;
     }
@@ -73,7 +73,7 @@ function process(event: Event): void {
 }
 
 export function reset(): void {
-    data = [];
+    state = [];
 }
 
 function similar(last: PointerState, current: PointerState): boolean {
@@ -87,5 +87,5 @@ function similar(last: PointerState, current: PointerState): boolean {
 export function end(): void {
     clearTimeout(timeout);
     // Send out any pending pointer events in the pipeline
-    if (data.length > 0) { process(data[data.length - 1].event); }
+    if (state.length > 0) { process(state[state.length - 1].event); }
 }

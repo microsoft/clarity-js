@@ -32,20 +32,25 @@ export const enum Event {
     InputChange = 24,
     Visibility = 25,
     Network = 26,
-    Performance = 27,
+    Navigation = 27,
     ScriptError = 28,
     ImageError = 29,
     Resource = 30,
     Summary = 31,
     Upload = 32,
-    Target = 33
+    Target = 33,
+    LongTask = 34,
+    Paint = 35,
+    Contentful = 36,
+    Memory = 37,
+    Connection = 38
 }
 
 export const enum Metric {
     TotalBytes = 0,
     LayoutBytes = 1,
     InteractionBytes = 2,
-    NetworkBytes = 3,
+    PerformanceBytes = 3,
     TargetBytes = 4,
     InvokeCount = 5,
     LongTaskCount = 6,
@@ -56,7 +61,8 @@ export const enum Metric {
     MaxThreadBlockedDuration = 11,
     DataDuration = 12,
     DiagnosticDuration = 13,
-    InteractionDuration = 14
+    InteractionDuration = 14,
+    PerformanceDuration = 15
 }
 
 export const enum Upload {

@@ -48,7 +48,7 @@ export default function(node: Node, source: Source): void {
                 case "HEAD":
                     let head = { tag, attributes: getAttributes(element.attributes) };
                     // Capture base href as part of discovering DOM
-                    if (call === "add") { head.attributes["*B"] = location.protocol + "//" + location.hostname; }
+                    head.attributes["*B"] = location.protocol + "//" + location.hostname;
                     dom[call](node, head, source);
                     break;
                 case "STYLE":
