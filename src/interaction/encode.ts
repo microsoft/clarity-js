@@ -54,19 +54,23 @@ export default async function(type: Event): Promise<void> {
             break;
         case Event.InputChange:
             let ch = change.data;
-            tokens.push(observe(ch.target as Node));
-            tokens.push(ch.value);
-            change.reset();
-            queue(tokens);
+            if (ch) {
+                tokens.push(observe(ch.target as Node));
+                tokens.push(ch.value);
+                change.reset();
+                queue(tokens);
+            }
             break;
         case Event.Selection:
             let s = selection.data;
-            tokens.push(observe(s.start as Node));
-            tokens.push(s.startOffset);
-            tokens.push(observe(s.end as Node));
-            tokens.push(s.endOffset);
-            selection.reset();
-            queue(tokens);
+            if (s) {
+                tokens.push(observe(s.start as Node));
+                tokens.push(s.startOffset);
+                tokens.push(observe(s.end as Node));
+                tokens.push(s.endOffset);
+                selection.reset();
+                queue(tokens);
+            }
             break;
         case Event.Scroll:
             for (let i = 0; i < scroll.state.length; i++) {

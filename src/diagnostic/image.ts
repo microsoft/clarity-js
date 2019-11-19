@@ -17,3 +17,7 @@ function handler(error: ErrorEvent): void {
         schedule(encode.bind(this, Event.ImageError));
     }
 }
+
+export function end(): void {
+    data = null;
+}

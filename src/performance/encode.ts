@@ -7,7 +7,7 @@ import tokenize from "@src/data/token";
 import { queue } from "@src/data/upload";
 import { getMatch } from "@src/layout/dom";
 import * as connection from "@src/performance/connection";
-import * as contentful from "@src/performance/contentfulPaint";
+import * as contentfulPaint from "@src/performance/contentfulPaint";
 import * as longtask from "@src/performance/longtask";
 import * as memory from "@src/performance/memory";
 import * as navigation from "@src/performance/navigation";
@@ -29,12 +29,17 @@ export default async function(type: Event): Promise<void> {
             queue(tokens);
             break;
         case Event.ContentfulPaint:
-            tokens.push(contentful.data.load);
-            tokens.push(contentful.data.render);
-            tokens.push(contentful.data.size);
-            tokens.push(observe(contentful.data.target as Node));
-            contentful.reset();
-            queue(tokens);
+            // Ensure that there's valid data before processing this event
+            // This is different from others because we use the schedule call to queue up encoding
+            // In an edge case, where clarity may tear down before this gets a chance to run, data will be null.
+            if (contentfulPaint.data) {
+                tokens.push(contentfulPaint.data.load);
+                tokens.push(contentfulPaint.data.render);
+                tokens.push(contentfulPaint.data.size);
+                tokens.push(observe(contentfulPaint.data.target as Node));
+                contentfulPaint.reset();
+                queue(tokens);
+            }
             break;
         case Event.LongTask:
             tokens = [longtask.state.time, type];

@@ -18,9 +18,11 @@ export default async function(type: Event): Promise<void> {
             queue(tokens);
             break;
         case Event.ImageError:
-            tokens.push(image.data.source);
-            tokens.push(observe(image.data.target as Node));
-            queue(tokens);
+            if (image.data) {
+                tokens.push(image.data.source);
+                tokens.push(observe(image.data.target as Node));
+                queue(tokens);
+            }
             break;
     }
 }
