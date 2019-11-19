@@ -184,7 +184,7 @@ export function getValue(id: number): NodeValue {
 
 export function get(node: Node): NodeValue {
     let id = getId(node);
-    return values[id];
+    return id in values ? values[id] : null;
 }
 
 export function has(node: Node): boolean {
