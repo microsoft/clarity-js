@@ -13,7 +13,10 @@ export function compute(entry: LongTaskEntry): void {
     state = { time: Math.round(entry.startTime),
         data: {
             duration: Math.round(entry.duration),
-            attribution: entry.attribution
+            attributionName: entry.attribution && entry.attribution.length > 0 ? entry.attribution[0].name : null,
+            attributionContainer: entry.attribution && entry.attribution.length > 0 ? entry.attribution[0].containerType : null,
+            attributionType: entry.attribution && entry.attribution.length > 0 ? entry.attribution[0].entryType : null,
+            name: entry.name
         }
     };
     encode(Event.LongTask);

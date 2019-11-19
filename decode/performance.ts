@@ -26,7 +26,10 @@ export function decode(tokens: Token[]): PerformanceEvent  {
         case Event.LongTask:
             let longTaskData: LongTaskData = {
                 duration: tokens[2] as number,
-                attribution: tokens[3] as string
+                attributionName: tokens[3] as string,
+                attributionContainer: tokens[4] as string,
+                attributionType: tokens[5] as string,
+                name: tokens[6] as string
             };
             return { time, event, data: longTaskData };
         case Event.Memory:

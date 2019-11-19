@@ -39,7 +39,10 @@ export default async function(type: Event): Promise<void> {
         case Event.LongTask:
             tokens = [longtask.state.time, type];
             tokens.push(longtask.state.data.duration);
-            tokens.push(longtask.state.data.attribution);
+            tokens.push(longtask.state.data.attributionName);
+            tokens.push(longtask.state.data.attributionContainer);
+            tokens.push(longtask.state.data.attributionType);
+            tokens.push(longtask.state.data.name);
             longtask.reset();
             queue(tokens);
             break;

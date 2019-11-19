@@ -15,7 +15,13 @@ export interface LargestContentfulPaintEntry extends PerformanceEntry {
 // Reference: https://w3c.github.io/longtasks/#sec-PerformanceLongTaskTiming
 export interface LongTaskEntry extends PerformanceEntry {
     duration: number;
-    attribution: string;
+    attribution: LongTaskAttribution[];
+}
+
+export interface LongTaskAttribution {
+    entryType: string;
+    containerType: string;
+    name: string;
 }
 
 // Reference: https://wicg.github.io/netinfo/#networkinformation-interface
@@ -52,7 +58,10 @@ export interface NetworkState {
 /* Event Data */
 export interface LongTaskData {
     duration: number;
-    attribution: string;
+    attributionName: string;
+    attributionContainer: string;
+    attributionType: string;
+    name: string;
 }
 
 export interface PaintData {
