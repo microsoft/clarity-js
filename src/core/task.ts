@@ -10,6 +10,13 @@ let counter: { [key: number]: number } = {};
 let queue: AsyncTask[] = [];
 let active: AsyncTask = null;
 
+export function reset(): void {
+    tracker = {};
+    counter = {};
+    queue = [];
+    active = null;
+}
+
 export async function schedule(task: TaskFunction): Promise<void> {
     // If this task is already scheduled, skip it
     for (let q of queue) {
@@ -69,9 +76,15 @@ export function stop(method: Metric): void {
 }
 
 export async function pause(method: Metric): Promise<void> {
-    stop(method);
-    await wait();
-    resume(method);
+    // Pause and yield the thread only if the task is still being tracked
+    // It's possible that Clarity is wrapping up instrumentation on a page and we are still in the middle of an async task.
+    // In that case, we do not wish to continue yielding thread.
+    // Instead, we will turn async task into a sync task and maximize our chances of getting some data back.
+    if (method in tracker) {
+        stop(method);
+        await wait();
+        resume(method);
+    }
 }
 
 async function wait(): Promise<number> {

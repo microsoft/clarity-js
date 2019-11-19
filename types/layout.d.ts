@@ -10,11 +10,15 @@ export const enum Source {
 
 export const enum Constant {
     SVG_PREFIX = "svg:",
+    DATA_PREFIX = "data:",
     SVG_NAMESPACE = "http://www.w3.org/2000/svg",
     DEVTOOLS_HOOK = "__CLARITY_DEVTOOLS_HOOK__",
     CLARITY_ID_ATTRIBUTE = "data-clarity",
     ID_ATTRIBUTE = "id",
     CLASS_ATTRIBUTE = "class",
+    HREF_ATTRIBUTE = "href",
+    SRC_ATTRIBUTE = "src",
+    SRCSET_ATTRIBUTE = "srcset",
     MASK_ATTRIBUTE = "data-clarity-mask",
     UNMASK_ATTRIBUTE = "data-clarity-unmask"
 }

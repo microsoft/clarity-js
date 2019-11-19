@@ -1,5 +1,4 @@
 import generateHash from "../src/data/hash";
-import { resolve } from "../src/data/token";
 import selector from "../src/layout/selector";
 import { Event, Token } from "../types/data";
 import { DomData, LayoutEvent } from "../types/decode/layout";
@@ -57,15 +56,10 @@ export function decode(tokens: Token[]): LayoutEvent {
                         let subtoken = token[0];
                         let subtype = typeof(subtoken);
                         switch (subtype) {
-                            case "string":
-                                let keys = resolve(token as string);
-                                for (let key of keys) {
-                                    node.push(key);
-                                }
-                                break;
                             case "number":
-                                token = tokens.length > subtoken ? tokens[subtoken] : null;
-                                node.push(token);
+                                for (let t of (token as number[])) {
+                                    node.push(tokens.length > t ? tokens[t] : null);
+                                }
                                 break;
                         }
                 }

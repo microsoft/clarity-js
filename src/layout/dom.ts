@@ -10,6 +10,7 @@ let changes: NodeChange[][] = [];
 let updateMap: number[] = [];
 let selectorMap: number[] = [];
 let idMap: WeakMap<Node, number> = null;
+let urlMap: { [url: string]: number } = {};
 
 export function reset(): void {
     index = 1;
@@ -18,6 +19,7 @@ export function reset(): void {
     updateMap = [];
     changes = [];
     selectorMap = [];
+    urlMap = {};
     idMap = new WeakMap();
     if (Constant.DEVTOOLS_HOOK in window) { window[Constant.DEVTOOLS_HOOK] = { get, getNode, history }; }
 }
@@ -61,7 +63,7 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
         metadata: { active: true, boxmodel: false, masked }
     };
     updateSelector(values[id]);
-    layout(data.tag, id, parentId);
+    metadata(data.tag, id, parentId);
     track(id, source);
 }
 
@@ -117,8 +119,7 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
 
         // Update selector
         updateSelector(value);
-
-        layout(data.tag, id, parentId);
+        metadata(data.tag, id, parentId);
         track(id, source, changed);
     }
 }
@@ -167,6 +168,13 @@ export function getNode(id: number): Node {
     return null;
 }
 
+export function getMatch(url: string): Node {
+    if (url in urlMap) {
+        return getNode(urlMap[url]);
+    }
+    return null;
+}
+
 export function getValue(id: number): NodeValue {
     if (id in values) {
         return values[id];
@@ -176,7 +184,7 @@ export function getValue(id: number): NodeValue {
 
 export function get(node: Node): NodeValue {
     let id = getId(node);
-    return values[id];
+    return id in values ? values[id] : null;
 }
 
 export function has(node: Node): boolean {
@@ -217,16 +225,18 @@ function remove(id: number, source: Source): void {
     value.children = [];
 }
 
-function layout(tag: string, id: number, parentId: number): void {
+function metadata(tag: string, id: number, parentId: number): void {
     if (id !== null && parentId !== null) {
+        let value = values[id];
+        let attributes = "attributes" in value.data ? value.data.attributes : {};
         switch (tag) {
             case "*T":
                 // Mark parent as a leaf node only if the text node has valid text and parent is masked.
                 // For nodes with whitespaces and not real text, skip them.
                 if (values[parentId].metadata.masked) {
-                    let value = values[id].data.value;
-                    for (let i = 0; i < value.length; i++) {
-                        let code = value.charCodeAt(i);
+                    let v = value.data.value;
+                    for (let i = 0; i < v.length; i++) {
+                        let code = v.charCodeAt(i);
                         if (!(code === 32 || code === 10 || code === 9 || code === 13)) {
                             values[parentId].metadata.boxmodel = true;
                             break;
@@ -235,15 +245,45 @@ function layout(tag: string, id: number, parentId: number): void {
                 }
                 break;
             case "IMG":
+                value.metadata.boxmodel = true;
+            case "VIDEO":
+            case "AUDIO":
+            case "LINK":
+                // Track mapping between URL and corresponding nodes
+                if (Constant.HREF_ATTRIBUTE in attributes && attributes[Constant.HREF_ATTRIBUTE].length > 0) {
+                    urlMap[getFullUrl(attributes[Constant.HREF_ATTRIBUTE])] = id;
+                }
+                if (Constant.SRC_ATTRIBUTE in attributes && attributes[Constant.SRC_ATTRIBUTE].length > 0) {
+                    if (attributes[Constant.SRC_ATTRIBUTE].indexOf(Constant.DATA_PREFIX) !== 0) {
+                        urlMap[getFullUrl(attributes[Constant.SRC_ATTRIBUTE])] = id;
+                    }
+                }
+                if (Constant.SRCSET_ATTRIBUTE in attributes && attributes[Constant.SRCSET_ATTRIBUTE].length > 0) {
+                    let srcset = attributes[Constant.SRCSET_ATTRIBUTE];
+                    let urls = srcset.split(",");
+                    for (let u of urls) {
+                        let parts = u.trim().split(" ");
+                        if (parts.length === 2 && parts[0].length > 0) {
+                            urlMap[getFullUrl(parts[0])] = id;
+                        }
+                    }
+                }
+                break;
             case "IFRAME":
-                values[id].metadata.boxmodel = true;
+                value.metadata.boxmodel = true;
                 break;
             default:
                 // Capture layout for any element with a user defined selector
-                values[id].metadata.boxmodel = values[id].selector.indexOf("*") === 0;
+                value.metadata.boxmodel = value.selector.indexOf("*") === 0;
                 break;
         }
     }
+}
+
+function getFullUrl(relative: string): string {
+    let a = document.createElement("a");
+    a.href = relative;
+    return a.href;
 }
 
 function getNextId(node: Node): number {

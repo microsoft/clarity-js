@@ -7,5 +7,5 @@ export function start(): void {
 }
 
 export function end(): void {
-    /* cleanup operation */
+    image.end();
 }

@@ -84,12 +84,19 @@ async function process(): Promise<void> {
           // Process additions
           let addedLength = mutation.addedNodes.length;
           for (let j = 0; j < addedLength; j++) {
-            let walker = document.createTreeWalker(mutation.addedNodes[j], NodeFilter.SHOW_ALL, null, false);
-            let node = walker.currentNode;
-            while (node) {
-                if (task.shouldYield(timer)) { await task.pause(timer); }
-                processNode(node, Source.ChildListAdd);
-                node = walker.nextNode();
+            let addedNode = mutation.addedNodes[j];
+            // In IE11, walker.nextNode() throws an error if walker.currentNode is a text node
+            // To keep things simple, we fork the code path for text nodes in all browser
+            if (addedNode.nodeType === Node.TEXT_NODE) {
+              processNode(addedNode, Source.ChildListAdd);
+            } else {
+              let walker = document.createTreeWalker(addedNode, NodeFilter.SHOW_ALL, null, false);
+              let node = walker.currentNode;
+              while (node) {
+                  if (task.shouldYield(timer)) { await task.pause(timer); }
+                  processNode(node, Source.ChildListAdd);
+                  node = walker.nextNode();
+              }
             }
           }
           // Process removes

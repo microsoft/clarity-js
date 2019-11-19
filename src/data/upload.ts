@@ -42,9 +42,14 @@ export function queue(data: Token[]): void {
             case Event.Document:
                 metric.count(Metric.LayoutBytes, event.length);
                 break;
+            case Event.Connection:
+            case Event.ContentfulPaint:
+            case Event.LongTask:
+            case Event.Memory:
+            case Event.Navigation:
             case Event.Network:
-            case Event.Performance:
-                metric.count(Metric.NetworkBytes, event.length);
+            case Event.Paint:
+                metric.count(Metric.PerformanceBytes, event.length);
                 break;
             case Event.ScriptError:
             case Event.ImageError:

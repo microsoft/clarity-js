@@ -4,6 +4,8 @@ import { DiagnosticEvent, ImageErrorEvent, ScriptErrorEvent } from "./diagnostic
 import { InputChangeEvent, InteractionEvent, PointerEvent, ResizeEvent } from "./interaction";
 import { ScrollEvent, SelectionEvent, UnloadEvent, VisibilityEvent } from "./interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, LayoutEvent, ResourceEvent } from "./layout";
+import { ConnectionEvent, LargestContentfulPaintEvent, LongTaskEvent, MemoryEvent } from "./performance";
+import { NavigationEvent, NetworkEvent, PaintEvent } from "./performance";
 
 export type DecodedEvent = DataEvent | DiagnosticEvent | InteractionEvent | LayoutEvent;
 
@@ -32,4 +34,11 @@ export interface DecodedPayload {
     dom?: DomEvent[];
     doc?: DocumentEvent[];
     target?: TargetEvent[];
+    connection?: ConnectionEvent[];
+    contentfulPaint?: LargestContentfulPaintEvent[];
+    longtask?: LongTaskEvent[];
+    memory?: MemoryEvent[];
+    navigation?: NavigationEvent[];
+    network?: NetworkEvent[];
+    paint?: PaintEvent[];
 }

@@ -28,9 +28,9 @@ export default async function(type: Event): Promise<void> {
         case Event.TouchEnd:
         case Event.TouchMove:
         case Event.TouchCancel:
-            for (let i = 0; i < pointer.data.length; i++) {
+            for (let i = 0; i < pointer.state.length; i++) {
                 if (task.shouldYield(timer)) { await task.pause(timer); }
-                let entry = pointer.data[i];
+                let entry = pointer.state[i];
                 tokens = [entry.time, entry.event];
                 tokens.push(observe(entry.data.target as Node));
                 tokens.push(entry.data.x);
@@ -43,35 +43,39 @@ export default async function(type: Event): Promise<void> {
             let r = resize.data;
             tokens.push(r.width);
             tokens.push(r.height);
-            queue(tokens);
             resize.reset();
+            queue(tokens);
             break;
         case Event.Unload:
             let u = unload.data;
             tokens.push(u.name);
-            queue(tokens);
             unload.reset();
+            queue(tokens);
             break;
         case Event.InputChange:
             let ch = change.data;
-            tokens.push(observe(ch.target as Node));
-            tokens.push(ch.value);
-            queue(tokens);
-            change.reset();
+            if (ch) {
+                tokens.push(observe(ch.target as Node));
+                tokens.push(ch.value);
+                change.reset();
+                queue(tokens);
+            }
             break;
         case Event.Selection:
             let s = selection.data;
-            tokens.push(observe(s.start as Node));
-            tokens.push(s.startOffset);
-            tokens.push(observe(s.end as Node));
-            tokens.push(s.endOffset);
-            queue(tokens);
-            selection.reset();
+            if (s) {
+                tokens.push(observe(s.start as Node));
+                tokens.push(s.startOffset);
+                tokens.push(observe(s.end as Node));
+                tokens.push(s.endOffset);
+                selection.reset();
+                queue(tokens);
+            }
             break;
         case Event.Scroll:
-            for (let i = 0; i < scroll.data.length; i++) {
+            for (let i = 0; i < scroll.state.length; i++) {
                 if (task.shouldYield(timer)) { await task.pause(timer); }
-                let entry = scroll.data[i];
+                let entry = scroll.state[i];
                 tokens = [entry.time, type];
                 tokens.push(observe(entry.data.target as Node));
                 tokens.push(entry.data.x);
@@ -83,8 +87,8 @@ export default async function(type: Event): Promise<void> {
         case Event.Visibility:
             let v = visibility.data;
             tokens.push(v.visible);
-            queue(tokens);
             visibility.reset();
+            queue(tokens);
             break;
     }
     task.stop(timer);

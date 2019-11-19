@@ -3,8 +3,7 @@ import {NodeInfo} from "@clarity-types/layout";
 import mask from "@src/core/mask";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
-import hash from "@src/data/hash";
-import {check} from "@src/data/token";
+import tokenize from "@src/data/token";
 import { queue } from "@src/data/upload";
 import * as boxmodel from "./boxmodel";
 import * as doc from "./document";
@@ -65,23 +64,11 @@ export default async function(type: Event): Promise<void> {
                         }
                     }
                 }
-
-                // Add metadata
-                metadata = meta(metadata);
-                for (let token of metadata) {
-                    let index: number = typeof token === "string" ? tokens.indexOf(token) : -1;
-                    tokens.push(index >= 0 && token.length > index.toString().length ? [index] : token);
-                }
+                tokens = tokenize(tokens, metadata);
             }
             queue(tokens);
             break;
         }
-}
-
-function meta(metadata: string[]): string[] | string[][] {
-    let value = JSON.stringify(metadata);
-    let hashed = hash(value);
-    return check(hashed) && hashed.length < value.length ? [[hashed]] : metadata;
 }
 
 function attribute(masked: boolean, key: string, value: string): string {

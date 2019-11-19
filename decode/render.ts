@@ -11,7 +11,7 @@ const METRIC_MAP = {};
 METRIC_MAP[Metric.TotalBytes] = { name: "Total Bytes", unit: "KB"};
 METRIC_MAP[Metric.LayoutBytes] = { name: "Layout Bytes", unit: "KB"};
 METRIC_MAP[Metric.InteractionBytes] = { name: "Interaction Bytes", unit: "KB"};
-METRIC_MAP[Metric.NetworkBytes] = { name: "Network Bytes", unit: "KB"};
+METRIC_MAP[Metric.PerformanceBytes] = { name: "Performance Bytes", unit: "KB"};
 METRIC_MAP[Metric.TargetBytes] = { name: "Target Bytes", unit: "KB"};
 METRIC_MAP[Metric.InvokeCount] = { name: "Invoke Count" };
 METRIC_MAP[Metric.LongTaskCount] = { name: "Long Tasks" };
@@ -23,6 +23,7 @@ METRIC_MAP[Metric.MaxThreadBlockedDuration] = { name: "Thread Blocked", unit: "m
 METRIC_MAP[Metric.DataDuration] = { name: "Data", unit: "ms"};
 METRIC_MAP[Metric.DiagnosticDuration] = { name: "Diagnostic", unit: "ms"};
 METRIC_MAP[Metric.InteractionDuration] = { name: "Interaction", unit: "ms"};
+METRIC_MAP[Metric.PerformanceDuration] = { name: "Performance", unit: "ms"};
 
 // tslint:disable-next-line: max-line-length
 let pointerIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S912AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6AAAdTAAAOpgAAA6lwAAF2+XqZnUAAACaUlEQVR4nGL8f58BHYgAsT8Q2wGxBBAzQcX/AfFrID4CxOuA+BWKLoX/YAoggBjRDHQD4ngglgRiPgyrIOAzEL8E4lVQg1EMBAggFiSFYUAcA8RSOAyCAV4oTgViTiBeiiwJEEAw71gRaRgyEAXiKCB2RBYECCCQgcIMEG+SYhgMiANxEhDzwwQAAghkoAMQK5NhGAwoALE1jAMQQCADQU7mpMBAZqijwAAggEAGqgAxOwUGskHNAAOAAAIZyEtIh4INg3bfHHD6xAUEYAyAAAIZ+IuQgU9fMLCXdzDIzV3JIIhDyQ8YAyCAQAaCUv8/fAZysDP8+/OXgTG7jkFhwRoMQ0F6n8M4AAEEMvAKsg34wM9fDEwgQ1dtRSQTIPgNxFdhHIAAAhm4AYg/EmMgCHz7zsCUVMaguHob3FCQYzbD5AECCGTgJSDeCbWJKPD1GwNzSjmD4tZ9DFxgvQr/b8PkAAIIlvVWA/FuUgz99IWBOTyXQcE+nOEOsjhAACGXNnJAHAnE9kAshqyIV5vB4Ms3cALGBkAlj9////9PgTgAAcSEJPEIiDuBeBYQP2CAhOt3BsLJCpSfNzAyMpqDOAABhF4ewh3FAMmf2kAsyqnBUPDjJ8HcdBvoSjWAAGIEEgTUMTAAbf/AwICSVGCgD4hPgJQA8WegWdsBAogFiyJC4C0QgxI3KLj4gIasRpYECCAGkAsJYSAAuRDEAKUEQwZIzgDxvwCxCrJagAAi1kAQAYpFESh/BlQMhJuR1QIEELEGlgOxHBLflAGSh0Gc60DMBpMDCCCiDMRhyXoGSJUaDgpPmDhAgAEAN5Ugk0bMYNIAAAAASUVORK5CYII=";
@@ -147,7 +148,6 @@ export function markup(data: DomData[], iframe: HTMLIFrameElement): void {
                     let base = doc.createElement("base");
                     base.href = node.attributes["*B"];
                     headElement.appendChild(base);
-                    delete node.attributes["*B"];
                 }
                 setAttributes(headElement as HTMLElement, node.attributes);
                 insert(node, parent, headElement, next);
