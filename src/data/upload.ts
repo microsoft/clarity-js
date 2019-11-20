@@ -8,6 +8,7 @@ import { envelope, metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
 import * as target from "@src/data/target";
+import * as memory from "@src/performance/memory";
 
 const MAX_RETRIES = 2;
 let events: string[];
@@ -33,6 +34,9 @@ export function queue(data: Token[]): void {
             case Event.Target:
                 metric.count(Metric.TargetBytes, event.length);
                 return; // do not schedule upload callback
+            case Event.Memory:
+                metric.count(Metric.PerformanceBytes, event.length);
+                return; // do not schedule upload callback
             case Event.Metric:
             case Event.Upload:
                 return; // do not schedule upload callback
@@ -45,7 +49,6 @@ export function queue(data: Token[]): void {
             case Event.Connection:
             case Event.ContentfulPaint:
             case Event.LongTask:
-            case Event.Memory:
             case Event.Navigation:
             case Event.Network:
             case Event.Paint:
@@ -81,6 +84,7 @@ export function end(): void {
 }
 
 function upload(last: boolean = false): void {
+    memory.compute();
     target.compute();
     metric.compute();
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};

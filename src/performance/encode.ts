@@ -55,7 +55,6 @@ export default async function(type: Event): Promise<void> {
             tokens.push(memory.data.limit);
             tokens.push(memory.data.available);
             tokens.push(memory.data.consumed);
-            memory.reset();
             queue(tokens);
             break;
         case Event.Navigation:
