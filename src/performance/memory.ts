@@ -14,11 +14,15 @@ export function compute(): void {
     // At the moment, this is available in Chrome only.
     if (performance && "memory" in performance) {
         let memory = (performance["memory"] as PerformanceMemory);
-        data = {
+        let current = {
             limit: memory.jsHeapSizeLimit,
             available: memory.totalJSHeapSize,
             consumed: memory.usedJSHeapSize,
         };
-        encode(Event.Memory);
+        // Send back updated memory stats only if consumed memory has changed by at least 5%
+        if (data === null || (Math.abs(current.consumed - data.consumed) / data.consumed) > 0.05) {
+            data = current;
+            encode(Event.Memory);
+        }
     }
 }

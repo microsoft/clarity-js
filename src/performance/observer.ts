@@ -2,7 +2,6 @@ import { LargestContentfulPaintEntry, LongTaskEntry } from "@clarity-types/perfo
 import measure from "@src/core/measure";
 import * as contentful from "@src/performance/contentfulPaint";
 import * as longtask from "@src/performance/longtask";
-import * as memory from "@src/performance/memory";
 import * as navigation from "@src/performance/navigation";
 import * as network from "@src/performance/network";
 import * as paint from "@src/performance/paint";
@@ -38,7 +37,6 @@ function handle(entries: PerformanceObserverEntryList): void {
                 break;
         }
     }
-    memory.compute(); // Update memory consumption after every batch of performance entries
 }
 
 export function end(): void {
