@@ -21,7 +21,8 @@ export function compute(): void {
     let height = Math.max(bodyClientHeight, bodyScrollHeight, bodyOffsetHeight,
     documentClientHeight, documentScrollHeight, documentOffsetHeight);
 
-    if (data === null || width !== data.width || height !== data.height) {
+    // Check that width or height has changed from before, and also that width & height are not null values
+    if ((data === null || width !== data.width || height !== data.height) && width !== null && height !== null) {
         data = { width, height };
         encode(Event.Document);
     }

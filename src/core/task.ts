@@ -101,8 +101,7 @@ async function wait(): Promise<RequestIdleCallbackDeadline> {
 //   (2) Use setTimeout call within requestAnimationFrame. This also works, but there's a risk that browser may throttle setTimeout calls.
 // Given this information, we are currently using (1) from above. More information on (2) as well as some additional context is below:
 // https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Performance_best_practices_for_Firefox_fe_engineers
-let requestIdleCallback = window["requestIdleCallback"] ||
-function(callback: (deadline: RequestIdleCallbackDeadline) => void, options: RequestIdleCallbackOptions): void {
+function requestIdleCallbackPolyfill(callback: (deadline: RequestIdleCallbackDeadline) => void, options: RequestIdleCallbackOptions): void {
     const startTime = performance.now();
     const channel = new MessageChannel();
     const incoming = channel.port1;
@@ -122,4 +121,6 @@ function(callback: (deadline: RequestIdleCallbackDeadline) => void, options: Req
         }
     };
     requestAnimationFrame(() => { outgoing.postMessage(performance.now()); });
-};
+}
+
+let requestIdleCallback = window["requestIdleCallback"] || requestIdleCallbackPolyfill;
