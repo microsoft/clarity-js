@@ -1,18 +1,17 @@
-import { AsyncTask, TaskFunction, TaskResolve } from "@clarity-types/core";
+import { AsyncTask, RequestIdleCallbackDeadline, RequestIdleCallbackOptions } from "@clarity-types/core";
+import { TaskFunction, TaskResolve, TaskTracker } from "@clarity-types/core";
 import { Metric } from "@clarity-types/data";
 import config from "@src/core/config";
 import * as metric from "@src/data/metric";
 
 // Track the start time to be able to compute duration at the end of the task
-let tracker: { [key: number]: number } = {};
-// Keep a count of number of async calls a particular task required
-let counter: { [key: number]: number } = {};
+const idleTimeout = 5000;
+let tracker: TaskTracker = {};
 let queue: AsyncTask[] = [];
 let active: AsyncTask = null;
 
 export function reset(): void {
     tracker = {};
-    counter = {};
     queue = [];
     active = null;
 }
@@ -49,30 +48,29 @@ function run(): void {
 }
 
 export function shouldYield(method: Metric): boolean {
-    let elapsed = performance.now() - tracker[method];
-    return (elapsed > config.longtask);
+    let elapsed = performance.now() - tracker[method].start;
+    return (elapsed > tracker[method].yield);
 }
 
 export function start(method: Metric): void {
-    tracker[method] = performance.now();
-    counter[method] = 0;
+    tracker[method] = { start: performance.now(), calls: 0, yield: config.longtask };
 }
 
 function resume(method: Metric): void {
-    let c = counter[method];
+    let c = tracker[method].calls;
     start(method);
-    counter[method] = c + 1;
+    tracker[method].calls = c + 1;
 }
 
 export function stop(method: Metric): void {
     let end = performance.now();
-    let duration = end - tracker[method];
+    let duration = end - tracker[method].start;
     metric.accumulate(method, duration);
     metric.count(Metric.InvokeCount);
 
     // For the first execution, which is synchronous, time is automatically counted towards TotalDuration.
     // However, for subsequent asynchronous runs, we need to manually update TotalDuration metric.
-    if (counter[method] > 0) { metric.accumulate(Metric.TotalDuration, duration); }
+    if (tracker[method].calls > 0) { metric.accumulate(Metric.TotalDuration, duration); }
 }
 
 export async function pause(method: Metric): Promise<void> {
@@ -82,13 +80,47 @@ export async function pause(method: Metric): Promise<void> {
     // Instead, we will turn async task into a sync task and maximize our chances of getting some data back.
     if (method in tracker) {
         stop(method);
-        await wait();
+        tracker[method].yield = (await wait()).timeRemaining();
         resume(method);
     }
 }
 
-async function wait(): Promise<number> {
-    return new Promise<number>((resolve: FrameRequestCallback): void => {
-        requestAnimationFrame(resolve);
+async function wait(): Promise<RequestIdleCallbackDeadline> {
+    return new Promise<RequestIdleCallbackDeadline>((resolve: (deadline: RequestIdleCallbackDeadline) => void): void => {
+        requestIdleCallback(resolve, { timeout: idleTimeout });
     });
 }
+
+// Use native implementation of requestIdleCallback if it exists.
+// Otherwise, fall back to a custom implementation using requestAnimationFrame & MessageChannel.
+// While it's not possible to build a perfect polyfill given the nature of this API, the following code attempts to get close.
+// Background context: requestAnimationFrame invokes the js code right before: style, layout and paint computation within the frame.
+// This means, that any code that runs as part of requestAnimationFrame will by default be blocking in nature. Not what we want.
+// For non-blocking behavior, We need to know when browser has finished painiting. This can be accomplished in two different ways (hacks):
+//   (1) Use MessageChannel to pass the message, and browser will receive the message right after pain event has occured.
+//   (2) Use setTimeout call within requestAnimationFrame. This also works, but there's a risk that browser may throttle setTimeout calls.
+// Given this information, we are currently using (1) from above. More information on (2) as well as some additional context is below:
+// https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Performance_best_practices_for_Firefox_fe_engineers
+function requestIdleCallbackPolyfill(callback: (deadline: RequestIdleCallbackDeadline) => void, options: RequestIdleCallbackOptions): void {
+    const startTime = performance.now();
+    const channel = new MessageChannel();
+    const incoming = channel.port1;
+    const outgoing = channel.port2;
+    incoming.onmessage = (event: MessageEvent): void => {
+        let currentTime = performance.now();
+        let elapsed = currentTime - startTime;
+        let duration = currentTime - event.data;
+        if (duration > config.longtask && elapsed < options.timeout) {
+            requestAnimationFrame(() => { outgoing.postMessage(currentTime); });
+        } else {
+            let didTimeout = elapsed > options.timeout;
+            callback({
+                didTimeout,
+                timeRemaining: (): number => didTimeout ? config.longtask : Math.max(0, config.longtask - duration)
+            });
+        }
+    };
+    requestAnimationFrame(() => { outgoing.postMessage(performance.now()); });
+}
+
+let requestIdleCallback = window["requestIdleCallback"] || requestIdleCallbackPolyfill;

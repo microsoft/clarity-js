@@ -5,6 +5,25 @@ type TaskResolve = () => void;
 
 /* Helper Interfaces */
 
+export interface TaskTracker {
+    [key: number]: TaskInfo;
+}
+
+export interface TaskInfo {
+    start: number;
+    calls: number;
+    yield: number;
+}
+
+export interface RequestIdleCallbackOptions {
+    timeout: number;
+}
+
+export interface RequestIdleCallbackDeadline {
+    didTimeout: boolean;
+    timeRemaining: (() => number);
+}
+
 export interface AsyncTask {
     task: TaskFunction;
     resolve: TaskResolve;

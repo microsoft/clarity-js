@@ -30,7 +30,8 @@ function mouse(event: Event, evt: MouseEvent): void {
     let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null);
     let target = evt.target ? evt.target as Node : null;
     event = event === Event.Click && (evt.buttons === 2 || evt.button === 2) ? Event.RightClick : event;
-    handler({ time: time(), event, data: { target, x, y } });
+    // Check for null values before processing this event
+    if (x !== null && y !== null) { handler({ time: time(), event, data: { target, x, y } }); }
 }
 
 function touch(event: Event, evt: TouchEvent): void {
@@ -43,7 +44,8 @@ function touch(event: Event, evt: TouchEvent): void {
             let entry = touches[i];
             let x = "clientX" in entry ? Math.round(entry["clientX"] + de.scrollLeft) : null;
             let y = "clientY" in entry ? Math.round(entry["clientY"] + de.scrollTop) : null;
-            handler({ time: t, event, data: { target, x, y } });
+            // Check for null values before processing this event
+            if (x !== null && y !== null) { handler({ time: t, event, data: { target, x, y } }); }
         }
     }
 }

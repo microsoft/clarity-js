@@ -83,15 +83,18 @@ export function decode(tokens: Token[]): PerformanceEvent  {
                         // Continuing the example used above, following code expands an array of tokens by getting rid of any optimizations
                         // E.g. Current token: [1,3], from array of tokens: ["hello", "world", "coding", "language", [1, 3], "example"]
                         // Following code will expand [1,3] into "world", "language".
-                        let subtoken = token[0];
-                        let subtype = typeof(subtoken);
-                        switch (subtype) {
-                            case "number":
-                                for (let t of (token as number[])) {
-                                    network.push(tokens.length > t ? tokens[t] : null);
-                                }
-                                break;
+                        if (token === null) { network.push(token); } else {
+                            let subtoken = token[0];
+                            let subtype = typeof(subtoken);
+                            switch (subtype) {
+                                case "number":
+                                    for (let t of (token as number[])) {
+                                        network.push(tokens.length > t ? tokens[t] : null);
+                                    }
+                                    break;
+                            }
                         }
+                        break;
                 }
                 lastType = type;
             }
