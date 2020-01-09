@@ -8,22 +8,22 @@ let boxmodels = {};
 let metrics: MetricData = null;
 let lean = false;
 const METRIC_MAP = {};
-METRIC_MAP[Metric.TotalBytes] = { name: "Total Bytes", unit: "KB"};
-METRIC_MAP[Metric.LayoutBytes] = { name: "Layout Bytes", unit: "KB"};
-METRIC_MAP[Metric.InteractionBytes] = { name: "Interaction Bytes", unit: "KB"};
-METRIC_MAP[Metric.PerformanceBytes] = { name: "Performance Bytes", unit: "KB"};
-METRIC_MAP[Metric.TargetBytes] = { name: "Target Bytes", unit: "KB"};
+METRIC_MAP[Metric.TotalBytes] = { name: "Total Bytes", unit: "KB" };
+METRIC_MAP[Metric.LayoutBytes] = { name: "Layout Bytes", unit: "KB" };
+METRIC_MAP[Metric.InteractionBytes] = { name: "Interaction Bytes", unit: "KB" };
+METRIC_MAP[Metric.PerformanceBytes] = { name: "Performance Bytes", unit: "KB" };
+METRIC_MAP[Metric.TargetBytes] = { name: "Target Bytes", unit: "KB" };
 METRIC_MAP[Metric.InvokeCount] = { name: "Invoke Count" };
 METRIC_MAP[Metric.LongTaskCount] = { name: "Long Tasks" };
-METRIC_MAP[Metric.TotalDuration] = { name: "Total Duration", unit: "ms"};
-METRIC_MAP[Metric.DiscoverDuration] = { name: "Discover", unit: "ms"};
-METRIC_MAP[Metric.MutationDuration] = { name: "Mutation", unit: "ms"};
-METRIC_MAP[Metric.BoxModelDuration] = { name: "BoxModel", unit: "ms"};
-METRIC_MAP[Metric.MaxThreadBlockedDuration] = { name: "Thread Blocked", unit: "ms"};
-METRIC_MAP[Metric.DataDuration] = { name: "Data", unit: "ms"};
-METRIC_MAP[Metric.DiagnosticDuration] = { name: "Diagnostic", unit: "ms"};
-METRIC_MAP[Metric.InteractionDuration] = { name: "Interaction", unit: "ms"};
-METRIC_MAP[Metric.PerformanceDuration] = { name: "Performance", unit: "ms"};
+METRIC_MAP[Metric.TotalDuration] = { name: "Total Duration", unit: "ms" };
+METRIC_MAP[Metric.DiscoverDuration] = { name: "Discover", unit: "ms" };
+METRIC_MAP[Metric.MutationDuration] = { name: "Mutation", unit: "ms" };
+METRIC_MAP[Metric.BoxModelDuration] = { name: "BoxModel", unit: "ms" };
+METRIC_MAP[Metric.MaxThreadBlockedDuration] = { name: "Thread Blocked", unit: "ms" };
+METRIC_MAP[Metric.DataDuration] = { name: "Data", unit: "ms" };
+METRIC_MAP[Metric.DiagnosticDuration] = { name: "Diagnostic", unit: "ms" };
+METRIC_MAP[Metric.InteractionDuration] = { name: "Interaction", unit: "ms" };
+METRIC_MAP[Metric.PerformanceDuration] = { name: "Performance", unit: "ms" };
 
 // tslint:disable-next-line: max-line-length
 let pointerIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S912AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6AAAdTAAAOpgAAA6lwAAF2+XqZnUAAACaUlEQVR4nGL8f58BHYgAsT8Q2wGxBBAzQcX/AfFrID4CxOuA+BWKLoX/YAoggBjRDHQD4ngglgRiPgyrIOAzEL8E4lVQg1EMBAggFiSFYUAcA8RSOAyCAV4oTgViTiBeiiwJEEAw71gRaRgyEAXiKCB2RBYECCCQgcIMEG+SYhgMiANxEhDzwwQAAghkoAMQK5NhGAwoALE1jAMQQCADQU7mpMBAZqijwAAggEAGqgAxOwUGskHNAAOAAAIZyEtIh4INg3bfHHD6xAUEYAyAAAIZ+IuQgU9fMLCXdzDIzV3JIIhDyQ8YAyCAQAaCUv8/fAZysDP8+/OXgTG7jkFhwRoMQ0F6n8M4AAEEMvAKsg34wM9fDEwgQ1dtRSQTIPgNxFdhHIAAAhm4AYg/EmMgCHz7zsCUVMaguHob3FCQYzbD5AECCGTgJSDeCbWJKPD1GwNzSjmD4tZ9DFxgvQr/b8PkAAIIlvVWA/FuUgz99IWBOTyXQcE+nOEOsjhAACGXNnJAHAnE9kAshqyIV5vB4Ms3cALGBkAlj9////9PgTgAAcSEJPEIiDuBeBYQP2CAhOt3BsLJCpSfNzAyMpqDOAABhF4ewh3FAMmf2kAsyqnBUPDjJ8HcdBvoSjWAAGIEEgTUMTAAbf/AwICSVGCgD4hPgJQA8WegWdsBAogFiyJC4C0QgxI3KLj4gIasRpYECCAGkAsJYSAAuRDEAKUEQwZIzgDxvwCxCrJagAAi1kAQAYpFESh/BlQMhJuR1QIEELEGlgOxHBLflAGSh0Gc60DMBpMDCCCiDMRhyXoGSJUaDgpPmDhAgAEAN5Ugk0bMYNIAAAAASUVORK5CYII=";
@@ -232,8 +232,7 @@ export function scroll(data: ScrollData, iframe: HTMLIFrameElement): void {
     if (target) { target.scrollTo(data.x, data.y); }
 }
 
-export function resize(data: ResizeData, iframe: HTMLIFrameElement): void {
-    iframe.removeAttribute("style");
+export function resize(data: ResizeData, iframe: HTMLIFrameElement, resizeCallback?: (width: number, height: number) => void): void {
     let margin = 10;
     let px = "px";
     let width = data.width;
@@ -242,15 +241,23 @@ export function resize(data: ResizeData, iframe: HTMLIFrameElement): void {
     let scaleWidth = Math.min(availableWidth / width, 1);
     let scaleHeight = Math.min((iframe.contentWindow.innerHeight - (16 * margin)) / height, 1);
     let scale = Math.min(scaleWidth, scaleHeight);
-    iframe.style.position = "relative";
-    iframe.style.width = width + px;
-    iframe.style.height = height + px;
-    iframe.style.left = ((availableWidth - (width * scale)) / 2) + px;
-    iframe.style.transformOrigin = "0 0 0";
-    iframe.style.transform = "scale(" + scale + ")";
-    iframe.style.border = "1px solid #cccccc";
-    iframe.style.margin = margin + px;
-    iframe.style.overflow = "hidden";
+    // if resizeCallback is provided, don't scale the iframe ourselves. In cases where a parent component
+    // is utilizing a video player with the decode rendering here, the parent needs to be able to decide
+    // the size of the iframe
+    if (resizeCallback) {
+        resizeCallback(width, height);
+    } else {
+        iframe.removeAttribute("style");
+        iframe.style.position = "relative";
+        iframe.style.width = width + px;
+        iframe.style.height = height + px;
+        iframe.style.transformOrigin = "0 0 0";
+        iframe.style.transform = "scale(" + scale + ")";
+        iframe.style.border = "1px solid #cccccc";
+        iframe.style.margin = margin + px;
+        iframe.style.overflow = "hidden";
+        iframe.style.left = ((availableWidth - (width * scale)) / 2) + px;
+    }
 }
 
 export function change(data: InputChangeData, iframe: HTMLIFrameElement): void {

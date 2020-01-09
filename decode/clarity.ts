@@ -195,7 +195,12 @@ export function reset(): void {
     r.reset();
 }
 
-export async function replay(events: DecodedEvent[], iframe: HTMLIFrameElement, header?: HTMLElement): Promise<void> {
+export async function replay(
+    events: DecodedEvent[],
+    iframe: HTMLIFrameElement,
+    header?: HTMLElement,
+    resizeCallback?: (width: number, height: number) => void
+    ): Promise<void> {
     let start = events[0].time;
     for (let entry of events) {
         if (entry.time - start > 16) { start = await wait(entry.time); }
@@ -242,7 +247,7 @@ export async function replay(events: DecodedEvent[], iframe: HTMLIFrameElement, 
                 break;
             case Event.Resize:
                 let resizeEvent = entry as ResizeEvent;
-                r.resize(resizeEvent.data, iframe);
+                r.resize(resizeEvent.data, iframe, resizeCallback);
                 break;
             case Event.Scroll:
                 let scrollEvent = entry as ScrollEvent;
