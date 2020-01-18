@@ -1,4 +1,4 @@
-export type Target = (number | Node);
+export type Target = (number | TargetInfo);
 export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
 
@@ -97,6 +97,12 @@ export interface ClarityInfo {
     userId: string;
     sessionId: string;
     pageId: string;
+}
+
+export interface TargetInfo {
+    id: number;
+    selector: string;
+    node: Node;
 }
 
 export interface Metadata {

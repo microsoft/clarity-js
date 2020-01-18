@@ -3,6 +3,13 @@ import { ClarityInfo, Payload, Token } from "./data";
 type TaskFunction = () => Promise<void>;
 type TaskResolve = () => void;
 
+/* Enum */
+
+export const enum Priority {
+    Normal = 0,
+    High = 1
+}
+
 /* Helper Interfaces */
 
 export interface TaskTracker {

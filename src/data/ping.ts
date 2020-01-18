@@ -1,5 +1,5 @@
 import { Event, PingData } from "@clarity-types/data";
-import { pause } from "@src/clarity";
+import { suspend } from "@src/clarity";
 import config from "@src/core/config";
 import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
@@ -27,7 +27,7 @@ function ping(): void {
     if (data.gap < config.timeout) {
         interval = Math.min(interval * 2, config.timeout);
         timeout = setTimeout(ping, interval);
-    } else { pause(); }
+    } else { suspend(); }
 
     last = now;
 }

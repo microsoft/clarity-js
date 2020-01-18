@@ -31,7 +31,7 @@ export default async function(type: Event): Promise<void> {
         case Event.Mutation:
             let values = dom.updates();
             for (let value of values) {
-                if (task.shouldYield(timer)) { await task.pause(timer); }
+                if (task.shouldYield(timer)) { await task.suspend(timer); }
                 let metadata = [];
                 let data: NodeInfo = value.data;
                 let active = value.metadata.active;

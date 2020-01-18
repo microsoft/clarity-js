@@ -3,6 +3,7 @@ import * as core from "@src/core";
 import configuration from "@src/core/config";
 import { bind } from "@src/core/event";
 import measure from "@src/core/measure";
+import * as task from "@src/core/task";
 import * as data from "@src/data";
 import * as diagnostic from "@src/diagnostic";
 import * as interaction from "@src/interaction";
@@ -34,17 +35,25 @@ export function start(override: Config = {}): void {
   }
 }
 
-export function pause(): void {
+function restart(): void {
+  start();
+}
+
+export function suspend(): void {
   end();
-  bind(document, "mousemove", resume);
-  bind(document, "touchstart", resume);
-  bind(window, "resize", resume);
-  bind(window, "scroll", resume);
-  bind(window, "pageshow", resume);
+  bind(document, "mousemove", restart);
+  bind(document, "touchstart", restart);
+  bind(window, "resize", restart);
+  bind(window, "scroll", restart);
+  bind(window, "pageshow", restart);
+}
+
+export function pause(): void {
+  task.pause();
 }
 
 export function resume(): void {
-  start();
+  task.resume();
 }
 
 export function end(): void {

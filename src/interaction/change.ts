@@ -3,6 +3,7 @@ import { InputChangeData } from "@clarity-types/interaction";
 import { bind } from "@src/core/event";
 import mask from "@src/core/mask";
 import { schedule } from "@src/core/task";
+import { track } from "@src/data/target";
 import { get } from "@src/layout/dom";
 import encode from "./encode";
 
@@ -16,7 +17,7 @@ function recompute(evt: UIEvent): void {
     let input = evt.target as HTMLInputElement;
     let value = get(input);
     if (input && value) {
-        data = { target: input, value: value.metadata.masked ? mask(input.value) : input.value };
+        data = { target: track(input as Node), value: value.metadata.masked ? mask(input.value) : input.value };
         schedule(encode.bind(this, Event.InputChange));
     }
 }
