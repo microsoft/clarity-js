@@ -1,7 +1,6 @@
 import { Priority } from "@clarity-types/core";
 import { Event, Metric } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
-import config from "@src/core/config";
 import measure from "@src/core/measure";
 import * as task from "@src/core/task";
 import * as boxmodel from "@src/layout/boxmodel";
@@ -27,6 +26,6 @@ async function discover(): Promise<void> {
         processNode(node, Source.Discover);
         node = walker.nextNode();
     }
-    if (!config.lean) { await encode(Event.Discover); }
+    await encode(Event.Discover);
     task.stop(timer);
 }

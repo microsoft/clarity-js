@@ -11,6 +11,7 @@ import * as target from "@src/data/target";
 import * as memory from "@src/performance/memory";
 
 const MAX_RETRIES = 2;
+let backup: string[];
 let events: string[];
 let timeout: number = null;
 let transit: Transit;
@@ -19,29 +20,35 @@ export let track: UploadData;
 
 export function start(): void {
     active = true;
+    backup = [];
     events = [];
     transit = {};
     track = null;
 }
 
-export function queue(data: Token[]): void {
+export function queue(data: Token[], type: Event): void {
     if (active) {
-        let type = data.length > 1 ? data[1] : null;
         let event = JSON.stringify(data);
-        events.push(event);
+        let transmit = true; // schedule upload callback
+        let container = events;
 
         switch (type) {
             case Event.Target:
                 metric.count(Metric.TargetBytes, event.length);
-                return; // do not schedule upload callback
+                transmit = false;
+                break;
             case Event.Memory:
                 metric.count(Metric.PerformanceBytes, event.length);
-                return; // do not schedule upload callback
+                transmit = false;
+                break;
             case Event.Metric:
             case Event.Upload:
-                return; // do not schedule upload callback
+                transmit = false;
+                break;
             case Event.Discover:
             case Event.Mutation:
+                metric.count(Metric.LayoutBytes, event.length);
+                break;
             case Event.BoxModel:
             case Event.Document:
                 metric.count(Metric.LayoutBytes, event.length);
@@ -57,17 +64,29 @@ export function queue(data: Token[]): void {
             case Event.ScriptError:
             case Event.ImageError:
                 break;
+            case Event.Backup:
+                transmit = false;
+                container = backup;
+                break;
+            case Event.Upgrade:
+                for (let entry of backup) {
+                    container.push(entry);
+                    metric.count(Metric.LayoutBytes, entry.length);
+                }
+                break;
             default:
                 metric.count(Metric.InteractionBytes, event.length);
                 break;
         }
+
+        container.push(event);
 
         // This is a precautionary check acting as a fail safe mechanism to get out of
         // unexpected situations. Ideally, expectation is that pause / resume will work as designed.
         // However, in some cases involving script errors, we may fail to pause Clarity instrumentation.
         // In those edge cases, we will cut the cord after a configurable shutdown value.
         // The only exception is the very last payload, for which we will attempt one final delivery to the server.
-        if (time() < config.shutdown) {
+        if (time() < config.shutdown && transmit) {
             clearTimeout(timeout);
             timeout = setTimeout(upload, config.delay);
         }
@@ -77,6 +96,7 @@ export function queue(data: Token[]): void {
 export function end(): void {
     clearTimeout(timeout);
     upload(true);
+    backup = [];
     events = [];
     transit = {};
     track = null;

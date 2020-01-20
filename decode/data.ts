@@ -1,5 +1,5 @@
 import { BooleanFlag, Envelope, Event, MetricData, PageData, PingData } from "../types/data";
-import { SummaryData, TagData, TargetData, Token, Upload, UploadData } from "../types/data";
+import { SummaryData, TagData, TargetData, Token, UpgradeData, Upload, UploadData } from "../types/data";
 import { DataEvent } from "../types/decode/data";
 
 let summaries: { [key: number]: SummaryData[] } = null;
@@ -35,8 +35,11 @@ export function decode(tokens: Token[]): DataEvent {
                 targetData.push(target);
             }
             return { time, event, data: targetData };
+        case Event.Upgrade:
+            let upgrade: UpgradeData = { key: tokens[2] as string };
+            return { time, event, data: upgrade };
         case Event.Upload:
-            let upload: UploadData = { sequence: tokens[2] as number, attempts: tokens[3] as number, status: tokens[4] as number};
+            let upload: UploadData = { sequence: tokens[2] as number, attempts: tokens[3] as number, status: tokens[4] as number };
             return { time, event, data: upload };
         case Event.Metric:
             let i = 2; // Start from 3rd index since first two are used for time & event

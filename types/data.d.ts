@@ -43,7 +43,9 @@ export const enum Event {
     Paint = 35,
     ContentfulPaint = 36,
     Memory = 37,
-    Connection = 38
+    Connection = 38,
+    Backup = 39,
+    Upgrade = 40
 }
 
 export const enum Metric {
@@ -149,6 +151,10 @@ export interface PingData {
 export interface TagData {
     key: string;
     value: string[];
+}
+
+export interface UpgradeData {
+    key: string;
 }
 
 export interface TargetData {

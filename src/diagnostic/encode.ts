@@ -15,13 +15,13 @@ export default async function(type: Event): Promise<void> {
             tokens.push(script.data.column);
             tokens.push(script.data.stack);
             tokens.push(script.data.source);
-            queue(tokens);
+            queue(tokens, type);
             break;
         case Event.ImageError:
             if (image.data) {
                 tokens.push(image.data.source);
                 tokens.push(observe(image.data.target as TargetInfo));
-                queue(tokens);
+                queue(tokens, type);
             }
             break;
     }

@@ -76,6 +76,13 @@ export function tag(key: string, value: string): void {
   }
 }
 
+export function upgrade(key: string): void {
+  // Do not process upgrade call if Clarity is not already activated and in lean mode
+  if (status && configuration.lean) {
+    measure(data.upgrade)(key);
+  }
+}
+
 export function active(): boolean {
   return status;
 }

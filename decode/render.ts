@@ -1,4 +1,4 @@
-import { Event, Metric, MetricData, PageData } from "../types/data";
+import { Event, Metric, MetricData, PageData, TargetData } from "../types/data";
 import { DomData } from "../types/decode/layout";
 import { InputChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
 import { BoxModelData, Constant } from "../types/layout";
@@ -36,6 +36,7 @@ export function reset(): void {
     nodes = {};
     boxmodels = {};
     metrics = {};
+    lean = false;
 }
 
 export function metric(data: MetricData, header: HTMLElement): void {
@@ -70,23 +71,37 @@ export function page(data: PageData, iframe: HTMLIFrameElement): void {
 }
 
 export function boxmodel(data: BoxModelData[], iframe: HTMLIFrameElement): void {
-    let doc = iframe.contentDocument;
     for (let bm of data) {
-        let el = element(bm.id) as HTMLElement;
+        box(bm.id, bm.box, iframe);
+        boxmodels[bm.id] = bm;
+    }
+}
+
+export function target(data: TargetData[], iframe: HTMLIFrameElement): void {
+    for (let bm of data) {
+        if (bm.hash !== "HTML") { box(bm.id, bm.box, iframe); }
+        boxmodels[bm.id] = bm;
+    }
+}
+
+function box(id: number, rectangle: number[], iframe: HTMLIFrameElement): void {
+    let doc = iframe.contentDocument;
+    let el = element(id) as HTMLElement;
+    if (rectangle) {
         if (lean) {
-            let box = el ? el : doc.createElement("DIV");
-            box.style.left = bm.box[0] + "px";
-            box.style.top = bm.box[1] + "px";
-            box.style.width = bm.box[2] + "px";
-            box.style.height = bm.box[3] + "px";
-            box.style.position = "absolute";
-            box.style.border = "1px solid red";
-            doc.body.appendChild(box);
-            nodes[bm.id] = box;
+            let layer = el ? el : doc.createElement("DIV");
+            layer.style.left = rectangle[0] + "px";
+            layer.style.top = rectangle[1] + "px";
+            layer.style.width = rectangle[2] + "px";
+            layer.style.height = rectangle[3] + "px";
+            layer.style.position = "absolute";
+            layer.style.border = "1px solid red";
+            doc.body.appendChild(layer);
+            nodes[id] = layer;
         } else if (el && el.tagName === "IFRAME") {
             let s = getComputedStyle(el, null);
-            let width = bm.box[2];
-            let height = bm.box[3];
+            let width = rectangle[2];
+            let height = rectangle[3];
             if (s["boxSizing"] !== "border-box") {
                 width -= (css(s, "paddingLeft") + css(s, "paddingRight") + css(s, "borderLeftWidth") + css(s, "borderRightWidth"));
                 height -= (css(s, "paddingTop") + css(s, "paddingBottom") + css(s, "borderTopWidth") + css(s, "borderBottomWidth"));
@@ -94,7 +109,6 @@ export function boxmodel(data: BoxModelData[], iframe: HTMLIFrameElement): void 
             el.style.width = width + "px";
             el.style.height = height + "px";
             if (el.tagName === "IFRAME") { el.style.backgroundColor = "maroon"; }
-            boxmodels[bm.id] = bm;
         }
     }
 }
@@ -103,8 +117,9 @@ function css(style: CSSStyleDeclaration, field: string): number {
     return parseInt(style[field], 10);
 }
 
-export function markup(data: DomData[], iframe: HTMLIFrameElement): void {
+export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
+    if (type === Event.Discover) { reset(); }
     for (let node of data) {
         let parent = element(node.parent);
         let next = element(node.next);
@@ -228,8 +243,8 @@ function setAttributes(node: HTMLElement, attributes: object): void {
 }
 
 export function scroll(data: ScrollData, iframe: HTMLIFrameElement): void {
-    let target = getNode(data.target as number);
-    if (target) { target.scrollTo(data.x, data.y); }
+    let scrollTarget = getNode(data.target as number) || iframe.contentDocument.body;
+    if (scrollTarget) { scrollTarget.scrollTo(data.x, data.y); }
 }
 
 export function resize(data: ResizeData, iframe: HTMLIFrameElement, resizeCallback?: (width: number, height: number) => void): void {

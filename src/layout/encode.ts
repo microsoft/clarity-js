@@ -1,5 +1,6 @@
 import {Event, Metric, Token} from "@clarity-types/data";
 import {NodeInfo} from "@clarity-types/layout";
+import config from "@src/core/config";
 import mask from "@src/core/mask";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
@@ -17,7 +18,7 @@ export default async function(type: Event): Promise<void> {
             let d = doc.data;
             tokens.push(d.width);
             tokens.push(d.height);
-            queue(tokens);
+            queue(tokens, type);
             break;
         case Event.BoxModel:
             let bm = boxmodel.updates();
@@ -25,7 +26,7 @@ export default async function(type: Event): Promise<void> {
                 tokens.push(value.id);
                 tokens.push(value.box);
             }
-            queue(tokens);
+            queue(tokens, type);
             break;
         case Event.Discover:
         case Event.Mutation:
@@ -66,7 +67,8 @@ export default async function(type: Event): Promise<void> {
                 }
                 tokens = tokenize(tokens, metadata);
             }
-            queue(tokens);
+
+            queue(tokens, config.lean ? Event.Backup : type);
             break;
         }
 }

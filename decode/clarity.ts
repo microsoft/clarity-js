@@ -1,6 +1,6 @@
 import version from "../src/core/version";
 import { Event, Metric, Payload, Token } from "../types/data";
-import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UploadEvent } from "../types/decode/data";
+import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UpgradeEvent, UploadEvent } from "../types/decode/data";
 import { DecodedEvent, DecodedPayload } from "../types/decode/decode";
 import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
 import { InputChangeEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
@@ -52,6 +52,10 @@ export function decode(input: string): DecodedPayload {
             case Event.Target:
                 if (payload.target === undefined) { payload.target = []; }
                 payload.target.push(data.decode(entry) as TargetEvent);
+                break;
+            case Event.Upgrade:
+                if (payload.upgrade === undefined) { payload.upgrade = []; }
+                payload.upgrade.push(data.decode(entry) as UpgradeEvent);
                 break;
             case Event.Metric:
                 if (payload.metric === undefined) { payload.metric = []; }
@@ -217,11 +221,15 @@ export async function replay(
             case Event.Discover:
             case Event.Mutation:
                 let domEvent = entry as DomEvent;
-                r.markup(domEvent.data, iframe);
+                r.markup(domEvent.event, domEvent.data, iframe);
                 break;
             case Event.BoxModel:
                 let boxModelEvent = entry as BoxModelEvent;
                 r.boxmodel(boxModelEvent.data, iframe);
+                break;
+            case Event.Target:
+                let targetEvent = entry as TargetEvent;
+                r.target(targetEvent.data, iframe);
                 break;
             case Event.MouseDown:
             case Event.MouseUp:

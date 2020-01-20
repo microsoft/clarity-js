@@ -26,7 +26,7 @@ export default async function(type: Event): Promise<void> {
             tokens.push(connection.data.saveData);
             tokens.push(connection.data.type);
             connection.reset();
-            queue(tokens);
+            queue(tokens, type);
             break;
         case Event.ContentfulPaint:
             // Ensure that there's valid data before processing this event
@@ -38,7 +38,7 @@ export default async function(type: Event): Promise<void> {
                 tokens.push(contentfulPaint.data.size);
                 tokens.push(observe(contentfulPaint.data.target as TargetInfo));
                 contentfulPaint.reset();
-                queue(tokens);
+                queue(tokens, type);
             }
             break;
         case Event.LongTask:
@@ -49,13 +49,13 @@ export default async function(type: Event): Promise<void> {
             tokens.push(longtask.state.data.attributionType);
             tokens.push(longtask.state.data.name);
             longtask.reset();
-            queue(tokens);
+            queue(tokens, type);
             break;
         case Event.Memory:
             tokens.push(memory.data.limit);
             tokens.push(memory.data.available);
             tokens.push(memory.data.consumed);
-            queue(tokens);
+            queue(tokens, type);
             break;
         case Event.Navigation:
             tokens.push(navigation.data.fetchStart);
@@ -73,7 +73,7 @@ export default async function(type: Event): Promise<void> {
             tokens.push(navigation.data.type);
             tokens.push(navigation.data.protocol);
             navigation.reset();
-            queue(tokens);
+            queue(tokens, type);
             break;
         case Event.Network:
             for (let state of network.state) {
@@ -99,14 +99,14 @@ export default async function(type: Event): Promise<void> {
                 }
                 tokens = tokenize(tokens, metadata);
             }
-            queue(tokens);
+            queue(tokens, type);
             network.reset();
             break;
         case Event.Paint:
             tokens = [paint.state.time, type];
             tokens.push(paint.state.data.name);
             paint.reset();
-            queue(tokens);
+            queue(tokens, type);
             break;
     }
     task.stop(timer);

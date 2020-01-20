@@ -1,7 +1,6 @@
 import { Priority } from "@clarity-types/core";
 import { Event, Metric } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
-import config from "@src/core/config";
 import measure from "@src/core/measure";
 import * as task from "@src/core/task";
 import * as boxmodel from "@src/layout/boxmodel";
@@ -111,7 +110,7 @@ async function process(): Promise<void> {
           break;
       }
     }
-    if (!config.lean) { await encode(Event.Mutation); }
+    await encode(Event.Mutation);
     task.stop(timer);
 }
 

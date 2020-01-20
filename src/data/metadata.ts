@@ -11,7 +11,7 @@ export let metadata: Metadata = null;
 
 export function start(): void {
     let cookie: CookieInfo = read();
-    let ts = Date.now();
+    let ts = Math.round(Date.now()); // ensuring that the output of Date.now() is an integer
     let projectId = config.projectId || hash(location.host);
     let userId = cookie && cookie.userId ? cookie.userId : guid();
     let sessionId = cookie && cookie.sessionId && ts - cookie.timestamp < CLARITY_SESSION_LENGTH ? cookie.sessionId : ts.toString(36);

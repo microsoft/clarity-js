@@ -35,7 +35,7 @@ export default async function(type: Event): Promise<void> {
                 tokens.push(observe(entry.data.target as TargetInfo));
                 tokens.push(entry.data.x);
                 tokens.push(entry.data.y);
-                queue(tokens);
+                queue(tokens, type);
             }
             pointer.reset();
             break;
@@ -44,13 +44,13 @@ export default async function(type: Event): Promise<void> {
             tokens.push(r.width);
             tokens.push(r.height);
             resize.reset();
-            queue(tokens);
+            queue(tokens, type);
             break;
         case Event.Unload:
             let u = unload.data;
             tokens.push(u.name);
             unload.reset();
-            queue(tokens);
+            queue(tokens, type);
             break;
         case Event.InputChange:
             let ch = change.data;
@@ -58,7 +58,7 @@ export default async function(type: Event): Promise<void> {
                 tokens.push(observe(ch.target as TargetInfo));
                 tokens.push(ch.value);
                 change.reset();
-                queue(tokens);
+                queue(tokens, type);
             }
             break;
         case Event.Selection:
@@ -69,7 +69,7 @@ export default async function(type: Event): Promise<void> {
                 tokens.push(observe(s.end as TargetInfo));
                 tokens.push(s.endOffset);
                 selection.reset();
-                queue(tokens);
+                queue(tokens, type);
             }
             break;
         case Event.Scroll:
@@ -80,7 +80,7 @@ export default async function(type: Event): Promise<void> {
                 tokens.push(observe(entry.data.target as TargetInfo));
                 tokens.push(entry.data.x);
                 tokens.push(entry.data.y);
-                queue(tokens);
+                queue(tokens, type);
             }
             scroll.reset();
             break;
@@ -88,7 +88,7 @@ export default async function(type: Event): Promise<void> {
             let v = visibility.data;
             tokens.push(v.visible);
             visibility.reset();
-            queue(tokens);
+            queue(tokens, type);
             break;
     }
     task.stop(timer);
