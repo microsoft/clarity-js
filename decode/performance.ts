@@ -108,13 +108,14 @@ export function decode(tokens: Token[]): PerformanceEvent  {
 }
 
 function process(network: any[] | number[], stringIndex: number): NetworkData {
+    let empty = "";
     return {
-        start: network[0] as number,
-        duration: network[1] as number,
-        size: network[2] as number,
+        start: network[0] === -1 ? null : network[0] as number,
+        duration: network[1] === -1 ? null : network[1] as number,
+        size: network[2] === -1 ? null : network[2] as number,
         target: stringIndex > 3 ? network[3] as number : null,
-        initiator: network[stringIndex] as string,
-        protocol: network[stringIndex + 1] as string,
-        host: network[stringIndex + 2] as string
+        initiator: network[stringIndex] === empty ? null : network[stringIndex] as string,
+        protocol: network[stringIndex + 1] === empty ? null : network[stringIndex + 1] as string,
+        host: network[stringIndex + 2] === empty ? null : network[stringIndex + 2] as string,
     };
 }

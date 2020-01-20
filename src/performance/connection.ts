@@ -16,8 +16,8 @@ function recompute(): void {
     let connection = navigator["connection"] as NavigatorConnection;
     data = {
         downlink: connection.downlink,
-        saveData: connection.saveData ? BooleanFlag.True : BooleanFlag.False,
         rtt: connection.rtt,
+        saveData: connection.saveData ? BooleanFlag.True : BooleanFlag.False,
         type: connection.effectiveType
     };
     encode(Event.Connection);

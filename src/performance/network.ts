@@ -7,6 +7,7 @@ import encode from "./encode";
 
 export let state: NetworkState[] = [];
 let timeout: number = null;
+let empty: string = "";
 
 export function compute(entry: PerformanceResourceTiming): void {
     // Do not instrument calls to configured upload URL
@@ -18,13 +19,13 @@ export function compute(entry: PerformanceResourceTiming): void {
     state.push({
         url: entry.name,
         data: {
-            start: Math.round(entry.startTime),
-            duration: Math.round(entry.duration),
-            size: entry.transferSize,
+            start: "startTime" in entry ? Math.round(entry.startTime) : -1,
+            duration: "duration" in entry ? Math.round(entry.duration) : -1,
+            size: "transferSize" in entry ? Math.round(entry.transferSize) : -1,
             target: null,
-            initiator: entry.initiatorType,
-            protocol: entry.nextHopProtocol,
-            host: host(entry.name)
+            initiator: entry.initiatorType ? entry.initiatorType : empty,
+            protocol: entry.nextHopProtocol ? entry.nextHopProtocol : empty,
+            host: entry.name ? host(entry.name) : empty
         }
     });
     clearTimeout(timeout);
