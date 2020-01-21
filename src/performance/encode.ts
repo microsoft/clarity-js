@@ -2,7 +2,7 @@
 import {Event, Metric, TargetInfo, Token} from "@clarity-types/data";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
-import { observe } from "@src/data/target";
+import { observe, track } from "@src/data/target";
 import tokenize from "@src/data/token";
 import { queue } from "@src/data/upload";
 import { getMatch } from "@src/layout/dom";
@@ -79,7 +79,7 @@ export default async function(type: Event): Promise<void> {
             for (let state of network.state) {
                 if (task.shouldYield(timer)) { await task.suspend(timer); }
                 let data = state.data;
-                data.target = observe({id: null, selector: null, node: getMatch(state.url)});
+                data.target = observe(track(getMatch(state.url)));
                 let metadata = [];
                 let keys = ["start", "duration", "size", "target", "initiator", "protocol", "host"];
                 for (let key of keys) {

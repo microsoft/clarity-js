@@ -68,6 +68,10 @@ export default async function(type: Event): Promise<void> {
                 tokens = tokenize(tokens, metadata);
             }
 
+            // Layout events are queued based on the active configuration
+            // If lean mode is on, instead of sending these events to server, we back them up in memory using Event.Backup.
+            // Later, if an upgrade call is called later in the session, we retrieve in memory backup and send them to server.
+            // However, in case the lean mode is not set, we send these events directly to server like any other event.
             queue(tokens, config.lean ? Event.Backup : type);
             break;
         }

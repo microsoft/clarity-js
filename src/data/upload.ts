@@ -29,8 +29,12 @@ export function start(): void {
 export function queue(data: Token[], type: Event): void {
     if (active) {
         let event = JSON.stringify(data);
-        let transmit = true; // schedule upload callback
         let container = events;
+        // When transmit is set to true (default), it indicates that we should schedule an upload
+        // However, in certain scenarios - like metric calculation - that are triggered as part of an existing upload
+        // We do not want to trigger yet another upload, instead enrich the existing outgoing upload.
+        // In these cases, we explicitly set transmit to false.
+        let transmit = true;
 
         switch (type) {
             case Event.Target:
@@ -69,6 +73,8 @@ export function queue(data: Token[], type: Event): void {
                 container = backup;
                 break;
             case Event.Upgrade:
+                // As part of upgrading experience from lean mode into full mode, we lookup anything that is backed up in memory
+                // from previous layout events and get them ready to go out to server as part of next upload.
                 for (let entry of backup) {
                     container.push(entry);
                     metric.count(Metric.LayoutBytes, entry.length);

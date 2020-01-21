@@ -10,6 +10,7 @@ import * as interaction from "@src/interaction";
 import * as layout from "@src/layout";
 import * as performance from "@src/performance";
 
+const CLARITY = "clarity";
 let status = false;
 
 export function config(override: Config): boolean {
@@ -22,7 +23,9 @@ export function config(override: Config): boolean {
 }
 
 export function start(override: Config = {}): void {
-  if (core.check()) {
+  // Check that browser supports required APIs
+  // And, also that we are not attempting to start Clarity multiple times
+  if (core.check() && status === false) {
     config(override);
     status = true;
 
@@ -37,9 +40,11 @@ export function start(override: Config = {}): void {
 
 function restart(): void {
   start();
+  tag(CLARITY, "restart");
 }
 
 export function suspend(): void {
+  tag(CLARITY, "suspend");
   end();
   bind(document, "mousemove", restart);
   bind(document, "touchstart", restart);
@@ -49,11 +54,13 @@ export function suspend(): void {
 }
 
 export function pause(): void {
+  tag(CLARITY, "pause");
   task.pause();
 }
 
 export function resume(): void {
   task.resume();
+  tag(CLARITY, "resume");
 }
 
 export function end(): void {

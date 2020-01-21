@@ -20,6 +20,9 @@ export function start(): void {
 }
 
 export function end(): void {
+    // The ordering below should respect inter-module dependency.
+    // E.g. if upgrade depends on upload, then upgrade needs to end before upload.
+    // Similarly, if upload depends on metadata, upload needs to end before metadata.
     measure(upgrade.reset)();
     measure(tag.reset)();
     measure(ping.end)();

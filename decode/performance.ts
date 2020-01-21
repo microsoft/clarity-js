@@ -108,6 +108,9 @@ export function decode(tokens: Token[]): PerformanceEvent  {
 }
 
 function process(network: any[] | number[], stringIndex: number): NetworkData {
+    // Checking for null values since different browsers implement
+    // resource timing spec differently. For instance, not all version of Edge support
+    // transferSize property.
     let empty = "";
     return {
         start: network[0] === -1 ? null : network[0] as number,
