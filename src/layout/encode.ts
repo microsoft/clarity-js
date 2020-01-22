@@ -1,6 +1,5 @@
 import {Event, Metric, Token} from "@clarity-types/data";
 import {NodeInfo} from "@clarity-types/layout";
-import config from "@src/core/config";
 import mask from "@src/core/mask";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
@@ -18,7 +17,7 @@ export default async function(type: Event): Promise<void> {
             let d = doc.data;
             tokens.push(d.width);
             tokens.push(d.height);
-            queue(tokens, type);
+            queue(tokens);
             break;
         case Event.BoxModel:
             let bm = boxmodel.updates();
@@ -26,7 +25,7 @@ export default async function(type: Event): Promise<void> {
                 tokens.push(value.id);
                 tokens.push(value.box);
             }
-            queue(tokens, type);
+            queue(tokens);
             break;
         case Event.Discover:
         case Event.Mutation:
@@ -68,11 +67,7 @@ export default async function(type: Event): Promise<void> {
                 tokens = tokenize(tokens, metadata);
             }
 
-            // Layout events are queued based on the active configuration
-            // If lean mode is on, instead of sending these events to server, we back them up in memory using Event.Backup.
-            // Later, if an upgrade call is called later in the session, we retrieve in memory backup and send them to server.
-            // However, in case the lean mode is not set, we send these events directly to server like any other event.
-            queue(tokens, config.lean ? Event.Backup : type);
+            queue(tokens);
             break;
         }
 }

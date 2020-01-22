@@ -44,8 +44,7 @@ export const enum Event {
     ContentfulPaint = 36,
     Memory = 37,
     Connection = 38,
-    Backup = 39,
-    Upgrade = 40
+    Upgrade = 39
 }
 
 export const enum Metric {

@@ -14,7 +14,7 @@ export default function(event: Event): void {
     switch (event) {
         case Event.Ping:
             tokens.push(ping.data.gap);
-            queue(tokens, event);
+            queue(tokens);
             break;
         case Event.Page:
             tokens.push(metadata.page.timestamp);
@@ -22,12 +22,12 @@ export default function(event: Event): void {
             tokens.push(metadata.page.url);
             tokens.push(metadata.page.referrer);
             tokens.push(metadata.page.lean);
-            queue(tokens, event);
+            queue(tokens);
             break;
         case Event.Tag:
             tokens.push(tag.data.key);
             tokens.push(tag.data.value);
-            queue(tokens, event);
+            queue(tokens);
             break;
         case Event.Target:
             let targets = target.updates();
@@ -37,18 +37,18 @@ export default function(event: Event): void {
                     tokens.push(value.hash);
                     tokens.push(value.box);
                 }
-                queue(tokens, event);
+                queue(tokens);
             }
             break;
         case Event.Upgrade:
             tokens.push(upgrade.data.key);
-            queue(tokens, event);
+            queue(tokens);
             break;
         case Event.Upload:
             tokens.push(track.sequence);
             tokens.push(track.attempts);
             tokens.push(track.status);
-            queue(tokens, event);
+            queue(tokens);
             break;
         case Event.Metric:
             if (metric.updates.length > 0) {
@@ -64,7 +64,7 @@ export default function(event: Event): void {
                     }
                 }
                 metric.reset();
-                queue(tokens, event);
+                queue(tokens);
             }
             break;
     }

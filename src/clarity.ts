@@ -43,6 +43,14 @@ function restart(): void {
   tag(CLARITY, "restart");
 }
 
+// Suspend ends the current Clarity instance after a configured timeout period
+// The way it differs from the "end" call is that it starts listening to
+// user interaction events as soon as it terminates existing clarity instance.
+// On the next interaction, it automatically starts another instance under a different page id
+// E.g. if configured timeout is 10m, and user stays inactive for an hour.
+// In this case, we will suspend clarity after 10m of inactivity and after another 50m when user interacts again
+// Clarity will restart and start another instance seamlessly. Effectively not missing any active time, but also
+// not holding the session during inactive time periods.
 export function suspend(): void {
   tag(CLARITY, "suspend");
   end();
@@ -53,11 +61,17 @@ export function suspend(): void {
   bind(window, "pageshow", restart);
 }
 
+// By default Clarity is asynchronous and will yield by looking for requestIdleCallback.
+// However, there can still be situations with single page apps where a user action can result
+// in the whole DOM being destroyed and reconstructed. While Clarity will performan favorably out of the box,
+// we do allow external clients to manually pause Clarity for that short burst of time and minimize
+// performance impact even further. For reference, we are talking 10s of milliseconds optimization here, not seconds.
 export function pause(): void {
   tag(CLARITY, "pause");
   task.pause();
 }
 
+// This is how external clients can get out of pause state, and resume Clarity to continue monitoring the page
 export function resume(): void {
   task.resume();
   tag(CLARITY, "resume");

@@ -26,8 +26,9 @@ export function start(): void {
     track = null;
 }
 
-export function queue(data: Token[], type: Event): void {
+export function queue(data: Token[]): void {
     if (active) {
+        let type = data.length > 1 ? data[1] : null;
         let event = JSON.stringify(data);
         let container = events;
         // When transmit is set to true (default), it indicates that we should schedule an upload
@@ -51,7 +52,13 @@ export function queue(data: Token[], type: Event): void {
                 break;
             case Event.Discover:
             case Event.Mutation:
-                metric.count(Metric.LayoutBytes, event.length);
+                // Layout events are queued based on the current configuration
+                // If lean mode is on, instead of sending these events to server, we back them up in memory.
+                // Later, if an upgrade call is called later in the session, we retrieve in memory backup and send them to server.
+                if (config.lean) {
+                    transmit = false;
+                    container = backup;
+                } else { metric.count(Metric.LayoutBytes, event.length); }
                 break;
             case Event.BoxModel:
             case Event.Document:
@@ -67,10 +74,6 @@ export function queue(data: Token[], type: Event): void {
                 break;
             case Event.ScriptError:
             case Event.ImageError:
-                break;
-            case Event.Backup:
-                transmit = false;
-                container = backup;
                 break;
             case Event.Upgrade:
                 // As part of upgrading experience from lean mode into full mode, we lookup anything that is backed up in memory
