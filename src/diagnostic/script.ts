@@ -12,13 +12,15 @@ export function start(): void {
 function handler(error: ErrorEvent): void {
     let e = error["error"] || error;
 
-    data = {
-        message: e.message,
-        line: error["lineno"],
-        column: error["colno"],
-        stack: e.stack,
-        source: error["filename"]
-    };
-
-    encode(Event.ScriptError);
+    // Send back information only if the handled error has valid information
+    if (e && e.message) {
+        data = {
+            message: e.message,
+            line: error["lineno"],
+            column: error["colno"],
+            stack: e.stack,
+            source: error["filename"]
+        };
+        encode(Event.ScriptError);
+    }
 }

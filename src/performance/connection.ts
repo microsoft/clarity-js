@@ -6,7 +6,12 @@ import encode from "./encode";
 export let data: ConnectionData;
 
 export function start(): void {
-    if (navigator && "connection" in navigator) {
+    // Check if the client supports Navigator.Connection: https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection
+    // This is an experimental API so we go a bit deeper in our check and ensure that values returned are valid
+    if (navigator &&
+        "connection" in navigator &&
+        "downlink" in navigator["connection"] &&
+        typeof navigator["connection"]["downlink"] === "number") {
         (navigator["connection"] as NavigatorConnection).addEventListener("change", recompute);
         recompute();
     }
