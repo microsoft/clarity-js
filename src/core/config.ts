@@ -9,7 +9,7 @@ let config: Config = {
     delay: 1000, // 1 second
     expire: 7, // 7 days
     ping: 60 * 1000, // 1 minute
-    timeout: 10 * 60 * 1000, // 10 minutes
+    timeout: 5 * 60 * 1000, // 5 minutes
     shutdown: 2 * 60 * 60 * 1000, // 2 hours
     cssRules: false,
     lean: false,
