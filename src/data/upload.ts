@@ -11,6 +11,8 @@ import * as target from "@src/data/target";
 import * as memory from "@src/performance/memory";
 
 const MAX_RETRIES = 2;
+const MAX_BACKUP_BYTES = 10 * 1024 * 1024; // 10MB
+let backupBytes: number = 0;
 let backup: string[];
 let events: string[];
 let timeout: number = null;
@@ -20,6 +22,7 @@ export let track: UploadData;
 
 export function start(): void {
     active = true;
+    backupBytes = 0;
     backup = [];
     events = [];
     transit = {};
@@ -55,9 +58,12 @@ export function queue(data: Token[]): void {
                 // Layout events are queued based on the current configuration
                 // If lean mode is on, instead of sending these events to server, we back them up in memory.
                 // Later, if an upgrade call is called later in the session, we retrieve in memory backup and send them to server.
+                // At the moment, we limit backup to grow until MAX_BACKUP_BYTES. Anytime we grow past this size, we start dropping events.
+                // This is not ideal, and more of a fail safe mechanism.
                 if (config.lean) {
                     transmit = false;
-                    container = backup;
+                    backupBytes += event.length;
+                    container = backupBytes < MAX_BACKUP_BYTES ? backup : null;
                 } else { metric.count(Metric.LayoutBytes, event.length); }
                 break;
             case Event.BoxModel:
@@ -82,13 +88,15 @@ export function queue(data: Token[]): void {
                     container.push(entry);
                     metric.count(Metric.LayoutBytes, entry.length);
                 }
+                backup = [];
+                backupBytes = 0;
                 break;
             default:
                 metric.count(Metric.InteractionBytes, event.length);
                 break;
         }
 
-        container.push(event);
+        if (container) { container.push(event); }
 
         // This is a precautionary check acting as a fail safe mechanism to get out of
         // unexpected situations. Ideally, expectation is that pause / resume will work as designed.
@@ -105,6 +113,7 @@ export function queue(data: Token[]): void {
 export function end(): void {
     clearTimeout(timeout);
     upload(true);
+    backupBytes = 0;
     backup = [];
     events = [];
     transit = {};
