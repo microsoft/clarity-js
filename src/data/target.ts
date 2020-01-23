@@ -26,7 +26,7 @@ export function track(node: Node): TargetInfo {
 export function observe(target: TargetInfo): number {
     let value = target.node ? dom.get(target.node) : null;
     let id = target.id === null && value ? value.id : target.id;
-    let selector = target.selector === null && value ? value.selector : target.selector;
+    let selector = value && !target.selector ? value.selector : target.selector;
 
     if (id !== null && !(id in queue)) {
         queue[id] = {
