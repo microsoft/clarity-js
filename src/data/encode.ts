@@ -5,6 +5,7 @@ import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
 import * as tag from "@src/data/tag";
 import * as target from "@src/data/target";
+import * as upgrade from "@src/data/upgrade";
 import { queue, track } from "./upload";
 
 export default function(event: Event): void {
@@ -38,6 +39,10 @@ export default function(event: Event): void {
                 }
                 queue(tokens);
             }
+            break;
+        case Event.Upgrade:
+            tokens.push(upgrade.data.key);
+            queue(tokens);
             break;
         case Event.Upload:
             tokens.push(track.sequence);

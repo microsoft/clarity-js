@@ -1,4 +1,4 @@
-import { Event, TargetData } from "@clarity-types/data";
+import { Event, TargetData, TargetInfo } from "@clarity-types/data";
 import encode from "@src/data/encode";
 import hash from "@src/data/hash";
 import { layout } from "@src/layout/boxmodel";
@@ -10,21 +10,32 @@ export function reset(): void {
     queue = {};
 }
 
-export function observe(node: Node): number {
+export function track(node: Node): TargetInfo {
     let id = null;
-    if (node !== null) {
+    let selector = null;
+    if (node) {
         let value = dom.get(node);
         if (value !== null) {
             id = value.id;
-            if (id !== null && !(id in queue)) {
-                queue[id] = {
-                    id,
-                    hash: value ? hash(value.selector) : "",
-                    box: node && node.nodeType !== Node.TEXT_NODE ? layout(node as Element) : null
-                };
-            }
+            selector = value.selector;
         }
     }
+    return { id, selector, node };
+}
+
+export function observe(target: TargetInfo): number {
+    let value = target.node ? dom.get(target.node) : null;
+    let id = target.id === null && value ? value.id : target.id;
+    let selector = value && !target.selector ? value.selector : target.selector;
+
+    if (id !== null && !(id in queue)) {
+        queue[id] = {
+            id,
+            hash: selector ? hash(selector) : "",
+            box: target.node && target.node.nodeType !== Node.TEXT_NODE ? layout(target.node as Element) : null
+        };
+    }
+
     return id;
 }
 

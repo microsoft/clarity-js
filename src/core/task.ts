@@ -1,4 +1,4 @@
-import { AsyncTask, RequestIdleCallbackDeadline, RequestIdleCallbackOptions } from "@clarity-types/core";
+import { AsyncTask, Priority, RequestIdleCallbackDeadline, RequestIdleCallbackOptions } from "@clarity-types/core";
 import { TaskFunction, TaskResolve, TaskTracker } from "@clarity-types/core";
 import { Metric } from "@clarity-types/data";
 import config from "@src/core/config";
@@ -7,41 +7,61 @@ import * as metric from "@src/data/metric";
 // Track the start time to be able to compute duration at the end of the task
 const idleTimeout = 5000;
 let tracker: TaskTracker = {};
-let queue: AsyncTask[] = [];
-let active: AsyncTask = null;
+let queuedTasks: AsyncTask[] = [];
+let activeTask: AsyncTask = null;
+let pauseTask: Promise<void> = null;
+let resumeResolve: TaskResolve = null;
+
+export function pause(): void {
+    if (pauseTask === null) {
+        pauseTask = new Promise<void>((resolve: TaskResolve): void => {
+            resumeResolve = resolve;
+        });
+    }
+}
+
+export function resume(): void {
+    if (pauseTask) {
+        resumeResolve();
+        pauseTask = null;
+        if (activeTask === null) { run(); }
+    }
+}
 
 export function reset(): void {
     tracker = {};
-    queue = [];
-    active = null;
+    queuedTasks = [];
+    activeTask = null;
+    pauseTask = null;
 }
 
-export async function schedule(task: TaskFunction): Promise<void> {
+export async function schedule(task: TaskFunction, priority: Priority = Priority.Normal): Promise<void> {
     // If this task is already scheduled, skip it
-    for (let q of queue) {
+    for (let q of queuedTasks) {
         if (q.task === task) {
             return;
         }
     }
 
     let promise = new Promise<void>((resolve: TaskResolve): void => {
-        queue.push({task, resolve});
+        let insert = priority === Priority.High ? "unshift" : "push";
+        queuedTasks[insert]({task, resolve});
     });
 
-    // If there is no active task running, invoke the first task in the queue synchronously
-    // This also ensures we don't yield the thread during unload event
-    if (active === null) { run(); }
+    // If there is no active task running, and Clarity is not in pause state,
+    // invoke the first task in the queue synchronously. This ensures that we don't yield the thread during unload event
+    if (activeTask === null && pauseTask === null) { run(); }
 
     return promise;
 }
 
 function run(): void {
-    let entry = queue.shift();
+    let entry = queuedTasks.shift();
     if (entry) {
-        active = entry;
+        activeTask = entry;
         entry.task().then(() => {
             entry.resolve();
-            active = null; // Reset active task back to null now that the promise is resolved
+            activeTask = null; // Reset active task back to null now that the promise is resolved
             run();
         });
     }
@@ -56,7 +76,7 @@ export function start(method: Metric): void {
     tracker[method] = { start: performance.now(), calls: 0, yield: config.longtask };
 }
 
-function resume(method: Metric): void {
+function restart(method: Metric): void {
     let c = tracker[method].calls;
     start(method);
     tracker[method].calls = c + 1;
@@ -73,19 +93,20 @@ export function stop(method: Metric): void {
     if (tracker[method].calls > 0) { metric.accumulate(Metric.TotalDuration, duration); }
 }
 
-export async function pause(method: Metric): Promise<void> {
-    // Pause and yield the thread only if the task is still being tracked
+export async function suspend(method: Metric): Promise<void> {
+    // Suspend and yield the thread only if the task is still being tracked
     // It's possible that Clarity is wrapping up instrumentation on a page and we are still in the middle of an async task.
     // In that case, we do not wish to continue yielding thread.
     // Instead, we will turn async task into a sync task and maximize our chances of getting some data back.
     if (method in tracker) {
         stop(method);
         tracker[method].yield = (await wait()).timeRemaining();
-        resume(method);
+        restart(method);
     }
 }
 
 async function wait(): Promise<RequestIdleCallbackDeadline> {
+    if (pauseTask) { await pauseTask; }
     return new Promise<RequestIdleCallbackDeadline>((resolve: (deadline: RequestIdleCallbackDeadline) => void): void => {
         requestIdleCallback(resolve, { timeout: idleTimeout });
     });

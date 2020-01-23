@@ -20,10 +20,10 @@ export function compute(entry: PerformanceResourceTiming): void {
         data: {
             start: Math.round(entry.startTime),
             duration: Math.round(entry.duration),
-            size: entry.transferSize,
+            size: "transferSize" in entry ? Math.round(entry.transferSize) : null,
             target: null,
-            initiator: entry.initiatorType,
-            protocol: entry.nextHopProtocol,
+            initiator: "initiatorType" in entry ? entry.initiatorType : null,
+            protocol: "nextHopProtocol" in entry ? entry.nextHopProtocol : null,
             host: host(entry.name)
         }
     });

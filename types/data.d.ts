@@ -1,4 +1,4 @@
-export type Target = (number | Node);
+export type Target = (number | TargetInfo);
 export type Token = (string | number | number[] | string[]);
 export type DecodedToken = (any | any[]);
 
@@ -43,7 +43,8 @@ export const enum Event {
     Paint = 35,
     ContentfulPaint = 36,
     Memory = 37,
-    Connection = 38
+    Connection = 38,
+    Upgrade = 39
 }
 
 export const enum Metric {
@@ -99,6 +100,12 @@ export interface ClarityInfo {
     pageId: string;
 }
 
+export interface TargetInfo {
+    id: number;
+    selector: string;
+    node: Node;
+}
+
 export interface Metadata {
     page: PageData;
     envelope: Envelope;
@@ -143,6 +150,10 @@ export interface PingData {
 export interface TagData {
     key: string;
     value: string[];
+}
+
+export interface UpgradeData {
+    key: string;
 }
 
 export interface TargetData {

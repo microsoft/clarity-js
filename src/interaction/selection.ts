@@ -1,9 +1,10 @@
-import { Event } from "@clarity-types/data";
+import { Event, TargetInfo } from "@clarity-types/data";
 import { SelectionData } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
 import { schedule } from "@src/core/task";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
+import { track } from "@src/data/target";
 import encode from "./encode";
 
 export let data: SelectionData = null;
@@ -27,15 +28,16 @@ function recompute(): void {
     // can result in null anchorNode and focusNode if there was no previous selection on page
     if (current.anchorNode === null && current.focusNode === null) { return; }
 
-    if (previous !== null && data.start !== null && data.start !== current.anchorNode) {
+    let startNode = data.start ? (data.start as TargetInfo).node : null;
+    if (previous !== null && data.start !== null && startNode !== current.anchorNode) {
         clearTimeout(timeout);
         process(Event.Selection);
     }
 
     data = {
-        start: current.anchorNode,
+        start: track(current.anchorNode),
         startOffset: current.anchorOffset,
-        end: current.focusNode,
+        end: track(current.focusNode),
         endOffset: current.focusOffset
     };
     previous = current;

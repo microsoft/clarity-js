@@ -1,6 +1,6 @@
+import { Priority } from "@clarity-types/core";
 import { Event, Metric } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
-import config from "@src/core/config";
 import measure from "@src/core/measure";
 import * as task from "@src/core/task";
 import * as boxmodel from "@src/layout/boxmodel";
@@ -58,7 +58,7 @@ export function end(): void {
 function handle(m: MutationRecord[]): void {
   // Queue up mutation records for asynchronous processing
   for (let i = 0; i < m.length; i++) { mutations.push(m[i]); }
-  task.schedule(process).then(() => {
+  task.schedule(process, Priority.High).then(() => {
       measure(doc.compute)();
       measure(boxmodel.compute)();
   });
@@ -73,11 +73,11 @@ async function process(): Promise<void> {
 
       switch (mutation.type) {
         case "attributes":
-            if (task.shouldYield(timer)) { await task.pause(timer); }
+            if (task.shouldYield(timer)) { await task.suspend(timer); }
             processNode(target, Source.Attributes);
             break;
         case "characterData":
-            if (task.shouldYield(timer)) { await task.pause(timer); }
+            if (task.shouldYield(timer)) { await task.suspend(timer); }
             processNode(target, Source.CharacterData);
             break;
         case "childList":
@@ -93,7 +93,7 @@ async function process(): Promise<void> {
               let walker = document.createTreeWalker(addedNode, NodeFilter.SHOW_ALL, null, false);
               let node = walker.currentNode;
               while (node) {
-                  if (task.shouldYield(timer)) { await task.pause(timer); }
+                  if (task.shouldYield(timer)) { await task.suspend(timer); }
                   processNode(node, Source.ChildListAdd);
                   node = walker.nextNode();
               }
@@ -102,7 +102,7 @@ async function process(): Promise<void> {
           // Process removes
           let removedLength = mutation.removedNodes.length;
           for (let j = 0; j < removedLength; j++) {
-            if (task.shouldYield(timer)) { await task.pause(timer); }
+            if (task.shouldYield(timer)) { await task.suspend(timer); }
             processNode(mutation.removedNodes[j], Source.ChildListRemove);
           }
           break;
@@ -110,7 +110,7 @@ async function process(): Promise<void> {
           break;
       }
     }
-    if (!config.lean) { await encode(Event.Mutation); }
+    await encode(Event.Mutation);
     task.stop(timer);
 }
 

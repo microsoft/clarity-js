@@ -1,4 +1,4 @@
-import {Event, Metric, Token} from "@clarity-types/data";
+import {Event, Metric, TargetInfo, Token} from "@clarity-types/data";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
 import { observe } from "@src/data/target";
@@ -29,10 +29,10 @@ export default async function(type: Event): Promise<void> {
         case Event.TouchMove:
         case Event.TouchCancel:
             for (let i = 0; i < pointer.state.length; i++) {
-                if (task.shouldYield(timer)) { await task.pause(timer); }
+                if (task.shouldYield(timer)) { await task.suspend(timer); }
                 let entry = pointer.state[i];
                 tokens = [entry.time, entry.event];
-                tokens.push(observe(entry.data.target as Node));
+                tokens.push(observe(entry.data.target as TargetInfo));
                 tokens.push(entry.data.x);
                 tokens.push(entry.data.y);
                 queue(tokens);
@@ -55,7 +55,7 @@ export default async function(type: Event): Promise<void> {
         case Event.InputChange:
             let ch = change.data;
             if (ch) {
-                tokens.push(observe(ch.target as Node));
+                tokens.push(observe(ch.target as TargetInfo));
                 tokens.push(ch.value);
                 change.reset();
                 queue(tokens);
@@ -64,9 +64,9 @@ export default async function(type: Event): Promise<void> {
         case Event.Selection:
             let s = selection.data;
             if (s) {
-                tokens.push(observe(s.start as Node));
+                tokens.push(observe(s.start as TargetInfo));
                 tokens.push(s.startOffset);
-                tokens.push(observe(s.end as Node));
+                tokens.push(observe(s.end as TargetInfo));
                 tokens.push(s.endOffset);
                 selection.reset();
                 queue(tokens);
@@ -74,10 +74,10 @@ export default async function(type: Event): Promise<void> {
             break;
         case Event.Scroll:
             for (let i = 0; i < scroll.state.length; i++) {
-                if (task.shouldYield(timer)) { await task.pause(timer); }
+                if (task.shouldYield(timer)) { await task.suspend(timer); }
                 let entry = scroll.state[i];
                 tokens = [entry.time, type];
-                tokens.push(observe(entry.data.target as Node));
+                tokens.push(observe(entry.data.target as TargetInfo));
                 tokens.push(entry.data.x);
                 tokens.push(entry.data.y);
                 queue(tokens);

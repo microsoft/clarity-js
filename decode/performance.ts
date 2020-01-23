@@ -83,7 +83,11 @@ export function decode(tokens: Token[]): PerformanceEvent  {
                         // Continuing the example used above, following code expands an array of tokens by getting rid of any optimizations
                         // E.g. Current token: [1,3], from array of tokens: ["hello", "world", "coding", "language", [1, 3], "example"]
                         // Following code will expand [1,3] into "world", "language".
-                        if (token === null) { network.push(token); } else {
+                        if (token === null) {
+                            type = null;
+                            if (stringIndex < 3) { stringIndex++; }
+                            network.push(token);
+                        } else {
                             let subtoken = token[0];
                             let subtype = typeof(subtoken);
                             switch (subtype) {
@@ -108,6 +112,9 @@ export function decode(tokens: Token[]): PerformanceEvent  {
 }
 
 function process(network: any[] | number[], stringIndex: number): NetworkData {
+    // Checking for null values since different browsers implement
+    // resource timing spec differently. For instance, not all version of Edge support
+    // transferSize property.
     return {
         start: network[0] as number,
         duration: network[1] as number,
@@ -115,6 +122,6 @@ function process(network: any[] | number[], stringIndex: number): NetworkData {
         target: stringIndex > 3 ? network[3] as number : null,
         initiator: network[stringIndex] as string,
         protocol: network[stringIndex + 1] as string,
-        host: network[stringIndex + 2] as string
+        host: network[stringIndex + 2] as string,
     };
 }

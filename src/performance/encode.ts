@@ -1,8 +1,8 @@
 
-import {Event, Metric, Token} from "@clarity-types/data";
+import {Event, Metric, TargetInfo, Token} from "@clarity-types/data";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
-import { observe } from "@src/data/target";
+import { observe, track } from "@src/data/target";
 import tokenize from "@src/data/token";
 import { queue } from "@src/data/upload";
 import { getMatch } from "@src/layout/dom";
@@ -36,7 +36,7 @@ export default async function(type: Event): Promise<void> {
                 tokens.push(contentfulPaint.data.load);
                 tokens.push(contentfulPaint.data.render);
                 tokens.push(contentfulPaint.data.size);
-                tokens.push(observe(contentfulPaint.data.target as Node));
+                tokens.push(observe(contentfulPaint.data.target as TargetInfo));
                 contentfulPaint.reset();
                 queue(tokens);
             }
@@ -77,9 +77,9 @@ export default async function(type: Event): Promise<void> {
             break;
         case Event.Network:
             for (let state of network.state) {
-                if (task.shouldYield(timer)) { await task.pause(timer); }
+                if (task.shouldYield(timer)) { await task.suspend(timer); }
                 let data = state.data;
-                data.target = observe(getMatch(state.url));
+                data.target = observe(track(getMatch(state.url)));
                 let metadata = [];
                 let keys = ["start", "duration", "size", "target", "initiator", "protocol", "host"];
                 for (let key of keys) {

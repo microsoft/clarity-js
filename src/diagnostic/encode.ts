@@ -1,4 +1,4 @@
-import {Event, Token} from "@clarity-types/data";
+import {Event, TargetInfo, Token} from "@clarity-types/data";
 import time from "@src/core/time";
 import { observe } from "@src/data/target";
 import { queue } from "@src/data/upload";
@@ -20,7 +20,7 @@ export default async function(type: Event): Promise<void> {
         case Event.ImageError:
             if (image.data) {
                 tokens.push(image.data.source);
-                tokens.push(observe(image.data.target as Node));
+                tokens.push(observe(image.data.target as TargetInfo));
                 queue(tokens);
             }
             break;

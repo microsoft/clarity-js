@@ -29,7 +29,7 @@ async function boxmodel(): Promise<void> {
 
     for (let value of values) {
         if (task.shouldYield(timer)) {
-            await task.pause(timer);
+            await task.suspend(timer);
             x = "pageXOffset" in window ? window.pageXOffset : doc.scrollLeft;
             y = "pageYOffset" in window ? window.pageYOffset : doc.scrollTop;
         }
