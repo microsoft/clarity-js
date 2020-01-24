@@ -67,14 +67,18 @@ export function suspend(): void {
 // we do allow external clients to manually pause Clarity for that short burst of time and minimize
 // performance impact even further. For reference, we are talking 10s of milliseconds optimization here, not seconds.
 export function pause(): void {
-  tag(CLARITY, "pause");
-  task.pause();
+  if (status) {
+    tag(CLARITY, "pause");
+    task.pause();
+  }
 }
 
 // This is how external clients can get out of pause state, and resume Clarity to continue monitoring the page
 export function resume(): void {
-  task.resume();
-  tag(CLARITY, "resume");
+  if (status) {
+    task.resume();
+    tag(CLARITY, "resume");
+  }
 }
 
 export function end(): void {
