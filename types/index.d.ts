@@ -7,6 +7,7 @@ interface Clarity {
   pause: () => void;
   resume: () => void;
   end: () => void;
+  upgrade: () => void;
   active: () => boolean;
   tag: (key: string, value: string) => void;
 }
