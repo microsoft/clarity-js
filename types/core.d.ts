@@ -53,9 +53,11 @@ export interface Config {
     expire?: number;
     ping?: number;
     timeout?: number;
+    session?: number;
     shutdown?: number;
     cssRules?: boolean;
     lean?: boolean;
+    track?: boolean;
     tokens?: string[];
     url?: string;
     onstart?: (data: ClarityInfo) => void;

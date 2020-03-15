@@ -104,7 +104,16 @@ export function tag(key: string, value: string): void {
 export function upgrade(key: string): void {
   // Do not process upgrade call if Clarity is not already activated and in lean mode
   if (status && configuration.lean) {
+    configuration.lean = false;
     measure(data.upgrade)(key);
+  }
+}
+
+export function consent(): void {
+  // Do not begin tracking user if Clarity is not already activated
+  if (status && !configuration.track) {
+    configuration.track = true;
+    measure(data.track)();
   }
 }
 

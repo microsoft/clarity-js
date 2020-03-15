@@ -88,12 +88,6 @@ export interface EncodedPayload {
     d: string;
 }
 
-export interface CookieInfo {
-    userId: string;
-    sessionId: string;
-    timestamp: number;
-}
-
 export interface ClarityInfo {
     userId: string;
     sessionId: string;

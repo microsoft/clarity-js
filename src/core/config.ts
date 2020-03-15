@@ -7,12 +7,14 @@ let config: Config = {
     distance: 20, // 20 pixels
     interval: 25, // 25 milliseconds
     delay: 1000, // 1 second
-    expire: 7, // 7 days
+    expire: 365, // 1 year
     ping: 60 * 1000, // 1 minute
     timeout: 5 * 60 * 1000, // 5 minutes
+    session: 10 * 60 * 1000, // 5 minutes
     shutdown: 2 * 60 * 60 * 1000, // 2 hours
     cssRules: false,
     lean: false,
+    track: true,
     tokens: [],
     url: "",
     onstart: null,
