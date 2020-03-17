@@ -16,6 +16,10 @@ export interface TaskTracker {
     [key: number]: TaskInfo;
 }
 
+export interface Region {
+    [key: string]: string;
+}
+
 export interface TaskInfo {
     start: number;
     calls: number;
@@ -58,7 +62,7 @@ export interface Config {
     cssRules?: boolean;
     lean?: boolean;
     track?: boolean;
-    tokens?: string[];
+    regions?: Region;
     url?: string;
     onstart?: (data: ClarityInfo) => void;
     upload?: (data: string, sequence?: number, last?: boolean) => void;

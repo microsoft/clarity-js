@@ -30,8 +30,13 @@ export function decode(tokens: Token[]): DataEvent {
             return { time, event, data: tag };
         case Event.Target:
             let targetData: TargetData[] = [];
-            for (let t = 2; t < tokens.length; t += 3) {
-                let target: TargetData = { id: tokens[t] as number, hash: tokens[t + 1] as string, box: tokens[t + 2] as number[] };
+            for (let t = 2; t < tokens.length; t += 4) {
+                let target: TargetData = {
+                    id: tokens[t] as number,
+                    hash: tokens[t + 1] as string,
+                    region: tokens[t + 2] as string,
+                    box: tokens[t + 3] as number[]
+                };
                 targetData.push(target);
             }
             return { time, event, data: targetData };

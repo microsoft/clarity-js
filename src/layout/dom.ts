@@ -1,4 +1,5 @@
 import { Constant, NodeChange, NodeInfo, NodeValue, Source } from "@clarity-types/layout";
+import config from "@src/core/config";
 import time from "@src/core/time";
 import selector from "@src/layout/selector";
 
@@ -10,9 +11,24 @@ let changes: NodeChange[][] = [];
 let updateMap: number[] = [];
 let selectorMap: number[] = [];
 let idMap: WeakMap<Node, number> = null;
+let regionMap: WeakMap<Node, string> = null;
 let urlMap: { [url: string]: number } = {};
 
-export function reset(): void {
+export function start(): void {
+    reset();
+    for (let key in config.regions) {
+        if (config.regions[key]) {
+            let node = document.querySelector(config.regions[key]);
+            if (node) { regionMap.set(node, key); }
+        }
+    }
+}
+
+export function end(): void {
+    reset();
+}
+
+function reset(): void {
     index = 1;
     nodes = [];
     values = [];
@@ -21,6 +37,7 @@ export function reset(): void {
     selectorMap = [];
     urlMap = {};
     idMap = new WeakMap();
+    regionMap = new WeakMap();
     if (Constant.DEVTOOLS_HOOK in window) { window[Constant.DEVTOOLS_HOOK] = { get, getNode, history }; }
 }
 
@@ -41,15 +58,20 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
     let nextId = getNextId(node);
     let masked = true;
     let parent = null;
+    let region = regionMap.has(node) ? regionMap.get(node) : null;
 
     if (parentId >= 0 && values[parentId]) {
         parent = values[parentId];
         parent.children.push(id);
+        region = region === null ? parent.region : region;
         masked = parent.metadata.masked;
     }
 
     if (data.attributes && Constant.MASK_ATTRIBUTE in data.attributes) { masked = true; }
     if (data.attributes && Constant.UNMASK_ATTRIBUTE in data.attributes) { masked = false; }
+    if (data.attributes && Constant.CLARITY_ID_ATTRIBUTE in data.attributes) {
+        regionMap.set(node, data.attributes[Constant.CLARITY_ID_ATTRIBUTE]);
+    }
 
     nodes[id] = node;
     values[id] = {
@@ -60,6 +82,7 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
         position: null,
         data,
         selector: "",
+        region,
         metadata: { active: true, boxmodel: false, masked }
     };
     updateSelector(values[id]);
@@ -95,6 +118,8 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
                 } else {
                     values[parentId].children.push(id);
                 }
+                // Update region after the move
+                value.region = regionMap.has(node) ? regionMap.get(node) : values[parentId].region;
             } else {
                 // Mark this element as deleted if the parent has been updated to null
                 remove(id, source);
@@ -230,22 +255,6 @@ function metadata(tag: string, id: number, parentId: number): void {
         let value = values[id];
         let attributes = "attributes" in value.data ? value.data.attributes : {};
         switch (tag) {
-            case "*T":
-                // Mark parent as a leaf node only if the text node has valid text and parent is masked.
-                // For nodes with whitespaces and not real text, skip them.
-                if (values[parentId].metadata.masked) {
-                    let v = value.data.value;
-                    for (let i = 0; i < v.length; i++) {
-                        let code = v.charCodeAt(i);
-                        if (!(code === 32 || code === 10 || code === 9 || code === 13)) {
-                            values[parentId].metadata.boxmodel = true;
-                            break;
-                        }
-                    }
-                }
-                break;
-            case "IMG":
-                value.metadata.boxmodel = true;
             case "VIDEO":
             case "AUDIO":
             case "LINK":
@@ -272,11 +281,10 @@ function metadata(tag: string, id: number, parentId: number): void {
             case "IFRAME":
                 value.metadata.boxmodel = true;
                 break;
-            default:
-                // Capture layout for any element with a user defined selector
-                value.metadata.boxmodel = value.selector.indexOf("*") === 0;
-                break;
         }
+
+        // Enable boxmodel if this node defines a new region
+        if (regionMap.has(nodes[id])) { value.metadata.boxmodel = true; }
     }
 }
 

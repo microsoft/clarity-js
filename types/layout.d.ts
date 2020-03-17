@@ -44,6 +44,7 @@ export interface NodeValue {
     children: number[];
     data: NodeInfo;
     selector: string;
+    region: string;
     metadata: NodeMeta;
 }
 
@@ -68,6 +69,7 @@ export interface DocumentData {
 
 export interface BoxModelData {
     id: number;
+    region: string;
     box: number[];
 }
 

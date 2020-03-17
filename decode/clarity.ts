@@ -227,10 +227,6 @@ export async function replay(
                 let boxModelEvent = entry as BoxModelEvent;
                 r.boxmodel(boxModelEvent.data, iframe);
                 break;
-            case Event.Target:
-                let targetEvent = entry as TargetEvent;
-                r.target(targetEvent.data, iframe);
-                break;
             case Event.MouseDown:
             case Event.MouseUp:
             case Event.MouseMove:

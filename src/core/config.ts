@@ -15,7 +15,7 @@ let config: Config = {
     cssRules: false,
     lean: false,
     track: true,
-    tokens: [],
+    regions: {},
     url: "",
     onstart: null,
     upload: null

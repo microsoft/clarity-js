@@ -97,6 +97,7 @@ export interface ClarityInfo {
 export interface TargetInfo {
     id: number;
     selector: string;
+    region: string;
     node: Node;
 }
 
@@ -153,6 +154,7 @@ export interface UpgradeData {
 export interface TargetData {
     id: number;
     hash: string;
+    region: string;
     box: number[];
 }
 
