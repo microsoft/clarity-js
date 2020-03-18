@@ -12,23 +12,10 @@ let updateMap: number[] = [];
 let selectorMap: number[] = [];
 let idMap: WeakMap<Node, number> = null;
 let regionMap: WeakMap<Node, string> = null;
+let regionTracker: { [name: string]: number } = {};
 let urlMap: { [url: string]: number } = {};
 
-export function start(): void {
-    reset();
-    for (let key in config.regions) {
-        if (config.regions[key]) {
-            let node = document.querySelector(config.regions[key]);
-            if (node) { regionMap.set(node, key); }
-        }
-    }
-}
-
-export function end(): void {
-    reset();
-}
-
-function reset(): void {
+export function reset(): void {
     index = 1;
     nodes = [];
     values = [];
@@ -39,6 +26,20 @@ function reset(): void {
     idMap = new WeakMap();
     regionMap = new WeakMap();
     if (Constant.DEVTOOLS_HOOK in window) { window[Constant.DEVTOOLS_HOOK] = { get, getNode, history }; }
+}
+
+export function regions(root: ParentNode): void {
+    for (let key in config.regions) {
+        if (config.regions[key] && "querySelectorAll" in root) {
+            let elements = root.querySelectorAll(config.regions[key]);
+            let length = elements.length;
+            for (let i = 0; i < length; i++) {
+                if (!(key in regionTracker)) { regionTracker[key] = 0; }
+                regionTracker[key]++;
+                regionMap.set(elements[i], length > 1 ? `${key}.${regionTracker[key]}` : key);
+            }
+        }
+    }
 }
 
 export function getId(node: Node, autogen: boolean = false): number {
@@ -279,7 +280,7 @@ function metadata(tag: string, id: number, parentId: number): void {
                 }
                 break;
             case "IFRAME":
-                value.metadata.boxmodel = true;
+                if (config.lean === false) { value.metadata.boxmodel = true; }
                 break;
         }
 

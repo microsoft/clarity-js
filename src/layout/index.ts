@@ -6,14 +6,14 @@ import * as mutation from "@src/layout/mutation";
 
 export function start(): void {
     doc.reset();
-    dom.start();
+    dom.reset();
     mutation.start();
     discover.start();
     boxmodel.reset();
 }
 
 export function end(): void {
-    dom.end();
+    dom.reset();
     mutation.end();
     boxmodel.reset();
     doc.reset();

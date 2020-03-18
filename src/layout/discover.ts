@@ -5,6 +5,7 @@ import measure from "@src/core/measure";
 import * as task from "@src/core/task";
 import * as boxmodel from "@src/layout/boxmodel";
 import * as doc from "@src/layout/document";
+import * as dom from "@src/layout/dom";
 import encode from "@src/layout/encode";
 
 import processNode from "./node";
@@ -19,6 +20,7 @@ export function start(): void {
 async function discover(): Promise<void> {
     let timer = Metric.DiscoverDuration;
     task.start(timer);
+    dom.regions(document);
     let walker = document.createTreeWalker(document, NodeFilter.SHOW_ALL, null, false);
     let node = walker.nextNode();
     while (node) {

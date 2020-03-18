@@ -5,6 +5,7 @@ import measure from "@src/core/measure";
 import * as task from "@src/core/task";
 import * as boxmodel from "@src/layout/boxmodel";
 import * as doc from "@src/layout/document";
+import * as dom from "@src/layout/dom";
 import encode from "@src/layout/encode";
 import processNode from "./node";
 
@@ -74,10 +75,12 @@ async function process(): Promise<void> {
       switch (mutation.type) {
         case "attributes":
             if (task.shouldYield(timer)) { await task.suspend(timer); }
+            dom.regions(target as HTMLElement);
             processNode(target, Source.Attributes);
             break;
         case "characterData":
             if (task.shouldYield(timer)) { await task.suspend(timer); }
+            dom.regions(target as HTMLElement);
             processNode(target, Source.CharacterData);
             break;
         case "childList":
@@ -85,6 +88,7 @@ async function process(): Promise<void> {
           let addedLength = mutation.addedNodes.length;
           for (let j = 0; j < addedLength; j++) {
             let addedNode = mutation.addedNodes[j];
+            dom.regions(addedNode as HTMLElement);
             // In IE11, walker.nextNode() throws an error if walker.currentNode is a text node
             // To keep things simple, we fork the code path for text nodes in all browser
             if (addedNode.nodeType === Node.TEXT_NODE) {
