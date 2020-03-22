@@ -23,8 +23,8 @@ export default async function(type: Event): Promise<void> {
             let bm = boxmodel.updates();
             for (let value of bm) {
                 tokens.push(value.id);
-                tokens.push(value.region);
                 tokens.push(value.box);
+                tokens.push(value.region);
             }
             queue(tokens);
             break;

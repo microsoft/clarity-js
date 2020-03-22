@@ -76,7 +76,7 @@ function session(ts: number): string {
       let parts = value.split(CLARITY_STORAGE_SEPARATOR);
       if (parts.length === 2 && ts - parseInt(parts[1], 10) < config.session) { id = parts[0]; }
     }
-    sessionStorage.setItem(CLARITY_STORAGE_KEY, `${id}|${ts}`);
+    sessionStorage.setItem(CLARITY_STORAGE_KEY, `${id}${CLARITY_STORAGE_KEY}${ts}`);
   }
   return id;
 }
@@ -86,7 +86,7 @@ function str(number: number, base: number = 10): string {
 }
 
 function user(): string {
-  let id = guid();
+  let id;
   let cookies: string[] = document.cookie.split(";");
   if (cookies) {
     for (let i = 0; i < cookies.length; i++) {
@@ -96,5 +96,5 @@ function user(): string {
       }
     }
   }
-  return id;
+  return id ||  guid();
 }

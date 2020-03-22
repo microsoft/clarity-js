@@ -10,8 +10,11 @@ let values: NodeValue[] = [];
 let changes: NodeChange[][] = [];
 let updateMap: number[] = [];
 let selectorMap: number[] = [];
+
+// The WeakMap object is a collection of key/value pairs in which the keys are weakly referenced
 let idMap: WeakMap<Node, number> = null;
 let regionMap: WeakMap<Node, string> = null;
+
 let regionTracker: { [name: string]: number } = {};
 let urlMap: { [url: string]: number } = {};
 
@@ -28,7 +31,7 @@ export function reset(): void {
     if (Constant.DEVTOOLS_HOOK in window) { window[Constant.DEVTOOLS_HOOK] = { get, getNode, history }; }
 }
 
-export function regions(root: ParentNode): void {
+export function extractRegions(root: ParentNode): void {
     for (let key in config.regions) {
         if (config.regions[key] && "querySelectorAll" in root) {
             let elements = root.querySelectorAll(config.regions[key]);
@@ -70,8 +73,8 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
 
     if (data.attributes && Constant.MASK_ATTRIBUTE in data.attributes) { masked = true; }
     if (data.attributes && Constant.UNMASK_ATTRIBUTE in data.attributes) { masked = false; }
-    if (data.attributes && Constant.CLARITY_ID_ATTRIBUTE in data.attributes) {
-        regionMap.set(node, data.attributes[Constant.CLARITY_ID_ATTRIBUTE]);
+    if (data.attributes && Constant.CLARITY_REGION_ATTRIBUTE in data.attributes) {
+        regionMap.set(node, data.attributes[Constant.CLARITY_REGION_ATTRIBUTE]);
     }
 
     nodes[id] = node;

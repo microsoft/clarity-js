@@ -20,7 +20,7 @@ export function start(): void {
 async function discover(): Promise<void> {
     let timer = Metric.DiscoverDuration;
     task.start(timer);
-    dom.regions(document);
+    dom.extractRegions(document);
     let walker = document.createTreeWalker(document, NodeFilter.SHOW_ALL, null, false);
     let node = walker.nextNode();
     while (node) {
