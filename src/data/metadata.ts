@@ -40,7 +40,12 @@ export function envelope(last: boolean): Token[] {
     return [e.sequence, e.version, e.projectId, e.userId, e.sessionId, e.pageId, e.upload, e.end];
 }
 
-export function track(): void {
+export function consent(): void {
+  config.track = true;
+  track();
+}
+
+function track(): void {
   if (config.track) {
     let expiry = new Date();
     expiry.setDate(expiry.getDate() + config.expire);

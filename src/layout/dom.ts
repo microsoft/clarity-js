@@ -291,6 +291,9 @@ function metadata(tag: string, id: number, parentId: number): void {
         }
 
         // Enable boxmodel if this node defines a new region
+        // This setting is not recurrsive and does not apply to any of the children.
+        // It tells Clarity to monitor bounding rectangle (x,y,width,height) for this region.
+        // E.g. region would be "SearchBox" and what's inside that region (input field, submit button, label, etc.) do not matter.
         if (regionMap.has(nodes[id])) { value.metadata.boxmodel = true; }
     }
 }
