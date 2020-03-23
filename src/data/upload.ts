@@ -104,6 +104,7 @@ export function queue(data: Token[]): void {
         // In those edge cases, we will cut the cord after a configurable shutdown value.
         // The only exception is the very last payload, for which we will attempt one final delivery to the server.
         if (time() < config.shutdown && transmit) {
+            if (type !== Event.Ping) { ping.reset(); }
             clearTimeout(timeout);
             timeout = setTimeout(upload, config.delay);
         }
@@ -130,7 +131,6 @@ function upload(last: boolean = false): void {
     let sequence = metadata.envelope.sequence;
     metric.count(Metric.TotalBytes, data.length);
     send(data, sequence, last);
-    if (!last) { ping.reset(); }
 
     // Send data to upload hook, if defined in the config
     if (config.upload) { config.upload(data, sequence, last); }

@@ -108,6 +108,13 @@ export function upgrade(key: string): void {
   }
 }
 
+export function consent(): void {
+  // Do not begin tracking user if Clarity is not already activated
+  if (status && !configuration.track) {
+    measure(data.consent)();
+  }
+}
+
 export function active(): boolean {
   return status;
 }

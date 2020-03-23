@@ -88,12 +88,6 @@ export interface EncodedPayload {
     d: string;
 }
 
-export interface CookieInfo {
-    userId: string;
-    sessionId: string;
-    timestamp: number;
-}
-
 export interface ClarityInfo {
     userId: string;
     sessionId: string;
@@ -103,6 +97,7 @@ export interface ClarityInfo {
 export interface TargetInfo {
     id: number;
     selector: string;
+    region: string;
     node: Node;
 }
 
@@ -159,6 +154,7 @@ export interface UpgradeData {
 export interface TargetData {
     id: number;
     hash: string;
+    region: string;
     box: number[];
 }
 

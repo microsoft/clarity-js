@@ -13,7 +13,7 @@ export const enum Constant {
     DATA_PREFIX = "data:",
     SVG_NAMESPACE = "http://www.w3.org/2000/svg",
     DEVTOOLS_HOOK = "__CLARITY_DEVTOOLS_HOOK__",
-    CLARITY_ID_ATTRIBUTE = "data-clarity",
+    CLARITY_REGION_ATTRIBUTE = "data-clarity-region",
     ID_ATTRIBUTE = "id",
     CLASS_ATTRIBUTE = "class",
     HREF_ATTRIBUTE = "href",
@@ -44,6 +44,7 @@ export interface NodeValue {
     children: number[];
     data: NodeInfo;
     selector: string;
+    region: string;
     metadata: NodeMeta;
 }
 
@@ -69,6 +70,7 @@ export interface DocumentData {
 export interface BoxModelData {
     id: number;
     box: number[];
+    region: string;
 }
 
 export interface HashData {

@@ -65,7 +65,9 @@ function update(id: number, box: number[]): void {
 
     if (changed) {
         if (updateMap.indexOf(id) === -1) { updateMap.push(id); }
-        bm[id] = {id, box};
+        let value = dom.getValue(id);
+        let region = value ? value.region : null;
+        bm[id] = {id, box, region};
     }
 }
 

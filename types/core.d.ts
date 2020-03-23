@@ -10,10 +10,21 @@ export const enum Priority {
     High = 1
 }
 
+export const enum Time {
+    Second = 1000,
+    Minute = 60 * 1000,
+    Hour = 60 * 60 * 1000
+}
+
 /* Helper Interfaces */
 
 export interface TaskTracker {
     [key: number]: TaskInfo;
+}
+
+export interface RegionTracker {
+    /* In the following key-value pair, key is the given name and value is CSS selector */
+    [key: string]: string;
 }
 
 export interface TaskInfo {
@@ -53,10 +64,12 @@ export interface Config {
     expire?: number;
     ping?: number;
     timeout?: number;
+    session?: number;
     shutdown?: number;
     cssRules?: boolean;
     lean?: boolean;
-    tokens?: string[];
+    track?: boolean;
+    regions?: RegionTracker;
     url?: string;
     onstart?: (data: ClarityInfo) => void;
     upload?: (data: string, sequence?: number, last?: boolean) => void;

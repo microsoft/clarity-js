@@ -25,8 +25,8 @@ export function decode(tokens: Token[]): LayoutEvent {
             return { time, event, data: documentData };
         case Event.BoxModel:
             let boxmodelData: BoxModelData[] = [];
-            for (let i = 2; i < tokens.length; i += 2) {
-                let boxmodel: BoxModelData = { id: tokens[i] as number, box: tokens[i + 1] as number[] };
+            for (let i = 2; i < tokens.length; i += 3) {
+                let boxmodel: BoxModelData = { id: tokens[i] as number, box: tokens[i + 1] as number[], region: tokens[i + 2] as string };
                 boxmodelData.push(boxmodel);
             }
             return { time, event, data: boxmodelData };

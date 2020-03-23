@@ -24,6 +24,7 @@ export default async function(type: Event): Promise<void> {
             for (let value of bm) {
                 tokens.push(value.id);
                 tokens.push(value.box);
+                tokens.push(value.region);
             }
             queue(tokens);
             break;

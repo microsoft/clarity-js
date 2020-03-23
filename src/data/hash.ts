@@ -19,5 +19,5 @@ export default function(input: string): string {
     // Replace the magic number from C# implementation (1566083941) with a smaller prime number (11579)
     // This ensures we don't hit integer overflow and prevent collisions
     hash = Math.abs(hashOne + (hashTwo * 11579));
-    return hash.toString(36).slice(-9); // Limit hashes to 9 characters
+    return hash.toString(36).slice(-1 * MAX_HASH_LENGTH); // Limit hashes to MAX_HASH_LENGTH
 }

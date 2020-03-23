@@ -18,6 +18,7 @@ export function start(): void {
 export function reset(): void {
     if (timeout) { clearTimeout(timeout); }
     timeout = setTimeout(ping, interval);
+    last = time();
 }
 
 function ping(): void {
@@ -25,11 +26,8 @@ function ping(): void {
     data = { gap: now - last };
     encode(Event.Ping);
     if (data.gap < config.timeout) {
-        interval = Math.min(interval * 2, config.timeout);
         timeout = setTimeout(ping, interval);
     } else { suspend(); }
-
-    last = now;
 }
 
 export function end(): void {

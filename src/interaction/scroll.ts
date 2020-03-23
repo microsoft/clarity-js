@@ -2,10 +2,12 @@ import { Event } from "@clarity-types/data";
 import { ScrollState } from "@clarity-types/interaction";
 import config from "@src/core/config";
 import { bind } from "@src/core/event";
+import measure from "@src/core/measure";
 import { schedule } from "@src/core/task";
 import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
 import { track } from "@src/data/target";
+import * as boxmodel from "@src/layout/boxmodel";
 import encode from "./encode";
 
 export let state: ScrollState[] = [];
@@ -45,6 +47,7 @@ export function reset(): void {
 
 function process(event: Event): void {
     schedule(encode.bind(this, event));
+    measure(boxmodel.compute)();
 }
 
 function similar(last: ScrollState, current: ScrollState): boolean {

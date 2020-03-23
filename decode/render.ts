@@ -1,4 +1,4 @@
-import { Event, Metric, MetricData, PageData, TargetData } from "../types/data";
+import { Event, Metric, MetricData, PageData } from "../types/data";
 import { DomData } from "../types/decode/layout";
 import { InputChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
 import { BoxModelData, Constant } from "../types/layout";
@@ -72,19 +72,12 @@ export function page(data: PageData, iframe: HTMLIFrameElement): void {
 
 export function boxmodel(data: BoxModelData[], iframe: HTMLIFrameElement): void {
     for (let bm of data) {
-        box(bm.id, bm.box, iframe);
+        box(bm.id, bm.region, bm.box, iframe);
         boxmodels[bm.id] = bm;
     }
 }
 
-export function target(data: TargetData[], iframe: HTMLIFrameElement): void {
-    for (let bm of data) {
-        if (bm.hash !== "HTML") { box(bm.id, bm.box, iframe); }
-        boxmodels[bm.id] = bm;
-    }
-}
-
-function box(id: number, rectangle: number[], iframe: HTMLIFrameElement): void {
+function box(id: number, region: string, rectangle: number[], iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     let el = element(id) as HTMLElement;
     if (rectangle) {
@@ -97,6 +90,7 @@ function box(id: number, rectangle: number[], iframe: HTMLIFrameElement): void {
             layer.style.position = "absolute";
             layer.style.border = "1px solid red";
             doc.body.appendChild(layer);
+            layer.innerText = region;
             nodes[id] = layer;
         } else if (el && el.tagName === "IFRAME") {
             let s = getComputedStyle(el, null);
