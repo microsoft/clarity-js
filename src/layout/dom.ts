@@ -33,6 +33,9 @@ export function reset(): void {
 
 export function extractRegions(root: ParentNode): void {
     for (let key in config.regions) {
+        // We check for regions in the beginning (document) and later whenever there are new additions or modifications to DOM (mutations)
+        // Since mutations may happen on leaf nodes too, e.g. textnodes, which may not support all selector APIs.
+        // We ensure that the root note supports querySelectorAll API before executing the code below to identify new regions.
         if (config.regions[key] && "querySelectorAll" in root) {
             let elements = root.querySelectorAll(config.regions[key]);
             let length = elements.length;
