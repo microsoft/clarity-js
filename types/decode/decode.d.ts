@@ -43,3 +43,10 @@ export interface DecodedPayload {
     network?: NetworkEvent[];
     paint?: PaintEvent[];
 }
+
+export interface DecodedVersion {
+    major: number;
+    minor: number;
+    patch: number;
+    beta: number;
+}

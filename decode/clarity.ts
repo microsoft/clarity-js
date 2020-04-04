@@ -1,7 +1,7 @@
 import version from "../src/core/version";
 import { Event, Metric, Payload, Token } from "../types/data";
 import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UpgradeEvent, UploadEvent } from "../types/decode/data";
-import { DecodedEvent, DecodedPayload } from "../types/decode/decode";
+import { DecodedEvent, DecodedPayload, DecodedVersion } from "../types/decode/decode";
 import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
 import { InputChangeEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
 import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
@@ -26,8 +26,18 @@ export function decode(input: string): DecodedPayload {
     // Sort encoded events by time to simplify summary computation
     let encoded: Token[][] = json.d.sort((a: Token[], b: Token[]) => (a[0] as number) - (b[0] as number));
 
-    if (payload.envelope.version !== version) {
-        throw new Error(`Invalid Clarity Version. Actual: ${payload.envelope.version} | Expected: ${version} | ${input.substr(0, 250)}`);
+    // Check if the incoming version is compatible with the current running code
+    // We do an exact match for major, minor and path components of the version.
+    // However, the beta portion of the version can be either same, one less or one more.
+    // This ensures we are backward and forward compatible with upto one version change.
+    let jsonVersion = parseVersion(payload.envelope.version);
+    let codeVersion = parseVersion(version);
+
+    if (jsonVersion.major !== codeVersion.major ||
+        jsonVersion.minor !== codeVersion.minor ||
+        jsonVersion.patch !== codeVersion.patch ||
+        Math.abs(jsonVersion.beta - codeVersion.beta) > 1) {
+        throw new Error(`Invalid version. Actual: ${payload.envelope.version} | Expected: ${version} (+/- 1) | ${input.substr(0, 250)}`);
     }
 
     /* Reset components before decoding to keep them stateless */
@@ -269,4 +279,20 @@ async function wait(timestamp: number): Promise<number> {
 
 function sort(a: DecodedEvent, b: DecodedEvent): number {
     return a.time - b.time;
+}
+
+function parseVersion(ver: string): DecodedVersion {
+    let parts = ver.split(".");
+    if (parts.length === 3) {
+        let subparts = parts[2].split("-b");
+        if (subparts.length === 2) {
+            return {
+                major: parseInt(parts[0], 10),
+                minor: parseInt(parts[1], 10),
+                patch: parseInt(subparts[0], 10),
+                beta: parseInt(subparts[1], 10)
+            };
+        }
+    }
+    return { major: 0, minor: 0, patch: 0, beta: 0 };
 }
