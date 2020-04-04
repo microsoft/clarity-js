@@ -9,15 +9,14 @@ import * as dom from "@src/layout/dom";
 import encode from "@src/layout/encode";
 import processNode from "./node";
 
-let observer: MutationObserver;
+let observers: MutationObserver[] = [];
 let mutations: MutationRecord[] = [];
 let insertRule: (rule: string, index?: number) => number = null;
 let deleteRule: (index?: number) => void = null;
 
 export function start(): void {
-    if (observer) { observer.disconnect(); }
-    observer = window["MutationObserver"] ? new MutationObserver(measure(handle) as MutationCallback) : null;
-    observer.observe(document, { attributes: true, childList: true, characterData: true, subtree: true });
+    observers = [];
+
     if (insertRule === null) { insertRule = CSSStyleSheet.prototype.insertRule; }
     if (deleteRule === null) { deleteRule = CSSStyleSheet.prototype.deleteRule; }
 
@@ -37,9 +36,15 @@ export function start(): void {
     };
 }
 
+export function observe(node: Node): void {
+  let observer = window["MutationObserver"] ? new MutationObserver(measure(handle) as MutationCallback) : null;
+  observer.observe(node, { attributes: true, childList: true, characterData: true, subtree: true });
+  observers.push(observer);
+}
+
 export function end(): void {
-  if (observer) { observer.disconnect(); }
-  observer = null;
+  for (let observer of observers) { if (observer) { observer.disconnect(); } }
+  observers = [];
 
   // Restoring original insertRule
   if (insertRule !== null) {

@@ -15,8 +15,12 @@ let timeout: number = null;
 
 export function start(): void {
     state = [];
-    bind(window, "scroll", recompute, true);
     recompute();
+}
+
+export function observe(root: Node): void {
+    let target = root === document ? window : root;
+    bind(target, "scroll", recompute, true);
 }
 
 function recompute(event: UIEvent = null): void {

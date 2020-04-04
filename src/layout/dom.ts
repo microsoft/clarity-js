@@ -1,6 +1,9 @@
+import { Priority } from "@clarity-types/core";
 import { Constant, NodeChange, NodeInfo, NodeValue, Source } from "@clarity-types/layout";
 import config from "@src/core/config";
+import { schedule } from "@src/core/task";
 import time from "@src/core/time";
+import discover from "@src/layout/discover";
 import selector from "@src/layout/selector";
 
 let index: number = 1;
@@ -18,7 +21,17 @@ let regionMap: WeakMap<Node, string> = null;
 let regionTracker: { [name: string]: number } = {};
 let urlMap: { [url: string]: number } = {};
 
-export function reset(): void {
+export function start(): void {
+    reset();
+    extractRegions(document);
+    discoverTree(document);
+}
+
+export function end(): void {
+    reset();
+}
+
+function reset(): void {
     index = 1;
     nodes = [];
     values = [];
@@ -48,6 +61,10 @@ export function extractRegions(root: ParentNode): void {
     }
 }
 
+function discoverTree(root: Node): void {
+    schedule(discover.bind(this, root), Priority.High);
+}
+
 export function getId(node: Node, autogen: boolean = false): number {
     if (node === null) { return null; }
     let id = idMap.get(node);
@@ -59,20 +76,24 @@ export function getId(node: Node, autogen: boolean = false): number {
     return id ? id : null;
 }
 
-export function add(node: Node, data: NodeInfo, source: Source): void {
+export function add(node: Node, parent: Node, data: NodeInfo, source: Source): void {
     let id = getId(node, true);
-    let parentId = node.parentElement ? getId(node.parentElement) : null;
+    let element = node as HTMLElement;
+    let parentId = parent ? getId(parent) : null;
     let nextId = getNextId(node);
     let masked = true;
-    let parent = null;
+    let parentValue = null;
     let region = regionMap.has(node) ? regionMap.get(node) : null;
 
     if (parentId >= 0 && values[parentId]) {
-        parent = values[parentId];
-        parent.children.push(id);
-        region = region === null ? parent.region : region;
-        masked = parent.metadata.masked;
+        parentValue = values[parentId];
+        parentValue.children.push(id);
+        region = region === null ? parentValue.region : region;
+        masked = parentValue.metadata.masked;
     }
+
+    // If element has a valid shadowRoot, track Shadow DOM as a top level root node.
+    if ("shadowRoot" in element && element.shadowRoot && !has(element.shadowRoot)) { discoverTree(element.shadowRoot); }
 
     if (data.attributes && Constant.MASK_ATTRIBUTE in data.attributes) { masked = true; }
     if (data.attributes && Constant.UNMASK_ATTRIBUTE in data.attributes) { masked = false; }
@@ -97,9 +118,10 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
     track(id, source);
 }
 
-export function update(node: Node, data: NodeInfo, source: Source): void {
+export function update(node: Node, parent: Node, data: NodeInfo, source: Source): void {
     let id = getId(node);
-    let parentId = node.parentElement ? getId(node.parentElement) : null;
+    let element = node as HTMLElement;
+    let parentId = parent ? getId(parent) : null;
     let nextId = getNextId(node);
     let changed = false;
 
@@ -140,6 +162,9 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
                 }
             }
         }
+
+        // If element has a valid shadowRoot, track Shadow DOM as a top level root node.
+        if ("shadowRoot" in element && element.shadowRoot && !has(element.shadowRoot)) { discoverTree(element.shadowRoot); }
 
         // Update data
         for (let key in data) {

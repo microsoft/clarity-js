@@ -3,6 +3,8 @@ import { DomData } from "../types/decode/layout";
 import { InputChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
 import { BoxModelData, Constant } from "../types/layout";
 
+const ADOPTED_STYLE_SHEET = "clarity-adopted-style";
+
 let nodes = {};
 let boxmodels = {};
 let metrics: MetricData = null;
@@ -113,12 +115,12 @@ function css(style: CSSStyleDeclaration, field: string): number {
 
 export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
-    if (type === Event.Discover) { reset(); }
     for (let node of data) {
         let parent = element(node.parent);
         let next = element(node.next);
         switch (node.tag) {
             case "*D":
+                if (type === Event.Discover) { reset(); }
                 if (typeof XMLSerializer !== "undefined") {
                     doc.open();
                     doc.write(new XMLSerializer().serializeToString(
@@ -129,6 +131,22 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                         )
                     ));
                     doc.close();
+                }
+                break;
+            case "*S":
+                if (parent) {
+                    let shadowRoot = element(node.id);
+                    shadowRoot = shadowRoot ? shadowRoot : (parent as HTMLElement).attachShadow({ mode: "open" });
+                    if ("style" in node.attributes) {
+                        let style = doc.createElement("style");
+                        if (shadowRoot.firstChild && (shadowRoot.firstChild as HTMLElement).id === ADOPTED_STYLE_SHEET) {
+                            style = shadowRoot.firstChild as HTMLStyleElement;
+                        }
+                        style.id = ADOPTED_STYLE_SHEET;
+                        style.textContent = node.attributes["style"];
+                        shadowRoot.appendChild(style);
+                    }
+                    nodes[node.id] = shadowRoot;
                 }
                 break;
             case "*T":
@@ -277,7 +295,10 @@ export function change(data: InputChangeData, iframe: HTMLIFrameElement): void {
 export function selection(data: SelectionData, iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     let s = doc.getSelection();
-    s.setBaseAndExtent(element(data.start as number), data.startOffset, element(data.end as number), data.endOffset);
+    // Wrapping selection code inside a try / catch to avoid throwing errors when dealing with elements inside the shadow DOM.
+    try { s.setBaseAndExtent(element(data.start as number), data.startOffset, element(data.end as number), data.endOffset); } catch (ex) {
+        console.warn("Exception encountered while trying to set selection: " + ex);
+    }
 }
 
 export function pointer(event: Event, data: PointerData, iframe: HTMLIFrameElement): void {
