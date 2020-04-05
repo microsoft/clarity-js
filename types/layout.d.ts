@@ -20,7 +20,10 @@ export const enum Constant {
     SRC_ATTRIBUTE = "src",
     SRCSET_ATTRIBUTE = "srcset",
     MASK_ATTRIBUTE = "data-clarity-mask",
-    UNMASK_ATTRIBUTE = "data-clarity-unmask"
+    UNMASK_ATTRIBUTE = "data-clarity-unmask",
+    TYPE_ATTRIBUTE = "type",
+    NAME_ATTRIBUTE = "name",
+    TAG_INPUT = "INPUT"
 }
 
 /* Helper Interfaces */

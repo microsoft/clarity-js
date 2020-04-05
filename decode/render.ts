@@ -152,7 +152,7 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
             case "*T":
                 let textElement = element(node.id);
                 textElement = textElement ? textElement : doc.createTextNode(null);
-                textElement.nodeValue = unmask(node.value);
+                textElement.nodeValue = node.value;
                 insert(node, parent, textElement, next);
                 break;
             case "HTML":
@@ -240,7 +240,7 @@ function setAttributes(node: HTMLElement, attributes: object): void {
     for (let attribute in attributes) {
         if (attributes[attribute] !== undefined) {
             try {
-                let v = unmask(attributes[attribute]);
+                let v = attributes[attribute];
                 if (attribute.indexOf("xlink:") === 0) {
                     node.setAttributeNS("http://www.w3.org/1999/xlink", attribute, v);
                 } else {
@@ -339,32 +339,4 @@ export function pointer(event: Event, data: PointerData, iframe: HTMLIFrameEleme
 
 function getNode(id: number): HTMLElement {
     return id in nodes ? nodes[id] : null;
-}
-
-function unmask(v: string): string {
-    if (v && v.length > 0) {
-        let parts = v.split("*");
-        let placeholder = "x";
-        if (parts.length === 3 && parts[0] === "") {
-            let textCount = parseInt(parts[1], 36);
-            let wordCount = parseInt(parts[2], 36);
-            if (isFinite(textCount) && isFinite(wordCount)) {
-                if (wordCount > 0 && textCount === 0) {
-                    v = " ";
-                } else if (wordCount === 0 && textCount > 0) {
-                    v = Array(textCount + 1).join(placeholder);
-                } else if (wordCount > 0 && textCount > 0) {
-                    v = "";
-                    let avg = Math.floor(textCount / wordCount);
-                    while (v.length < textCount + wordCount) {
-                        let gap = Math.min(avg, textCount + wordCount - v.length);
-                        v += Array(gap + 1).join(placeholder) + " ";
-                    }
-                } else {
-                    v = Array(textCount + wordCount + 1).join(placeholder);
-                }
-            }
-        }
-    }
-    return v;
 }

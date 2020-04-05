@@ -1,3 +1,4 @@
+import * as change from "@src/interaction/change";
 import * as pointer from "@src/interaction/pointer";
 import * as resize from "@src/interaction/resize";
 import * as scroll from "@src/interaction/scroll";
@@ -6,6 +7,7 @@ import * as unload from "@src/interaction/unload";
 import * as visibility from "@src/interaction/visibility";
 
 export function start(): void {
+    change.start();
     pointer.start();
     resize.start();
     visibility.start();
