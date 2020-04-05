@@ -12,6 +12,7 @@ import * as memory from "@src/performance/memory";
 
 const MAX_RETRIES = 2;
 const MAX_BACKUP_BYTES = 10 * 1024 * 1024; // 10MB
+const BEACON_BYTES_LIMIT = 64 * 1024; // 64KB
 let backupBytes: number = 0;
 let backup: string[];
 let events: string[];
@@ -122,10 +123,15 @@ export function end(): void {
     active = false;
 }
 
-function upload(last: boolean = false): void {
+function upload(final: boolean = false): void {
     memory.compute();
     target.compute();
     metric.compute();
+
+    // Treat this as the last payload only if final boolean was explictly set to true
+    // In some edge cases, certain third party scripts (e.g. script error monitoring) could inject bogus arguments in the end to capture
+    // valid stack traces. In those cases, we don't want a random injected object (e.g. { "key": "value" }) to be mistaken for true.
+    let last = final === true;
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
     let data = stringify(payload);
     let sequence = metadata.envelope.sequence;
@@ -143,25 +149,27 @@ function stringify(payload: EncodedPayload): string {
     return `{"e":${payload.e},"d":${payload.d}}`;
 }
 
-function send(data: string, sequence: number = null, last: boolean = false): void {
+function send(data: string, sequence: number, last: boolean): void {
     // Upload data if a valid URL is defined in the config
     if (config.url.length > 0) {
-        if (last && "sendBeacon" in navigator) {
+        // Upload data using sendBeacon only when it's the last payload and the data size is within safe limits.
+        // Most browsers in the wild will reject the sendBeacon call if data being transferred is over 64KB (BEACON_BYTES_LIMIT).
+        if (last && data.length < BEACON_BYTES_LIMIT && "sendBeacon" in navigator) {
             navigator.sendBeacon(config.url, data);
         } else {
             if (sequence in transit) { transit[sequence].attempts++; } else { transit[sequence] = { data, attempts: 1 }; }
             let xhr = new XMLHttpRequest();
             xhr.open("POST", config.url);
-            if (sequence !== null) { xhr.onreadystatechange = (): void => { measure(check)(xhr, sequence); }; }
+            if (sequence !== null) { xhr.onreadystatechange = (): void => { measure(check)(xhr, sequence, last); }; }
             xhr.send(data);
         }
     }
 }
 
-function check(xhr: XMLHttpRequest, sequence: number): void {
+function check(xhr: XMLHttpRequest, sequence: number, last: boolean): void {
     if (xhr && xhr.readyState === XMLHttpRequest.DONE && sequence in transit) {
         if ((xhr.status < 200 || xhr.status > 208) && transit[sequence].attempts <= MAX_RETRIES) {
-            send(transit[sequence].data, sequence);
+            send(transit[sequence].data, sequence, last);
         } else {
             track = { sequence, attempts: transit[sequence].attempts, status: xhr.status };
             // Send back an event only if we were not successful in our first attempt
