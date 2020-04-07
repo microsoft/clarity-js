@@ -64,7 +64,11 @@ export function extractRegions(root: ParentNode): void {
 }
 
 function discoverTree(root: Node): void {
-    schedule(discover.bind(this, root), Priority.High);
+    // Only discover the DOM tree if this is the first time we are encountering this root node.
+    // In cases where mutations cause shadow DOM roots to bounce around, we don't want to redisover.
+    if  (has(root) === false) {
+        schedule(discover.bind(this, root), Priority.High);
+    }
 }
 
 export function getId(node: Node, autogen: boolean = false): number {
@@ -95,7 +99,7 @@ export function add(node: Node, parent: Node, data: NodeInfo, source: Source): v
     }
 
     // If element has a valid shadowRoot, track Shadow DOM as a top level root node.
-    if ("shadowRoot" in element && element.shadowRoot && !has(element.shadowRoot)) { discoverTree(element.shadowRoot); }
+    if ("shadowRoot" in element && element.shadowRoot) { discoverTree(element.shadowRoot); }
 
     // Check to see if this particular node should be masked or not
     masked = mask(data, masked);
@@ -168,7 +172,7 @@ export function update(node: Node, parent: Node, data: NodeInfo, source: Source)
         }
 
         // If element has a valid shadowRoot, track Shadow DOM as a top level root node.
-        if ("shadowRoot" in element && element.shadowRoot && !has(element.shadowRoot)) { discoverTree(element.shadowRoot); }
+        if ("shadowRoot" in element && element.shadowRoot) { discoverTree(element.shadowRoot); }
 
         // Update data
         for (let key in data) {

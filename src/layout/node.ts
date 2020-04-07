@@ -22,18 +22,20 @@ export default function(node: Node, source: Source): void {
         case Node.DOCUMENT_TYPE_NODE:
             let doctype = node as DocumentType;
             let docAttributes = { name: doctype.name, publicId: doctype.publicId, systemId: doctype.systemId };
-            let docData = { tag: "*D", attributes: docAttributes };
+            let docData = { tag: Constant.CLARITY_DOCUMENT_TAG, attributes: docAttributes };
             dom[call](node, parent, docData, source);
             break;
         case Node.DOCUMENT_FRAGMENT_NODE:
             let shadowRoot = (node as ShadowRoot);
             if (shadowRoot.host) {
-                // See: https://wicg.github.io/construct-stylesheets/
-                // For more details on adoptedStyleSheets for shadow dom
+                // See: https://wicg.github.io/construct-stylesheets/ for more details on adoptedStyleSheets.
+                // At the moment, we are only able to capture "open" shadow DOM nodes. If they are closed, they are not accessible to us.
+                // In future we may decide to proxy "attachShadow" call to gain access, but at the moment, we don't want to
+                // cause any unintended side effect to the page. We will re-evaluate after we gather more real world data on this.
                 let style = "";
                 let adoptedStyleSheets: CSSStyleSheet[] = "adoptedStyleSheets" in shadowRoot ? shadowRoot["adoptedStyleSheets"] : [];
                 for (let styleSheet of adoptedStyleSheets) { style += getCssRules(styleSheet); }
-                let fragementData = { tag: "*S", attributes: { style } };
+                let fragementData = { tag: Constant.CLARITY_SHADOWDOM_TAG, attributes: { style } };
                 dom[call](node, shadowRoot.host, fragementData, source);
             }
             break;
@@ -44,7 +46,7 @@ export default function(node: Node, source: Source): void {
             // The only exception is when we receive a mutation to remove the text node, in that case
             // parent will be null, but we can still process the node by checking it's an update call.
             if (call === "update" || (parent && dom.has(parent) && parent.tagName !== "STYLE")) {
-                let textData = { tag: "*T", value: node.nodeValue };
+                let textData = { tag: Constant.CLARITY_TEXT_TAG, value: node.nodeValue };
                 dom[call](node, parent, textData, source);
             }
             break;
@@ -63,7 +65,7 @@ export default function(node: Node, source: Source): void {
                 case "HEAD":
                     let head = { tag, attributes: getAttributes(element.attributes) };
                     // Capture base href as part of discovering DOM
-                    head.attributes["*B"] = location.protocol + "//" + location.hostname;
+                    head.attributes[Constant.CLARITY_BASE_TAG] = location.protocol + "//" + location.hostname;
                     dom[call](node, parent, head, source);
                     break;
                 case "STYLE":

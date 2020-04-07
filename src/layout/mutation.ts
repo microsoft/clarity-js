@@ -37,6 +37,9 @@ export function start(): void {
 }
 
 export function observe(node: Node): void {
+  // Create a new observer for every time a new DOM tree (e.g. root document or shadowdom root) is discovered on the page
+  // In the case of shadow dom, any mutations that happen within the shadow dom are not bubbled up to the host document
+  // For this reason, we need to wire up mutations everytime we see a new shadow dom.
   let observer = window["MutationObserver"] ? new MutationObserver(measure(handle) as MutationCallback) : null;
   observer.observe(node, { attributes: true, childList: true, characterData: true, subtree: true });
   observers.push(observer);
@@ -64,7 +67,7 @@ export function end(): void {
 function handle(m: MutationRecord[]): void {
   // Queue up mutation records for asynchronous processing
   for (let i = 0; i < m.length; i++) { mutations.push(m[i]); }
-  task.schedule(process, Priority.High).then(() => {
+  task.schedule(process, Priority.High).then((): void => {
       measure(doc.compute)();
       measure(boxmodel.compute)();
   });

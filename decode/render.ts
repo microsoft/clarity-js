@@ -119,7 +119,7 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
         let parent = element(node.parent);
         let next = element(node.next);
         switch (node.tag) {
-            case "*D":
+            case Constant.CLARITY_DOCUMENT_TAG:
                 if (type === Event.Discover) { reset(); }
                 if (typeof XMLSerializer !== "undefined") {
                     doc.open();
@@ -133,12 +133,15 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                     doc.close();
                 }
                 break;
-            case "*S":
+            case Constant.CLARITY_SHADOWDOM_TAG:
                 if (parent) {
                     let shadowRoot = element(node.id);
                     shadowRoot = shadowRoot ? shadowRoot : (parent as HTMLElement).attachShadow({ mode: "open" });
                     if ("style" in node.attributes) {
                         let style = doc.createElement("style");
+                        // Support for adoptedStyleSheet is limited and not available in all browsers.
+                        // To ensure that we can replay session in any browser, we turn adoptedStyleSheets from recording
+                        // into classic style tags at the playback time.
                         if (shadowRoot.firstChild && (shadowRoot.firstChild as HTMLElement).id === ADOPTED_STYLE_SHEET) {
                             style = shadowRoot.firstChild as HTMLStyleElement;
                         }
@@ -149,7 +152,7 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                     nodes[node.id] = shadowRoot;
                 }
                 break;
-            case "*T":
+            case Constant.CLARITY_TEXT_TAG:
                 let textElement = element(node.id);
                 textElement = textElement ? textElement : doc.createTextNode(null);
                 textElement.nodeValue = node.value;
@@ -173,7 +176,7 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                 if (headElement === null) {
                     headElement = doc.createElement(node.tag);
                     let base = doc.createElement("base");
-                    base.href = node.attributes["*B"];
+                    base.href = node.attributes[Constant.CLARITY_BASE_TAG];
                     headElement.appendChild(base);
                 }
                 setAttributes(headElement as HTMLElement, node.attributes);
@@ -243,6 +246,8 @@ function setAttributes(node: HTMLElement, attributes: object): void {
                 let v = attributes[attribute];
                 if (attribute.indexOf("xlink:") === 0) {
                     node.setAttributeNS("http://www.w3.org/1999/xlink", attribute, v);
+                } else if (attribute.indexOf("*") === 0) {
+                    // Do nothing if we encounter internal Clarity attributes
                 } else {
                     node.setAttribute(attribute, v);
                 }

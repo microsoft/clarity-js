@@ -2,7 +2,7 @@ import generateHash from "../src/data/hash";
 import selector from "../src/layout/selector";
 import { Event, Token } from "../types/data";
 import { DomData, LayoutEvent } from "../types/decode/layout";
-import { Attributes, BoxModelData, DocumentData, HashData, ResourceData } from "../types/layout";
+import { Attributes, BoxModelData, DocumentData, HashData, ResourceData, Constant } from "../types/layout";
 
 let placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiOAMAANUAz5n+TlUAAAAASUVORK5CYII=";
 export let hashes: { [key: number]: HashData } = {};
@@ -104,7 +104,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
             value = token;
         } else if (lastChar === ">" && keyIndex === -1) {
             prefix = token;
-        } else if (output.tag !== "*T" && keyIndex > 0) {
+        } else if (output.tag !== Constant.CLARITY_TEXT_TAG && keyIndex > 0) {
             hasAttribute = true;
             let k = token.substr(0, keyIndex);
             let v = token.substr(keyIndex + 1);
@@ -116,7 +116,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
                     break;
             }
             attributes[k] = v;
-        } else if (output.tag === "*T") {
+        } else if (output.tag === Constant.CLARITY_TEXT_TAG) {
             value = token;
         }
     }

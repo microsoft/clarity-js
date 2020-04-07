@@ -12,7 +12,6 @@ import * as memory from "@src/performance/memory";
 
 const MAX_RETRIES = 2;
 const MAX_BACKUP_BYTES = 10 * 1024 * 1024; // 10MB
-const BEACON_BYTES_LIMIT = 64 * 1024; // 64KB
 let backupBytes: number = 0;
 let backup: string[];
 let events: string[];
@@ -128,9 +127,10 @@ function upload(final: boolean = false): void {
     target.compute();
     metric.compute();
 
-    // Treat this as the last payload only if final boolean was explictly set to true
-    // In some edge cases, certain third party scripts (e.g. script error monitoring) could inject bogus arguments in the end to capture
-    // valid stack traces. In those cases, we don't want a random injected object (e.g. { "key": "value" }) to be mistaken for true.
+    // Treat this as the last payload only if final boolean was explictly set to true.
+    // In real world tests, we noticed that certain third party scripts (e.g. https://www.npmjs.com/package/raven-js)
+    // could inject function arguments for internal tracking (likely stack traces for script errors).
+    // For these edge cases, we want to ensure that an injected object (e.g. {"key": "value"}) isn't mistaken to be true.
     let last = final === true;
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
     let data = stringify(payload);
@@ -152,11 +152,21 @@ function stringify(payload: EncodedPayload): string {
 function send(data: string, sequence: number, last: boolean): void {
     // Upload data if a valid URL is defined in the config
     if (config.url.length > 0) {
-        // Upload data using sendBeacon only when it's the last payload and the data size is within safe limits.
-        // Most browsers in the wild will reject the sendBeacon call if data being transferred is over 64KB (BEACON_BYTES_LIMIT).
-        if (last && data.length < BEACON_BYTES_LIMIT && "sendBeacon" in navigator) {
-            navigator.sendBeacon(config.url, data);
-        } else {
+        let dispatched = false;
+
+        // If it's the last payload, attempt to upload using sendBeacon first.
+        // The advantage to using sendBeacon is that browser can decide to upload asynchronously, improving chances of success
+        // However, we don't want to rely on it for every payload, since we have no ability to retry if the upload failed.
+        if (last && "sendBeacon" in navigator) {
+            dispatched = navigator.sendBeacon(config.url, data);
+        }
+
+        // Before initiating XHR upload, we check if the data has already been uploaded using sendBeacon
+        // There are two cases when dispatched could still be false:
+        //   a) It's not the last payload, and therefore we didn't attempt sending sendBeacon
+        //   b) It's the last payload, however, we failed to queue sendBeacon call and need to now fall back to XHR.
+        //      E.g. if data is over 64KB, several user agents (like Chrome) will reject to queue the sendBeacon call.
+        if (dispatched === false) {
             if (sequence in transit) { transit[sequence].attempts++; } else { transit[sequence] = { data, attempts: 1 }; }
             let xhr = new XMLHttpRequest();
             xhr.open("POST", config.url);
