@@ -1,6 +1,6 @@
 import { Event, Token } from "../types/data";
 import { InteractionEvent } from "../types/decode/interaction";
-import { InputChangeData, PointerData, ResizeData, ScrollData, SelectionData, UnloadData, VisibilityData } from "../types/interaction";
+import { InputData, PointerData, ResizeData, ScrollData, SelectionData, UnloadData, VisibilityData } from "../types/interaction";
 
 export function decode(tokens: Token[]): InteractionEvent  {
     let time = tokens[0] as number;
@@ -22,12 +22,12 @@ export function decode(tokens: Token[]): InteractionEvent  {
         case Event.Resize:
             let resizeData: ResizeData = { width: tokens[2] as number, height: tokens[3] as number };
             return { time, event, data: resizeData };
-        case Event.InputChange:
-            let changeData: InputChangeData = {
+        case Event.Input:
+            let inputData: InputData = {
                 target: tokens[2] as number,
                 value: tokens[3] as string
             };
-            return { time, event, data: changeData };
+            return { time, event, data: inputData };
         case Event.Selection:
             let selectionData: SelectionData = {
                 start: tokens[2] as number,

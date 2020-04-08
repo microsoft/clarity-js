@@ -13,8 +13,14 @@ export interface ScrollState {
     data: ScrollData;
 }
 
+export interface InputState {
+    time: number;
+    event: number;
+    data: InputData;
+}
+
 /* Event Data */
-export interface InputChangeData {
+export interface InputData {
     target: Target;
     value: string;
 }

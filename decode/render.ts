@@ -1,6 +1,6 @@
 import { Event, Metric, MetricData, PageData } from "../types/data";
 import { DomData } from "../types/decode/layout";
-import { InputChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
+import { InputData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
 import { BoxModelData, Constant } from "../types/layout";
 
 const ADOPTED_STYLE_SHEET = "clarity-adopted-style";
@@ -60,11 +60,11 @@ export function metric(data: MetricData, header: HTMLElement): void {
     header.innerHTML = `<ul>${html.join("")}</ul>`;
 }
 
-function value(input: number, unit: string): number {
+function value(num: number, unit: string): number {
     switch (unit) {
-        case "KB": return Math.round(input / 1024);
-        case "s": return Math.round(input / 1000);
-        default: return input;
+        case "KB": return Math.round(num / 1024);
+        case "s": return Math.round(num / 1000);
+        default: return num;
     }
 }
 
@@ -195,6 +195,7 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                 if (!node.attributes) { node.attributes = {}; }
                 node.attributes["data-id"] = `${node.id}`;
                 setAttributes(domElement as HTMLElement, node.attributes);
+                (domElement as HTMLElement).setAttribute("clarity-debug-next", `${node.next}`); // DEBUG LINE - REMOVE BEFORE CHECK IN
                 if (node.id in boxmodels) { boxmodel([boxmodels[node.id]], iframe); }
                 insert(node, parent, domElement, next);
                 break;
@@ -292,9 +293,19 @@ export function resize(data: ResizeData, iframe: HTMLIFrameElement, resizeCallba
     }
 }
 
-export function change(data: InputChangeData, iframe: HTMLIFrameElement): void {
+export function input(data: InputData, iframe: HTMLIFrameElement): void {
     let el = element(data.target as number) as HTMLInputElement;
-    if (el) { el.value = data.value; }
+    if (el) {
+        switch (el.type) {
+            case "checkbox":
+            case "radio":
+                el.checked = data.value === "true";
+                break;
+            default:
+                el.value = data.value;
+                break;
+        }
+    }
 }
 
 export function selection(data: SelectionData, iframe: HTMLIFrameElement): void {
@@ -316,7 +327,7 @@ export function pointer(event: Event, data: PointerData, iframe: HTMLIFrameEleme
         p = doc.createElement("DIV");
         p.id = "clarity-pointer";
         p.style.position = "absolute";
-        p.style.zIndex = "1000";
+        p.style.zIndex = "10000000";
         p.style.width = pointerWidth + "px";
         p.style.height = pointerHeight + "px";
         doc.body.appendChild(p);

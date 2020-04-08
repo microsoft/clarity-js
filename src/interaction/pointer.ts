@@ -29,7 +29,12 @@ function mouse(event: Event, evt: MouseEvent): void {
     let de = document.documentElement;
     let x = "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null);
     let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null);
-    let target = track(evt.target as Node);
+
+    // When an event bubbles up from shadow DOM, it's target is adjusted to maintain the encapsulation and composed property is set to true.
+    // For us to be able to access an actual target node, we need to look at the path event travelled through composedPath()
+    let path = evt.composed && evt.composedPath ? evt.composedPath() : null;
+    let target = track((path && path.length > 0 ? path[0] : evt.target) as Node);
+
     event = event === Event.Click && (evt.buttons === 2 || evt.button === 2) ? Event.RightClick : event;
     // Check for null values before processing this event
     if (x !== null && y !== null) { handler({ time: time(), event, data: { target, x, y } }); }
@@ -38,7 +43,12 @@ function mouse(event: Event, evt: MouseEvent): void {
 function touch(event: Event, evt: TouchEvent): void {
     let de = document.documentElement;
     let touches = evt.changedTouches;
-    let target = track(evt.target as Node);
+
+    // When an event bubbles up from shadow DOM, it's target is adjusted to maintain the encapsulation and composed property is set to true.
+    // For us to be able to access an actual target node, we need to look at the path event travelled through composedPath()
+    let path = evt.composed && evt.composedPath ? evt.composedPath() : null;
+    let target = track((path && path.length > 0 ? path[0] : evt.target) as Node);
+
     let t = time();
     if (touches) {
         for (let i = 0; i < touches.length; i++) {

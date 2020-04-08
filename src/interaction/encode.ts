@@ -3,7 +3,7 @@ import * as task from "@src/core/task";
 import time from "@src/core/time";
 import { observe } from "@src/data/target";
 import { queue } from "@src/data/upload";
-import * as change from "./change";
+import * as input from "./input";
 import * as pointer from "./pointer";
 import * as resize from "./resize";
 import * as scroll from "./scroll";
@@ -52,14 +52,15 @@ export default async function(type: Event): Promise<void> {
             unload.reset();
             queue(tokens);
             break;
-        case Event.InputChange:
-            let ch = change.data;
-            if (ch) {
-                tokens.push(observe(ch.target as TargetInfo));
-                tokens.push(ch.value);
-                change.reset();
+        case Event.Input:
+            for (let i = 0; i < input.state.length; i++) {
+                let entry = input.state[i];
+                tokens = [entry.time, entry.event];
+                tokens.push(observe(entry.data.target as TargetInfo));
+                tokens.push(entry.data.value);
                 queue(tokens);
             }
+            input.reset();
             break;
         case Event.Selection:
             let s = selection.data;
@@ -76,7 +77,7 @@ export default async function(type: Event): Promise<void> {
             for (let i = 0; i < scroll.state.length; i++) {
                 if (task.shouldYield(timer)) { await task.suspend(timer); }
                 let entry = scroll.state[i];
-                tokens = [entry.time, type];
+                tokens = [t, type];
                 tokens.push(observe(entry.data.target as TargetInfo));
                 tokens.push(entry.data.x);
                 tokens.push(entry.data.y);

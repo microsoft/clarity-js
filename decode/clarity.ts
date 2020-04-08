@@ -3,7 +3,7 @@ import { Event, Metric, Payload, Token } from "../types/data";
 import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UpgradeEvent, UploadEvent } from "../types/decode/data";
 import { DecodedEvent, DecodedPayload, DecodedVersion } from "../types/decode/decode";
 import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
-import { InputChangeEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
+import { InputEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
 import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
 import { ConnectionEvent, LargestContentfulPaintEvent, LongTaskEvent, MemoryEvent } from "../types/decode/performance";
@@ -24,7 +24,7 @@ export function decode(input: string): DecodedPayload {
     let timestamp = Date.now();
     let payload: DecodedPayload = { timestamp, envelope };
     // Sort encoded events by time to simplify summary computation
-    let encoded: Token[][] = json.d.sort((a: Token[], b: Token[]) => (a[0] as number) - (b[0] as number));
+    let encoded: Token[][] = json.d.sort((a: Token[], b: Token[]): number => (a[0] as number) - (b[0] as number));
 
     // Check if the incoming version is compatible with the current running code
     // We do an exact match for major, minor and path components of the version.
@@ -107,9 +107,9 @@ export function decode(input: string): DecodedPayload {
                 if (payload.selection === undefined) { payload.selection = []; }
                 payload.selection.push(interaction.decode(entry) as SelectionEvent);
                 break;
-            case Event.InputChange:
+            case Event.Input:
                 if (payload.input === undefined) { payload.input = []; }
-                payload.input.push(interaction.decode(entry) as InputChangeEvent);
+                payload.input.push(interaction.decode(entry) as InputEvent);
                 break;
             case Event.Unload:
                 if (payload.unload === undefined) { payload.unload = []; }
@@ -251,9 +251,9 @@ export async function replay(
                 let pointerEvent = entry as PointerEvent;
                 r.pointer(pointerEvent.event, pointerEvent.data, iframe);
                 break;
-            case Event.InputChange:
-                let changeEvent = entry as InputChangeEvent;
-                r.change(changeEvent.data, iframe);
+            case Event.Input:
+                let inputEvent = entry as InputEvent;
+                r.input(inputEvent.data, iframe);
                 break;
             case Event.Selection:
                 let selectionEvent = entry as SelectionEvent;
