@@ -46,6 +46,7 @@ export function queue(data: Token[]): void {
                 transmit = false;
                 break;
             case Event.Memory:
+            case Event.Network:
                 metric.count(Metric.PerformanceBytes, event.length);
                 transmit = false;
                 break;
@@ -74,7 +75,6 @@ export function queue(data: Token[]): void {
             case Event.ContentfulPaint:
             case Event.LongTask:
             case Event.Navigation:
-            case Event.Network:
             case Event.Paint:
                 metric.count(Metric.PerformanceBytes, event.length);
                 break;

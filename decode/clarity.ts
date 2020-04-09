@@ -3,7 +3,7 @@ import { Event, Metric, Payload, Token } from "../types/data";
 import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UpgradeEvent, UploadEvent } from "../types/decode/data";
 import { DecodedEvent, DecodedPayload, DecodedVersion } from "../types/decode/decode";
 import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
-import { InputEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
+import { ClickEvent, InputEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
 import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
 import { ConnectionEvent, LargestContentfulPaintEvent, LongTaskEvent, MemoryEvent } from "../types/decode/performance";
@@ -85,15 +85,27 @@ export function decode(input: string): DecodedPayload {
             case Event.MouseUp:
             case Event.MouseMove:
             case Event.MouseWheel:
-            case Event.Click:
             case Event.DoubleClick:
-            case Event.RightClick:
             case Event.TouchStart:
             case Event.TouchCancel:
             case Event.TouchEnd:
             case Event.TouchMove:
                 if (payload.pointer === undefined) { payload.pointer = []; }
                 payload.pointer.push(interaction.decode(entry) as PointerEvent);
+                break;
+            case Event.Click:
+                if (payload.click === undefined) { payload.click = []; }
+                let clickEntry = interaction.decode(entry) as ClickEvent;
+                payload.click.push(clickEntry);
+
+                // Extra processing introduced for backward compatibility in v1.0.0-b21.
+                if (payload.pointer === undefined) { payload.pointer = []; }
+                let clickData = clickEntry.data;
+                payload.pointer.push({ time: clickEntry.time, event: clickEntry.event, data: {
+                    target: clickData.target,
+                    x: clickData.x,
+                    y: clickData.y
+                }} as PointerEvent);
                 break;
             case Event.Scroll:
                 if (payload.scroll === undefined) { payload.scroll = []; }

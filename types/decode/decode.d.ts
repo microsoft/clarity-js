@@ -1,7 +1,7 @@
 import { Envelope, Event, MetricData, PageData, PingData, SummaryData, TagData, UploadData } from "../data";
 import { DataEvent, MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UpgradeEvent, UploadEvent } from "./data";
 import { DiagnosticEvent, ImageErrorEvent, ScriptErrorEvent } from "./diagnostic";
-import { InputEvent, InteractionEvent, PointerEvent, ResizeEvent } from "./interaction";
+import { ClickEvent, InputEvent, InteractionEvent, PointerEvent, ResizeEvent } from "./interaction";
 import { ScrollEvent, SelectionEvent, UnloadEvent, VisibilityEvent } from "./interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, LayoutEvent, ResourceEvent } from "./layout";
 import { ConnectionEvent, LargestContentfulPaintEvent, LongTaskEvent, MemoryEvent } from "./performance";
@@ -21,6 +21,7 @@ export interface DecodedPayload {
     script?: ScriptErrorEvent[];
     input?: InputEvent[];
     pointer?: PointerEvent[];
+    click?: ClickEvent[];
     resize?: ResizeEvent[];
     scroll?: ScrollEvent[];
     selection?: SelectionEvent[];

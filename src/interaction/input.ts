@@ -5,7 +5,7 @@ import { bind } from "@src/core/event";
 import mask from "@src/core/mask";
 import { schedule } from "@src/core/task";
 import time from "@src/core/time";
-import { track } from "@src/data/target";
+import { target, track } from "@src/data/target";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
 import { get } from "@src/layout/dom";
 import encode from "./encode";
@@ -19,10 +19,7 @@ export function start(): void {
 }
 
 function recompute(evt: UIEvent): void {
-    // When an event bubbles up from shadow DOM, it's target is adjusted to maintain the encapsulation and composed property is set to true.
-    // For us to be able to access an actual target node, we need to look at the path event travelled through composedPath()
-    let path = evt.composed && evt.composedPath ? evt.composedPath() : null;
-    let input = (path && path.length > 0 ? path[0] : evt.target) as HTMLInputElement;
+    let input = target(evt) as HTMLInputElement;
     let value = get(input);
     if (input && input.type && value) {
         let v;

@@ -34,8 +34,8 @@ export function decode(tokens: Token[]): DataEvent {
                 let target: TargetData = {
                     id: tokens[t] as number,
                     hash: tokens[t + 1] as string,
-                    region: tokens[t + 2] as string,
-                    box: tokens[t + 3] as number[]
+                    box: tokens[t + 2] as number[],
+                    region: tokens[t + 3] as string
                 };
                 targetData.push(target);
             }

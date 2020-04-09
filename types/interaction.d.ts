@@ -31,6 +31,15 @@ export interface PointerData {
     y: number;
 }
 
+export interface ClickData {
+    target: Target;
+    x: number;
+    y: number;
+    button: number;
+    text: string;
+    link: string;
+}
+
 export interface ResizeData {
     width: number;
     height: number;

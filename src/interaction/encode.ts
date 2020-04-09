@@ -3,6 +3,7 @@ import * as task from "@src/core/task";
 import time from "@src/core/time";
 import { observe } from "@src/data/target";
 import { queue } from "@src/data/upload";
+import * as click from "./click";
 import * as input from "./input";
 import * as pointer from "./pointer";
 import * as resize from "./resize";
@@ -21,9 +22,7 @@ export default async function(type: Event): Promise<void> {
         case Event.MouseUp:
         case Event.MouseMove:
         case Event.MouseWheel:
-        case Event.Click:
         case Event.DoubleClick:
-        case Event.RightClick:
         case Event.TouchStart:
         case Event.TouchEnd:
         case Event.TouchMove:
@@ -38,6 +37,17 @@ export default async function(type: Event): Promise<void> {
                 queue(tokens);
             }
             pointer.reset();
+            break;
+        case Event.Click:
+            let c = click.data;
+            tokens.push(observe(c.target as TargetInfo));
+            tokens.push(c.x);
+            tokens.push(c.y);
+            tokens.push(c.button);
+            tokens.push(c.text);
+            tokens.push(c.link);
+            click.reset();
+            queue(tokens);
             break;
         case Event.Resize:
             let r = resize.data;

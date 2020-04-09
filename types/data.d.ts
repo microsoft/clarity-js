@@ -19,7 +19,7 @@ export const enum Event {
     MouseUp = 11,
     MouseWheel = 12,
     DoubleClick = 13,
-    RightClick = 14,
+    RightClick = 14, /* Deprecated */
     TouchStart = 15,
     TouchEnd = 16,
     TouchMove = 17,

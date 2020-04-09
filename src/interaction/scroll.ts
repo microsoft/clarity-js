@@ -6,7 +6,7 @@ import measure from "@src/core/measure";
 import { schedule } from "@src/core/task";
 import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
-import { track } from "@src/data/target";
+import { target, track } from "@src/data/target";
 import * as boxmodel from "@src/layout/boxmodel";
 import encode from "./encode";
 
@@ -19,18 +19,20 @@ export function start(): void {
 }
 
 export function observe(root: Node): void {
-    let target = root === document ? window : root;
-    bind(target, "scroll", recompute, true);
+    let node = root === document ? window : root;
+    bind(node, "scroll", recompute, true);
 }
 
 function recompute(event: UIEvent = null): void {
     let de = document.documentElement;
-    let element = event ? (event.target === document ? de : event.target) as HTMLElement : de;
+    let t = event ? target(event) : de;
+    let element = t && t === document ? de : t;
+
     // Edge doesn't support scrollTop position on document.documentElement.
     // For cross browser compatibility, looking up pageYOffset on window if the scroll is on document.
     // And, if for some reason that is not available, fall back to looking up scrollTop on document.documentElement.
-    let x = element === de && "pageXOffset" in window ? Math.round(window.pageXOffset) : Math.round(element.scrollLeft);
-    let y = element === de && "pageYOffset" in window ? Math.round(window.pageYOffset) : Math.round(element.scrollTop);
+    let x = element === de && "pageXOffset" in window ? Math.round(window.pageXOffset) : Math.round((element as HTMLElement).scrollLeft);
+    let y = element === de && "pageYOffset" in window ? Math.round(window.pageYOffset) : Math.round((element as HTMLElement).scrollTop);
     let current: ScrollState = { time: time(), event: Event.Scroll, data: {target: track(element), x, y} };
 
     // We don't send any scroll events if this is the first event and the current position is top (0,0)

@@ -195,7 +195,6 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                 if (!node.attributes) { node.attributes = {}; }
                 node.attributes["data-id"] = `${node.id}`;
                 setAttributes(domElement as HTMLElement, node.attributes);
-                (domElement as HTMLElement).setAttribute("clarity-debug-next", `${node.next}`); // DEBUG LINE - REMOVE BEFORE CHECK IN
                 if (node.id in boxmodels) { boxmodel([boxmodels[node.id]], iframe); }
                 insert(node, parent, domElement, next);
                 break;
