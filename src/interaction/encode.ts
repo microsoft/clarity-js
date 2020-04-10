@@ -87,7 +87,7 @@ export default async function(type: Event): Promise<void> {
             for (let i = 0; i < scroll.state.length; i++) {
                 if (task.shouldYield(timer)) { await task.suspend(timer); }
                 let entry = scroll.state[i];
-                tokens = [t, type];
+                tokens = [entry.time, entry.event];
                 tokens.push(observe(entry.data.target as TargetInfo));
                 tokens.push(entry.data.x);
                 tokens.push(entry.data.y);
