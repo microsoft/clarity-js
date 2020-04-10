@@ -2,7 +2,7 @@ import version from "../src/core/version";
 import { Event, Metric, Payload, Token } from "../types/data";
 import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UpgradeEvent, UploadEvent } from "../types/decode/data";
 import { DecodedEvent, DecodedPayload, DecodedVersion } from "../types/decode/decode";
-import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
+import { ImageErrorEvent, InternalErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
 import { ClickEvent, InputEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
 import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
@@ -151,6 +151,10 @@ export function decode(input: string): DecodedPayload {
             case Event.ImageError:
                 if (payload.image === undefined) { payload.image = []; }
                 payload.image.push(diagnostic.decode(entry) as ImageErrorEvent);
+                break;
+            case Event.InternalError:
+                if (payload.internal === undefined) { payload.internal = []; }
+                payload.internal.push(diagnostic.decode(entry) as InternalErrorEvent);
                 break;
             case Event.Connection:
                 if (payload.connection === undefined) { payload.connection = []; }

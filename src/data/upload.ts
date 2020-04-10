@@ -52,6 +52,7 @@ export function queue(data: Token[]): void {
                 break;
             case Event.Metric:
             case Event.Upload:
+            case Event.InternalError:
                 transmit = false;
                 break;
             case Event.Discover:

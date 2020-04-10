@@ -1,8 +1,9 @@
 import { AsyncTask, Priority, RequestIdleCallbackDeadline, RequestIdleCallbackOptions } from "@clarity-types/core";
 import { TaskFunction, TaskResolve, TaskTracker } from "@clarity-types/core";
-import { Metric } from "@clarity-types/data";
+import { Code, Metric } from "@clarity-types/data";
 import config from "@src/core/config";
 import * as metric from "@src/data/metric";
+import * as internal from "@src/diagnostic/internal";
 
 // Track the start time to be able to compute duration at the end of the task
 const idleTimeout = 5000;
@@ -59,9 +60,14 @@ function run(): void {
     let entry = queuedTasks.shift();
     if (entry) {
         activeTask = entry;
-        entry.task().then(() => {
+        entry.task().then((): void => {
             entry.resolve();
             activeTask = null; // Reset active task back to null now that the promise is resolved
+            run();
+        }).catch((error: Error): void => {
+            // If one of the scheduled tasks failed, log, recover and continue processing rest of the tasks
+            internal.error(Code.RunTask, error);
+            activeTask = null;
             run();
         });
     }
@@ -132,7 +138,7 @@ function requestIdleCallbackPolyfill(callback: (deadline: RequestIdleCallbackDea
         let elapsed = currentTime - startTime;
         let duration = currentTime - event.data;
         if (duration > config.longtask && elapsed < options.timeout) {
-            requestAnimationFrame(() => { outgoing.postMessage(currentTime); });
+            requestAnimationFrame((): void => { outgoing.postMessage(currentTime); });
         } else {
             let didTimeout = elapsed > options.timeout;
             callback({
@@ -141,7 +147,7 @@ function requestIdleCallbackPolyfill(callback: (deadline: RequestIdleCallbackDea
             });
         }
     };
-    requestAnimationFrame(() => { outgoing.postMessage(performance.now()); });
+    requestAnimationFrame((): void => { outgoing.postMessage(performance.now()); });
 }
 
 let requestIdleCallback = window["requestIdleCallback"] || requestIdleCallbackPolyfill;

@@ -44,7 +44,8 @@ export const enum Event {
     ContentfulPaint = 36,
     Memory = 37,
     Connection = 38,
-    Upgrade = 39
+    Upgrade = 39,
+    InternalError = 40
 }
 
 export const enum Metric {
@@ -64,6 +65,11 @@ export const enum Metric {
     DiagnosticDuration = 13,
     InteractionDuration = 14,
     PerformanceDuration = 15
+}
+
+export const enum Code {
+    RunTask = 0,
+    CssRules = 1
 }
 
 export const enum Upload {
