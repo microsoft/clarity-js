@@ -7,8 +7,10 @@ import discover from "@src/layout/discover";
 import selector from "@src/layout/selector";
 
 let index: number = 1;
-const BLACKLIST_TYPES = ["password", "hidden", "email"];
-const BLACKLIST_NAMES = ["address", "cell", "code", "dob", "email", "mobile", "name", "phone", "secret", "social", "ssn", "tel", "zip"];
+
+// Reference: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input#%3Cinput%3E_types
+const DISALLOWED_TYPES = ["password", "hidden", "email", "tel"];
+const DISALLOWED_NAMES = ["address", "cell", "code", "dob", "email", "mobile", "name", "phone", "secret", "social", "ssn", "tel", "zip"];
 
 let nodes: Node[] = [];
 let values: NodeValue[] = [];
@@ -199,7 +201,7 @@ function mask(data: NodeInfo, masked: boolean): boolean {
     // Check for blacklist fields (e.g. address, phone, etc.) only if the input node is not already masked
     if (masked === false && tag === Constant.TAG_INPUT && Constant.NAME_ATTRIBUTE in attributes) {
         let value = attributes[Constant.NAME_ATTRIBUTE].toLowerCase();
-        for (let name of BLACKLIST_NAMES) {
+        for (let name of DISALLOWED_NAMES) {
             if (value.indexOf(name) >= 0) {
                 masked = true;
                 continue;
@@ -208,7 +210,7 @@ function mask(data: NodeInfo, masked: boolean): boolean {
     }
 
     // Check for blacklist types (e.g. password, email, etc.) and set the masked property appropriately
-    if (Constant.TYPE_ATTRIBUTE in attributes && BLACKLIST_TYPES.indexOf(attributes[Constant.TYPE_ATTRIBUTE]) >= 0) { masked = true; }
+    if (Constant.TYPE_ATTRIBUTE in attributes && DISALLOWED_TYPES.indexOf(attributes[Constant.TYPE_ATTRIBUTE]) >= 0) { masked = true; }
 
     // Following two conditions superseede any of the above. If there are explicit instructions to mask / unmask a field, we honor that.
     if (Constant.MASK_ATTRIBUTE in attributes) { masked = true; }
