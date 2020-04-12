@@ -1,12 +1,14 @@
 import { Priority } from "@clarity-types/core";
-import { Event, Metric } from "@clarity-types/data";
+import { Code, Event, Metric } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
 import measure from "@src/core/measure";
 import * as task from "@src/core/task";
+import * as internal from "@src/diagnostic/internal";
 import * as boxmodel from "@src/layout/boxmodel";
 import * as doc from "@src/layout/document";
 import * as dom from "@src/layout/dom";
 import encode from "@src/layout/encode";
+import traverse from "@src/layout/traverse";
 import processNode from "./node";
 
 let observers: MutationObserver[] = [];
@@ -40,9 +42,12 @@ export function observe(node: Node): void {
   // Create a new observer for every time a new DOM tree (e.g. root document or shadowdom root) is discovered on the page
   // In the case of shadow dom, any mutations that happen within the shadow dom are not bubbled up to the host document
   // For this reason, we need to wire up mutations everytime we see a new shadow dom.
-  let observer = window["MutationObserver"] ? new MutationObserver(measure(handle) as MutationCallback) : null;
-  observer.observe(node, { attributes: true, childList: true, characterData: true, subtree: true });
-  observers.push(observer);
+  // Also, wrap it inside a try / catch. In certain browsers (e.g. legacy Edge), observer on shadow dom can throw errors
+  try {
+    let observer = window["MutationObserver"] ? new MutationObserver(measure(handle) as MutationCallback) : null;
+    observer.observe(node, { attributes: true, childList: true, characterData: true, subtree: true });
+    observers.push(observer);
+  } catch (error) { internal.error(Code.MutationObserver, error); }
 }
 
 export function end(): void {
@@ -97,19 +102,7 @@ async function process(): Promise<void> {
           for (let j = 0; j < addedLength; j++) {
             let addedNode = mutation.addedNodes[j];
             dom.extractRegions(addedNode as HTMLElement);
-            // In IE11, walker.nextNode() throws an error if walker.currentNode is a text node
-            // To keep things simple, we fork the code path for text nodes in all browser
-            if (addedNode.nodeType === Node.TEXT_NODE) {
-              processNode(addedNode, Source.ChildListAdd);
-            } else {
-              let walker = document.createTreeWalker(addedNode, NodeFilter.SHOW_ALL, null, false);
-              let node = walker.currentNode;
-              while (node) {
-                  if (task.shouldYield(timer)) { await task.suspend(timer); }
-                  processNode(node, Source.ChildListAdd);
-                  node = walker.nextNode();
-              }
-            }
+            traverse(addedNode, timer, Source.ChildListAdd);
           }
           // Process removes
           let removedLength = mutation.removedNodes.length;

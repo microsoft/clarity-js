@@ -119,7 +119,7 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
         let parent = element(node.parent);
         let next = element(node.next);
         switch (node.tag) {
-            case Constant.CLARITY_DOCUMENT_TAG:
+            case Constant.DOCUMENT_TAG:
                 if (type === Event.Discover) { reset(); }
                 if (typeof XMLSerializer !== "undefined") {
                     doc.open();
@@ -133,7 +133,12 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                     doc.close();
                 }
                 break;
-            case Constant.CLARITY_SHADOWDOM_TAG:
+            case Constant.POLYFILL_SHADOWDOM_TAG:
+                // In case of polyfill, map shadow dom to it's parent for rendering purposes
+                // All its children should be inserted as regular children to the parent node.
+                nodes[node.id] = parent;
+                break;
+            case Constant.SHADOW_DOM_TAG:
                 if (parent) {
                     let shadowRoot = element(node.id);
                     shadowRoot = shadowRoot ? shadowRoot : (parent as HTMLElement).attachShadow({ mode: "open" });
@@ -152,7 +157,7 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                     nodes[node.id] = shadowRoot;
                 }
                 break;
-            case Constant.CLARITY_TEXT_TAG:
+            case Constant.TEXT_TAG:
                 let textElement = element(node.id);
                 textElement = textElement ? textElement : doc.createTextNode(null);
                 textElement.nodeValue = node.value;
@@ -176,7 +181,7 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                 if (headElement === null) {
                     headElement = doc.createElement(node.tag);
                     let base = doc.createElement("base");
-                    base.href = node.attributes[Constant.CLARITY_BASE_TAG];
+                    base.href = node.attributes[Constant.BASE_TAG];
                     headElement.appendChild(base);
                 }
                 setAttributes(headElement as HTMLElement, node.attributes);

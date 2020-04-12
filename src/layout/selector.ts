@@ -8,8 +8,8 @@ export default function(tag: string, prefix: string, attributes: Attributes, pos
         case "TITLE":
         case "LINK":
         case "META":
-        case Constant.CLARITY_TEXT_TAG:
-        case Constant.CLARITY_DOCUMENT_TAG:
+        case Constant.TEXT_TAG:
+        case Constant.DOCUMENT_TAG:
             return empty;
         case "HTML":
             return "HTML";

@@ -1,9 +1,6 @@
-import { Priority } from "@clarity-types/core";
 import { Constant, NodeChange, NodeInfo, NodeValue, Source } from "@clarity-types/layout";
 import config from "@src/core/config";
-import { schedule } from "@src/core/task";
 import time from "@src/core/time";
-import discover from "@src/layout/discover";
 import selector from "@src/layout/selector";
 
 let index: number = 1;
@@ -28,7 +25,6 @@ let urlMap: { [url: string]: number } = {};
 export function start(): void {
     reset();
     extractRegions(document);
-    discoverTree(document);
 }
 
 export function end(): void {
@@ -65,14 +61,6 @@ export function extractRegions(root: ParentNode): void {
     }
 }
 
-function discoverTree(root: Node): void {
-    // Only discover the DOM tree if this is the first time we are encountering this root node.
-    // In cases where mutations cause shadow DOM roots to bounce around, we don't want to redisover.
-    if  (has(root) === false) {
-        schedule(discover.bind(this, root), Priority.High);
-    }
-}
-
 export function getId(node: Node, autogen: boolean = false): number {
     if (node === null) { return null; }
     let id = idMap.get(node);
@@ -86,7 +74,6 @@ export function getId(node: Node, autogen: boolean = false): number {
 
 export function add(node: Node, parent: Node, data: NodeInfo, source: Source): void {
     let id = getId(node, true);
-    let element = node as HTMLElement;
     let parentId = parent ? getId(parent) : null;
     let nextId = getNextId(node);
     let masked = true;
@@ -99,9 +86,6 @@ export function add(node: Node, parent: Node, data: NodeInfo, source: Source): v
         region = region === null ? parentValue.region : region;
         masked = parentValue.metadata.masked;
     }
-
-    // If element has a valid shadowRoot, track Shadow DOM as a top level root node.
-    if ("shadowRoot" in element && element.shadowRoot) { discoverTree(element.shadowRoot); }
 
     // Check to see if this particular node should be masked or not
     masked = mask(data, masked);
@@ -130,7 +114,6 @@ export function add(node: Node, parent: Node, data: NodeInfo, source: Source): v
 
 export function update(node: Node, parent: Node, data: NodeInfo, source: Source): void {
     let id = getId(node);
-    let element = node as HTMLElement;
     let parentId = parent ? getId(parent) : null;
     let nextId = getNextId(node);
     let changed = false;
@@ -172,9 +155,6 @@ export function update(node: Node, parent: Node, data: NodeInfo, source: Source)
                 }
             }
         }
-
-        // If element has a valid shadowRoot, track Shadow DOM as a top level root node.
-        if ("shadowRoot" in element && element.shadowRoot) { discoverTree(element.shadowRoot); }
 
         // Update data
         for (let key in data) {

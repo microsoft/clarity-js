@@ -104,7 +104,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
             value = token;
         } else if (lastChar === ">" && keyIndex === -1) {
             prefix = token;
-        } else if (output.tag !== Constant.CLARITY_TEXT_TAG && keyIndex > 0) {
+        } else if (output.tag !== Constant.TEXT_TAG && keyIndex > 0) {
             hasAttribute = true;
             let k = token.substr(0, keyIndex);
             let v = token.substr(keyIndex + 1);
@@ -116,7 +116,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
                     break;
             }
             attributes[k] = v;
-        } else if (output.tag === Constant.CLARITY_TEXT_TAG) {
+        } else if (output.tag === Constant.TEXT_TAG) {
             value = token;
         }
     }

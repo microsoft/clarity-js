@@ -23,11 +23,14 @@ export const enum Constant {
     UNMASK_ATTRIBUTE = "data-clarity-unmask",
     TYPE_ATTRIBUTE = "type",
     NAME_ATTRIBUTE = "name",
+    FUNCTION = "function",
     TAG_INPUT = "INPUT",
-    CLARITY_DOCUMENT_TAG = "*D",
-    CLARITY_BASE_TAG = "*B",
-    CLARITY_SHADOWDOM_TAG = "*S",
-    CLARITY_TEXT_TAG = "*T"
+    NATIVE_CODE = "[native code]",
+    DOCUMENT_TAG = "*D",
+    BASE_TAG = "*B",
+    SHADOW_DOM_TAG = "*S",
+    POLYFILL_SHADOWDOM_TAG = "*P",
+    TEXT_TAG = "*T"
 }
 
 /* Helper Interfaces */

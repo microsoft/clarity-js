@@ -69,7 +69,8 @@ export const enum Metric {
 
 export const enum Code {
     RunTask = 0,
-    CssRules = 1
+    CssRules = 1,
+    MutationObserver = 2
 }
 
 export const enum Upload {

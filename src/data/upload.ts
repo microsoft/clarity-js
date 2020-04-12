@@ -18,11 +18,13 @@ let events: string[];
 let timeout: number = null;
 let transit: Transit;
 let active: boolean;
+let queuedTime: number = 0;
 export let track: UploadData;
 
 export function start(): void {
     active = true;
     backupBytes = 0;
+    queuedTime = 0;
     backup = [];
     events = [];
     transit = {};
@@ -31,6 +33,7 @@ export function start(): void {
 
 export function queue(data: Token[]): void {
     if (active) {
+        let now = time();
         let type = data.length > 1 ? data[1] : null;
         let event = JSON.stringify(data);
         let container = events;
@@ -99,15 +102,22 @@ export function queue(data: Token[]): void {
 
         if (container) { container.push(event); }
 
-        // This is a precautionary check acting as a fail safe mechanism to get out of
-        // unexpected situations. Ideally, expectation is that pause / resume will work as designed.
+        // Following two checks are precautionary and act as a fail safe mechanism to get out of unexpected situations.
+        // Check 1: If for any reason the upload hasn't happened after waiting for 2x the config.delay time,
+        // reset the timer. This allows Clarity to attempt an upload again.
+        if (now - queuedTime > (config.delay * 2)) {
+            clearTimeout(timeout);
+            timeout = null;
+        }
+
+        // Check 2: Ideally, expectation is that pause / resume will work as designed and we will never hit the shutdown clause.
         // However, in some cases involving script errors, we may fail to pause Clarity instrumentation.
         // In those edge cases, we will cut the cord after a configurable shutdown value.
         // The only exception is the very last payload, for which we will attempt one final delivery to the server.
-        if (time() < config.shutdown && transmit) {
+        if (now < config.shutdown && transmit && timeout === null) {
             if (type !== Event.Ping) { ping.reset(); }
-            clearTimeout(timeout);
             timeout = setTimeout(upload, config.delay);
+            queuedTime = now;
         }
     }
 }
@@ -116,6 +126,7 @@ export function end(): void {
     clearTimeout(timeout);
     upload(true);
     backupBytes = 0;
+    queuedTime = 0;
     backup = [];
     events = [];
     transit = {};
@@ -124,6 +135,7 @@ export function end(): void {
 }
 
 function upload(final: boolean = false): void {
+    timeout = null;
     memory.compute();
     target.compute();
     metric.compute();
