@@ -1,23 +1,24 @@
 import { Priority } from "@clarity-types/core";
-import { Event, Metric } from "@clarity-types/data";
+import { Code, Event, Metric } from "@clarity-types/data";
 import { Source } from "@clarity-types/layout";
 import measure from "@src/core/measure";
 import * as task from "@src/core/task";
+import * as internal from "@src/diagnostic/internal";
 import * as boxmodel from "@src/layout/boxmodel";
 import * as doc from "@src/layout/document";
 import * as dom from "@src/layout/dom";
 import encode from "@src/layout/encode";
+import traverse from "@src/layout/traverse";
 import processNode from "./node";
 
-let observer: MutationObserver;
+let observers: MutationObserver[] = [];
 let mutations: MutationRecord[] = [];
 let insertRule: (rule: string, index?: number) => number = null;
 let deleteRule: (index?: number) => void = null;
 
 export function start(): void {
-    if (observer) { observer.disconnect(); }
-    observer = window["MutationObserver"] ? new MutationObserver(measure(handle) as MutationCallback) : null;
-    observer.observe(document, { attributes: true, childList: true, characterData: true, subtree: true });
+    observers = [];
+
     if (insertRule === null) { insertRule = CSSStyleSheet.prototype.insertRule; }
     if (deleteRule === null) { deleteRule = CSSStyleSheet.prototype.deleteRule; }
 
@@ -37,9 +38,21 @@ export function start(): void {
     };
 }
 
+export function observe(node: Node): void {
+  // Create a new observer for every time a new DOM tree (e.g. root document or shadowdom root) is discovered on the page
+  // In the case of shadow dom, any mutations that happen within the shadow dom are not bubbled up to the host document
+  // For this reason, we need to wire up mutations everytime we see a new shadow dom.
+  // Also, wrap it inside a try / catch. In certain browsers (e.g. legacy Edge), observer on shadow dom can throw errors
+  try {
+    let observer = window["MutationObserver"] ? new MutationObserver(measure(handle) as MutationCallback) : null;
+    observer.observe(node, { attributes: true, childList: true, characterData: true, subtree: true });
+    observers.push(observer);
+  } catch (error) { internal.error(Code.MutationObserver, error); }
+}
+
 export function end(): void {
-  if (observer) { observer.disconnect(); }
-  observer = null;
+  for (let observer of observers) { if (observer) { observer.disconnect(); } }
+  observers = [];
 
   // Restoring original insertRule
   if (insertRule !== null) {
@@ -59,7 +72,7 @@ export function end(): void {
 function handle(m: MutationRecord[]): void {
   // Queue up mutation records for asynchronous processing
   for (let i = 0; i < m.length; i++) { mutations.push(m[i]); }
-  task.schedule(process, Priority.High).then(() => {
+  task.schedule(process, Priority.High).then((): void => {
       measure(doc.compute)();
       measure(boxmodel.compute)();
   });
@@ -89,19 +102,7 @@ async function process(): Promise<void> {
           for (let j = 0; j < addedLength; j++) {
             let addedNode = mutation.addedNodes[j];
             dom.extractRegions(addedNode as HTMLElement);
-            // In IE11, walker.nextNode() throws an error if walker.currentNode is a text node
-            // To keep things simple, we fork the code path for text nodes in all browser
-            if (addedNode.nodeType === Node.TEXT_NODE) {
-              processNode(addedNode, Source.ChildListAdd);
-            } else {
-              let walker = document.createTreeWalker(addedNode, NodeFilter.SHOW_ALL, null, false);
-              let node = walker.currentNode;
-              while (node) {
-                  if (task.shouldYield(timer)) { await task.suspend(timer); }
-                  processNode(node, Source.ChildListAdd);
-                  node = walker.nextNode();
-              }
-            }
+            traverse(addedNode, timer, Source.ChildListAdd);
           }
           // Process removes
           let removedLength = mutation.removedNodes.length;

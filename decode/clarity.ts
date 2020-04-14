@@ -1,9 +1,9 @@
 import version from "../src/core/version";
 import { Event, Metric, Payload, Token } from "../types/data";
 import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UpgradeEvent, UploadEvent } from "../types/decode/data";
-import { DecodedEvent, DecodedPayload } from "../types/decode/decode";
-import { ImageErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
-import { InputChangeEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
+import { DecodedEvent, DecodedPayload, DecodedVersion } from "../types/decode/decode";
+import { ImageErrorEvent, InternalErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
+import { ClickEvent, InputEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
 import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
 import { ConnectionEvent, LargestContentfulPaintEvent, LongTaskEvent, MemoryEvent } from "../types/decode/performance";
@@ -24,10 +24,20 @@ export function decode(input: string): DecodedPayload {
     let timestamp = Date.now();
     let payload: DecodedPayload = { timestamp, envelope };
     // Sort encoded events by time to simplify summary computation
-    let encoded: Token[][] = json.d.sort((a: Token[], b: Token[]) => (a[0] as number) - (b[0] as number));
+    let encoded: Token[][] = json.d.sort((a: Token[], b: Token[]): number => (a[0] as number) - (b[0] as number));
 
-    if (payload.envelope.version !== version) {
-        throw new Error(`Invalid Clarity Version. Actual: ${payload.envelope.version} | Expected: ${version} | ${input.substr(0, 250)}`);
+    // Check if the incoming version is compatible with the current running code
+    // We do an exact match for major, minor and path components of the version.
+    // However, the beta portion of the version can be either same, one less or one more.
+    // This ensures we are backward and forward compatible with upto one version change.
+    let jsonVersion = parseVersion(payload.envelope.version);
+    let codeVersion = parseVersion(version);
+
+    if (jsonVersion.major !== codeVersion.major ||
+        jsonVersion.minor !== codeVersion.minor ||
+        jsonVersion.patch !== codeVersion.patch ||
+        Math.abs(jsonVersion.beta - codeVersion.beta) > 1) {
+        throw new Error(`Invalid version. Actual: ${payload.envelope.version} | Expected: ${version} (+/- 1) | ${input.substr(0, 250)}`);
     }
 
     /* Reset components before decoding to keep them stateless */
@@ -75,15 +85,27 @@ export function decode(input: string): DecodedPayload {
             case Event.MouseUp:
             case Event.MouseMove:
             case Event.MouseWheel:
-            case Event.Click:
             case Event.DoubleClick:
-            case Event.RightClick:
             case Event.TouchStart:
             case Event.TouchCancel:
             case Event.TouchEnd:
             case Event.TouchMove:
                 if (payload.pointer === undefined) { payload.pointer = []; }
                 payload.pointer.push(interaction.decode(entry) as PointerEvent);
+                break;
+            case Event.Click:
+                if (payload.click === undefined) { payload.click = []; }
+                let clickEntry = interaction.decode(entry) as ClickEvent;
+                payload.click.push(clickEntry);
+
+                // Extra processing introduced for backward compatibility in v1.0.0-b21.
+                if (payload.pointer === undefined) { payload.pointer = []; }
+                let clickData = clickEntry.data;
+                payload.pointer.push({ time: clickEntry.time, event: clickEntry.event, data: {
+                    target: clickData.target,
+                    x: clickData.x,
+                    y: clickData.y
+                }} as PointerEvent);
                 break;
             case Event.Scroll:
                 if (payload.scroll === undefined) { payload.scroll = []; }
@@ -97,9 +119,9 @@ export function decode(input: string): DecodedPayload {
                 if (payload.selection === undefined) { payload.selection = []; }
                 payload.selection.push(interaction.decode(entry) as SelectionEvent);
                 break;
-            case Event.InputChange:
+            case Event.Input:
                 if (payload.input === undefined) { payload.input = []; }
-                payload.input.push(interaction.decode(entry) as InputChangeEvent);
+                payload.input.push(interaction.decode(entry) as InputEvent);
                 break;
             case Event.Unload:
                 if (payload.unload === undefined) { payload.unload = []; }
@@ -129,6 +151,10 @@ export function decode(input: string): DecodedPayload {
             case Event.ImageError:
                 if (payload.image === undefined) { payload.image = []; }
                 payload.image.push(diagnostic.decode(entry) as ImageErrorEvent);
+                break;
+            case Event.InternalError:
+                if (payload.internal === undefined) { payload.internal = []; }
+                payload.internal.push(diagnostic.decode(entry) as InternalErrorEvent);
                 break;
             case Event.Connection:
                 if (payload.connection === undefined) { payload.connection = []; }
@@ -241,9 +267,9 @@ export async function replay(
                 let pointerEvent = entry as PointerEvent;
                 r.pointer(pointerEvent.event, pointerEvent.data, iframe);
                 break;
-            case Event.InputChange:
-                let changeEvent = entry as InputChangeEvent;
-                r.change(changeEvent.data, iframe);
+            case Event.Input:
+                let inputEvent = entry as InputEvent;
+                r.input(inputEvent.data, iframe);
                 break;
             case Event.Selection:
                 let selectionEvent = entry as SelectionEvent;
@@ -269,4 +295,20 @@ async function wait(timestamp: number): Promise<number> {
 
 function sort(a: DecodedEvent, b: DecodedEvent): number {
     return a.time - b.time;
+}
+
+function parseVersion(ver: string): DecodedVersion {
+    let parts = ver.split(".");
+    if (parts.length === 3) {
+        let subparts = parts[2].split("-b");
+        if (subparts.length === 2) {
+            return {
+                major: parseInt(parts[0], 10),
+                minor: parseInt(parts[1], 10),
+                patch: parseInt(subparts[0], 10),
+                beta: parseInt(subparts[1], 10)
+            };
+        }
+    }
+    return { major: 0, minor: 0, patch: 0, beta: 0 };
 }

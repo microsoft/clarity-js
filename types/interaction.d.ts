@@ -13,8 +13,14 @@ export interface ScrollState {
     data: ScrollData;
 }
 
+export interface InputState {
+    time: number;
+    event: number;
+    data: InputData;
+}
+
 /* Event Data */
-export interface InputChangeData {
+export interface InputData {
     target: Target;
     value: string;
 }
@@ -23,6 +29,15 @@ export interface PointerData {
     target: Target;
     x: number;
     y: number;
+}
+
+export interface ClickData {
+    target: Target;
+    x: number;
+    y: number;
+    button: number;
+    text: string;
+    link: string;
 }
 
 export interface ResizeData {

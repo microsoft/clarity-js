@@ -6,7 +6,7 @@ let config: Config = {
     lookahead: 500, // 500 milliseconds
     distance: 20, // 20 pixels
     interval: 25, // 25 milliseconds
-    delay: 1 * Time.Second, // 1 second
+    delay: 3 * Time.Second, // 3 seconds
     expire: 365, // 1 year
     ping: 60 * 1000, // 1 minute
     timeout: 5 * Time.Minute, // 5 minutes

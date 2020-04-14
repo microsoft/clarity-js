@@ -18,11 +18,13 @@ let events: string[];
 let timeout: number = null;
 let transit: Transit;
 let active: boolean;
+let queuedTime: number = 0;
 export let track: UploadData;
 
 export function start(): void {
     active = true;
     backupBytes = 0;
+    queuedTime = 0;
     backup = [];
     events = [];
     transit = {};
@@ -31,6 +33,7 @@ export function start(): void {
 
 export function queue(data: Token[]): void {
     if (active) {
+        let now = time();
         let type = data.length > 1 ? data[1] : null;
         let event = JSON.stringify(data);
         let container = events;
@@ -46,11 +49,13 @@ export function queue(data: Token[]): void {
                 transmit = false;
                 break;
             case Event.Memory:
+            case Event.Network:
                 metric.count(Metric.PerformanceBytes, event.length);
                 transmit = false;
                 break;
             case Event.Metric:
             case Event.Upload:
+            case Event.InternalError:
                 transmit = false;
                 break;
             case Event.Discover:
@@ -74,7 +79,6 @@ export function queue(data: Token[]): void {
             case Event.ContentfulPaint:
             case Event.LongTask:
             case Event.Navigation:
-            case Event.Network:
             case Event.Paint:
                 metric.count(Metric.PerformanceBytes, event.length);
                 break;
@@ -98,15 +102,22 @@ export function queue(data: Token[]): void {
 
         if (container) { container.push(event); }
 
-        // This is a precautionary check acting as a fail safe mechanism to get out of
-        // unexpected situations. Ideally, expectation is that pause / resume will work as designed.
+        // Following two checks are precautionary and act as a fail safe mechanism to get out of unexpected situations.
+        // Check 1: If for any reason the upload hasn't happened after waiting for 2x the config.delay time,
+        // reset the timer. This allows Clarity to attempt an upload again.
+        if (now - queuedTime > (config.delay * 2)) {
+            clearTimeout(timeout);
+            timeout = null;
+        }
+
+        // Check 2: Ideally, expectation is that pause / resume will work as designed and we will never hit the shutdown clause.
         // However, in some cases involving script errors, we may fail to pause Clarity instrumentation.
         // In those edge cases, we will cut the cord after a configurable shutdown value.
         // The only exception is the very last payload, for which we will attempt one final delivery to the server.
-        if (time() < config.shutdown && transmit) {
+        if (now < config.shutdown && transmit && timeout === null) {
             if (type !== Event.Ping) { ping.reset(); }
-            clearTimeout(timeout);
             timeout = setTimeout(upload, config.delay);
+            queuedTime = now;
         }
     }
 }
@@ -115,6 +126,7 @@ export function end(): void {
     clearTimeout(timeout);
     upload(true);
     backupBytes = 0;
+    queuedTime = 0;
     backup = [];
     events = [];
     transit = {};
@@ -122,10 +134,17 @@ export function end(): void {
     active = false;
 }
 
-function upload(last: boolean = false): void {
+function upload(final: boolean = false): void {
+    timeout = null;
     memory.compute();
     target.compute();
     metric.compute();
+
+    // Treat this as the last payload only if final boolean was explictly set to true.
+    // In real world tests, we noticed that certain third party scripts (e.g. https://www.npmjs.com/package/raven-js)
+    // could inject function arguments for internal tracking (likely stack traces for script errors).
+    // For these edge cases, we want to ensure that an injected object (e.g. {"key": "value"}) isn't mistaken to be true.
+    let last = final === true;
     let payload: EncodedPayload = {e: JSON.stringify(envelope(last)), d: `[${events.join()}]`};
     let data = stringify(payload);
     let sequence = metadata.envelope.sequence;
@@ -143,25 +162,37 @@ function stringify(payload: EncodedPayload): string {
     return `{"e":${payload.e},"d":${payload.d}}`;
 }
 
-function send(data: string, sequence: number = null, last: boolean = false): void {
+function send(data: string, sequence: number, last: boolean): void {
     // Upload data if a valid URL is defined in the config
     if (config.url.length > 0) {
+        let dispatched = false;
+
+        // If it's the last payload, attempt to upload using sendBeacon first.
+        // The advantage to using sendBeacon is that browser can decide to upload asynchronously, improving chances of success
+        // However, we don't want to rely on it for every payload, since we have no ability to retry if the upload failed.
         if (last && "sendBeacon" in navigator) {
-            navigator.sendBeacon(config.url, data);
-        } else {
+            dispatched = navigator.sendBeacon(config.url, data);
+        }
+
+        // Before initiating XHR upload, we check if the data has already been uploaded using sendBeacon
+        // There are two cases when dispatched could still be false:
+        //   a) It's not the last payload, and therefore we didn't attempt sending sendBeacon
+        //   b) It's the last payload, however, we failed to queue sendBeacon call and need to now fall back to XHR.
+        //      E.g. if data is over 64KB, several user agents (like Chrome) will reject to queue the sendBeacon call.
+        if (dispatched === false) {
             if (sequence in transit) { transit[sequence].attempts++; } else { transit[sequence] = { data, attempts: 1 }; }
             let xhr = new XMLHttpRequest();
             xhr.open("POST", config.url);
-            if (sequence !== null) { xhr.onreadystatechange = (): void => { measure(check)(xhr, sequence); }; }
+            if (sequence !== null) { xhr.onreadystatechange = (): void => { measure(check)(xhr, sequence, last); }; }
             xhr.send(data);
         }
     }
 }
 
-function check(xhr: XMLHttpRequest, sequence: number): void {
+function check(xhr: XMLHttpRequest, sequence: number, last: boolean): void {
     if (xhr && xhr.readyState === XMLHttpRequest.DONE && sequence in transit) {
         if ((xhr.status < 200 || xhr.status > 208) && transit[sequence].attempts <= MAX_RETRIES) {
-            send(transit[sequence].data, sequence);
+            send(transit[sequence].data, sequence, last);
         } else {
             track = { sequence, attempts: transit[sequence].attempts, status: xhr.status };
             // Send back an event only if we were not successful in our first attempt

@@ -3,6 +3,7 @@ import time from "@src/core/time";
 import { observe } from "@src/data/target";
 import { queue } from "@src/data/upload";
 import * as image from "@src/diagnostic/image";
+import * as internal from "@src/diagnostic/internal";
 import * as script from "@src/diagnostic/script";
 
 export default async function(type: Event): Promise<void> {
@@ -21,6 +22,14 @@ export default async function(type: Event): Promise<void> {
             if (image.data) {
                 tokens.push(image.data.source);
                 tokens.push(observe(image.data.target as TargetInfo));
+                queue(tokens);
+            }
+            break;
+        case Event.InternalError:
+            if (internal.data) {
+                tokens.push(internal.data.code);
+                tokens.push(internal.data.name);
+                tokens.push(internal.data.message);
                 queue(tokens);
             }
             break;

@@ -19,7 +19,7 @@ export const enum Event {
     MouseUp = 11,
     MouseWheel = 12,
     DoubleClick = 13,
-    RightClick = 14,
+    RightClick = 14, /* Deprecated */
     TouchStart = 15,
     TouchEnd = 16,
     TouchMove = 17,
@@ -29,7 +29,7 @@ export const enum Event {
     Tag = 21,
     Ping = 22,
     Unload = 23,
-    InputChange = 24,
+    Input = 24,
     Visibility = 25,
     Network = 26,
     Navigation = 27,
@@ -44,7 +44,8 @@ export const enum Event {
     ContentfulPaint = 36,
     Memory = 37,
     Connection = 38,
-    Upgrade = 39
+    Upgrade = 39,
+    InternalError = 40
 }
 
 export const enum Metric {
@@ -64,6 +65,12 @@ export const enum Metric {
     DiagnosticDuration = 13,
     InteractionDuration = 14,
     PerformanceDuration = 15
+}
+
+export const enum Code {
+    RunTask = 0,
+    CssRules = 1,
+    MutationObserver = 2
 }
 
 export const enum Upload {

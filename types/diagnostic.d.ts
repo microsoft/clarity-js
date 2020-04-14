@@ -1,4 +1,4 @@
-import { Target } from "./data";
+import { Code, Target } from "./data";
 
 /* Event Data */
 export interface ScriptErrorData {
@@ -12,4 +12,10 @@ export interface ScriptErrorData {
 export interface ImageErrorData {
     source: string;
     target: Target;
+}
+
+export interface InternalErrorData {
+    code: Code;
+    name: string;
+    message: string;
 }

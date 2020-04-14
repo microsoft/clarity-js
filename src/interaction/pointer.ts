@@ -5,7 +5,7 @@ import { bind } from "@src/core/event";
 import { schedule } from "@src/core/task";
 import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
-import { track } from "@src/data/target";
+import { target, track } from "@src/data/target";
 import encode from "./encode";
 
 export let state: PointerState[] = [];
@@ -18,7 +18,6 @@ export function start(): void {
     bind(document, "mousemove", mouse.bind(this, Event.MouseMove), true);
     bind(document, "mousewheel", mouse.bind(this, Event.MouseWheel), true);
     bind(document, "dblclick", mouse.bind(this, Event.DoubleClick), true);
-    bind(document, "click", mouse.bind(this, Event.Click), true);
     bind(document, "touchstart", touch.bind(this, Event.TouchStart), true);
     bind(document, "touchend", touch.bind(this, Event.TouchEnd), true);
     bind(document, "touchmove", touch.bind(this, Event.TouchMove), true);
@@ -29,16 +28,15 @@ function mouse(event: Event, evt: MouseEvent): void {
     let de = document.documentElement;
     let x = "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null);
     let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null);
-    let target = track(evt.target as Node);
-    event = event === Event.Click && (evt.buttons === 2 || evt.button === 2) ? Event.RightClick : event;
+
     // Check for null values before processing this event
-    if (x !== null && y !== null) { handler({ time: time(), event, data: { target, x, y } }); }
+    if (x !== null && y !== null) { handler({ time: time(), event, data: { target: track(target(evt)), x, y } }); }
 }
 
 function touch(event: Event, evt: TouchEvent): void {
     let de = document.documentElement;
     let touches = evt.changedTouches;
-    let target = track(evt.target as Node);
+
     let t = time();
     if (touches) {
         for (let i = 0; i < touches.length; i++) {
@@ -46,7 +44,7 @@ function touch(event: Event, evt: TouchEvent): void {
             let x = "clientX" in entry ? Math.round(entry["clientX"] + de.scrollLeft) : null;
             let y = "clientY" in entry ? Math.round(entry["clientY"] + de.scrollTop) : null;
             // Check for null values before processing this event
-            if (x !== null && y !== null) { handler({ time: t, event, data: { target, x, y } }); }
+            if (x !== null && y !== null) { handler({ time: t, event, data: { target: track(target(evt)), x, y } }); }
         }
     }
 }

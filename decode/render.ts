@@ -1,7 +1,9 @@
 import { Event, Metric, MetricData, PageData } from "../types/data";
 import { DomData } from "../types/decode/layout";
-import { InputChangeData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
+import { InputData, PointerData, ResizeData, ScrollData, SelectionData } from "../types/interaction";
 import { BoxModelData, Constant } from "../types/layout";
+
+const ADOPTED_STYLE_SHEET = "clarity-adopted-style";
 
 let nodes = {};
 let boxmodels = {};
@@ -58,11 +60,11 @@ export function metric(data: MetricData, header: HTMLElement): void {
     header.innerHTML = `<ul>${html.join("")}</ul>`;
 }
 
-function value(input: number, unit: string): number {
+function value(num: number, unit: string): number {
     switch (unit) {
-        case "KB": return Math.round(input / 1024);
-        case "s": return Math.round(input / 1000);
-        default: return input;
+        case "KB": return Math.round(num / 1024);
+        case "s": return Math.round(num / 1000);
+        default: return num;
     }
 }
 
@@ -113,12 +115,12 @@ function css(style: CSSStyleDeclaration, field: string): number {
 
 export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
-    if (type === Event.Discover) { reset(); }
     for (let node of data) {
         let parent = element(node.parent);
         let next = element(node.next);
         switch (node.tag) {
-            case "*D":
+            case Constant.DOCUMENT_TAG:
+                if (type === Event.Discover) { reset(); }
                 if (typeof XMLSerializer !== "undefined") {
                     doc.open();
                     doc.write(new XMLSerializer().serializeToString(
@@ -131,10 +133,34 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                     doc.close();
                 }
                 break;
-            case "*T":
+            case Constant.POLYFILL_SHADOWDOM_TAG:
+                // In case of polyfill, map shadow dom to it's parent for rendering purposes
+                // All its children should be inserted as regular children to the parent node.
+                nodes[node.id] = parent;
+                break;
+            case Constant.SHADOW_DOM_TAG:
+                if (parent) {
+                    let shadowRoot = element(node.id);
+                    shadowRoot = shadowRoot ? shadowRoot : (parent as HTMLElement).attachShadow({ mode: "open" });
+                    if ("style" in node.attributes) {
+                        let style = doc.createElement("style");
+                        // Support for adoptedStyleSheet is limited and not available in all browsers.
+                        // To ensure that we can replay session in any browser, we turn adoptedStyleSheets from recording
+                        // into classic style tags at the playback time.
+                        if (shadowRoot.firstChild && (shadowRoot.firstChild as HTMLElement).id === ADOPTED_STYLE_SHEET) {
+                            style = shadowRoot.firstChild as HTMLStyleElement;
+                        }
+                        style.id = ADOPTED_STYLE_SHEET;
+                        style.textContent = node.attributes["style"];
+                        shadowRoot.appendChild(style);
+                    }
+                    nodes[node.id] = shadowRoot;
+                }
+                break;
+            case Constant.TEXT_TAG:
                 let textElement = element(node.id);
                 textElement = textElement ? textElement : doc.createTextNode(null);
-                textElement.nodeValue = unmask(node.value);
+                textElement.nodeValue = node.value;
                 insert(node, parent, textElement, next);
                 break;
             case "HTML":
@@ -155,7 +181,7 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                 if (headElement === null) {
                     headElement = doc.createElement(node.tag);
                     let base = doc.createElement("base");
-                    base.href = node.attributes["*B"];
+                    base.href = node.attributes[Constant.BASE_TAG];
                     headElement.appendChild(base);
                 }
                 setAttributes(headElement as HTMLElement, node.attributes);
@@ -222,9 +248,11 @@ function setAttributes(node: HTMLElement, attributes: object): void {
     for (let attribute in attributes) {
         if (attributes[attribute] !== undefined) {
             try {
-                let v = unmask(attributes[attribute]);
+                let v = attributes[attribute];
                 if (attribute.indexOf("xlink:") === 0) {
                     node.setAttributeNS("http://www.w3.org/1999/xlink", attribute, v);
+                } else if (attribute.indexOf("*") === 0) {
+                    // Do nothing if we encounter internal Clarity attributes
                 } else {
                     node.setAttribute(attribute, v);
                 }
@@ -269,15 +297,28 @@ export function resize(data: ResizeData, iframe: HTMLIFrameElement, resizeCallba
     }
 }
 
-export function change(data: InputChangeData, iframe: HTMLIFrameElement): void {
+export function input(data: InputData, iframe: HTMLIFrameElement): void {
     let el = element(data.target as number) as HTMLInputElement;
-    if (el) { el.value = data.value; }
+    if (el) {
+        switch (el.type) {
+            case "checkbox":
+            case "radio":
+                el.checked = data.value === "true";
+                break;
+            default:
+                el.value = data.value;
+                break;
+        }
+    }
 }
 
 export function selection(data: SelectionData, iframe: HTMLIFrameElement): void {
     let doc = iframe.contentDocument;
     let s = doc.getSelection();
-    s.setBaseAndExtent(element(data.start as number), data.startOffset, element(data.end as number), data.endOffset);
+    // Wrapping selection code inside a try / catch to avoid throwing errors when dealing with elements inside the shadow DOM.
+    try { s.setBaseAndExtent(element(data.start as number), data.startOffset, element(data.end as number), data.endOffset); } catch (ex) {
+        console.warn("Exception encountered while trying to set selection: " + ex);
+    }
 }
 
 export function pointer(event: Event, data: PointerData, iframe: HTMLIFrameElement): void {
@@ -290,7 +331,7 @@ export function pointer(event: Event, data: PointerData, iframe: HTMLIFrameEleme
         p = doc.createElement("DIV");
         p.id = "clarity-pointer";
         p.style.position = "absolute";
-        p.style.zIndex = "1000";
+        p.style.zIndex = "10000000";
         p.style.width = pointerWidth + "px";
         p.style.height = pointerHeight + "px";
         doc.body.appendChild(p);
@@ -318,32 +359,4 @@ export function pointer(event: Event, data: PointerData, iframe: HTMLIFrameEleme
 
 function getNode(id: number): HTMLElement {
     return id in nodes ? nodes[id] : null;
-}
-
-function unmask(v: string): string {
-    if (v && v.length > 0) {
-        let parts = v.split("*");
-        let placeholder = "x";
-        if (parts.length === 3 && parts[0] === "") {
-            let textCount = parseInt(parts[1], 36);
-            let wordCount = parseInt(parts[2], 36);
-            if (isFinite(textCount) && isFinite(wordCount)) {
-                if (wordCount > 0 && textCount === 0) {
-                    v = " ";
-                } else if (wordCount === 0 && textCount > 0) {
-                    v = Array(textCount + 1).join(placeholder);
-                } else if (wordCount > 0 && textCount > 0) {
-                    v = "";
-                    let avg = Math.floor(textCount / wordCount);
-                    while (v.length < textCount + wordCount) {
-                        let gap = Math.min(avg, textCount + wordCount - v.length);
-                        v += Array(gap + 1).join(placeholder) + " ";
-                    }
-                } else {
-                    v = Array(textCount + wordCount + 1).join(placeholder);
-                }
-            }
-        }
-    }
-    return v;
 }

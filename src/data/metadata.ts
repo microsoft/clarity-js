@@ -21,7 +21,6 @@ export function start(): void {
     let p: PageData = { timestamp: ts, ua, url: location.href, referrer: document.referrer, lean };
 
     metadata = { page: p, envelope: e };
-
     track();
     encode(Event.Page);
     if (config.onstart) { config.onstart({ userId: e.userId, sessionId: e.sessionId, pageId: e.pageId}); }

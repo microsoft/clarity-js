@@ -5,6 +5,10 @@ import selector from "@src/layout/selector";
 
 let index: number = 1;
 
+// Reference: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input#%3Cinput%3E_types
+const DISALLOWED_TYPES = ["password", "hidden", "email", "tel"];
+const DISALLOWED_NAMES = ["address", "cell", "code", "dob", "email", "mobile", "name", "phone", "secret", "social", "ssn", "tel", "zip"];
+
 let nodes: Node[] = [];
 let values: NodeValue[] = [];
 let changes: NodeChange[][] = [];
@@ -18,7 +22,16 @@ let regionMap: WeakMap<Node, string> = null;
 let regionTracker: { [name: string]: number } = {};
 let urlMap: { [url: string]: number } = {};
 
-export function reset(): void {
+export function start(): void {
+    reset();
+    extractRegions(document);
+}
+
+export function end(): void {
+    reset();
+}
+
+function reset(): void {
     index = 1;
     nodes = [];
     values = [];
@@ -59,23 +72,25 @@ export function getId(node: Node, autogen: boolean = false): number {
     return id ? id : null;
 }
 
-export function add(node: Node, data: NodeInfo, source: Source): void {
+export function add(node: Node, parent: Node, data: NodeInfo, source: Source): void {
     let id = getId(node, true);
-    let parentId = node.parentElement ? getId(node.parentElement) : null;
+    let parentId = parent ? getId(parent) : null;
     let nextId = getNextId(node);
     let masked = true;
-    let parent = null;
+    let parentValue = null;
     let region = regionMap.has(node) ? regionMap.get(node) : null;
 
     if (parentId >= 0 && values[parentId]) {
-        parent = values[parentId];
-        parent.children.push(id);
-        region = region === null ? parent.region : region;
-        masked = parent.metadata.masked;
+        parentValue = values[parentId];
+        parentValue.children.push(id);
+        region = region === null ? parentValue.region : region;
+        masked = parentValue.metadata.masked;
     }
 
-    if (data.attributes && Constant.MASK_ATTRIBUTE in data.attributes) { masked = true; }
-    if (data.attributes && Constant.UNMASK_ATTRIBUTE in data.attributes) { masked = false; }
+    // Check to see if this particular node should be masked or not
+    masked = mask(data, masked);
+
+    // If there's an explicit CLARITY_REGION_ATTRIBUTE set on the element, use it to mark a region on the page
     if (data.attributes && Constant.CLARITY_REGION_ATTRIBUTE in data.attributes) {
         regionMap.set(node, data.attributes[Constant.CLARITY_REGION_ATTRIBUTE]);
     }
@@ -97,9 +112,9 @@ export function add(node: Node, data: NodeInfo, source: Source): void {
     track(id, source);
 }
 
-export function update(node: Node, data: NodeInfo, source: Source): void {
+export function update(node: Node, parent: Node, data: NodeInfo, source: Source): void {
     let id = getId(node);
-    let parentId = node.parentElement ? getId(node.parentElement) : null;
+    let parentId = parent ? getId(parent) : null;
     let nextId = getNextId(node);
     let changed = false;
 
@@ -154,6 +169,34 @@ export function update(node: Node, data: NodeInfo, source: Source): void {
         metadata(data.tag, id, parentId);
         track(id, source, changed);
     }
+}
+
+function mask(data: NodeInfo, masked: boolean): boolean {
+    let attributes = data.attributes;
+    let tag = data.tag.toUpperCase();
+
+    // Do not proceed if attributes are missing for the node
+    if (attributes === null || attributes === undefined) { return masked; }
+
+    // Check for blacklist fields (e.g. address, phone, etc.) only if the input node is not already masked
+    if (masked === false && tag === Constant.TAG_INPUT && Constant.NAME_ATTRIBUTE in attributes) {
+        let value = attributes[Constant.NAME_ATTRIBUTE].toLowerCase();
+        for (let name of DISALLOWED_NAMES) {
+            if (value.indexOf(name) >= 0) {
+                masked = true;
+                continue;
+            }
+        }
+    }
+
+    // Check for blacklist types (e.g. password, email, etc.) and set the masked property appropriately
+    if (Constant.TYPE_ATTRIBUTE in attributes && DISALLOWED_TYPES.indexOf(attributes[Constant.TYPE_ATTRIBUTE]) >= 0) { masked = true; }
+
+    // Following two conditions superseede any of the above. If there are explicit instructions to mask / unmask a field, we honor that.
+    if (Constant.MASK_ATTRIBUTE in attributes) { masked = true; }
+    if (Constant.UNMASK_ATTRIBUTE in attributes) { masked = false; }
+
+    return masked;
 }
 
 function diff(a: NodeInfo, b: NodeInfo, field: string): boolean {

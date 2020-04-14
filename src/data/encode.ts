@@ -35,8 +35,8 @@ export default function(event: Event): void {
                 for (let value of targets) {
                     tokens.push(value.id);
                     tokens.push(value.hash);
-                    tokens.push(value.region);
                     tokens.push(value.box);
+                    tokens.push(value.region);
                 }
                 queue(tokens);
             }
