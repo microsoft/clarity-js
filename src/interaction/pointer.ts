@@ -5,6 +5,7 @@ import { bind } from "@src/core/event";
 import { schedule } from "@src/core/task";
 import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
+import { iframe } from "@src/layout/dom";
 import { target, track } from "@src/data/target";
 import encode from "./encode";
 
@@ -13,36 +14,46 @@ let timeout: number = null;
 
 export function start(): void {
     reset();
-    bind(document, "mousedown", mouse.bind(this, Event.MouseDown), true);
-    bind(document, "mouseup", mouse.bind(this, Event.MouseUp), true);
-    bind(document, "mousemove", mouse.bind(this, Event.MouseMove), true);
-    bind(document, "mousewheel", mouse.bind(this, Event.MouseWheel), true);
-    bind(document, "dblclick", mouse.bind(this, Event.DoubleClick), true);
-    bind(document, "touchstart", touch.bind(this, Event.TouchStart), true);
-    bind(document, "touchend", touch.bind(this, Event.TouchEnd), true);
-    bind(document, "touchmove", touch.bind(this, Event.TouchMove), true);
-    bind(document, "touchcancel", touch.bind(this, Event.TouchCancel), true);
 }
 
-function mouse(event: Event, evt: MouseEvent): void {
-    let de = document.documentElement;
-    let x = "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + de.scrollLeft) : null);
-    let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + de.scrollTop) : null);
+export function observe(root: Node): void {
+    bind(root, "mousedown", mouse.bind(this, Event.MouseDown, root), true);
+    bind(root, "mouseup", mouse.bind(this, Event.MouseUp, root), true);
+    bind(root, "mousemove", mouse.bind(this, Event.MouseMove, root), true);
+    bind(root, "mousewheel", mouse.bind(this, Event.MouseWheel, root), true);
+    bind(root, "dblclick", mouse.bind(this, Event.DoubleClick, root), true);
+    bind(root, "touchstart", touch.bind(this, Event.TouchStart, root), true);
+    bind(root, "touchend", touch.bind(this, Event.TouchEnd, root), true);
+    bind(root, "touchmove", touch.bind(this, Event.TouchMove, root), true);
+    bind(root, "touchcancel", touch.bind(this, Event.TouchCancel, root), true);
+}
+
+function mouse(event: Event, root: Node, evt: MouseEvent): void {
+    let frame = iframe(root);
+    let d = frame ? frame.contentDocument.documentElement : document.documentElement;
+    let x = "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + d.scrollLeft) : null);
+    let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + d.scrollTop) : null);
+    x = x && frame ? x + frame.offsetLeft : x;
+    y = y && frame ? y + frame.offsetTop : y;
 
     // Check for null values before processing this event
     if (x !== null && y !== null) { handler({ time: time(), event, data: { target: track(target(evt)), x, y } }); }
 }
 
-function touch(event: Event, evt: TouchEvent): void {
-    let de = document.documentElement;
+function touch(event: Event, root: Node, evt: TouchEvent): void {
+    let frame = iframe(root);
+    let d = frame ? frame.contentDocument.documentElement : document.documentElement;
     let touches = evt.changedTouches;
 
     let t = time();
     if (touches) {
         for (let i = 0; i < touches.length; i++) {
             let entry = touches[i];
-            let x = "clientX" in entry ? Math.round(entry["clientX"] + de.scrollLeft) : null;
-            let y = "clientY" in entry ? Math.round(entry["clientY"] + de.scrollTop) : null;
+            let x = "clientX" in entry ? Math.round(entry["clientX"] + d.scrollLeft) : null;
+            let y = "clientY" in entry ? Math.round(entry["clientY"] + d.scrollTop) : null;
+            x = x && frame ? x + frame.offsetLeft : x;
+            y = y && frame ? y + frame.offsetTop : y;
+
             // Check for null values before processing this event
             if (x !== null && y !== null) { handler({ time: t, event, data: { target: track(target(evt)), x, y } }); }
         }

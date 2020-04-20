@@ -3,14 +3,16 @@ import { Code } from "@clarity-types/data";
 import config from "@src/core/config";
 import * as dom from "./dom";
 import * as internal from "@src/diagnostic/internal";
-import * as scroll from "@src/interaction/scroll";
+import * as interaction from "@src/interaction";
 import * as mutation from "@src/layout/mutation";
 
 const IGNORE_ATTRIBUTES = ["title", "alt", "onload", "onfocus"];
 
-export default function(node: Node, source: Source): void {
+export default function(node: Node, source: Source): Node {
+    let child: Node = null;
+
     // Do not track this change if we are attempting to remove a node before discovering it
-    if (source === Source.ChildListRemove && dom.has(node) === false) { return; }
+    if (source === Source.ChildListRemove && dom.has(node) === false) { return child; }
 
     // Special handling for text nodes that belong to style nodes
     if (source !== Source.Discover &&
@@ -20,17 +22,23 @@ export default function(node: Node, source: Source): void {
         node = node.parentNode;
     }
 
-    let call = dom.has(node) ? "update" : "add";
+    let add = dom.has(node) === false;
+    let call = add ? "add" : "update";
     let parent = node.parentElement ? node.parentElement : null;
+    let insideFrame = node.ownerDocument !== document;
     switch (node.nodeType) {
-        case Node.DOCUMENT_NODE:
-            observe(node);
-            break;
         case Node.DOCUMENT_TYPE_NODE:
+            // Skip processing nodes within iframe if they were already removed from the DOM before we got to processing them.
+            // In those cases, we skip them and continue processing rest of the nodes.
+            let frame = insideFrame && node.parentNode ? dom.iframe(node.parentNode) : null;
+            if (insideFrame && frame === null) { break; }
             let doctype = node as DocumentType;
             let docAttributes = { name: doctype.name, publicId: doctype.publicId, systemId: doctype.systemId };
-            let docData = { tag: Constant.DOCUMENT_TAG, attributes: docAttributes };
-            dom[call](node, parent, docData, source);
+            let docData = { tag: insideFrame ? Constant.FRAME_DOCUMENT_TAG : Constant.DOCUMENT_TAG, attributes: docAttributes };
+            dom[call](node, frame ? frame : parent, docData, source);
+            break;
+        case Node.DOCUMENT_NODE:
+            observe(node);
             break;
         case Node.DOCUMENT_FRAGMENT_NODE:
             let shadowRoot = (node as ShadowRoot);
@@ -74,6 +82,14 @@ export default function(node: Node, source: Source): void {
             if (element.namespaceURI === Constant.SVG_NAMESPACE) { tag = Constant.SVG_PREFIX + tag; }
 
             switch (tag) {
+                case "HTML":
+                    // Skip processing nodes within iframe if they were already removed from the DOM before we got to processing them.
+                    // In those cases, we skip them and continue processing rest of the nodes.
+                    let parentFrame = insideFrame && parent ? dom.iframe(parent) : null;
+                    if (insideFrame && parentFrame === null) { break; }
+                    let htmlData = { tag, attributes: getAttributes(element.attributes) };
+                    dom[call](node, parentFrame ? parentFrame : parent, htmlData, source);
+                    break;
                 case "SCRIPT":
                 case "NOSCRIPT":
                 case "META":
@@ -81,7 +97,7 @@ export default function(node: Node, source: Source): void {
                 case "HEAD":
                     let head = { tag, attributes: getAttributes(element.attributes) };
                     // Capture base href as part of discovering DOM
-                    head.attributes[Constant.BASE_TAG] = location.protocol + "//" + location.hostname;
+                    if (insideFrame === false) { head.attributes[Constant.BASE_ATTRIBUTE] = location.protocol + "//" + location.hostname; }
                     dom[call](node, parent, head, source);
                     break;
                 case "STYLE":
@@ -89,8 +105,21 @@ export default function(node: Node, source: Source): void {
                     let styleData = { tag, attributes, value: getStyleValue(element as HTMLStyleElement) };
                     dom[call](node, parent, styleData, source);
                     break;
+                case "IFRAME":
+                    let iframe = node as HTMLIFrameElement;
+                    let frameData = { tag, attributes: getAttributes(iframe.attributes) };
+                    if (dom.sameorigin(iframe)) {
+                        mutation.monitor(iframe);
+                        frameData.attributes[Constant.SAME_ORIGIN_ATTRIBUTE] = "true";
+                        if (iframe.contentDocument && iframe.contentWindow && iframe.contentDocument.readyState !== "loading") {
+                            child = iframe.contentDocument;
+                        }
+                    }
+                    dom[call](node, parent, frameData, source);
+                    break;
                 default:
                     let data = { tag, attributes: getAttributes(element.attributes) };
+                    if (element.shadowRoot) { child = element.shadowRoot; }
                     dom[call](node, parent, data, source);
                     break;
             }
@@ -98,12 +127,13 @@ export default function(node: Node, source: Source): void {
         default:
             break;
     }
+    return child;
 }
 
 function observe(root: Node): void {
     if (dom.has(root)) { return; }
     mutation.observe(root); // Observe mutations for this root node
-    scroll.observe(root); // Observe scroll events for this root node
+    interaction.observe(root); // Observe interactions for this root node
 }
 
 function getStyleValue(style: HTMLStyleElement): string {

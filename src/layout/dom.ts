@@ -18,6 +18,7 @@ let selectorMap: number[] = [];
 // The WeakMap object is a collection of key/value pairs in which the keys are weakly referenced
 let idMap: WeakMap<Node, number> = null;
 let regionMap: WeakMap<Node, string> = null;
+let iframeMap: WeakMap<Document, HTMLIFrameElement> = null;
 
 let regionTracker: { [name: string]: number } = {};
 let urlMap: { [url: string]: number } = {};
@@ -41,6 +42,7 @@ function reset(): void {
     urlMap = {};
     idMap = new WeakMap();
     regionMap = new WeakMap();
+    iframeMap = new WeakMap();
     if (Constant.DEVTOOLS_HOOK in window) { window[Constant.DEVTOOLS_HOOK] = { get, getNode, history }; }
 }
 
@@ -171,6 +173,26 @@ export function update(node: Node, parent: Node, data: NodeInfo, source: Source)
     }
 }
 
+export function sameorigin(node: Node): boolean {
+    let output = false;
+    if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === Constant.IFRAME_TAG) {
+        let frame = node as HTMLIFrameElement;
+        try {
+            let doc = frame.contentDocument;
+            if (doc) {
+                iframeMap.set(frame.contentDocument, frame);
+                output = true;
+            }
+        } catch { /* do nothing */ }
+    }
+    return output;
+}
+
+export function iframe(node: Node): HTMLIFrameElement {
+    let doc = node.nodeType === Node.DOCUMENT_NODE ? node as Document : null;
+    return doc && iframeMap.has(doc) ? iframeMap.get(doc) : null;
+}
+
 function mask(data: NodeInfo, masked: boolean): boolean {
     let attributes = data.attributes;
     let tag = data.tag.toUpperCase();
@@ -179,7 +201,7 @@ function mask(data: NodeInfo, masked: boolean): boolean {
     if (attributes === null || attributes === undefined) { return masked; }
 
     // Check for blacklist fields (e.g. address, phone, etc.) only if the input node is not already masked
-    if (masked === false && tag === Constant.TAG_INPUT && Constant.NAME_ATTRIBUTE in attributes) {
+    if (masked === false && tag === Constant.INPUT_TAG && Constant.NAME_ATTRIBUTE in attributes) {
         let value = attributes[Constant.NAME_ATTRIBUTE].toLowerCase();
         for (let name of DISALLOWED_NAMES) {
             if (value.indexOf(name) >= 0) {
@@ -327,9 +349,6 @@ function metadata(tag: string, id: number, parentId: number): void {
                         }
                     }
                 }
-                break;
-            case "IFRAME":
-                if (config.lean === false) { value.metadata.boxmodel = true; }
                 break;
         }
 

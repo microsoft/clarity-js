@@ -110,7 +110,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
             let v = token.substr(keyIndex + 1);
             switch (k) {
                 case "src":
-                    v = v.length === 0 ? placeholderImage : v;
+                    v = v.length === 0 && output.tag === "IMG" ? placeholderImage : v;
                     break;
                 default:
                     break;

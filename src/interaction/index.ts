@@ -8,9 +8,9 @@ import * as unload from "@src/interaction/unload";
 import * as visibility from "@src/interaction/visibility";
 
 export function start(): void {
-    click.start();
-    input.start();
+    click.reset();
     pointer.start();
+    input.start();
     resize.start();
     visibility.start();
     scroll.start();
@@ -19,8 +19,22 @@ export function start(): void {
 }
 
 export function end(): void {
+    click.reset();
+    pointer.end();
     input.end();
     pointer.end();
     scroll.end();
     selection.end();
+}
+
+export function observe(root: Node): void {
+    scroll.observe(root);
+    // Only monitor following interactions if the root node is a document
+    // In case of shadow DOM, following events automatically bubble up to the parent document.
+    if (root.nodeType === Node.DOCUMENT_NODE) {
+        click.observe(root);
+        pointer.observe(root);
+        input.observe(root);
+        selection.observe(root);
+    }
 }
