@@ -101,11 +101,13 @@ export function decode(input: string): DecodedPayload {
                 // Extra processing introduced for backward compatibility in v1.0.0-b21.
                 if (payload.pointer === undefined) { payload.pointer = []; }
                 let clickData = clickEntry.data;
-                payload.pointer.push({ time: clickEntry.time, event: clickEntry.event, data: {
-                    target: clickData.target,
-                    x: clickData.x,
-                    y: clickData.y
-                }} as PointerEvent);
+                payload.pointer.push({
+                    time: clickEntry.time, event: clickEntry.event, data: {
+                        target: clickData.target,
+                        x: clickData.x,
+                        y: clickData.y
+                    }
+                } as PointerEvent);
                 break;
             case Event.Scroll:
                 if (payload.scroll === undefined) { payload.scroll = []; }
@@ -198,10 +200,24 @@ export function decode(input: string): DecodedPayload {
     return payload;
 }
 
-export function html(decoded: DecodedPayload): string {
-    let iframe = document.createElement("iframe");
-    render(decoded, iframe);
-    return iframe.contentDocument.documentElement.outerHTML;
+export function html(decoded: DecodedPayload, iframe: HTMLIFrameElement): void {
+    reset();
+    let events: DecodedEvent[] = [];
+    for (let key in decoded) {
+        if (Array.isArray(decoded[key])) {
+            events = events.concat(decoded[key]);
+        }
+    }
+    let sortedevents = events.sort(sort)
+    for (let entry of sortedevents) {
+        switch (entry.event) {
+            case Event.Discover:
+            case Event.Mutation:
+                let domEvent = entry as DomEvent;
+                r.markup(domEvent.event, domEvent.data, iframe);
+                break;
+        }
+    }
 }
 
 export function render(decoded: DecodedPayload, iframe: HTMLIFrameElement, header?: HTMLElement): void {
@@ -230,7 +246,7 @@ export async function replay(
     iframe: HTMLIFrameElement,
     header?: HTMLElement,
     resizeCallback?: (width: number, height: number) => void
-    ): Promise<void> {
+): Promise<void> {
     let start = events[0].time;
     for (let entry of events) {
         if (entry.time - start > 16) { start = await wait(entry.time); }
