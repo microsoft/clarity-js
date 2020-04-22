@@ -318,8 +318,6 @@ function remove(id: number, source: Source): void {
     value.metadata.active = false;
     value.parent = null;
     track(id, source);
-    for (let child of value.children) { remove(child, source); }
-    value.children = [];
 }
 
 function metadata(tag: string, id: number, parentId: number): void {

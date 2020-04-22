@@ -11,6 +11,7 @@ export const enum Source {
 export const enum Constant {
     SVG_PREFIX = "svg:",
     DATA_PREFIX = "data:",
+    IFRAME_PREFIX = "iframe:",
     SVG_NAMESPACE = "http://www.w3.org/2000/svg",
     DEVTOOLS_HOOK = "__CLARITY_DEVTOOLS_HOOK__",
     CLARITY_REGION_ATTRIBUTE = "data-clarity-region",

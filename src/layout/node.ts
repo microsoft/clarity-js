@@ -85,10 +85,10 @@ export default function(node: Node, source: Source): Node {
                 case "HTML":
                     // Skip processing nodes within iframe if they were already removed from the DOM before we got to processing them.
                     // In those cases, we skip them and continue processing rest of the nodes.
-                    let parentFrame = insideFrame && parent ? dom.iframe(parent) : null;
-                    if (insideFrame && parentFrame === null) { break; }
-                    let htmlData = { tag, attributes: getAttributes(element.attributes) };
-                    dom[call](node, parentFrame ? parentFrame : parent, htmlData, source);
+                    parent = insideFrame && parent ? dom.iframe(parent) : null;
+                    let tagPrefix = insideFrame ? Constant.IFRAME_PREFIX : "";
+                    let htmlData = { tag: tagPrefix + tag, attributes: getAttributes(element.attributes) };
+                    dom[call](node, parent, htmlData, source);
                     break;
                 case "SCRIPT":
                 case "NOSCRIPT":

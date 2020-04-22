@@ -103,7 +103,8 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
     for (let node of data) {
         let parent = element(node.parent);
         let next = element(node.next);
-        switch (node.tag) {
+        let tag = node.tag && node.tag.indexOf(Constant.IFRAME_PREFIX) === 0 ? node.tag.substr(Constant.IFRAME_PREFIX.length) : node.tag;
+        switch (tag) {
             case Constant.DOCUMENT_TAG:
                 if (type === Event.Discover) { reset(); }
                 if (typeof XMLSerializer !== "undefined") {
@@ -165,13 +166,7 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                 insert(node, parent, textElement, next);
                 break;
             case "HTML":
-                let htmlElement = element(node.id) as HTMLElement;
-                // If it's a mutation to remove the HTML node from the page, handle it like any other DOM element
-                if (htmlElement && parent === null) {
-                    insert(node, parent, htmlElement, next);
-                    break;
-                }
-                let d = parent ? (parent as HTMLIFrameElement).contentDocument : doc;
+                let d = tag !== node.tag ? (parent ? (parent as HTMLIFrameElement).contentDocument : null): doc;
                 if (d !== null) {
                     let docElement = element(node.id);
                     if (docElement === null) {
