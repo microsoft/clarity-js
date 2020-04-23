@@ -52,7 +52,7 @@ export function observe(node: Node): void {
 }
 
 export function monitor(frame: HTMLIFrameElement): void {
-  // Bind to iframe's onload event so we get notified anytime there's an update to iframe contents.
+  // Bind to iframe's onload event so we get notified anytime there's an update to iframe content.
   // This includes cases where iframe location is updated without explicitly updating src attribute
   // E.g. iframe.contentWindow.location.href = "new-location";
   if (dom.has(frame) === false) {

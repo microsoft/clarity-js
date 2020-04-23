@@ -8,7 +8,7 @@ import * as unload from "@src/interaction/unload";
 import * as visibility from "@src/interaction/visibility";
 
 export function start(): void {
-    click.reset();
+    click.start();
     pointer.start();
     input.start();
     resize.start();
@@ -19,12 +19,14 @@ export function start(): void {
 }
 
 export function end(): void {
-    click.reset();
+    click.end();
     pointer.end();
     input.end();
-    pointer.end();
+    resize.end();
+    visibility.end();
     scroll.end();
     selection.end();
+    unload.end()
 }
 
 export function observe(root: Node): void {

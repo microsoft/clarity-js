@@ -52,12 +52,12 @@ export function metric(data: MetricData, header: HTMLElement): void {
         if (metrics[entry]) {
             let m = metrics[entry];
             let map = METRIC_MAP[entry];
-            let unit = "unit" in map ? map.unit : "";
+            let unit = "unit" in map ? map.unit : Constant.EMPTY_STRING;
             html.push(`<li><h2>${value(m, unit)}<span>${unit}</span></h2>${map.name}</li>`);
         }
     }
 
-    header.innerHTML = `<ul>${html.join("")}</ul>`;
+    header.innerHTML = `<ul>${html.join(Constant.EMPTY_STRING)}</ul>`;
 }
 
 function value(num: number, unit: string): number {
@@ -106,33 +106,18 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
         let tag = node.tag && node.tag.indexOf(Constant.IFRAME_PREFIX) === 0 ? node.tag.substr(Constant.IFRAME_PREFIX.length) : node.tag;
         switch (tag) {
             case Constant.DOCUMENT_TAG:
-                if (type === Event.Discover) { reset(); }
-                if (typeof XMLSerializer !== "undefined") {
-                    doc.open();
-                    doc.write(new XMLSerializer().serializeToString(
-                        doc.implementation.createDocumentType(
+                let tagDoc = tag !== node.tag ? (parent ? (parent as HTMLIFrameElement).contentDocument : null): doc;
+                if (tagDoc && tagDoc === doc && type === Event.Discover) { reset(); }
+                if (typeof XMLSerializer !== "undefined" && tagDoc) {
+                    tagDoc.open();
+                    tagDoc.write(new XMLSerializer().serializeToString(
+                        tagDoc.implementation.createDocumentType(
                             node.attributes["name"],
                             node.attributes["publicId"],
                             node.attributes["systemId"]
                         )
                     ));
-                    doc.close();
-                }
-                break;
-            case Constant.FRAME_DOCUMENT_TAG:
-                if (typeof XMLSerializer !== "undefined" && parent) {
-                    let frame = parent as HTMLIFrameElement;
-                    if (frame.contentDocument) {
-                        frame.contentDocument.open();
-                        frame.contentDocument.write(new XMLSerializer().serializeToString(
-                            frame.contentDocument.implementation.createDocumentType(
-                                node.attributes["name"],
-                                node.attributes["publicId"],
-                                node.attributes["systemId"]
-                            )
-                        ));
-                        frame.contentDocument.close();
-                    }
+                    tagDoc.close();
                 }
                 break;
             case Constant.POLYFILL_SHADOWDOM_TAG:
@@ -166,19 +151,19 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                 insert(node, parent, textElement, next);
                 break;
             case "HTML":
-                let d = tag !== node.tag ? (parent ? (parent as HTMLIFrameElement).contentDocument : null): doc;
-                if (d !== null) {
+                let htmlDoc = tag !== node.tag ? (parent ? (parent as HTMLIFrameElement).contentDocument : null): doc;
+                if (htmlDoc !== null) {
                     let docElement = element(node.id);
                     if (docElement === null) {
-                        let newDoc = d.implementation.createHTMLDocument("");
+                        let newDoc = htmlDoc.implementation.createHTMLDocument(Constant.EMPTY_STRING);
                         docElement = newDoc.documentElement;
-                        let p = d.importNode(docElement, true);
-                        d.replaceChild(p, d.documentElement);
-                        if (d.head) { d.head.parentNode.removeChild(d.head); }
-                        if (d.body) { d.body.parentNode.removeChild(d.body); }
+                        let p = htmlDoc.importNode(docElement, true);
+                        htmlDoc.replaceChild(p, htmlDoc.documentElement);
+                        if (htmlDoc.head) { htmlDoc.head.parentNode.removeChild(htmlDoc.head); }
+                        if (htmlDoc.body) { htmlDoc.body.parentNode.removeChild(htmlDoc.body); }
                     }
-                    setAttributes(d.documentElement as HTMLElement, node.attributes);
-                    nodes[node.id] = d.documentElement;
+                    setAttributes(htmlDoc.documentElement as HTMLElement, node.attributes);
+                    nodes[node.id] = htmlDoc.documentElement;
                 }
                 break;
             case "HEAD":

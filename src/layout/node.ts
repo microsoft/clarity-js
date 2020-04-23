@@ -28,14 +28,12 @@ export default function(node: Node, source: Source): Node {
     let insideFrame = node.ownerDocument !== document;
     switch (node.nodeType) {
         case Node.DOCUMENT_TYPE_NODE:
-            // Skip processing nodes within iframe if they were already removed from the DOM before we got to processing them.
-            // In those cases, we skip them and continue processing rest of the nodes.
-            let frame = insideFrame && node.parentNode ? dom.iframe(node.parentNode) : null;
-            if (insideFrame && frame === null) { break; }
+            parent = insideFrame && node.parentNode ? dom.iframe(node.parentNode) : parent;
+            let docTypePrefix = insideFrame ? Constant.IFRAME_PREFIX : Constant.EMPTY_STRING;
             let doctype = node as DocumentType;
             let docAttributes = { name: doctype.name, publicId: doctype.publicId, systemId: doctype.systemId };
-            let docData = { tag: insideFrame ? Constant.FRAME_DOCUMENT_TAG : Constant.DOCUMENT_TAG, attributes: docAttributes };
-            dom[call](node, frame ? frame : parent, docData, source);
+            let docData = { tag: docTypePrefix + Constant.DOCUMENT_TAG, attributes: docAttributes };
+            dom[call](node, parent, docData, source);
             break;
         case Node.DOCUMENT_NODE:
             observe(node);
@@ -50,7 +48,7 @@ export default function(node: Node, source: Source): Node {
                     // At the moment, we are only able to capture "open" shadow DOM nodes. If they are closed, they are not accessible.
                     // In future we may decide to proxy "attachShadow" call to gain access, but at the moment, we don't want to
                     // cause any unintended side effect to the page. We will re-evaluate after we gather more real world data on this.
-                    let style = "";
+                    let style = Constant.EMPTY_STRING as string;
                     let adoptedStyleSheets: CSSStyleSheet[] = "adoptedStyleSheets" in shadowRoot ? shadowRoot["adoptedStyleSheets"] : [];
                     for (let styleSheet of adoptedStyleSheets) { style += getCssRules(styleSheet); }
                     let fragementData = { tag: Constant.SHADOW_DOM_TAG, attributes: { style } };
@@ -83,11 +81,9 @@ export default function(node: Node, source: Source): Node {
 
             switch (tag) {
                 case "HTML":
-                    // Skip processing nodes within iframe if they were already removed from the DOM before we got to processing them.
-                    // In those cases, we skip them and continue processing rest of the nodes.
                     parent = insideFrame && parent ? dom.iframe(parent) : null;
-                    let tagPrefix = insideFrame ? Constant.IFRAME_PREFIX : "";
-                    let htmlData = { tag: tagPrefix + tag, attributes: getAttributes(element.attributes) };
+                    let htmlPrefix = insideFrame ? Constant.IFRAME_PREFIX : Constant.EMPTY_STRING;
+                    let htmlData = { tag: htmlPrefix + tag, attributes: getAttributes(element.attributes) };
                     dom[call](node, parent, htmlData, source);
                     break;
                 case "SCRIPT":
@@ -96,7 +92,8 @@ export default function(node: Node, source: Source): Node {
                     break;
                 case "HEAD":
                     let head = { tag, attributes: getAttributes(element.attributes) };
-                    // Capture base href as part of discovering DOM
+                    // Capture base href as part of discovering DOM unless it's inside iframe.
+                    // iframe already accquires base value from the parent, so we don't have to proactively generate it.
                     if (insideFrame === false) { head.attributes[Constant.BASE_ATTRIBUTE] = location.protocol + "//" + location.hostname; }
                     dom[call](node, parent, head, source);
                     break;
@@ -145,7 +142,7 @@ function getStyleValue(style: HTMLStyleElement): string {
 }
 
 function getCssRules(sheet: CSSStyleSheet): string {
-    let value = "";
+    let value = Constant.EMPTY_STRING as string;
     let cssRules = null;
     // Firefox throws a SecurityError when trying to access cssRules of a stylesheet from a different domain
     try { cssRules = sheet ? sheet.cssRules : []; } catch (e) {

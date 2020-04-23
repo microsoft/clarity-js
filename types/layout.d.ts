@@ -9,6 +9,7 @@ export const enum Source {
 }
 
 export const enum Constant {
+    EMPTY_STRING = "",
     SVG_PREFIX = "svg:",
     DATA_PREFIX = "data:",
     IFRAME_PREFIX = "iframe:",
@@ -34,7 +35,6 @@ export const enum Constant {
     SHADOW_DOM_TAG = "*S",
     POLYFILL_SHADOWDOM_TAG = "*P",
     TEXT_TAG = "*T",
-    FRAME_DOCUMENT_TAG = "*F",
     CHILD_LIST = "childList",
     ATTRIBUTES = "attributes",
     CHARACTER_DATA = "characterData",

@@ -33,6 +33,7 @@ function mouse(event: Event, root: Node, evt: MouseEvent): void {
     let d = frame ? frame.contentDocument.documentElement : document.documentElement;
     let x = "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + d.scrollLeft) : null);
     let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + d.scrollTop) : null);
+    // In case of iframe, we adjust (x,y) to be relative to top parent's origin
     x = x && frame ? x + frame.offsetLeft : x;
     y = y && frame ? y + frame.offsetTop : y;
 

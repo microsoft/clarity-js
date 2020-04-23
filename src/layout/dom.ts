@@ -16,9 +16,9 @@ let updateMap: number[] = [];
 let selectorMap: number[] = [];
 
 // The WeakMap object is a collection of key/value pairs in which the keys are weakly referenced
-let idMap: WeakMap<Node, number> = null;
-let regionMap: WeakMap<Node, string> = null;
-let iframeMap: WeakMap<Document, HTMLIFrameElement> = null;
+let idMap: WeakMap<Node, number> = null; // Maps node => id.
+let regionMap: WeakMap<Node, string> = null; // Maps region nodes => region name
+let iframeMap: WeakMap<Document, HTMLIFrameElement> = null; // Maps iframe's contentDocument => parent iframe element
 
 let regionTracker: { [name: string]: number } = {};
 let urlMap: { [url: string]: number } = {};
@@ -105,7 +105,7 @@ export function add(node: Node, parent: Node, data: NodeInfo, source: Source): v
         children: [],
         position: null,
         data,
-        selector: "",
+        selector: Constant.EMPTY_STRING,
         region,
         metadata: { active: true, boxmodel: false, masked }
     };
@@ -177,6 +177,9 @@ export function sameorigin(node: Node): boolean {
     let output = false;
     if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === Constant.IFRAME_TAG) {
         let frame = node as HTMLIFrameElement;
+        // To determine if the iframe is same-origin or not, we try accessing it's contentDocument.
+        // If the browser throws an exception, we assume it's cross-origin and move on.
+        // However, if we do a get a valid document object back, we assume the contents are accessible and iframe is same-origin.
         try {
             let doc = frame.contentDocument;
             if (doc) {

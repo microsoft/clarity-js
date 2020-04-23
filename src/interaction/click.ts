@@ -8,6 +8,10 @@ import encode from "./encode";
 
 export let data: ClickData;
 
+export function start(): void {
+    reset();
+}
+
 export function observe(root: Node): void {
     bind(root, "click", handler.bind(this, Event.Click, root), true);
 }
@@ -17,6 +21,7 @@ function handler(event: Event, root: Node, evt: MouseEvent): void {
     let d = frame ? frame.contentDocument.documentElement : document.documentElement;
     let x = "pageX" in evt ? Math.round(evt.pageX) : ("clientX" in evt ? Math.round(evt["clientX"] + d.scrollLeft) : null);
     let y = "pageY" in evt ? Math.round(evt.pageY) : ("clientY" in evt ? Math.round(evt["clientY"] + d.scrollTop) : null);
+    // In case of iframe, we adjust (x,y) to be relative to top parent's origin
     x = x && frame ? x + frame.offsetLeft : x;
     y = y && frame ? y + frame.offsetTop : y;
 
@@ -41,4 +46,8 @@ function handler(event: Event, root: Node, evt: MouseEvent): void {
 
 export function reset(): void {
     data = null;
+}
+
+export function end(): void {
+    reset();
 }
