@@ -8,7 +8,7 @@ import { envelope, metadata } from "@src/data/metadata";
 import * as metric from "@src/data/metric";
 import * as ping from "@src/data/ping";
 import * as target from "@src/data/target";
-import * as memory from "@src/performance/memory";
+import * as performance from "@src/performance/";
 
 const MAX_RETRIES = 2;
 const MAX_BACKUP_BYTES = 10 * 1024 * 1024; // 10MB
@@ -50,6 +50,11 @@ export function queue(data: Token[]): void {
                 break;
             case Event.Memory:
             case Event.Network:
+            case Event.Connection:
+            case Event.ContentfulPaint:
+            case Event.LongTask:
+            case Event.Navigation:
+            case Event.Paint:
                 metric.count(Metric.PerformanceBytes, event.length);
                 transmit = false;
                 break;
@@ -74,13 +79,6 @@ export function queue(data: Token[]): void {
             case Event.BoxModel:
             case Event.Document:
                 metric.count(Metric.LayoutBytes, event.length);
-                break;
-            case Event.Connection:
-            case Event.ContentfulPaint:
-            case Event.LongTask:
-            case Event.Navigation:
-            case Event.Paint:
-                metric.count(Metric.PerformanceBytes, event.length);
                 break;
             case Event.ScriptError:
             case Event.ImageError:
@@ -136,7 +134,7 @@ export function end(): void {
 
 function upload(final: boolean = false): void {
     timeout = null;
-    memory.compute();
+    performance.compute();
     target.compute();
     metric.compute();
 

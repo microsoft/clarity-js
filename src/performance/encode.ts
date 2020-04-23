@@ -72,6 +72,8 @@ export default async function(type: Event): Promise<void> {
             tokens.push(navigation.data.size);
             tokens.push(navigation.data.type);
             tokens.push(navigation.data.protocol);
+            tokens.push(navigation.data.encodedSize);
+            tokens.push(navigation.data.decodedSize);
             navigation.reset();
             queue(tokens);
             break;

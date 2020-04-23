@@ -23,7 +23,9 @@ export function compute(entry: PerformanceNavigationTiming): void {
         redirectCount: Math.round(entry.redirectCount),
         size: entry.transferSize,
         type: entry.type,
-        protocol: entry.nextHopProtocol
+        protocol: entry.nextHopProtocol,
+        encodedSize: entry.encodedBodySize,
+        decodedSize: entry.decodedBodySize
     };
     encode(Event.Navigation);
 }
