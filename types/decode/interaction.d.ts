@@ -12,3 +12,9 @@ export interface VisibilityEvent extends PartialEvent { data: VisibilityData; }
 export interface InteractionEvent extends PartialEvent {
     data: ClickData | InputData | PointerData | ResizeData | ScrollData | SelectionData | UnloadData | VisibilityData;
 }
+
+export interface IInteractionDuration {
+    startTime: number;
+    duration: number;
+    active: boolean;
+}

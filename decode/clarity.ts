@@ -3,7 +3,7 @@ import { Event, Metric, Payload, Token } from "../types/data";
 import { MetricEvent, PageEvent, PingEvent, SummaryEvent, TagEvent, TargetEvent, UpgradeEvent, UploadEvent } from "../types/decode/data";
 import { DecodedEvent, DecodedPayload, DecodedVersion } from "../types/decode/decode";
 import { ImageErrorEvent, InternalErrorEvent, ScriptErrorEvent } from "../types/decode/diagnostic";
-import { ClickEvent, InputEvent, PointerEvent, ResizeEvent, ScrollEvent } from "../types/decode/interaction";
+import { ClickEvent, InputEvent, PointerEvent, ResizeEvent, ScrollEvent, IInteractionDuration } from "../types/decode/interaction";
 import { SelectionEvent, UnloadEvent, VisibilityEvent } from "../types/decode/interaction";
 import { BoxModelEvent, DocumentEvent, DomEvent, HashEvent, ResourceEvent } from "../types/decode/layout";
 import { ConnectionEvent, LargestContentfulPaintEvent, LongTaskEvent, MemoryEvent } from "../types/decode/performance";
@@ -301,6 +301,62 @@ export async function replay(
                 break;
         }
     }
+}
+
+export function getInteractionDurations(events: DecodedEvent[]): IInteractionDuration[]  {
+    const activeGracePeriod = 1000; // one second
+    const interactionDurations: IInteractionDuration[] = [];
+    const nonActiveEventTypes = [Event.Metric, Event.Hash, Event.Document, Event.Page, Event.Tag, Event.Ping, Event.Network,
+                                 Event.ScriptError, Event.ImageError, Event.Resource, Event.Summary, Event.Upload, Event.Target,
+                                 Event.LongTask, Event.Memory, Event.Connection, Event.Upgrade, Event.InternalError]
+
+    let currentlyActive = true;
+    let beginningOfCurrentBlock = events[0].time;
+    let mostRecentEventTime = events[0].time;
+    for (const entry of events) {
+        const windowGoingHidden = entry.event === Event.Visibility && (entry as VisibilityEvent).data.visible === "hidden";
+        // if there has been too much time since the last event (or if the window is losing focus), mark that
+        // we had an active block then start tracking an inactive block
+        if (currentlyActive && (mostRecentEventTime + activeGracePeriod < entry.time || windowGoingHidden)) {
+            const endOfActiveTime = windowGoingHidden ? entry.time : mostRecentEventTime + activeGracePeriod;
+            interactionDurations.push({
+                startTime: beginningOfCurrentBlock,
+                duration: endOfActiveTime - beginningOfCurrentBlock,
+                active: true
+            });
+
+            currentlyActive = false;
+            beginningOfCurrentBlock = endOfActiveTime;
+            mostRecentEventTime = entry.time;
+        } else if (nonActiveEventTypes.indexOf(entry.event) === -1) {
+            if (currentlyActive) {
+                // if this event isn't inconsequential, just update the current time - we know we should still be in
+                // the same active state given we hadn't passed a grace period above
+                mostRecentEventTime = entry.time;
+            } else {
+                // if this event isn't inconsequential but we aren't currently active - we need to change to be active and
+                // cut off an inactive block
+                const endOfInactiveTime = entry.time;
+                interactionDurations.push({
+                    startTime: beginningOfCurrentBlock,
+                    duration: endOfInactiveTime - beginningOfCurrentBlock,
+                    active: false
+                });
+
+                currentlyActive = true;
+                beginningOfCurrentBlock = endOfInactiveTime;
+                mostRecentEventTime = endOfInactiveTime;
+            }
+        }
+    }
+
+    // push final block
+    interactionDurations.push({
+        startTime: beginningOfCurrentBlock,
+        duration: events[events.length - 1].time - beginningOfCurrentBlock,
+        active: currentlyActive
+    });
+    return interactionDurations;
 }
 
 async function wait(timestamp: number): Promise<number> {
