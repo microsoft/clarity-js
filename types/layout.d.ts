@@ -9,8 +9,10 @@ export const enum Source {
 }
 
 export const enum Constant {
+    EMPTY_STRING = "",
     SVG_PREFIX = "svg:",
     DATA_PREFIX = "data:",
+    IFRAME_PREFIX = "iframe:",
     SVG_NAMESPACE = "http://www.w3.org/2000/svg",
     DEVTOOLS_HOOK = "__CLARITY_DEVTOOLS_HOOK__",
     CLARITY_REGION_ATTRIBUTE = "data-clarity-region",
@@ -23,15 +25,22 @@ export const enum Constant {
     UNMASK_ATTRIBUTE = "data-clarity-unmask",
     TYPE_ATTRIBUTE = "type",
     NAME_ATTRIBUTE = "name",
+    BASE_ATTRIBUTE = "*B",
+    SAME_ORIGIN_ATTRIBUTE = "*O",
     FUNCTION = "function",
-    TAG_INPUT = "INPUT",
+    INPUT_TAG = "INPUT",
+    IFRAME_TAG = "IFRAME",
     NATIVE_CODE = "[native code]",
     DOCUMENT_TAG = "*D",
-    BASE_TAG = "*B",
     SHADOW_DOM_TAG = "*S",
     POLYFILL_SHADOWDOM_TAG = "*P",
-    TEXT_TAG = "*T"
+    TEXT_TAG = "*T",
+    CHILD_LIST = "childList",
+    ATTRIBUTES = "attributes",
+    CHARACTER_DATA = "characterData",
+    LOAD_EVENT = "load"
 }
+
 
 /* Helper Interfaces */
 

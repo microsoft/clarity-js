@@ -52,12 +52,12 @@ export function metric(data: MetricData, header: HTMLElement): void {
         if (metrics[entry]) {
             let m = metrics[entry];
             let map = METRIC_MAP[entry];
-            let unit = "unit" in map ? map.unit : "";
+            let unit = "unit" in map ? map.unit : Constant.EMPTY_STRING;
             html.push(`<li><h2>${value(m, unit)}<span>${unit}</span></h2>${map.name}</li>`);
         }
     }
 
-    header.innerHTML = `<ul>${html.join("")}</ul>`;
+    header.innerHTML = `<ul>${html.join(Constant.EMPTY_STRING)}</ul>`;
 }
 
 function value(num: number, unit: string): number {
@@ -94,23 +94,8 @@ function box(id: number, region: string, rectangle: number[], iframe: HTMLIFrame
             doc.body.appendChild(layer);
             layer.innerText = region;
             nodes[id] = layer;
-        } else if (el && el.tagName === "IFRAME") {
-            let s = getComputedStyle(el, null);
-            let width = rectangle[2];
-            let height = rectangle[3];
-            if (s["boxSizing"] !== "border-box") {
-                width -= (css(s, "paddingLeft") + css(s, "paddingRight") + css(s, "borderLeftWidth") + css(s, "borderRightWidth"));
-                height -= (css(s, "paddingTop") + css(s, "paddingBottom") + css(s, "borderTopWidth") + css(s, "borderBottomWidth"));
-            }
-            el.style.width = width + "px";
-            el.style.height = height + "px";
-            if (el.tagName === "IFRAME") { el.style.backgroundColor = "maroon"; }
         }
     }
-}
-
-function css(style: CSSStyleDeclaration, field: string): number {
-    return parseInt(style[field], 10);
 }
 
 export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement): void {
@@ -118,19 +103,21 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
     for (let node of data) {
         let parent = element(node.parent);
         let next = element(node.next);
-        switch (node.tag) {
+        let tag = node.tag && node.tag.indexOf(Constant.IFRAME_PREFIX) === 0 ? node.tag.substr(Constant.IFRAME_PREFIX.length) : node.tag;
+        switch (tag) {
             case Constant.DOCUMENT_TAG:
-                if (type === Event.Discover) { reset(); }
-                if (typeof XMLSerializer !== "undefined") {
-                    doc.open();
-                    doc.write(new XMLSerializer().serializeToString(
-                        doc.implementation.createDocumentType(
+                let tagDoc = tag !== node.tag ? (parent ? (parent as HTMLIFrameElement).contentDocument : null): doc;
+                if (tagDoc && tagDoc === doc && type === Event.Discover) { reset(); }
+                if (typeof XMLSerializer !== "undefined" && tagDoc) {
+                    tagDoc.open();
+                    tagDoc.write(new XMLSerializer().serializeToString(
+                        tagDoc.implementation.createDocumentType(
                             node.attributes["name"],
                             node.attributes["publicId"],
                             node.attributes["systemId"]
                         )
                     ));
-                    doc.close();
+                    tagDoc.close();
                 }
                 break;
             case Constant.POLYFILL_SHADOWDOM_TAG:
@@ -164,25 +151,30 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                 insert(node, parent, textElement, next);
                 break;
             case "HTML":
-                let docElement = element(node.id);
-                if (docElement === null) {
-                    let newDoc = doc.implementation.createHTMLDocument("");
-                    docElement = newDoc.documentElement;
-                    let p = doc.importNode(docElement, true);
-                    doc.replaceChild(p, doc.documentElement);
-                    if (doc.head) { doc.head.parentNode.removeChild(doc.head); }
-                    if (doc.body) { doc.body.parentNode.removeChild(doc.body); }
+                let htmlDoc = tag !== node.tag ? (parent ? (parent as HTMLIFrameElement).contentDocument : null): doc;
+                if (htmlDoc !== null) {
+                    let docElement = element(node.id);
+                    if (docElement === null) {
+                        let newDoc = htmlDoc.implementation.createHTMLDocument(Constant.EMPTY_STRING);
+                        docElement = newDoc.documentElement;
+                        let p = htmlDoc.importNode(docElement, true);
+                        htmlDoc.replaceChild(p, htmlDoc.documentElement);
+                        if (htmlDoc.head) { htmlDoc.head.parentNode.removeChild(htmlDoc.head); }
+                        if (htmlDoc.body) { htmlDoc.body.parentNode.removeChild(htmlDoc.body); }
+                    }
+                    setAttributes(htmlDoc.documentElement as HTMLElement, node.attributes);
+                    nodes[node.id] = htmlDoc.documentElement;
                 }
-                setAttributes(doc.documentElement as HTMLElement, node.attributes);
-                nodes[node.id] = doc.documentElement;
                 break;
             case "HEAD":
                 let headElement = element(node.id);
                 if (headElement === null) {
                     headElement = doc.createElement(node.tag);
-                    let base = doc.createElement("base");
-                    base.href = node.attributes[Constant.BASE_TAG];
-                    headElement.appendChild(base);
+                    if (node.attributes && Constant.BASE_ATTRIBUTE in node.attributes) {
+                        let base = doc.createElement("base");
+                        base.href = node.attributes[Constant.BASE_ATTRIBUTE];
+                        headElement.appendChild(base);
+                    }
                 }
                 setAttributes(headElement as HTMLElement, node.attributes);
                 insert(node, parent, headElement, next);
@@ -193,6 +185,16 @@ export function markup(type: Event, data: DomData[], iframe: HTMLIFrameElement):
                 setAttributes(styleElement as HTMLElement, node.attributes);
                 styleElement.textContent = node.value;
                 insert(node, parent, styleElement, next);
+                break;
+            case "IFRAME":
+                let iframeElement = element(node.id) as HTMLElement;
+                iframeElement = iframeElement ? iframeElement : createElement(doc, node.tag, parent as HTMLElement);
+                if (!node.attributes) { node.attributes = {}; }
+                node.attributes["data-id"] = `${node.id}`;
+                setAttributes(iframeElement as HTMLElement, node.attributes);
+                if (!(Constant.SAME_ORIGIN_ATTRIBUTE in node.attributes)) { iframeElement.style.backgroundColor = "maroon"; }
+                if (node.id in boxmodels) { boxmodel([boxmodels[node.id]], iframe); }
+                insert(node, parent, iframeElement, next);
                 break;
             default:
                 let domElement = element(node.id);
@@ -235,6 +237,7 @@ function insert(data: DomData, parent: Node, node: Node, next: Node): void {
 }
 
 function setAttributes(node: HTMLElement, attributes: object): void {
+    let tag = node.nodeType === Node.ELEMENT_NODE ? node.tagName.toLowerCase() : null;
     // First remove all its existing attributes
     if (node.attributes) {
         let length = node.attributes.length;
@@ -253,6 +256,8 @@ function setAttributes(node: HTMLElement, attributes: object): void {
                     node.setAttributeNS("http://www.w3.org/1999/xlink", attribute, v);
                 } else if (attribute.indexOf("*") === 0) {
                     // Do nothing if we encounter internal Clarity attributes
+                } else if (tag === "iframe" && (attribute.indexOf("src") === 0 || attribute.indexOf("allow") === 0) || attribute === "sandbox") {
+                    node.setAttribute(`data-clarity-${attribute}`, v);
                 } else {
                     node.setAttribute(attribute, v);
                 }

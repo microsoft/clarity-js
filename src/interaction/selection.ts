@@ -13,12 +13,16 @@ let timeout: number = null;
 
 export function start(): void {
     reset();
-    bind(document, "selectstart", recompute, true);
-    bind(document, "selectionchange", recompute, true);
 }
 
-function recompute(): void {
-    let current = document.getSelection();
+export function observe(root: Node): void {
+    bind(root, "selectstart", recompute.bind(this, root), true);
+    bind(root, "selectionchange", recompute.bind(this, root), true);
+}
+
+function recompute(root: Node): void {
+    let doc = root.nodeType === Node.DOCUMENT_NODE ? root as Document : document;
+    let current = doc.getSelection();
 
     // Bail out if we don't have a valid selection
     if (current === null) { return; }

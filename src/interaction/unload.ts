@@ -1,6 +1,6 @@
 import { Event } from "@clarity-types/data";
 import { UnloadData } from "@clarity-types/interaction";
-import { end } from "@src/clarity";
+import * as clarity from "@src/clarity";
 import { bind } from "@src/core/event";
 import encode from "./encode";
 
@@ -15,9 +15,13 @@ export function start(): void {
 function recompute(evt: UIEvent): void {
     data = { name: evt.type };
     encode(Event.Unload);
-    end();
+    clarity.end();
 }
 
 export function reset(): void {
     data = null;
+}
+
+export function end(): void {
+    reset();
 }

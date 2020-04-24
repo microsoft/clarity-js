@@ -18,3 +18,7 @@ function recompute(): void {
 export function reset(): void {
     data = null;
 }
+
+export function end(): void {
+    reset();
+}
