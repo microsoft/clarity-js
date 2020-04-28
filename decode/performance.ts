@@ -54,7 +54,9 @@ export function decode(tokens: Token[]): PerformanceEvent  {
                 redirectCount: tokens[12] as number,
                 size: tokens[13] as number,
                 type: tokens[14] as string,
-                protocol: tokens[15] as string
+                protocol: tokens[15] as string,
+                encodedSize: tokens[16] as number,
+                decodedSize: tokens[17] as number
             };
             return { time, event, data: navigationData };
         case Event.Network:

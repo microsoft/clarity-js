@@ -8,6 +8,7 @@ import time from "@src/core/time";
 import { clearTimeout, setTimeout } from "@src/core/timeout";
 import { target, track } from "@src/data/target";
 import * as boxmodel from "@src/layout/boxmodel";
+import { iframe } from "@src/layout/dom";
 import encode from "./encode";
 
 export let state: ScrollState[] = [];
@@ -19,7 +20,8 @@ export function start(): void {
 }
 
 export function observe(root: Node): void {
-    let node = root === document ? window : root;
+    let frame = iframe(root);
+    let node = frame ? frame.contentWindow : (root === document ? window : root);
     bind(node, "scroll", recompute, true);
 }
 

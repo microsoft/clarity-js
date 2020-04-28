@@ -28,3 +28,8 @@ export function end(): void {
     network.reset();
     paint.reset();
 }
+
+export function compute(): void {
+    observer.compute();
+    memory.compute();
+}

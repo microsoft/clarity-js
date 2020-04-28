@@ -94,7 +94,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
     let hasAttribute = false;
     let attributes: Attributes = {};
     let value = null;
-    let prefix = output.parent in hashes ? `${hashes[output.parent].selector}>` : (output.parent ? "" : null);
+    let prefix = output.parent in hashes ? `${hashes[output.parent].selector}>` : (output.parent ? Constant.EMPTY_STRING : null);
 
     for (let i = tagIndex + 1; i < node.length; i++) {
         let token = node[i] as string;
@@ -110,7 +110,7 @@ function process(node: any[] | number[], tagIndex: number): DomData {
             let v = token.substr(keyIndex + 1);
             switch (k) {
                 case "src":
-                    v = v.length === 0 ? placeholderImage : v;
+                    v = v.length === 0 && output.tag === "IMG" ? placeholderImage : v;
                     break;
                 default:
                     break;

@@ -100,6 +100,8 @@ export interface NavigationData {
     size: number;
     type: string;
     protocol: string;
+    encodedSize: number;
+    decodedSize: number;
 }
 
 export interface MemoryData {

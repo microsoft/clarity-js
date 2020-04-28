@@ -1,6 +1,7 @@
 import { Priority } from "@clarity-types/core";
 import { Code, Event, Metric } from "@clarity-types/data";
-import { Source } from "@clarity-types/layout";
+import { Constant, Source } from "@clarity-types/layout";
+import { bind } from "@src/core/event";
 import measure from "@src/core/measure";
 import * as task from "@src/core/task";
 import * as internal from "@src/diagnostic/internal";
@@ -28,13 +29,13 @@ export function start(): void {
     // need to override the insertRule API and listen for changes manually.
     CSSStyleSheet.prototype.insertRule = function(rule: string, index?: number): number {
       let value = insertRule.call(this, rule, index);
-      generate(this.ownerNode, "characterData");
+      generate(this.ownerNode, Constant.CHARACTER_DATA);
       return value;
     };
 
     CSSStyleSheet.prototype.deleteRule = function(index?: number): void {
       deleteRule.call(this, index);
-      generate(this.ownerNode, "characterData");
+      generate(this.ownerNode, Constant.CHARACTER_DATA);
     };
 }
 
@@ -48,6 +49,15 @@ export function observe(node: Node): void {
     observer.observe(node, { attributes: true, childList: true, characterData: true, subtree: true });
     observers.push(observer);
   } catch (error) { internal.error(Code.MutationObserver, error); }
+}
+
+export function monitor(frame: HTMLIFrameElement): void {
+  // Bind to iframe's onload event so we get notified anytime there's an update to iframe content.
+  // This includes cases where iframe location is updated without explicitly updating src attribute
+  // E.g. iframe.contentWindow.location.href = "new-location";
+  if (dom.has(frame) === false) {
+    bind(frame, Constant.LOAD_EVENT, generate.bind(this, frame, Constant.CHILD_LIST), true);
+  }
 }
 
 export function end(): void {
@@ -86,17 +96,17 @@ async function process(): Promise<void> {
       let target = mutation.target;
 
       switch (mutation.type) {
-        case "attributes":
+        case Constant.ATTRIBUTES:
             if (task.shouldYield(timer)) { await task.suspend(timer); }
             dom.extractRegions(target as HTMLElement);
             processNode(target, Source.Attributes);
             break;
-        case "characterData":
+        case Constant.CHARACTER_DATA:
             if (task.shouldYield(timer)) { await task.suspend(timer); }
             dom.extractRegions(target as HTMLElement);
             processNode(target, Source.CharacterData);
             break;
-        case "childList":
+        case Constant.CHILD_LIST:
           // Process additions
           let addedLength = mutation.addedNodes.length;
           for (let j = 0; j < addedLength; j++) {
@@ -121,7 +131,7 @@ async function process(): Promise<void> {
 
 function generate(target: Node, type: MutationRecordType): void {
   measure(handle)([{
-    addedNodes: null,
+    addedNodes: [target],
     attributeName: null,
     attributeNamespace: null,
     nextSibling: null,

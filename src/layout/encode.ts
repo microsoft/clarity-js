@@ -1,5 +1,5 @@
 import {Event, Metric, Token} from "@clarity-types/data";
-import {NodeInfo} from "@clarity-types/layout";
+import {Constant, NodeInfo} from "@clarity-types/layout";
 import mask from "@src/core/mask";
 import * as task from "@src/core/task";
 import time from "@src/core/time";
@@ -79,7 +79,7 @@ function attribute(masked: boolean, key: string, value: string): string {
         case "srcset":
         case "title":
         case "alt":
-            return `${key}=${masked ? "" : value}`;
+            return `${key}=${masked ? Constant.EMPTY_STRING : value}`;
         case "value":
         case "placeholder":
             return `${key}=${masked ? mask(value) : value}`;

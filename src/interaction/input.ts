@@ -15,7 +15,10 @@ export let state: InputState[] = [];
 
 export function start(): void {
     reset();
-    bind(document, "input", recompute, true);
+}
+
+export function observe(root: Node): void {
+    bind(root, "input", recompute, true);
 }
 
 function recompute(evt: UIEvent): void {
