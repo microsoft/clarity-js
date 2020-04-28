@@ -200,12 +200,15 @@ export function decode(input: string): DecodedPayload {
     return payload;
 }
 
-export function html(decoded: DecodedPayload, iframe: HTMLIFrameElement): void {
+export function html(decoded: DecodedPayload[], iframe: HTMLIFrameElement): void {
     reset();
     let events: DecodedEvent[] = [];
-    for (let key in decoded) {
-        if (Array.isArray(decoded[key])) {
-            events = events.concat(decoded[key]);
+
+    for (let payload of decoded) {
+        for (let key in payload) {
+            if (Array.isArray(payload[key])) {
+                events = events.concat(payload[key]);
+            }
         }
     }
     let sortedevents = events.sort(sort)
